@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 21 Spatial response surface sampling | Spatial sampling with R</title>
+  <meta name="description" content="Chapter 21 Spatial response surface sampling | Spatial sampling with R" />
+  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 21 Spatial response surface sampling | Spatial sampling with R" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:image" content="/cover.png" />
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 21 Spatial response surface sampling | Spatial sampling with R" />
+  
+  
+  <meta name="twitter:image" content="/cover.png" />
+
+<meta name="author" content="Dick J. Brus" />
+
+
+<meta name="date" content="2021-08-20" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="cLHS.html"/>
+<link rel="next" href="Introkriging.html"/>
+<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Spatial sampling with R</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="GeneralIntro.html"><a href="GeneralIntro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#BasicConcepts"><i class="fa fa-check"></i><b>1.1</b> Basic sampling concepts</a>
+<ul>
+<li class="chapter" data-level="1.1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#PopulationParameters"><i class="fa fa-check"></i><b>1.1.1</b> Population parameters</a></li>
+<li class="chapter" data-level="1.1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#descriptive-statistics-versus-inference-about-a-population"><i class="fa fa-check"></i><b>1.1.2</b> Descriptive statistics versus inference about a population</a></li>
+<li class="chapter" data-level="1.1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#random-sampling-versus-probability-sampling"><i class="fa fa-check"></i><b>1.1.3</b> Random sampling versus probability sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#DBvsMB"><i class="fa fa-check"></i><b>1.2</b> Design-based versus model-based approach</a></li>
+<li class="chapter" data-level="1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Datasets"><i class="fa fa-check"></i><b>1.3</b> Populations used in sampling experiments</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Voorst"><i class="fa fa-check"></i><b>1.3.1</b> Soil organic matter in Voorst (Netherlands)</a></li>
+<li class="chapter" data-level="1.3.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Poppy"><i class="fa fa-check"></i><b>1.3.2</b> Poppy fields in Kandahar (Afghanistan)</a></li>
+<li class="chapter" data-level="1.3.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#aboveground-biomass-in-eastern-amazonia"><i class="fa fa-check"></i><b>1.3.3</b> Aboveground biomass in Eastern Amazonia</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>I Probability sampling for estimating (sub)population parameters</b></span></li>
+<li class="chapter" data-level="2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html"><i class="fa fa-check"></i><b>2</b> Introduction to probability sampling</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#HTestimator"><i class="fa fa-check"></i><b>2.1</b> Horvitz-Thompson estimator</a></li>
+<li class="chapter" data-level="2.2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#hansen-hurwitz-estimator"><i class="fa fa-check"></i><b>2.2</b> Hansen-Hurwitz estimator</a></li>
+<li class="chapter" data-level="2.3" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#using-models-in-design-based-approach"><i class="fa fa-check"></i><b>2.3</b> Using models in design-based approach</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="SI.html"><a href="SI.html"><i class="fa fa-check"></i><b>3</b> Simple random sampling</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="SI.html"><a href="SI.html#HTestimatorSI"><i class="fa fa-check"></i><b>3.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="SI.html"><a href="SI.html#PopProportion"><i class="fa fa-check"></i><b>3.1.1</b> Population proportion</a></li>
+<li class="chapter" data-level="3.1.2" data-path="SI.html"><a href="SI.html#CDF"><i class="fa fa-check"></i><b>3.1.2</b> Cumulative distribution function and quantiles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="SI.html"><a href="SI.html#VarMeanSI"><i class="fa fa-check"></i><b>3.2</b> Sampling variance of estimator of population mean, total and proportion</a></li>
+<li class="chapter" data-level="3.3" data-path="SI.html"><a href="SI.html#SIcircularplots"><i class="fa fa-check"></i><b>3.3</b> Simple random sampling of circular plots</a>
+<ul>
+<li class="chapter" data-level="3.3.1" data-path="SI.html"><a href="SI.html#sampling-from-a-finite-set-of-fixed-circles"><i class="fa fa-check"></i><b>3.3.1</b> Sampling from a finite set of fixed circles</a></li>
+<li class="chapter" data-level="3.3.2" data-path="SI.html"><a href="SI.html#sampling-from-an-infinite-set-of-floating-circles"><i class="fa fa-check"></i><b>3.3.2</b> Sampling from an infinite set of floating circles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="SI.html"><a href="SI.html#ConfidenceInterval"><i class="fa fa-check"></i><b>3.4</b> Confidence interval estimates</a>
+<ul>
+<li class="chapter" data-level="3.4.1" data-path="SI.html"><a href="SI.html#ConfidenceIntervalProportion"><i class="fa fa-check"></i><b>3.4.1</b> Confidence interval for proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="STSI.html"><a href="STSI.html"><i class="fa fa-check"></i><b>4</b> Stratified simple random sampling</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="STSI.html"><a href="STSI.html#EstimatorsSTSI"><i class="fa fa-check"></i><b>4.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="4.1.1" data-path="STSI.html"><a href="STSI.html#estimation-of-population-proportion-cumulative-distribution-function-and-quantiles"><i class="fa fa-check"></i><b>4.1.1</b> Estimation of population proportion, cumulative distribution function and quantiles</a></li>
+<li class="chapter" data-level="4.1.2" data-path="STSI.html"><a href="STSI.html#WhyStratify"><i class="fa fa-check"></i><b>4.1.2</b> Why should we stratify?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="STSI.html"><a href="STSI.html#CISTSI"><i class="fa fa-check"></i><b>4.2</b> Confidence interval estimate</a></li>
+<li class="chapter" data-level="4.3" data-path="STSI.html"><a href="STSI.html#STSIallocation"><i class="fa fa-check"></i><b>4.3</b> Allocation of sample size to strata</a></li>
+<li class="chapter" data-level="4.4" data-path="STSI.html"><a href="STSI.html#cumrootf"><i class="fa fa-check"></i><b>4.4</b> <em>Cum-root-f</em> stratification</a></li>
+<li class="chapter" data-level="4.5" data-path="STSI.html"><a href="STSI.html#kmeansstratification"><i class="fa fa-check"></i><b>4.5</b> Stratification with multiple covariates</a></li>
+<li class="chapter" data-level="4.6" data-path="STSI.html"><a href="STSI.html#geostrata"><i class="fa fa-check"></i><b>4.6</b> Geographical stratification</a></li>
+<li class="chapter" data-level="4.7" data-path="STSI.html"><a href="STSI.html#multi-way-stratification"><i class="fa fa-check"></i><b>4.7</b> Multi-way stratification</a></li>
+<li class="chapter" data-level="4.8" data-path="STSI.html"><a href="STSI.html#MultivariateStratification"><i class="fa fa-check"></i><b>4.8</b> Multivariate stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="SY.html"><a href="SY.html"><i class="fa fa-check"></i><b>5</b> Systematic random sampling</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="SY.html"><a href="SY.html#EstVarSY"><i class="fa fa-check"></i><b>5.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="SY.html"><a href="SY.html#approximating-the-sampling-variance-of-the-estimator-of-the-mean"><i class="fa fa-check"></i><b>5.1.1</b> Approximating the sampling variance of the estimator of the mean</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="Cl.html"><a href="Cl.html"><i class="fa fa-check"></i><b>6</b> Cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="Cl.html"><a href="Cl.html#clustersamplingestimators"><i class="fa fa-check"></i><b>6.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="6.2" data-path="Cl.html"><a href="Cl.html#clusters-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>6.2</b> Clusters selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="6.3" data-path="Cl.html"><a href="Cl.html#simple-random-sampling-of-clusters"><i class="fa fa-check"></i><b>6.3</b> Simple random sampling of clusters</a></li>
+<li class="chapter" data-level="6.4" data-path="Cl.html"><a href="Cl.html#StratifiedCl"><i class="fa fa-check"></i><b>6.4</b> Stratified cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="Twostage.html"><a href="Twostage.html"><i class="fa fa-check"></i><b>7</b> Two-stage cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="Twostage.html"><a href="Twostage.html#twostagesamplingestimators"><i class="fa fa-check"></i><b>7.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="7.2" data-path="Twostage.html"><a href="Twostage.html#primary-sampling-units-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>7.2</b> Primary sampling units selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="7.3" data-path="Twostage.html"><a href="Twostage.html#simple-random-sampling-of-primary-sampling-units"><i class="fa fa-check"></i><b>7.3</b> Simple random sampling of primary sampling units</a></li>
+<li class="chapter" data-level="7.4" data-path="Twostage.html"><a href="Twostage.html#StratifiedTwostage"><i class="fa fa-check"></i><b>7.4</b> Stratified two-stage cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="pps.html"><a href="pps.html"><i class="fa fa-check"></i><b>8</b> Sampling with probabilities proportional to size</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="pps.html"><a href="pps.html#ppswr"><i class="fa fa-check"></i><b>8.1</b> Probability-proportional-to-size sampling with replacement</a></li>
+<li class="chapter" data-level="8.2" data-path="pps.html"><a href="pps.html#ppswor"><i class="fa fa-check"></i><b>8.2</b> Probability-proportional-to-size sampling without replacement</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="pps.html"><a href="pps.html#Systematicpps"><i class="fa fa-check"></i><b>8.2.1</b> Systematic pps sampling without replacement</a></li>
+<li class="chapter" data-level="8.2.2" data-path="pps.html"><a href="pps.html#pivotalmethod"><i class="fa fa-check"></i><b>8.2.2</b> The pivotal method</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html"><i class="fa fa-check"></i><b>9</b> Balanced and well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Balanced"><i class="fa fa-check"></i><b>9.1</b> Balanced sampling</a>
+<ul>
+<li class="chapter" data-level="9.1.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#balanced-sample-versus-balanced-sampling-design"><i class="fa fa-check"></i><b>9.1.1</b> Balanced sample versus balanced sampling design</a></li>
+<li class="chapter" data-level="9.1.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#unequal-inclusion-probabilities"><i class="fa fa-check"></i><b>9.1.2</b> Unequal inclusion probabilities</a></li>
+<li class="chapter" data-level="9.1.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#StratifiedsamplingasBalancedsampling"><i class="fa fa-check"></i><b>9.1.3</b> Stratified random sampling</a></li>
+<li class="chapter" data-level="9.1.4" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Multiwaystratification"><i class="fa fa-check"></i><b>9.1.4</b> Multi-way stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Spreaded"><i class="fa fa-check"></i><b>9.2</b> Well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.2.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#LPM"><i class="fa fa-check"></i><b>9.2.1</b> Local pivotal method</a></li>
+<li class="chapter" data-level="9.2.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#GRTS"><i class="fa fa-check"></i><b>9.2.2</b> Generalised random-tessellation stratified sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#BalancedandSpreaded"><i class="fa fa-check"></i><b>9.3</b> Balanced sampling with spreading</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="Modelassisted.html"><a href="Modelassisted.html"><i class="fa fa-check"></i><b>10</b> Model-assisted estimation</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="Modelassisted.html"><a href="Modelassisted.html#GREG"><i class="fa fa-check"></i><b>10.1</b> Generalized regression estimator</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimator"><i class="fa fa-check"></i><b>10.1.1</b> Simple and multiple regression estimators</a></li>
+<li class="chapter" data-level="10.1.2" data-path="Modelassisted.html"><a href="Modelassisted.html#penalised-least-squares-estimation"><i class="fa fa-check"></i><b>10.1.2</b> Penalised least squares estimation</a></li>
+<li class="chapter" data-level="10.1.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimatorSTSI"><i class="fa fa-check"></i><b>10.1.3</b> Regression estimator with stratified simple random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimator"><i class="fa fa-check"></i><b>10.2</b> Ratio estimator</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimatorSTSI"><i class="fa fa-check"></i><b>10.2.1</b> Ratio estimators with stratified simple random sampling</a></li>
+<li class="chapter" data-level="10.2.2" data-path="Modelassisted.html"><a href="Modelassisted.html#PoststratifiedEstimator"><i class="fa fa-check"></i><b>10.2.2</b> Poststratified estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RandomForest"><i class="fa fa-check"></i><b>10.3</b> Model-assisted estimation using machine learning techniques</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-regression-tree"><i class="fa fa-check"></i><b>10.3.1</b> Predicting with a regression tree</a></li>
+<li class="chapter" data-level="10.3.2" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-random-forest"><i class="fa fa-check"></i><b>10.3.2</b> Predicting with a random forest</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="Modelassisted.html"><a href="Modelassisted.html#big-data-and-volunteer-data"><i class="fa fa-check"></i><b>10.4</b> Big data and volunteer data</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="Twophase.html"><a href="Twophase.html"><i class="fa fa-check"></i><b>11</b> Two-phase random sampling</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="Twophase.html"><a href="Twophase.html#TwophaseStratification"><i class="fa fa-check"></i><b>11.1</b> Two-phase random sampling for stratification</a></li>
+<li class="chapter" data-level="11.2" data-path="Twophase.html"><a href="Twophase.html#TwophaseRegression"><i class="fa fa-check"></i><b>11.2</b> Two-phase random sampling for regression</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html"><i class="fa fa-check"></i><b>12</b> Computing the required sample size</a>
+<ul>
+<li class="chapter" data-level="12.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#standard-error-of-estimator"><i class="fa fa-check"></i><b>12.1</b> Standard error of estimator</a></li>
+<li class="chapter" data-level="12.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#ReqSampleSizeLengthCI"><i class="fa fa-check"></i><b>12.2</b> Length of confidence interval</a>
+<ul>
+<li class="chapter" data-level="12.2.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#length-of-confidence-interval-for-a-proportion"><i class="fa fa-check"></i><b>12.2.1</b> Length of confidence interval for a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#statistical-testing-of-hypothesis"><i class="fa fa-check"></i><b>12.3</b> Statistical testing of hypothesis</a>
+<ul>
+<li class="chapter" data-level="12.3.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#sample-size-for-testing-a-proportion"><i class="fa fa-check"></i><b>12.3.1</b> Sample size for testing a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#DesignEffect"><i class="fa fa-check"></i><b>12.4</b> Accounting for design effect</a></li>
+<li class="chapter" data-level="12.5" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#BayesianSampleSize"><i class="fa fa-check"></i><b>12.5</b> Bayesian sample size determination</a>
+<ul>
+<li class="chapter" data-level="12.5.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#bayesian-criteria-for-sample-size-computation"><i class="fa fa-check"></i><b>12.5.1</b> Bayesian criteria for sample size computation</a></li>
+<li class="chapter" data-level="12.5.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#mixed-bayesian-likelihood-approach"><i class="fa fa-check"></i><b>12.5.2</b> Mixed Bayesian-likelihood approach</a></li>
+<li class="chapter" data-level="12.5.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-population-mean"><i class="fa fa-check"></i><b>12.5.3</b> Estimation of population mean</a></li>
+<li class="chapter" data-level="12.5.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-a-population-proportion"><i class="fa fa-check"></i><b>12.5.4</b> Estimation of a population proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html"><i class="fa fa-check"></i><b>13</b> Model-based optimisation of probability sampling designs</a>
+<ul>
+<li class="chapter" data-level="13.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#model-based-optimisation-of-sampling-design-type-and-sample-size"><i class="fa fa-check"></i><b>13.1</b> Model-based optimisation of sampling design type and sample size</a>
+<ul>
+<li class="chapter" data-level="13.1.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#AnalyticalApproach"><i class="fa fa-check"></i><b>13.1.1</b> Analytical approach</a></li>
+<li class="chapter" data-level="13.1.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#GeostatisticalSimulationApproach"><i class="fa fa-check"></i><b>13.1.2</b> Geostatistical simulation approach</a></li>
+<li class="chapter" data-level="13.1.3" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#MBpredSamplingVarBayes"><i class="fa fa-check"></i><b>13.1.3</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="13.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#Ospats"><i class="fa fa-check"></i><b>13.2</b> Model-based optimisation of spatial strata</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html"><i class="fa fa-check"></i><b>14</b> Sampling for estimating parameters of (small) domains</a>
+<ul>
+<li class="chapter" data-level="14.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#LargeDomainsDirectEstimator"><i class="fa fa-check"></i><b>14.1</b> Direct estimator for large domains</a></li>
+<li class="chapter" data-level="14.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallDomainsModelAssisted"><i class="fa fa-check"></i><b>14.2</b> Model-assisted estimators for small domains</a>
+<ul>
+<li class="chapter" data-level="14.2.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#RegressionestimatorSmallDomain"><i class="fa fa-check"></i><b>14.2.1</b> Regression estimator</a></li>
+<li class="chapter" data-level="14.2.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#synthetic-estimator"><i class="fa fa-check"></i><b>14.2.2</b> Synthetic estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="14.3" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallAreaModelBased"><i class="fa fa-check"></i><b>14.3</b> Model-based prediction</a>
+<ul>
+<li class="chapter" data-level="14.3.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#random-intercept-model"><i class="fa fa-check"></i><b>14.3.1</b> Random intercept model</a></li>
+<li class="chapter" data-level="14.3.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#geostatistical-model"><i class="fa fa-check"></i><b>14.3.2</b> Geostatistical model</a></li>
+</ul></li>
+<li class="chapter" data-level="14.4" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#supplemental-probability-sampling-of-small-domains"><i class="fa fa-check"></i><b>14.4</b> Supplemental probability sampling of small domains</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html"><i class="fa fa-check"></i><b>15</b> Repeated sample surveys for monitoring population parameters</a>
+<ul>
+<li class="chapter" data-level="15.1" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-designs"><i class="fa fa-check"></i><b>15.1</b> Space-time designs</a></li>
+<li class="chapter" data-level="15.2" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-population-parameters"><i class="fa fa-check"></i><b>15.2</b> Space-time population parameters</a></li>
+</ul></li>
+<li class="part"><span><b>II Sampling for mapping</b></span></li>
+<li class="chapter" data-level="16" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html"><i class="fa fa-check"></i><b>16</b> Introduction to sampling for mapping</a>
+<ul>
+<li class="chapter" data-level="16.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#when-is-probability-sampling-not-required"><i class="fa fa-check"></i><b>16.1</b> When is probability sampling not required?</a></li>
+<li class="chapter" data-level="16.2" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#sampling-for-simultaneously-mapping-and-estimating-means"><i class="fa fa-check"></i><b>16.2</b> Sampling for simultaneously mapping and estimating means</a>
+<ul>
+<li class="chapter" data-level="16.2.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#balanced-stratified-random-sampling"><i class="fa fa-check"></i><b>16.2.1</b> Balanced stratified random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="16.3" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#broad-overview-of-sampling-designs-for-mapping"><i class="fa fa-check"></i><b>16.3</b> Broad overview of sampling designs for mapping</a></li>
+</ul></li>
+<li class="chapter" data-level="17" data-path="Regulargrid.html"><a href="Regulargrid.html"><i class="fa fa-check"></i><b>17</b> Sampling on a regular grid</a></li>
+<li class="chapter" data-level="18" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html"><i class="fa fa-check"></i><b>18</b> Spatial coverage sampling</a>
+<ul>
+<li class="chapter" data-level="18.1" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html#SpatialInfill"><i class="fa fa-check"></i><b>18.1</b> Spatial infill sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="19" data-path="kmeans.html"><a href="kmeans.html"><i class="fa fa-check"></i><b>19</b> Covariate space coverage sampling</a>
+<ul>
+<li class="chapter" data-level="19.1" data-path="kmeans.html"><a href="kmeans.html#covariate-space-infill-sampling"><i class="fa fa-check"></i><b>19.1</b> Covariate space infill sampling</a></li>
+<li class="chapter" data-level="19.2" data-path="kmeans.html"><a href="kmeans.html#performance-of-covariate-space-coverage-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>19.2</b> Performance of covariate space coverage sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="20" data-path="cLHS.html"><a href="cLHS.html"><i class="fa fa-check"></i><b>20</b> Conditioned Latin hypercube sampling</a>
+<ul>
+<li class="chapter" data-level="20.1" data-path="cLHS.html"><a href="cLHS.html#cLHIS"><i class="fa fa-check"></i><b>20.1</b> Conditioned Latin hypercube infill sampling</a></li>
+<li class="chapter" data-level="20.2" data-path="cLHS.html"><a href="cLHS.html#performance-of-conditioned-latin-hypercube-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>20.2</b> Performance of conditioned Latin hypercube sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="21" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html"><i class="fa fa-check"></i><b>21</b> Spatial response surface sampling</a>
+<ul>
+<li class="chapter" data-level="21.1" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#IncreaseSampleSize"><i class="fa fa-check"></i><b>21.1</b> Increasing the sample size</a></li>
+<li class="chapter" data-level="21.2" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#stratified-spatial-response-surface-sampling"><i class="fa fa-check"></i><b>21.2</b> Stratified spatial response surface sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="22" data-path="Introkriging.html"><a href="Introkriging.html"><i class="fa fa-check"></i><b>22</b> Introduction to kriging</a>
+<ul>
+<li class="chapter" data-level="22.1" data-path="Introkriging.html"><a href="Introkriging.html#BlockKriging"><i class="fa fa-check"></i><b>22.1</b> Block-kriging</a></li>
+<li class="chapter" data-level="22.2" data-path="Introkriging.html"><a href="Introkriging.html#IntroKED"><i class="fa fa-check"></i><b>22.2</b> Kriging with an external drift</a></li>
+<li class="chapter" data-level="22.3" data-path="Introkriging.html"><a href="Introkriging.html#VariogramEstimation"><i class="fa fa-check"></i><b>22.3</b> Estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.3.1" data-path="Introkriging.html"><a href="Introkriging.html#MoM"><i class="fa fa-check"></i><b>22.3.1</b> Method-of-moments</a></li>
+<li class="chapter" data-level="22.3.2" data-path="Introkriging.html"><a href="Introkriging.html#MLestimationVariogram"><i class="fa fa-check"></i><b>22.3.2</b> Maximum likelihood</a></li>
+</ul></li>
+<li class="chapter" data-level="22.4" data-path="Introkriging.html"><a href="Introkriging.html#ResidualVariogram"><i class="fa fa-check"></i><b>22.4</b> Estimating the residual semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.4.1" data-path="Introkriging.html"><a href="Introkriging.html#IterativeMoM"><i class="fa fa-check"></i><b>22.4.1</b> Iterative method-of-moments</a></li>
+<li class="chapter" data-level="22.4.2" data-path="Introkriging.html"><a href="Introkriging.html#REML"><i class="fa fa-check"></i><b>22.4.2</b> Restricted maximum likelihood</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="23" data-path="MBgridspacing.html"><a href="MBgridspacing.html"><i class="fa fa-check"></i><b>23</b> Model-based optimisation of grid spacing</a>
+<ul>
+<li class="chapter" data-level="23.1" data-path="MBgridspacing.html"><a href="MBgridspacing.html#GridspacingOK"><i class="fa fa-check"></i><b>23.1</b> Optimal grid spacing for ordinary kriging</a></li>
+<li class="chapter" data-level="23.2" data-path="MBgridspacing.html"><a href="MBgridspacing.html#controlling-the-mean-or-a-quantile-of-the-ordinary-kriging-variance"><i class="fa fa-check"></i><b>23.2</b> Controlling the mean or a quantile of the ordinary kriging variance</a></li>
+<li class="chapter" data-level="23.3" data-path="MBgridspacing.html"><a href="MBgridspacing.html#optimal-grid-spacing-for-block-kriging"><i class="fa fa-check"></i><b>23.3</b> Optimal grid spacing for block-kriging</a></li>
+<li class="chapter" data-level="23.4" data-path="MBgridspacing.html"><a href="MBgridspacing.html#MBgridspacingKED"><i class="fa fa-check"></i><b>23.4</b> Optimal grid spacing for kriging with an external drift</a></li>
+<li class="chapter" data-level="23.5" data-path="MBgridspacing.html"><a href="MBgridspacing.html#BayesianGridSpacing"><i class="fa fa-check"></i><b>23.5</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="24" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html"><i class="fa fa-check"></i><b>24</b> Model-based optimisation of sampling pattern</a>
+<ul>
+<li class="chapter" data-level="24.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SSA"><i class="fa fa-check"></i><b>24.1</b> Spatial simulated annealing</a></li>
+<li class="chapter" data-level="24.2" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternOK"><i class="fa fa-check"></i><b>24.2</b> Optimising the sample pattern for ordinary kriging</a></li>
+<li class="chapter" data-level="24.3" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternKED"><i class="fa fa-check"></i><b>24.3</b> Optimising the sample pattern for kriging with an external drift</a></li>
+<li class="chapter" data-level="24.4" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling"><i class="fa fa-check"></i><b>24.4</b> Model-based infill sampling</a>
+<ul>
+<li class="chapter" data-level="24.4.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling-for-kriging-with-an-external-drift"><i class="fa fa-check"></i><b>24.4.1</b> Model-based infill sampling for kriging with an external drift</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="25" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html"><i class="fa fa-check"></i><b>25</b> Sampling for estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="25.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#nested-sampling"><i class="fa fa-check"></i><b>25.1</b> Nested sampling</a></li>
+<li class="chapter" data-level="25.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#independent-sampling-of-pairs-of-points"><i class="fa fa-check"></i><b>25.2</b> Independent sampling of pairs of points</a></li>
+<li class="chapter" data-level="25.3" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#samplingforvariogram"><i class="fa fa-check"></i><b>25.3</b> Model-based optimisation of sample pattern for semivariogram estimation</a>
+<ul>
+<li class="chapter" data-level="25.3.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#UncertainSemivariogramParameters"><i class="fa fa-check"></i><b>25.3.1</b> Uncertainty about semivariogram parameters</a></li>
+<li class="chapter" data-level="25.3.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#uncertainty-about-the-kriging-variance"><i class="fa fa-check"></i><b>25.3.2</b> Uncertainty about the kriging variance</a></li>
+</ul></li>
+<li class="chapter" data-level="25.4" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#SamplingEstimationandPrediction"><i class="fa fa-check"></i><b>25.4</b> Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction</a></li>
+<li class="chapter" data-level="25.5" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#a-practical-solution"><i class="fa fa-check"></i><b>25.5</b> A practical solution</a></li>
+</ul></li>
+<li class="chapter" data-level="26" data-path="Validation.html"><a href="Validation.html"><i class="fa fa-check"></i><b>26</b> Sampling for validation of maps</a>
+<ul>
+<li class="chapter" data-level="26.1" data-path="Validation.html"><a href="Validation.html#map-quality-indices"><i class="fa fa-check"></i><b>26.1</b> Map quality indices</a>
+<ul>
+<li class="chapter" data-level="26.1.1" data-path="Validation.html"><a href="Validation.html#estimation-of-map-quality-indices"><i class="fa fa-check"></i><b>26.1.1</b> Estimation of map quality indices</a></li>
+</ul></li>
+<li class="chapter" data-level="26.2" data-path="Validation.html"><a href="Validation.html#real-world-case-study"><i class="fa fa-check"></i><b>26.2</b> Real-world case study</a>
+<ul>
+<li class="chapter" data-level="26.2.1" data-path="Validation.html"><a href="Validation.html#estimation-of-the-population-mean-error-and-mean-squared-error"><i class="fa fa-check"></i><b>26.2.1</b> Estimation of the population Mean Error and Mean Squared Error</a></li>
+<li class="chapter" data-level="26.2.2" data-path="Validation.html"><a href="Validation.html#estimation-of-the-standard-error-of-the-estimated-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.2</b> Estimation of the standard error of the estimated population ME and MSE</a></li>
+<li class="chapter" data-level="26.2.3" data-path="Validation.html"><a href="Validation.html#estimation-of-mec"><i class="fa fa-check"></i><b>26.2.3</b> Estimation of MEC</a></li>
+<li class="chapter" data-level="26.2.4" data-path="Validation.html"><a href="Validation.html#statistical-testing-of-hypothesis-about-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.4</b> Statistical testing of hypothesis about population ME and MSE</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="27" data-path="Approaches.html"><a href="Approaches.html"><i class="fa fa-check"></i><b>27</b> Design-based, model-based and model-assisted approach for sampling and inference</a>
+<ul>
+<li class="chapter" data-level="27.1" data-path="Approaches.html"><a href="Approaches.html#two-sources-of-randomness"><i class="fa fa-check"></i><b>27.1</b> Two sources of randomness</a></li>
+<li class="chapter" data-level="27.2" data-path="Approaches.html"><a href="Approaches.html#identically-and-independently-distributed-i.i.d."><i class="fa fa-check"></i><b>27.2</b> “Identically and independently distributed” (i.i.d.)</a></li>
+<li class="chapter" data-level="27.3" data-path="Approaches.html"><a href="Approaches.html#BiasandVariance"><i class="fa fa-check"></i><b>27.3</b> Bias and variance</a></li>
+<li class="chapter" data-level="27.4" data-path="Approaches.html"><a href="Approaches.html#effectivesamplesize"><i class="fa fa-check"></i><b>27.4</b> Effective sample size</a></li>
+<li class="chapter" data-level="27.5" data-path="Approaches.html"><a href="Approaches.html#ExploitSpatialStructure"><i class="fa fa-check"></i><b>27.5</b> Exploiting spatial structure in design-based approach</a></li>
+<li class="chapter" data-level="27.6" data-path="Approaches.html"><a href="Approaches.html#ModelassistedvsModeldependent"><i class="fa fa-check"></i><b>27.6</b> Model-assisted versus model-dependent</a></li>
+</ul></li>
+<li class="appendix"><span><b>Appendices</b></span></li>
+<li class="chapter" data-level="A" data-path="Answers.html"><a href="Answers.html"><i class="fa fa-check"></i><b>A</b> Answers to exercises</a>
+<ul>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#introduction-to-probability-sampling"><i class="fa fa-check"></i>Introduction to probability sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#simple-random-sampling"><i class="fa fa-check"></i>Simple random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#stratified-random-sampling"><i class="fa fa-check"></i>Stratified random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#systematic-random-sampling"><i class="fa fa-check"></i>Systematic random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#cluster-random-sampling"><i class="fa fa-check"></i>Cluster random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-stage-random-sampling"><i class="fa fa-check"></i>Two-stage random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-with-probabilities-proportional-to-size"><i class="fa fa-check"></i>Sampling with probabilities proportional to size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#balanced-and-well-spread-sampling"><i class="fa fa-check"></i>Balanced and well-spread sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#ratio-and-regression-estimator"><i class="fa fa-check"></i>Ratio and regression estimator</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-phase-random-sampling"><i class="fa fa-check"></i>Two-phase random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#required-sample-size"><i class="fa fa-check"></i>Required sample size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-prediction-of-sampling-variance-of-estimated-mean"><i class="fa fa-check"></i>Model-based prediction of sampling variance of estimated mean</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#regular-grid-sampling"><i class="fa fa-check"></i>Regular grid sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#spatial-coverage-sampling"><i class="fa fa-check"></i>Spatial coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#covariate-space-coverage-sampling"><i class="fa fa-check"></i>Covariate space coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#conditioned-latin-hypercube-sampling"><i class="fa fa-check"></i>Conditioned Latin hypercube sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-the-grid-spacing"><i class="fa fa-check"></i>Model-based optimisation of the grid spacing</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-sampling-pattern"><i class="fa fa-check"></i>Model-based optimisation of sampling pattern</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-estimating-the-semivariogram"><i class="fa fa-check"></i>Sampling for estimating the semivariogram</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-validation"><i class="fa fa-check"></i>Sampling for validation</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Spatial sampling with R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="SpatialResponseSurface" class="section level1" number="21">
+<h1><span class="header-section-number">Chapter 21</span> Spatial response surface sampling</h1>
+<p>As with conditioned Latin hypercube sampling (cLHS), spatial response surface sampling is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum combination of the response within specified ranges of the factors. There are many types of response surface designs, see <span class="citation"><a href="#ref-myers2002" role="doc-biblioref">Myers, Montgomery, and Anderson-Cook</a> (<a href="#ref-myers2002" role="doc-biblioref">2002</a>)</span>. With response surface sampling one assumes that some type of low order (linear or quadratic) regression model can be used to accurately approximate the relationship between the study variable and the covariates. A commonly used design is the central composite design. The data produced as a result of this design are used to fit a curved, quadratic surface, i.e. a multiple linear regression model with quadratic terms.</p>
+<p>The response surface sampling approach is an example of a model-based sampling design. From that viewpoint I should have described this sampling design in the later part of this book dealing with model-based sampling. Sampling units are selected to implicitly optimise the estimation of the linear or quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see Figure <a href="IntroSamplingforMapping.html#fig:twosamples">16.1</a>(b). The assumption of independent data might be violated when the sampling units are spatially clustered. For that reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.</p>
+<p><span class="citation"><a href="#ref-lesch95" role="doc-biblioref">Lesch, Strauss, and Rhoades</a> (<a href="#ref-lesch95" role="doc-biblioref">1995</a>)</span> adapted the response surface methodology so that it can be applied in observational studies. Several problems needed to be tackled. First, when multiple covariates are used, the covariates must be decorrelated. Second, when sampling units are spatially clustered, the assumption in linear regression modelling of spatially uncorrelated model residuals can be violated. To address these two problems <span class="citation"><a href="#ref-lesch95" role="doc-biblioref">Lesch, Strauss, and Rhoades</a> (<a href="#ref-lesch95" role="doc-biblioref">1995</a>)</span> proposed the following procedure; see also <span class="citation"><a href="#ref-lesch2005" role="doc-biblioref">Lesch</a> (<a href="#ref-lesch2005" role="doc-biblioref">2005</a>)</span>:</p>
+<ol style="list-style-type: decimal">
+<li>Transform the covariate matrix into a scaled, centered, de-correlated matrix by principal components analysis (PCA).<br />
+</li>
+<li>Choose the response surface design type.<br />
+</li>
+<li>Select candidate sampling units based on the distance from the design points in PC-space and then select multiple units per design point.<br />
+</li>
+<li>Select the combinatin of candidate sampling units with the highest value for a criterion that quantifies how uniform the sample is spread across the study area.</li>
+</ol>
+<p>This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see <span class="citation"><a href="#ref-corwin2005" role="doc-biblioref">Corwin and Lesch</a> (<a href="#ref-corwin2005" role="doc-biblioref">2005</a>)</span>, <span class="citation"><a href="#ref-lesch2005" role="doc-biblioref">Lesch</a> (<a href="#ref-lesch2005" role="doc-biblioref">2005</a>)</span>, <span class="citation"><a href="#ref-fitzgerald2006" role="doc-biblioref">Fitzgerald et al.</a> (<a href="#ref-fitzgerald2006" role="doc-biblioref">2006</a>)</span>, <span class="citation"><a href="#ref-Corwin2010" role="doc-biblioref">Corwin et al.</a> (<a href="#ref-Corwin2010" role="doc-biblioref">2010</a>)</span> and <span class="citation"><a href="#ref-Fitzgerald2010" role="doc-biblioref">Fitzgerald</a> (<a href="#ref-Fitzgerald2010" role="doc-biblioref">2010</a>)</span>.</p>
+<p>Spatial response surface sampling is illustrated with the electromagnetic induction (EM) measurements (mS/m) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section <a href="GeneralIntro.html#Datasets">1.3</a>). The EM measurements in vertical dipole mode with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure <a href="SpatialResponseSurface.html#fig:EMdataUzbekistan">21.1</a>). As a first step the natural logarithm of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure <a href="SpatialResponseSurface.html#fig:EMdataUzbekistan2">21.2</a>). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling (Figure <a href="SpatialResponseSurface.html#fig:EMdataUzbekistan">21.1</a>). The two covariates are strongly correlated, <span class="math inline">\(r=0.73\)</span>, as would be expected since they are of the same variable at two depths.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:EMdataUzbekistan"></span>
+<img src="SpatialSampling_files/figure-html/EMdataUzbekistan-1.png" alt="Natural logarithm of EM38 measurements on the Cotton Research Farm in Uzbekistan (with transmitter at 1 m and 0.5 m from receiver)." width="100%" />
+<p class="caption">
+Figure 21.1: Natural logarithm of EM38 measurements on the Cotton Research Farm in Uzbekistan (with transmitter at 1 m and 0.5 m from receiver).
+</p>
+</div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:EMdataUzbekistan2"></span>
+<img src="SpatialSampling_files/figure-html/EMdataUzbekistan2-1.png" alt="Interpolated surfaces of natural logarithm of EM38 measurements on the Cotton Research Farm in Uzbekistan, used as covariates in spatial response surface sampling." width="100%" />
+<p class="caption">
+Figure 21.2: Interpolated surfaces of natural logarithm of EM38 measurements on the Cotton Research Farm in Uzbekistan, used as covariates in spatial response surface sampling.
+</p>
+</div>
+<p>Function <code>prcomp</code> of the <strong>stats</strong> package <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2020</a>)</span> is used to compute the principal component scores for all units in the population (grid cells). The two covariates are centered and scaled, i.e. we compute standardised principal components.</p>
+<div class="sourceCode" id="cb417"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb417-1"><a href="SpatialResponseSurface.html#cb417-1" aria-hidden="true" tabindex="-1"></a>grdsub <span class="ot">&lt;-</span> <span class="fu">subset</span>(EM_CRF, <span class="at">select=</span><span class="fu">c</span>(lnEM100cm,lnEM50cm))</span>
+<span id="cb417-2"><a href="SpatialResponseSurface.html#cb417-2" aria-hidden="true" tabindex="-1"></a>pc <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(grdsub, <span class="at">center=</span><span class="cn">TRUE</span>, <span class="at">scale=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The means of the two principal component scores are 0, their standard deviations are 1.316 and 0.518. The principal component scores are then scaled so that their standard deviations become 1, i.e. they will have the same weight in the following steps.</p>
+<div class="sourceCode" id="cb418"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb418-1"><a href="SpatialResponseSurface.html#cb418-1" aria-hidden="true" tabindex="-1"></a>EM_CRF<span class="sc">$</span>PC1 <span class="ot">&lt;-</span> pc<span class="sc">$</span>x[,<span class="dv">1</span>]<span class="sc">*</span><span class="dv">1</span><span class="sc">/</span>pc<span class="sc">$</span>sdev[<span class="dv">1</span>]</span>
+<span id="cb418-2"><a href="SpatialResponseSurface.html#cb418-2" aria-hidden="true" tabindex="-1"></a>EM_CRF<span class="sc">$</span>PC2 <span class="ot">&lt;-</span> pc<span class="sc">$</span>x[,<span class="dv">2</span>]<span class="sc">*</span><span class="dv">1</span><span class="sc">/</span>pc<span class="sc">$</span>sdev[<span class="dv">2</span>]</span></code></pre></div>
+<p>Figure <a href="SpatialResponseSurface.html#fig:candidatelocations">21.4</a> shows a scatter plot of the two standardised principal component scores of all 1552 grid cells.</p>
+<p>Function <code>ccd</code> of package <strong>rsm</strong> (<span class="citation">(<a href="#ref-Lenth2009" role="doc-biblioref">Lenth 2009</a>)</span> is now used to generate a central composite response surface design (CCRSD). Argument <code>basis</code> specifies the number of factors, which is two in our case; argument <code>n0</code> is the number of center points, and argument <code>alpha</code> determines the position of the “star points” (explained hereafter).</p>
+<div class="sourceCode" id="cb419"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb419-1"><a href="SpatialResponseSurface.html#cb419-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rsm)</span>
+<span id="cb419-2"><a href="SpatialResponseSurface.html#cb419-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb419-3"><a href="SpatialResponseSurface.html#cb419-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(ccdesign <span class="ot">&lt;-</span> <span class="fu">ccd</span>(<span class="at">basis=</span><span class="dv">2</span>, <span class="at">n0=</span><span class="dv">1</span>, <span class="at">alpha=</span><span class="st">&quot;rotatable&quot;</span>))</span></code></pre></div>
+<pre><code>   run.order std.order  x1.as.is  x2.as.is Block
+1          1         4  1.000000  1.000000     1
+2          2         5  0.000000  0.000000     1
+3          3         2  1.000000 -1.000000     1
+4          4         1 -1.000000 -1.000000     1
+5          5         3 -1.000000  1.000000     1
+6          1         5  0.000000  0.000000     2
+7          2         3  0.000000 -1.414214     2
+8          3         1 -1.414214  0.000000     2
+9          4         4  0.000000  1.414214     2
+10         5         2  1.414214  0.000000     2
+
+Data are stored in coded form using these coding formulas ...
+x1 ~ x1.as.is
+x2 ~ x2.as.is</code></pre>
+<p>The experiment consists of two blocks, each of five experimental units. Block 1, the so-called cube block, consists of one center point and four cube points. In the experimental unit represented by the center point both factors have levels in the center of the experimental range. In the experimental units represented by the cube points the levels of both factors is either -1 or +1 unit in the design space. Block 2, referred to as the star block, consists of one center point and four star points. With <code>alpha = rotatable</code> the start points are on the circle circumscribing the square (Figure <a href="SpatialResponseSurface.html#fig:ccdesign">21.3</a>).</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:ccdesign"></span>
+<img src="SpatialSampling_files/figure-html/ccdesign-1.png" alt="Rotatable central composite response surface design for two factors." width="80%" />
+<p class="caption">
+Figure 21.3: Rotatable central composite response surface design for two factors.
+</p>
+</div>
+<p>To adapt this design for an observational study, we drop one of the center points (0,0).</p>
+<div class="sourceCode" id="cb421"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb421-1"><a href="SpatialResponseSurface.html#cb421-1" aria-hidden="true" tabindex="-1"></a>ccd_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x1=</span>ccdesign<span class="sc">$</span>x1, <span class="at">x2=</span>ccdesign<span class="sc">$</span>x2)</span>
+<span id="cb421-2"><a href="SpatialResponseSurface.html#cb421-2" aria-hidden="true" tabindex="-1"></a>ccd_df <span class="ot">&lt;-</span> ccd_df[<span class="sc">-</span><span class="dv">6</span>,]</span></code></pre></div>
+<p>The points in the CCRSD design are adjusted so that a large proportion <span class="math inline">\(p\)</span> of the bivariate standardised principal component scores of the population units are within a circle of a given radius. This radius is computed as a sample quantile of the empirical distribution of the distances of the points in the scatter to the center. For <span class="math inline">\(p\)</span> I chose 0.7.</p>
+<div class="sourceCode" id="cb422"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb422-1"><a href="SpatialResponseSurface.html#cb422-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(EM_CRF<span class="sc">$</span>PC1<span class="sc">^</span><span class="dv">2</span><span class="sc">+</span>EM_CRF<span class="sc">$</span>PC2<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb422-2"><a href="SpatialResponseSurface.html#cb422-2" aria-hidden="true" tabindex="-1"></a>radius <span class="ot">&lt;-</span> <span class="fu">quantile</span>(d, <span class="at">p=</span><span class="fl">0.7</span>)</span>
+<span id="cb422-3"><a href="SpatialResponseSurface.html#cb422-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(radius)</span></code></pre></div>
+<pre><code>     70% 
+1.508801 </code></pre>
+<div class="sourceCode" id="cb424"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb424-1"><a href="SpatialResponseSurface.html#cb424-1" aria-hidden="true" tabindex="-1"></a>ccd_df<span class="sc">$</span>x1 <span class="ot">&lt;-</span> ccd_df<span class="sc">$</span>x1<span class="sc">*</span>radius</span>
+<span id="cb424-2"><a href="SpatialResponseSurface.html#cb424-2" aria-hidden="true" tabindex="-1"></a>ccd_df<span class="sc">$</span>x2 <span class="ot">&lt;-</span> ccd_df<span class="sc">$</span>x2<span class="sc">*</span>radius</span></code></pre></div>
+<p>The next step is to select for each design point several candidate sampling units. For each of the nine design points 0.5% of the grid cells are selected that are closest to that design point. This results in <span class="math inline">\(9 \times 8\)</span> candidate sampling points.</p>
+<div class="sourceCode" id="cb425"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb425-1"><a href="SpatialResponseSurface.html#cb425-1" aria-hidden="true" tabindex="-1"></a>EM_CRF<span class="sc">$</span>unit <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(EM_CRF)</span>
+<span id="cb425-2"><a href="SpatialResponseSurface.html#cb425-2" aria-hidden="true" tabindex="-1"></a>candi_all <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb425-3"><a href="SpatialResponseSurface.html#cb425-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(ccd_df)) {</span>
+<span id="cb425-4"><a href="SpatialResponseSurface.html#cb425-4" aria-hidden="true" tabindex="-1"></a>    d2dpnt <span class="ot">&lt;-</span> <span class="fu">sqrt</span>((EM_CRF<span class="sc">$</span>PC1<span class="sc">-</span>ccd_df<span class="sc">$</span>x1[i])<span class="sc">^</span><span class="dv">2</span><span class="sc">+</span></span>
+<span id="cb425-5"><a href="SpatialResponseSurface.html#cb425-5" aria-hidden="true" tabindex="-1"></a>                     (EM_CRF<span class="sc">$</span>PC2<span class="sc">-</span>ccd_df<span class="sc">$</span>x2[i])<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb425-6"><a href="SpatialResponseSurface.html#cb425-6" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">quantile</span>(d2dpnt, <span class="at">p=</span><span class="fl">0.005</span>)</span>
+<span id="cb425-7"><a href="SpatialResponseSurface.html#cb425-7" aria-hidden="true" tabindex="-1"></a>    units_close <span class="ot">&lt;-</span> <span class="fu">which</span>(d2dpnt <span class="sc">&lt;</span> q)</span>
+<span id="cb425-8"><a href="SpatialResponseSurface.html#cb425-8" aria-hidden="true" tabindex="-1"></a>    candi <span class="ot">&lt;-</span> EM_CRF[units_close,<span class="fu">c</span>(<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;PC1&quot;</span>,<span class="st">&quot;PC2&quot;</span>)]</span>
+<span id="cb425-9"><a href="SpatialResponseSurface.html#cb425-9" aria-hidden="true" tabindex="-1"></a>    candi<span class="sc">$</span>dpnt <span class="ot">&lt;-</span> i</span>
+<span id="cb425-10"><a href="SpatialResponseSurface.html#cb425-10" aria-hidden="true" tabindex="-1"></a>    candi_all <span class="ot">&lt;-</span> <span class="fu">rbind</span>(candi_all,candi)</span>
+<span id="cb425-11"><a href="SpatialResponseSurface.html#cb425-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Figure <a href="SpatialResponseSurface.html#fig:candidatelocations">21.4</a> shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate points associated with the design points with coordinates (-1.51,-1.51), (0, -2.13), (1.51,-1.51) and (2.13,0) are all far inside the circle that passes through the design points. So for the optimised sample the value of one of the principal component scores will be less extreme than the ideal values according to the CCRSD design.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:candidatelocations"></span>
+<img src="SpatialSampling_files/figure-html/candidatelocations-1.png" alt="Clusters of units (red points) around the design points (triangles) of a central composite design (two covariates), serving as candidate sampling points." width="80%" />
+<p class="caption">
+Figure 21.4: Clusters of units (red points) around the design points (triangles) of a central composite design (two covariates), serving as candidate sampling points.
+</p>
+</div>
+<p>Figure <a href="SpatialResponseSurface.html#fig:candidatesingeospace">21.5</a> shows that in geographical space for most design points there are multiple clusters of candidate units. For instance, for design point 9 there are three clusters of candidate sampling units. Due to this there is scope to optimise the sample computationally.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:candidatesingeospace"></span>
+<img src="SpatialSampling_files/figure-html/candidatesingeospace-1.png" alt="Candidate sampling points plotted in geographical space on the first standardised principal component." width="80%" />
+<p class="caption">
+Figure 21.5: Candidate sampling points plotted in geographical space on the first standardised principal component.
+</p>
+</div>
+<p>As a first step an initial subsample from the candidate sampling units is selected by stratified simple random sampling, using the factor <code>dpnt</code> as strata. Function <code>strata</code> of package <strong>sampling</strong> is used for stratified random sampling <span class="citation">(<a href="#ref-Tille2016" role="doc-biblioref">Tillé and Matei 2016</a>)</span>.</p>
+<div class="sourceCode" id="cb426"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb426-1"><a href="SpatialResponseSurface.html#cb426-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sampling)</span>
+<span id="cb426-2"><a href="SpatialResponseSurface.html#cb426-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb426-3"><a href="SpatialResponseSurface.html#cb426-3" aria-hidden="true" tabindex="-1"></a>units_stsi <span class="ot">&lt;-</span> sampling<span class="sc">::</span><span class="fu">strata</span>(</span>
+<span id="cb426-4"><a href="SpatialResponseSurface.html#cb426-4" aria-hidden="true" tabindex="-1"></a>  candi_all, <span class="at">stratanames=</span><span class="st">&quot;dpnt&quot;</span>, <span class="at">size=</span><span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">9</span>))</span>
+<span id="cb426-5"><a href="SpatialResponseSurface.html#cb426-5" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> <span class="fu">getdata</span>(candi_all, units_stsi)</span>
+<span id="cb426-6"><a href="SpatialResponseSurface.html#cb426-6" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> mysample0[,<span class="fu">c</span>(<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;PC1&quot;</span>,<span class="st">&quot;PC2&quot;</span>,<span class="st">&quot;dpnt&quot;</span>)]</span></code></pre></div>
+<p>The locations of the nine sampling points are now optimised by minimising a criterion. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion.</p>
+<p>In the geometric criterion (as proposed by <span class="citation"><a href="#ref-lesch2005" role="doc-biblioref">Lesch</a> (<a href="#ref-lesch2005" role="doc-biblioref">2005</a>)</span>) for each sampling point the shortest distance to the other points is computed, and the logarithm of this shortest distance is computed. The minimisation criterion is the negative of the sample mean of the logarithm of shortest distance.</p>
+<p>The model-based minimisation criterion is the average correlation of the sampling points. This criterion requires as input the parameters of a residual correlogram (see Section <a href="Introkriging.html#IntroKED">22.2</a>). I assume an exponential correlogram without nugget, so that the only parameter to be chosen is the distance parameter <span class="math inline">\(\phi\)</span>. Three times <span class="math inline">\(\phi\)</span> is referred to as the effective range of the exponential covariance function. The correlation of two random variables at this distance is 0.05. A penalty term is added to these criteria, equal to the average distance, in the space spanned by the principal component scores, of the sampling points to the associated design points, multiplied by a weight. With weights <span class="math inline">\(&gt; 0\)</span> sampling points close to the design points are preferred over more distant points.</p>
+<p>A function is defined for computing the minimisation criterion. Given a chosen value for <span class="math inline">\(\phi\)</span>, the <span class="math inline">\(9 \times 9\)</span> distance matrix of the sampling points can be converted into a correlation matrix, using function <code>variogramLine</code> of package <strong>gstat</strong> <span class="citation">(<a href="#ref-peb04" role="doc-biblioref">Pebesma 2004</a>)</span>. Argument <code>weight</code> is an optional argument with default value 0.</p>
+<div class="sourceCode" id="cb427"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb427-1"><a href="SpatialResponseSurface.html#cb427-1" aria-hidden="true" tabindex="-1"></a>getCriterion <span class="ot">&lt;-</span> <span class="cf">function</span>(mysample, dpnt, <span class="at">weight=</span><span class="dv">0</span>, <span class="at">phi=</span><span class="cn">NULL</span>){</span>
+<span id="cb427-2"><a href="SpatialResponseSurface.html#cb427-2" aria-hidden="true" tabindex="-1"></a>  D2dpnt <span class="ot">&lt;-</span> <span class="fu">sqrt</span>((mysample<span class="sc">$</span>PC1<span class="sc">-</span>dpnt<span class="sc">$</span>x1)<span class="sc">^</span><span class="dv">2</span><span class="sc">+</span></span>
+<span id="cb427-3"><a href="SpatialResponseSurface.html#cb427-3" aria-hidden="true" tabindex="-1"></a>                   (mysample<span class="sc">$</span>PC2<span class="sc">-</span>dpnt<span class="sc">$</span>x2)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb427-4"><a href="SpatialResponseSurface.html#cb427-4" aria-hidden="true" tabindex="-1"></a>  D <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(mysample[,<span class="fu">c</span>(<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>)]))</span>
+<span id="cb427-5"><a href="SpatialResponseSurface.html#cb427-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(phi)) {</span>
+<span id="cb427-6"><a href="SpatialResponseSurface.html#cb427-6" aria-hidden="true" tabindex="-1"></a>    vgmodel <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">psill=</span><span class="dv">1</span>, <span class="at">range=</span>phi)</span>
+<span id="cb427-7"><a href="SpatialResponseSurface.html#cb427-7" aria-hidden="true" tabindex="-1"></a>    C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmodel, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb427-8"><a href="SpatialResponseSurface.html#cb427-8" aria-hidden="true" tabindex="-1"></a>    criterion_cur <span class="ot">&lt;-</span> <span class="fu">mean</span>(C)<span class="sc">+</span><span class="fu">mean</span>(D2dpnt)<span class="sc">*</span>weight</span>
+<span id="cb427-9"><a href="SpatialResponseSurface.html#cb427-9" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb427-10"><a href="SpatialResponseSurface.html#cb427-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">diag</span>(D) <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb427-11"><a href="SpatialResponseSurface.html#cb427-11" aria-hidden="true" tabindex="-1"></a>    logdmin <span class="ot">&lt;-</span> <span class="fu">apply</span>(D, <span class="at">MARGIN=</span><span class="dv">1</span>, <span class="at">FUN=</span>min, <span class="at">na.rm=</span><span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">log</span>(.)</span>
+<span id="cb427-12"><a href="SpatialResponseSurface.html#cb427-12" aria-hidden="true" tabindex="-1"></a>    criterion_cur <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="sc">-</span>logdmin)<span class="sc">+</span><span class="fu">mean</span>(D2dpnt)<span class="sc">*</span>weight</span>
+<span id="cb427-13"><a href="SpatialResponseSurface.html#cb427-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb427-14"><a href="SpatialResponseSurface.html#cb427-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The function <code>getCriterion</code> is used to compute the geometric criterion for the initial sample.</p>
+<div class="sourceCode" id="cb428"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb428-1"><a href="SpatialResponseSurface.html#cb428-1" aria-hidden="true" tabindex="-1"></a>criterion_geo <span class="ot">&lt;-</span> <span class="fu">getCriterion</span>(<span class="at">mysample=</span>mysample0, <span class="at">dpnt=</span>ccd_df)</span></code></pre></div>
+<p>The initial value of the geometric criterion is -5.185. The initial value for the model-based criterion is computed with an effective range of 50 m. Note that it does not make sense to make this range smaller than the size of the grid cells, which is 25 m in our case. For smaller ranges the correlation matrix is for any sample a matrix with zeroes. If the effective range is smaller than the smallest distance between two points in a cluster, the mean correlation is equal for all samples.</p>
+<div class="sourceCode" id="cb429"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb429-1"><a href="SpatialResponseSurface.html#cb429-1" aria-hidden="true" tabindex="-1"></a>phi <span class="ot">&lt;-</span> <span class="dv">50</span></span>
+<span id="cb429-2"><a href="SpatialResponseSurface.html#cb429-2" aria-hidden="true" tabindex="-1"></a>criterion_mb <span class="ot">&lt;-</span> <span class="fu">getCriterion</span>(</span>
+<span id="cb429-3"><a href="SpatialResponseSurface.html#cb429-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">mysample=</span>mysample0, <span class="at">dpnt=</span>ccd_df, <span class="at">phi=</span>phi)</span></code></pre></div>
+<p>The initial value of the model-based criterion is 0.118.</p>
+<p>The objective function defining the minimisation criterion is minimised with simulated annealing (<span class="citation"><a href="#ref-Kirkpatrick1983" role="doc-biblioref">Kirkpatrick, Gelatt, and Vecchi</a> (<a href="#ref-Kirkpatrick1983" role="doc-biblioref">1983</a>)</span>, <span class="citation"><a href="#ref-Aarts1987" role="doc-biblioref">Aarts and Korst</a> (<a href="#ref-Aarts1987" role="doc-biblioref">1987</a>)</span>). One sampling point is randomly selected, and replaced by another candidate sampling point from the same cluster. If the criterion of the new sample is smaller than that of the current sample, the new sample is accepted, if it is larger it is accepted with a probability that is a function of the change in the criterion (the larger the increase, the smaller the acceptance probability) and of an annealing parameter named the temperature (the higher the temperature, the larger the probability of accepting a new, poorer sample, given an increase of the criterion). See Section <a href="MBSamplePattern.html#SSA">24.1</a> for a more detailed introduction to simulated annealing. The annealing functions for spatial response surface sampling are defined in <strong>R</strong> script
+<a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R">AnnealingFunctions4SpatialResponseSurfaceSampling.R</a><a href="#fn22" class="footnote-ref" id="fnref22"><sup>22</sup></a>.</p>
+<div class="sourceCode" id="cb430"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb430-1"><a href="SpatialResponseSurface.html#cb430-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&#39;Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R&#39;</span>)</span>
+<span id="cb430-2"><a href="SpatialResponseSurface.html#cb430-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb430-3"><a href="SpatialResponseSurface.html#cb430-3" aria-hidden="true" tabindex="-1"></a>mySRSsample <span class="ot">&lt;-</span> <span class="fu">anneal</span>(</span>
+<span id="cb430-4"><a href="SpatialResponseSurface.html#cb430-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">mysample=</span>mysample0, <span class="at">candidates=</span>candi_all, <span class="at">dpnt=</span>ccd_df,</span>
+<span id="cb430-5"><a href="SpatialResponseSurface.html#cb430-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">phi=</span><span class="dv">50</span>, <span class="at">T_ini=</span><span class="dv">1</span>, <span class="at">coolingRate=</span><span class="fl">0.9</span>,</span>
+<span id="cb430-6"><a href="SpatialResponseSurface.html#cb430-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">maxPermuted=</span><span class="dv">25</span><span class="sc">*</span><span class="fu">nrow</span>(mysample0), <span class="at">maxNoChange=</span><span class="dv">20</span>,</span>
+<span id="cb430-7"><a href="SpatialResponseSurface.html#cb430-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Figure <a href="SpatialResponseSurface.html#fig:CCRSDinPCspace">21.6</a> shows the optimised CCRSD samples, obtained with the geometric and model-based criterion, plotted together with the design points. The two optimised samples are very similar.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:CCRSDinPCspace"></span>
+<img src="SpatialSampling_files/figure-html/CCRSDinPCspace-1.png" alt="Principal component scores of CCRSD sample (triangles), optimised with the geometric and model-based criterion. Dots: design points." width="100%" />
+<p class="caption">
+Figure 21.6: Principal component scores of CCRSD sample (triangles), optimised with the geometric and model-based criterion. Dots: design points.
+</p>
+</div>
+<p>Figure <a href="SpatialResponseSurface.html#fig:CCRSDSample">21.7</a> shows the two optimised CCRSD samples plotted in geographical space on the first standardised principal component scores.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:CCRSDSample"></span>
+<img src="SpatialSampling_files/figure-html/CCRSDSample-1.png" alt="CCRSD sample from the Cotton Research Farm in Uzbekistan, optmized with the geometric and model-based criterion." width="80%" />
+<p class="caption">
+Figure 21.7: CCRSD sample from the Cotton Research Farm in Uzbekistan, optmized with the geometric and model-based criterion.
+</p>
+</div>
+<div id="IncreaseSampleSize" class="section level2" number="21.1">
+<h2><span class="header-section-number">21.1</span> Increasing the sample size</h2>
+<p>Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on the strength of the spatial clustering of the candidate sampling units per design point. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster, so in this case this solution may work properly. I increased the number of candidate sampling units per design point (argument <code>p</code> in function <code>quantile</code> is now 0.01), so that there is a larger choice in the optimisation of the sample pattern.</p>
+<div class="sourceCode" id="cb431"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb431-1"><a href="SpatialResponseSurface.html#cb431-1" aria-hidden="true" tabindex="-1"></a>candi_all <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb431-2"><a href="SpatialResponseSurface.html#cb431-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(ccd_df)) {</span>
+<span id="cb431-3"><a href="SpatialResponseSurface.html#cb431-3" aria-hidden="true" tabindex="-1"></a>    d2dpnt <span class="ot">&lt;-</span> <span class="fu">sqrt</span>((EM_CRF<span class="sc">$</span>PC1<span class="sc">-</span>ccd_df<span class="sc">$</span>x1[i])<span class="sc">^</span><span class="dv">2</span><span class="sc">+</span></span>
+<span id="cb431-4"><a href="SpatialResponseSurface.html#cb431-4" aria-hidden="true" tabindex="-1"></a>                     (EM_CRF<span class="sc">$</span>PC2<span class="sc">-</span>ccd_df<span class="sc">$</span>x2[i])<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb431-5"><a href="SpatialResponseSurface.html#cb431-5" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">quantile</span>(d2dpnt, <span class="at">p=</span><span class="fl">0.01</span>)</span>
+<span id="cb431-6"><a href="SpatialResponseSurface.html#cb431-6" aria-hidden="true" tabindex="-1"></a>    units_close <span class="ot">&lt;-</span> <span class="fu">which</span>(d2dpnt <span class="sc">&lt;</span> q)</span>
+<span id="cb431-7"><a href="SpatialResponseSurface.html#cb431-7" aria-hidden="true" tabindex="-1"></a>    candi <span class="ot">&lt;-</span> EM_CRF[units_close,<span class="fu">c</span>(<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;PC1&quot;</span>,<span class="st">&quot;PC2&quot;</span>)]</span>
+<span id="cb431-8"><a href="SpatialResponseSurface.html#cb431-8" aria-hidden="true" tabindex="-1"></a>    candi<span class="sc">$</span>dpnt <span class="ot">&lt;-</span> i</span>
+<span id="cb431-9"><a href="SpatialResponseSurface.html#cb431-9" aria-hidden="true" tabindex="-1"></a>    candi_all <span class="ot">&lt;-</span> <span class="fu">rbind</span>(candi_all,candi)</span>
+<span id="cb431-10"><a href="SpatialResponseSurface.html#cb431-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>A stratified random subsample of two points per stratum is selected, which serves as an initial sample.</p>
+<div class="sourceCode" id="cb432"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb432-1"><a href="SpatialResponseSurface.html#cb432-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb432-2"><a href="SpatialResponseSurface.html#cb432-2" aria-hidden="true" tabindex="-1"></a>units_stsi <span class="ot">&lt;-</span> sampling<span class="sc">::</span><span class="fu">strata</span>(</span>
+<span id="cb432-3"><a href="SpatialResponseSurface.html#cb432-3" aria-hidden="true" tabindex="-1"></a>  candi_all, <span class="at">stratanames=</span><span class="st">&quot;dpnt&quot;</span>, <span class="at">size=</span><span class="fu">rep</span>(<span class="dv">2</span>,<span class="dv">9</span>))</span>
+<span id="cb432-4"><a href="SpatialResponseSurface.html#cb432-4" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> <span class="fu">getdata</span>(candi_all, units_stsi)</span>
+<span id="cb432-5"><a href="SpatialResponseSurface.html#cb432-5" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> mysample0[,<span class="fu">c</span>(<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;PC1&quot;</span>,<span class="st">&quot;PC2&quot;</span>,<span class="st">&quot;dpnt&quot;</span>)]</span></code></pre></div>
+<p>The <code>data.frame</code> with the design points must be doubled. Note that the order of the design points must be the equal to the order in the stratified subsample.</p>
+<div class="sourceCode" id="cb433"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb433-1"><a href="SpatialResponseSurface.html#cb433-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(ccd_df,<span class="at">dpnt=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>)</span>
+<span id="cb433-2"><a href="SpatialResponseSurface.html#cb433-2" aria-hidden="true" tabindex="-1"></a>dpnt <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tmp,tmp)</span>
+<span id="cb433-3"><a href="SpatialResponseSurface.html#cb433-3" aria-hidden="true" tabindex="-1"></a>ccd_df2 <span class="ot">&lt;-</span> dpnt[<span class="fu">order</span>(dpnt<span class="sc">$</span>dpnt),]</span></code></pre></div>
+<p>Figures <a href="SpatialResponseSurface.html#fig:CCRSDUzbekistan2n">21.8</a> and <a href="SpatialResponseSurface.html#fig:CCRSDinPCSpace2n">21.9</a> show the optimised CCRSD sample of eighteen points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 50 m, and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:CCRSDUzbekistan2n"></span>
+<img src="SpatialSampling_files/figure-html/CCRSDUzbekistan2n-1.png" alt="CCRSD sample with two points per design point, from the Cotton Research Farm in Uzbekistan." width="80%" />
+<p class="caption">
+Figure 21.8: CCRSD sample with two points per design point, from the Cotton Research Farm in Uzbekistan.
+</p>
+</div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:CCRSDinPCSpace2n"></span>
+<img src="SpatialSampling_files/figure-html/CCRSDinPCSpace2n-1.png" alt="CCRSD sample (triangles) with two points per design point (dots), optimised with model-based criterion." width="50%" />
+<p class="caption">
+Figure 21.9: CCRSD sample (triangles) with two points per design point (dots), optimised with model-based criterion.
+</p>
+</div>
+</div>
+<div id="stratified-spatial-response-surface-sampling" class="section level2" number="21.2">
+<h2><span class="header-section-number">21.2</span> Stratified spatial response surface sampling</h2>
+<p>The sample size can also be increased by stratified spatial response surface sampling. The strata are subareas of the study area. When the subsets of candidate sampling units for some design points are strongly spatially clustered, the final optimised sample obtained with the method of the previous section may also show strong spatial clustering. An alternative is then to split the study area into two or more subareas (strata), and to select from each stratum candidate sampling units. This guarantees that for each design point we have at least as many spatial clusters of candidate units as we have strata. The spatial strata are not used for fitting separate regression models; all data are used to fit one (second-order) polynomial regression model.</p>
+<p>Figure <a href="SpatialResponseSurface.html#fig:StrataCRF4CCRSD">21.10</a> shows two subareas used as strata in stratified response surface sampling of the Cotton Research Farm.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:StrataCRF4CCRSD"></span>
+<img src="SpatialSampling_files/figure-html/StrataCRF4CCRSD-1.png" alt="Two subareas of the Cotton Research Farm in Uzbekistan used as strata in stratified CCRSD sampling." width="80%" />
+<p class="caption">
+Figure 21.10: Two subareas of the Cotton Research Farm in Uzbekistan used as strata in stratified CCRSD sampling.
+</p>
+</div>
+<p>The candidate sampling units are selected in a double for-loop. The outer loop is over the strata, the inner loop over the design points. Note that the variable <code>dpnt</code> continues to increase by 1 after the inner-loop over the nine design points in subarea 1 is completed, so that the variable <code>dpnt</code> (used as a stratum in subsampling the sample of candidate sampling points) now has values <span class="math inline">\(1,2, \dots , 18\)</span>. Stratum 2 is larger than stratum 1. To select an equal number of candidate sampling points per design point in both strata (eight points), I adapted argument <code>p</code> of function `quantile’.</p>
+<div class="sourceCode" id="cb434"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb434-1"><a href="SpatialResponseSurface.html#cb434-1" aria-hidden="true" tabindex="-1"></a>candi_all <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb434-2"><a href="SpatialResponseSurface.html#cb434-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.0105</span>,<span class="fl">0.009</span>)</span>
+<span id="cb434-3"><a href="SpatialResponseSurface.html#cb434-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (h <span class="cf">in</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)) {</span>
+<span id="cb434-4"><a href="SpatialResponseSurface.html#cb434-4" aria-hidden="true" tabindex="-1"></a>  units <span class="ot">&lt;-</span> <span class="fu">which</span>(EM_CRF<span class="sc">$</span>subarea<span class="sc">==</span>h)</span>
+<span id="cb434-5"><a href="SpatialResponseSurface.html#cb434-5" aria-hidden="true" tabindex="-1"></a>  data_stratum <span class="ot">&lt;-</span> EM_CRF[units,]</span>
+<span id="cb434-6"><a href="SpatialResponseSurface.html#cb434-6" aria-hidden="true" tabindex="-1"></a>  candi_stratum <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb434-7"><a href="SpatialResponseSurface.html#cb434-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(ccd_df)) {</span>
+<span id="cb434-8"><a href="SpatialResponseSurface.html#cb434-8" aria-hidden="true" tabindex="-1"></a>      d2dpnt <span class="ot">&lt;-</span> <span class="fu">sqrt</span>((data_stratum<span class="sc">$</span>PC1<span class="sc">-</span>ccd_df<span class="sc">$</span>x1[i])<span class="sc">^</span><span class="dv">2</span><span class="sc">+</span></span>
+<span id="cb434-9"><a href="SpatialResponseSurface.html#cb434-9" aria-hidden="true" tabindex="-1"></a>                       (data_stratum<span class="sc">$</span>PC2<span class="sc">-</span>ccd_df<span class="sc">$</span>x2[i])<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb434-10"><a href="SpatialResponseSurface.html#cb434-10" aria-hidden="true" tabindex="-1"></a>      q <span class="ot">&lt;-</span> <span class="fu">quantile</span>(d2dpnt,<span class="at">p=</span>p[h])</span>
+<span id="cb434-11"><a href="SpatialResponseSurface.html#cb434-11" aria-hidden="true" tabindex="-1"></a>      units_close <span class="ot">&lt;-</span> <span class="fu">which</span>(d2dpnt <span class="sc">&lt;</span> q)</span>
+<span id="cb434-12"><a href="SpatialResponseSurface.html#cb434-12" aria-hidden="true" tabindex="-1"></a>      candi <span class="ot">&lt;-</span> data_stratum[units_close,</span>
+<span id="cb434-13"><a href="SpatialResponseSurface.html#cb434-13" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">c</span>(<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;PC1&quot;</span>,<span class="st">&quot;PC2&quot;</span>)]</span>
+<span id="cb434-14"><a href="SpatialResponseSurface.html#cb434-14" aria-hidden="true" tabindex="-1"></a>      candi<span class="sc">$</span>dpnt <span class="ot">&lt;-</span> i <span class="sc">+</span> (h<span class="dv">-1</span>)<span class="sc">*</span><span class="fu">nrow</span>(ccd_df)</span>
+<span id="cb434-15"><a href="SpatialResponseSurface.html#cb434-15" aria-hidden="true" tabindex="-1"></a>      candi_stratum <span class="ot">&lt;-</span> <span class="fu">rbind</span>(candi_stratum, candi)</span>
+<span id="cb434-16"><a href="SpatialResponseSurface.html#cb434-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb434-17"><a href="SpatialResponseSurface.html#cb434-17" aria-hidden="true" tabindex="-1"></a>  candi_all <span class="ot">&lt;-</span> <span class="fu">rbind</span>(candi_all, candi_stratum)</span>
+<span id="cb434-18"><a href="SpatialResponseSurface.html#cb434-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:unnamed-chunk-373"></span>
+<img src="SpatialSampling_files/figure-html/unnamed-chunk-373-1.png" alt="Candidate sampling points for stratified CCRSD sampling, plotted on first principal component (PC1)" width="80%" />
+<p class="caption">
+Figure 21.11: Candidate sampling points for stratified CCRSD sampling, plotted on first principal component (PC1)
+</p>
+</div>
+<p>As before, <code>dpnt</code> is used as a stratum identifier to subsample the candidate sampling units. Finally, the number of rows in the <code>data.frame</code> <code>ccd_df</code> with the design points is doubled.</p>
+<div class="sourceCode" id="cb435"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb435-1"><a href="SpatialResponseSurface.html#cb435-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb435-2"><a href="SpatialResponseSurface.html#cb435-2" aria-hidden="true" tabindex="-1"></a>units_stsi <span class="ot">&lt;-</span> sampling<span class="sc">::</span><span class="fu">strata</span>(</span>
+<span id="cb435-3"><a href="SpatialResponseSurface.html#cb435-3" aria-hidden="true" tabindex="-1"></a>  candi_all, <span class="at">stratanames=</span><span class="st">&quot;dpnt&quot;</span>, <span class="at">size=</span><span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">18</span>))</span>
+<span id="cb435-4"><a href="SpatialResponseSurface.html#cb435-4" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> <span class="fu">getdata</span>(candi_all, units_stsi)</span>
+<span id="cb435-5"><a href="SpatialResponseSurface.html#cb435-5" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> mysample0[,<span class="fu">c</span>(<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;PC1&quot;</span>,<span class="st">&quot;PC2&quot;</span>,<span class="st">&quot;dpnt&quot;</span>)]</span>
+<span id="cb435-6"><a href="SpatialResponseSurface.html#cb435-6" aria-hidden="true" tabindex="-1"></a>ccd_df2 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(ccd_df,ccd_df)</span></code></pre></div>
+<p>Figures <a href="SpatialResponseSurface.html#fig:StratifiedCCRSD">21.12</a> and <a href="SpatialResponseSurface.html#fig:StratifiedCCRSDinPCSpace">21.13</a> show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 50 m. The pattern in the principal component space is worse compared to the pattern in Figure <a href="SpatialResponseSurface.html#fig:CCRSDinPCSpace2n">21.9</a>. In stratum 1 the distance to the star point at the top and the upper left cube point is very large. In this stratum no population units are present that are close to these two design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance. However, the optimised sample obtained with <code>weight=5</code> shows much stronger spatial clustering. In addition, there are some pairs of points with a separation distance smaller than the effective range used in optimisation, so that violation of the independence assumption becomes more likely.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:StratifiedCCRSD"></span>
+<img src="SpatialSampling_files/figure-html/StratifiedCCRSD-1.png" alt="Stratified CCRSD samples from the Cotton Research Farm in Uzbekistan, optimised with model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for large average distance to design points." width="80%" />
+<p class="caption">
+Figure 21.12: Stratified CCRSD samples from the Cotton Research Farm in Uzbekistan, optimised with model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for large average distance to design points.
+</p>
+</div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:StratifiedCCRSDinPCSpace"></span>
+<img src="SpatialSampling_files/figure-html/StratifiedCCRSDinPCSpace-1.png" alt="Principal component scores of the stratified CCRSD sample, optimised with model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)." width="100%" />
+<p class="caption">
+Figure 21.13: Principal component scores of the stratified CCRSD sample, optimised with model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots).
+</p>
+</div>
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Aarts1987" class="csl-entry">
+Aarts, E. H. L., and J. H. M. Korst. 1987. <em><span class="nocase">Simulated Annealing and Boltzmann Machines</span></em>. Wiley.
+</div>
+<div id="ref-corwin2005" class="csl-entry">
+Corwin, D. L., and S. M. Lesch. 2005. <span>“Characterizing Soil Spatial Variability with Apparent Soil Electrical Conductivity: Part <span>II</span>. Case Study.”</span> <em>Computers and Electronics in Agriculture</em> 46 (1–3): 135–52.
+</div>
+<div id="ref-Corwin2010" class="csl-entry">
+Corwin, D. L., S. M. Lesch, E. Segal, T. H. Skaggs, and S. A. Bradford. 2010. <span>“Comparison of Sampling Strategies for Characterizing Spatial Variability with Apparent Soil Electrical Conductivity Directed Soil Sampling.”</span> <em>Journal of Environmental and Engineering Geophysics</em> 15 (3): 147–62. <a href="https://doi.org/10.2113/JEEG15.3.147">https://doi.org/10.2113/JEEG15.3.147</a>.
+</div>
+<div id="ref-Fitzgerald2010" class="csl-entry">
+Fitzgerald, G. J. 2010. <span>“Response Surface Sampling of Remotely Sensed Imagery for Precision Agriculture.”</span> In <em>Proximal Soil Sensing</em>, edited by R. A. Viscarra Rossel, A. B. McBratney, and B. Minasny, 121–29. Sydney, Australia: Springer Netherlands.
+</div>
+<div id="ref-fitzgerald2006" class="csl-entry">
+Fitzgerald, G. J., S. M. Lesch, E. M. Barnes, and W. E. Luckett. 2006. <span>“Directed Sampling Using Remote Sensing with a Response Surface Sampling Design for Site-Specific Agriculture.”</span> <em>Computers and Electronics in Agriculture</em> 53 (2): 98–112.
+</div>
+<div id="ref-Kirkpatrick1983" class="csl-entry">
+Kirkpatrick, S., C. D. Gelatt, and M. P. Vecchi. 1983. <span>“Optimisation by Simulated Annealing.”</span> <em>Science</em> 220 (4598): 671–80. https://doi.org/<a href="https://doi.org/10.1126/science.220.4598.671">https://doi.org/10.1126/science.220.4598.671</a>.
+</div>
+<div id="ref-Lenth2009" class="csl-entry">
+Lenth, R. V. 2009. <span>“<span class="nocase">Response-Surface Methods in <span>R</span>, Using <span class="nocase">rsm</span></span>.”</span> <em>Journal of Statistical Software</em> 32 (7): 1–17.
+</div>
+<div id="ref-lesch2005" class="csl-entry">
+Lesch, S. M. 2005. <span>“Sensor-Directed Response Surface Sampling Designs for Characterizing Spatial Variation in Soil Properties.”</span> <em>Computers and Electronics in Agriculture</em> 46 (1–3): 153–79.
+</div>
+<div id="ref-lesch95" class="csl-entry">
+Lesch, S. M., D. J. Strauss, and J. D. Rhoades. 1995. <span>“Spatial Prediction of Soil Salinity Using Electromagnetic Induction Techniques 2. <span>An</span> Efficient Spatial Sampling Algorithm Suitable for Multiple Linear Regression Model Identification and Estimation.”</span> <em>Water Resources Research</em> 31: 387–98.
+</div>
+<div id="ref-myers2002" class="csl-entry">
+Myers, R. H., D. C. Montgomery, and C. M. Anderson-Cook. 2002. <em><span class="nocase">Response Surface Methodology: Process and Product optimisation Using Designed Experiments. Third edition</span></em>. Wiley, New York.
+</div>
+<div id="ref-peb04" class="csl-entry">
+Pebesma, E. J. 2004. <span>“Multivariable Geostatistics in <span>S</span>: The Gstat Package.”</span> <em>Computers &amp; Geosciences</em> 30: 683–91.
+</div>
+<div id="ref-R2020" class="csl-entry">
+R Core Team. 2020. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-Tille2016" class="csl-entry">
+Tillé, Y., and A. Matei. 2016. <em><span class="nocase">sampling: Survey Sampling</span></em>. <a href="https://CRAN.R-project.org/package=sampling">https://CRAN.R-project.org/package=sampling</a>.
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="22">
+<li id="fn22"><p><a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R" class="uri">https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R</a><a href="SpatialResponseSurface.html#fnref22" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="cLHS.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="Introkriging.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/26-SpatialResponseSurface.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["SpatialSampling.pdf", "SpatialSampling.epub"],
+"search": {
+"engine": "lunr",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

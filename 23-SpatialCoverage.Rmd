@@ -1,0 +1,171 @@
+# Spatial coverage sampling {#SpatialCoverage}
+
+Local undersampling with regular grids can be avoided by relaxing the constraint that the sampling units are restricted to the nodes of a regular grid. This is what is done in *spatial coverage sampling*\index{Spatial coverage sampling} or, in case of a sample that is added to an existing sample, in *spatial infill sampling*\index{Spatial infill sampling}. Spatial coverage and infill samples cover the area or fill in the empty space as uniformly as possible. The sampling units are obtained by minimising a criterion that is defined in terms of the geographic distances between the nodes of a fine discretisation grid and the sampling units. @bru07c proposed to minimise the mean of the squared distances of the grid nodes to their nearest sampling unit (mean squared shortest distance, MSSD\index{Mean squared shortest distance}):
+
+\begin{equation}
+MSSD=\frac{1}{N}\sum_{k=1}^{N}\min_{j}\left(D_{kj}^{2}\right) \;,
+(\#eq:MSSD)
+\end{equation}
+
+where $N$ is the total number of nodes of the discretisation grid, and $D_{kj}$ is the distance between the $k$th grid node and the $j$th sampling point. This distance measure can be minimised by the $k$-means algorithm, which is a numerical, iterative procedure. Figure \@ref(fig:spatialcoveragesamplefromsquare) illustrates the selection of a spatial coverage sample of four points from a square. In this simple example the optimal sample is known, being the centers of four subsquares of equal size. A simple random sample of four points serves as an initial solution. Each raster cell is then assigned to the closest sampling point. This is the initial clustering. In the next iteration the centers of these initial clusters are computed. Next, the raster cells are re-assigned to the closest new centers. This continues until there is no change anymore. In this case only nine iterations are needed, where an iteration consists of computing the clusters by assigning the raster cells to the nearest center (sampling unit), followed by computing the centers of these clusters. Figure \@ref(fig:spatialcoveragesamplefromsquare) shows the first, second and ninth iteration. Note that the compact geostrata have equal size, but this is an artefact due to the shape of the area and the number of clusters. Geostrata of equal size are not guaranteed with the $k$-means algorithm described here.
+
+```{r spatialcoveragesamplefromsquare, echo=FALSE, fig.show='hold', out.width='47%', fig.cap="First, second and ninth iteration of k-means algorithm to select a spatial coverage sample of four points from a square. Iterations are rowwise from top to bottom. In the left column of subfigures clusters are computed by assigning the raster cells to the nearest center. In the right column of subfigures centers of the clusters are computed."}
+interval<-1/10
+x <- y <- seq(from=interval/2, to=1, by=interval)
+xy <- expand.grid(x=x, y=y)
+set.seed(34526)
+xsam <- runif(4)
+ysam <- runif(4)
+xysam<-data.frame(x=xsam, y=ysam)
+
+i <- 1
+repeat {
+#compute distance matrix
+  dx <- outer(X=xy$x, Y=xysam$x, FUN="-")
+  dy <- outer(X=xy$y, Y=xysam$y, FUN="-")
+  d <- sqrt(dx^2+dy^2)
+
+#cluster the gridnodes
+  xy$cluster <- apply(X=d, MARGIN=1, FUN=which.min)
+  xy$cluster <- factor(xy$cluster)
+if (i %in% c(1,2,8)) {
+  print(ggplot() +
+    geom_tile(data=xy, mapping=aes(x=x, y=y, fill=cluster, alpha=0.5), colour="black")+
+    scale_fill_viridis_d() +
+    geom_point(data=xysam, mapping=aes(x=x, y=y), shape=16, size=4)+
+    scale_x_continuous(name="", limits=c(0,1), breaks=c(0.2,0.4,0.6,0.8))+
+    scale_y_continuous(name="", limits=c(0,1), breaks=c(0.2,0.4,0.6,0.8))+
+    coord_fixed()+
+    theme(legend.position="none"))}
+
+#save sample of previous run to check convergence
+  xysamcur<-xysam
+
+#compute the centroids of clusters
+  xysam$x <- tapply(xy$x, INDEX=as.factor(xy$cluster), FUN=mean)
+  xysam$y <- tapply(xy$y, INDEX=as.factor(xy$cluster), FUN=mean)
+
+
+if (i %in% c(1,2,9)) {
+  print(ggplot() +
+    geom_tile(data=xy, mapping=aes(x=x, y=y, fill=cluster, alpha=0.5), colour="black")+
+    scale_fill_viridis_d() +
+    geom_point(data=xysam, mapping=aes(x=x, y=y), shape=16, size=4)+
+    scale_x_continuous(name="", limits=c(0,1), breaks=c(0.2,0.4,0.6,0.8))+
+    scale_y_continuous(name="", limits=c(0,1), breaks=c(0.2,0.4,0.6,0.8))+
+    coord_fixed()+
+    theme(legend.position="none"))}
+  
+#check convergence
+  dxsam <- (xysam$x-xysamcur$x)^2
+  dysam <- (xysam$y-xysamcur$y)^2
+  dxysam <- sqrt(dxsam+dysam)
+  sumdxysam <- sum(dxysam)
+  if (sumdxysam < 1E-12) {break}
+
+i <- i+1
+}
+```
+
+The same algorithm was used in Chapter \@ref(STSI) to construct compact geographical strata (shortly referred to as geostrata) for stratified random sampling. In stratified random sampling, one or more sampling units are selected randomly from each geostratum. However, for mapping purposes probability sampling is not required, so the random selection of a unit within each stratum is not needed. With random selection the coverage can be optimal. To select a sample with optimal spatial coverage for each compact geostratum the means of the spatial coordinates of the nodes of the discretisation grid of that geostratum are calculated. These centers are used as sampling points. This improves the spatial coverage compared to stratified *random* sampling.
+
+In probability sampling we may want to have strata of equal area (clusters with equal numbers of units), so that the sampling design becomes self-weighting. For mapping this constraint is not recommended as it may lead to samples with suboptimal spatial coverage. Note that in Figure \@ref(fig:spatialcoveragesamplefromsquare) the geostrata (clusters) are of equal area, but selecting four points from  a square is a very special case. In other cases the geostrata might well have unequal area. If geostrata of equal area are required for stratified simple random sampling, a different $k$-means algorithm must be used, using swops. 
+
+Spatial coverage samples can be computed with package **spcosa** [@walvoort2010], using functions `stratify` and `spsample`, see code chunk below. Note that function `spsample` without optional argument `n` selects non-randomly one point, the center, in each cluster. Figure \@ref(fig:spatcovVoorst) shows a spatial coverage sample of the same size as the regular grid in study area Voorst (Figure \@ref(fig:gridVoorst)). Note that the undersampled area in the center of the study area is now covered by a sampling point.
+
+```{r spatcovVoorst, out.width='100%', fig.cap="Spatial coverage sample from Voorst."}
+load("data/Voorst.RData")
+library(spcosa)
+n <- 115
+set.seed(314)
+gridded(grdVoorst) <- ~s1+s2
+mystrata<-stratify(grdVoorst, nStrata=n, equalArea=FALSE, nTry=10)
+mysample <- spsample(mystrata)
+plot(mystrata,mysample)
+mysample <- as(mysample, "data.frame")
+```
+
+If the clusters need not be of equal size, we may also use function `kmeans` of the **stats** package, using the spatial coordinates as clustering variables. This requires less computing time, especially with large data sets.
+
+```{r}
+grdVoorst <- as(grdVoorst, "data.frame")
+mystrata_kmeans <- kmeans(
+  grdVoorst[,c("s1","s2")], centers=n, iter.max=10000, nstart=10)
+mysample_kmeans <- mystrata_kmeans$centers %>% data.frame(.)
+```
+
+When function `kmeans` is used to compute the spatial coverage sample, there is no guarantee that the computed centers of the clusters used as sampling points are inside the study area. In Figure \@ref(fig:kmeanscenters) there are eight such centers.
+
+```{r kmeanscenters, echo=FALSE, out.width='100%', fig.cap="Centers of spatial clusters computed with kmeans."}
+gridded(grdVoorst) <- ~s1+s2
+coordinates(mysample_kmeans) <- ~s1+s2
+res <- over(mysample_kmeans, grdVoorst)
+inside <- as.factor(!is.na(res$z))
+levels(inside) <- (c("Outside","Inside"))
+grdVoorst <- as(grdVoorst, "data.frame")
+mysample_kmeans <- as(mysample_kmeans, "data.frame")
+ggplot() +
+  geom_raster(data=grdVoorst, mapping=aes(x=s1/1000, y=s2/1000), fill="grey")+
+  geom_point(data=mysample_kmeans, mapping=aes(x=s1/1000, y=s2/1000, shape=inside), size=1.5) +
+  scale_shape_manual(values = c(8, 3), name="") +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  theme_minimal()+
+  coord_fixed()
+```
+This problem can easily be solved by selecting points inside the study area closest to the centers that are outside the study area. Function `rdist` of package **fields** is used to compute a matrix with distances between the centers outside the study area and the nodes of the discretisation grid. Then function `apply` is used with argument `FUN=which.min` to compute the discretisation nodes closest to the centers outside the study area. This procedure is implemented in function `spsample` of package **spcosa** without argument `n`.
+
+```{r}
+library(fields)
+units_out <- which(inside==FALSE)
+D <- fields::rdist(x1=mysample_kmeans[units_out,],
+                   x2=grdVoorst[,c("s1","s2")])
+units_close <- apply(D, MARGIN=1, FUN=which.min)
+mysample_kmeans[units_out,] <- grdVoorst[units_close,c("s1","s2")]
+```
+
+#### Exercises {-}
+
+1. In forestry and vegetation surveys square or circular plots are often used as sampling units, for instance squares of 2 m $\times$ 2 m, or circles with a diameter of 2 m. To study the relation between the vegetation and the soil, soil samples must be collected from the vegetation plots. Suppose we want to collect four soil samples from a square plot. Where would you locate the four sampling points, so that they optimally cover the plot?  
+2. Suppose  we are also interested in the accuracy of the estimated plot means of the soil properties, not just the means. In that case the soil samples should not be bulked into a composite sample, but analyzed separately. How would you select the sampling points in this case?  
+3. For circular vegetation plots it is less clear where the sampling points with smallest MSSD are. Write an **R** script to compute a spatial coverage sample of five points from a circular plot discretised by the nodes of a fine square grid.  Use argument `equalArea=FALSE`. Check the size (number of grid nodes) of the strata.  Repeat this for six sampling points.  
+4. Consider the case of six strata. The strata are not of equal size. If the soil samples are bulked into a composite sample, the measurement on this single sample is a biased estimator of the plot mean. How can this bias be avoided?  
+
+## Spatial infill sampling {#SpatialInfill}
+
+If georeferenced data are available that can be used for mapping the study variable, but we need more data for mapping, it is attractive to account for these existing sampling units when selecting the additional sampling units. The aim now is to fill in the empty spaces, i.e. the parts of the study area not covered by the existing sampling units. This is referred to as *spatial infill sampling*. Existing sampling units can easily be accommodated in the $k$-means algorithm, by using them as fixed cluster centers\index{Fixed cluster center}.
+
+Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for three woredas (districts) in Ethiopia. A large set of legacy data on soil organic matter (SOM) in wt\% is available, but these data come from strongly spatially clustered units along roads. This is a nice example of a convenience sample. The legacy data are not ideal for mapping SOM throughout the three woredas. Clearly, it is desirable to collect additional data in the off-road parts of the woredas, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are specified as a *SpatialPoints* object to the `priorPoints` optional argument of **spcosa**. This argument fixes these points as cluster centers. A spatial infill sample of 100 points is selected, taking into account these fixed points.
+
+```{r spatialinfillEthiopia, fig.cap="Spatial infill sample in three woredas of Ethiopia."}
+load("data/CovariatesThreeWoredasEthiopia.RData")
+load("data/ThreeWoredasEthiopia.RData")
+gridded(grdEthiopia) <- ~s1+s2
+n <- 100
+ntot <- n+length(priordataEthiopia)
+priordata <- as(priordataEthiopia, "SpatialPoints")
+proj4string(priordata) <- NA_character_
+set.seed(314)
+mystrata <- stratify(
+  grdEthiopia, nStrata=ntot, priorPoints=priordata, nTry=10)
+mysample <- spsample(mystrata)
+plot(mystrata, mysample)
+```
+
+In the output object of `spsample` both the prior and the new sampling points are included. The new points can be obtained as follows:
+
+```{r}
+units <- which(mysample@isPriorPoint==FALSE)
+mysample <- as(mysample,"data.frame")
+mysample_new <- mysample[units,]
+```
+
+#### Exercises {-}
+5. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on soil organic matter (SOM, g/kg) in the topsoil at 60 sampling points are in the data.frame `data/Xuancheng_iPSMsample.csv`. To map SOM we want to measure SOM at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif`  as a discretisation of the study area. This file can be read with function `raster` of package **raster**. 
+    +  In the example of this section there are far too many raster cells that could be used as new points in spatial infill sampling. That many cells are not needed. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type=regular`.  
+    +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
+  
+```{r, echo=FALSE}
+rm(list=ls())
+```
+

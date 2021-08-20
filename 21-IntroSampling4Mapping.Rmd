@@ -1,0 +1,220 @@
+# (PART) Sampling for mapping {-}
+
+# Introduction to sampling for mapping {#IntroSamplingforMapping}
+
+## When is probability sampling not required?
+
+This second part of the book deals with sampling for mapping, i.e. for predicting the study variable at the nodes of a fine discretisation grid. For mapping a model-based sampling approach is the most natural option. When a statistical model, i.e. a model containing an error term modelled by a probability distribution, is used to map the study variable from the sample data, selection of the sampling units by probability sampling is not strictly needed anymore in order to make statistical statements about the population, i.e. statements with quantified uncertainty, see Section \@ref(DBvsMB). In a model-based approach we assume the model is correct, possibly after we have managed to verify the model assumptions. As a consequence there is room for optimising the sampling units, i.e. searching for those units that lead to the most accurate map in some operational sense related to map quality, for instance, the smallest squared prediction error averaged over all locations in the mapped study area, see Chapter \@ref(Validation). 
+
+As an illustration, consider the following statistical model to be used for mapping: a linear regression model between a single predictor and the target variable to be mapped:
+
+\begin{equation}
+Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
+(\#eq:simplelinearregressionmodel)
+\end{equation}
+
+with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $Cov(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the single covariate (predictor). 
+
+```{r, echo=FALSE}
+library(gstat)
+#define discretisation grid
+s1 <- s2 <- 1:20 - 0.5
+grid <- expand.grid(s1,s2)
+names(grid) <- c("s1","s2")
+N <- nrow(grid)
+
+#define residual  semivariogram for simulation
+vgmodel <- vgm(model="Exp", psill=25, range=2, nugget=0)
+
+#compute matrix with covariances between discretisation points
+dists1 <- outer(grid$s1, grid$s1, FUN="-")
+dists2 <- outer(grid$s2, grid$s2, FUN="-")
+dist <- sqrt(dists1^2 + dists2^2)
+
+#compute matrix with covariances
+C <- variogramLine(vgmodel, dist_vector=dist, covariance=TRUE)
+
+#now simulate values for grid by Cholesky decomposition
+Upper<-chol(C)
+
+#simulate random numbers from standard normal distribution
+set.seed(31415)
+G <- rnorm(n=nrow(grid),0,1)
+e <- crossprod(Upper,G)
+
+mu <- 15
+grid$x <- e + mu
+
+ord <- order(grid$x)
+grid <- grid[ord,]
+grid$x[1] <- 4
+grid$x[400] <- 32
+
+#compute values of study variable as linear combination of covariate + white noise
+sigma_resid <- 2
+set.seed(31415)
+grid$z <- 2 + 0.5*grid$x + rnorm(n=nrow(grid), mean=0, sd=sigma_resid)
+
+#save(grid,file="data/SimulatedSquare.RData")
+
+#select simple random sample without replacement
+n<-16
+idsrandom <- sample.int(400,n)
+randomsample <- grid[idsrandom,]
+
+model.random <- lm(z~x, data=randomsample)
+det.random <- det(vcov(model.random))
+
+#select optimal sample for simple linear regression model; grid cells are ordered on x
+optsample <- grid[c(1,2,3,4,5,6,7,8,393,394,395,396,397,398,399,400),]
+model.opt <- lm(z~x, data=optsample)
+det.opt <- det(vcov(model.opt))
+```
+
+```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample (a), and optimised sample for mapping with simple linear regression model (b), plotted in a map of the covariate."}
+mysamples <- rbind(randomsample,optsample)
+mysamples$design <- rep(c("Random","Optimal"),each=16)
+
+ggplot(data = grid) +
+  geom_raster(mapping = aes(x = s1, y = s2, fill = x)) +
+  geom_tile(data=mysamples, mapping = aes(x = s1, y = s2), colour="white", size=0.8, width=1, height=1, fill=NA)+
+  scale_fill_viridis_c(name="x") +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
+  facet_wrap(~ design, ncol=2, nrow=1) +
+  coord_fixed()
+```
+
+The optimised sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimised sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. The standard errors of both regression coefficients are considerably smaller for the optimised sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the estimated regression coefficients, equals `r as.character(round(det.random, 5))` for the simple random sample and `r as.character(round(det.opt, 6))` for the optimised sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ for at points where we have observations of the covariate $x$ only. So, we conclude that for mapping with a simple linear regression model, simple random sampling is not a good option if we are willing to rely on the assumption that there is a linear relation between $z$ and $x$. 
+
+```{r sebetas, echo=FALSE}
+tbl <- data.frame(x=c("SI","Optimised"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
+
+knitr::kable(
+  tbl, caption = 'Standard errors and determinant of variance-covariance matrix of estimated regression coefficients for simple random sample (SI) and optimised sample.',
+  col.names=c("Sampling design", "se intercept","se slope","Determinant"),
+  booktabs = TRUE
+) %>%
+kable_classic()
+```
+
+Of course, this simple example would only be applicable if we have evidence of the linear relation between covariate and target variable and independence of the residuals.
+
+## Sampling for simultaneously mapping and estimating means
+
+Although probability sampling is not strictly needed for mapping with a statistical model, in some situations, when feasible, it can still be advantageous to select a probability sample. If the aim of the survey is to map the study variable, as well as to estimate the mean or total for the entire study area or for several subareas, probability sampling can be a good option. Think, for instance, of sampling for the dual objectives of mapping and at the same time estimating soil carbon stocks. Although the statistical model used for mapping can also be used for model-based prediction of the total carbon stocks in the study area and subareas (Section \@ref(SmallAreaModelBased)), we may prefer to estimate these totals by design-based (Section \@ref(LargeDomainsDirectEstimator)) or model-assisted inference (\@ref(SmallDomainsModelAssisted)). The advantage of design-based and model-assisted estimates of these totals is their validity\index{Validity}. Validity means that an objective assessment of the uncertainty of the estimated  mean or total is warranted, and that the coverage of confidence intervals is (almost) correct, provided that the sample is large enough to assume an approximately normal distribution of the estimator and design-unbiasedness of the variance estimator, see Chapter \@ref(Approaches). In design-based estimation no model of the spatial variation is used. Discussions about how realistic modelling assumptions are, therefore are avoided.  In model-assisted estimation these discussions are irrelevant as well, because we do not rely on these assumptions. A poor model results in large variances of the estimated mean or total, and as a consequence a wide confidence interval, so that the coverage of the confidence interval is in agreement with the nominal coverage, see Section \@ref(ModelassistedvsModeldependent) for more details.
+
+The question then is: what is a suitable probability sampling design for both aims? First, I would recommend a sampling design with equal inclusion probabilities. This is because in standard model-based inference unequal inclusion probabilities are not accounted for, which may lead to systematic prediction errors when small or large values are overrepresented in the sample (Section \@ref(BiasandVariance)).
+
+In case we have subareas of which we would like to estimate the mean or total (domains of interest), using these subareas as strata in stratified random sampling makes sense, unless there are too many. This requires that of all population units (nodes of discretisation grid) we must know to which subarea it belongs, so that this information can be added to the sampling frame.
+
+A sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)), or sampling with the local pivotal method (Section \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. The alternative is to exploit these covariates explicitly in the sampling design, for instance through stratified random sampling from strata constructed by k-means, using the covariates and the spatial coordinates in  clustering the population units (Section \@ref(kmeansstratification)), or through balanced sampling with (geographical) spreading (Section \@ref(BalancedandSpreaded)).
+
+As an illustration I selected a single sample of 500 units from Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
+
+```{r}
+load("data/Amazonia_5km.RData")
+gridAmazonia$Biome <- as.factor(gridAmazonia$Biome)
+biomes <- c("Mangrove", "Forest.dry","Grassland","Forest.moist")
+levels(gridAmazonia$Biome) <- biomes
+N_h <-  table(gridAmazonia$Biome)
+n <- 500
+n_h <- round(n*N_h/sum(N_h))
+n_h[3] <- n_h[3]+1
+print(n_h)
+```
+
+Biome Forest.moist is by far the largest biome with a sample size of `r n_h[4]` points. The points from this biome are selected by balanced sampling with spreading in geographical space, using the covariate from remote sensing lnSWIR2 as a balancing variable.
+
+```{r}
+Biome_FM <- gridAmazonia[gridAmazonia$Biome=="Forest.moist",]
+library(BalancedSampling)
+Xbal <- cbind(rep(1, times=N_h[4]), Biome_FM$lnSWIR2)
+Xspread <- cbind(Biome_FM$x1, Biome_FM$x2)
+pi <- rep(n_h[4]/N_h[4], times=N_h[4])
+set.seed(314)
+units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=pi)
+mysample_FM <- Biome_FM[units,]
+```
+
+The sample sizes of the other three biomes are rather small, so I decided to keep it simple by selecting simple random samples from these three biomes.
+
+```{r}
+library(sampling)
+Biomes_NFM <- gridAmazonia[gridAmazonia$Biome!="Forest.moist",]
+ord <- unique(Biomes_NFM$Biome)
+units <- sampling::strata(
+  Biomes_NFM, stratanames="Biome", size=n_h[ord], method="srswor")
+mysample_NFM <- getdata(Biomes_NFM, units)
+```
+
+Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
+
+```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample with geographical spreading from biome moist tropical forest, balanced on lnSWIR, and stratified simple random sample from other three biomes,  Eastern Amazonia (Brazil)."}
+mysample <- rbind(mysample_FM[,c("x1","x2")], mysample_NFM[,c("x1","x2")])
+library(ggnewscale)
+
+ggplot() +
+  geom_tile(data=Biome_FM, mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
+  scale_fill_viridis_c(name="lnSWIR2") +
+  new_scale_fill() + 
+  scale_fill_discrete() +  
+  geom_tile(data=Biomes_NFM, mapping=aes(x=x1/1000, y=x2/1000, fill=Biome)) +
+  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=1)+
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()
+```
+
+### Balanced stratified random sampling
+
+A somewhat more advanced sampling  design is balanced sampling, using both the categorical variable biome and the continuous variable lnSWIR2 as balancing variables (Section \@ref(StratifiedsamplingasBalancedsampling)).
+
+```{r BalancedStratified}
+pi <- n_h/N_h
+stratalabels <- levels(gridAmazonia$Biome)
+lut <- data.frame(Biome=stratalabels, pi=as.numeric(pi))
+gridAmazonia <- merge(x=gridAmazonia, y=lut)
+Xbal <- model.matrix(~Biome-1, data=gridAmazonia)
+Xbal <- cbind(Xbal, gridAmazonia$lnSWIR2)
+Xspread <- cbind(gridAmazonia$x1, gridAmazonia$x2)
+set.seed(314)
+units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=gridAmazonia$pi)
+mysample <- gridAmazonia[units,]
+```
+
+```{r Sample4MappingandEstimationAmazonia2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced stratified sample with geograhical spreading, balanced on lnSWIR2 and stratum sample sizes (biomes used as strata),  Eastern Amazonia (Brazil)."}
+ggplot(data=gridAmazonia) +
+  geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
+  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000, shape=Biome), size=2)+
+  scale_shape_manual(values=c(0,1,2,3), name="") +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()
+```
+
+I think these are suitable samples, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest.moist this population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
+
+In this example I used one quantitative covariate, lnSWIR2, for balancing the sample. If we have a legacy sample that can be used to fit a linear or nonlinear model, for instance a random forest using multiple covariates and factors as predictors (Chapter \@ref(Modelassisted)), then this model can be used to predict the study variable for all populations units, so that we can use this variable with predictions of the study variable as a balancing variable, see Section \@ref(RandomForest).
+
+## Broad overview of sampling designs for mapping
+
+The non-probability sampling designs for mapping described in the following chapters can be grouped into three categories:  
+
+1. Geometric designs\index{Geometric design} (Chapters \@ref(Regulargrid), \@ref(SpatialCoverage) and \@ref(kmeans))    
+2. Adapted experimental designs\index{Adapted experimental design} (Chapters \@ref(cLHS) and \@ref(SpatialResponseSurface))  
+3. Model-based designs\index{Model-based design} (Chapters \@ref(MBgridspacing), \@ref(MBSamplePattern))
+
+Square and triangular grids are examples of geometric sampling designs; the sampling units show a regular, geometric spatial pattern. In other geometric sampling designs the spatial pattern is not perfectly regular. Yet these are classified as geometric sampling designs when the samples are obtained by minimising some geometric criterion, i.e. a criterion defined in terms of distances between the sampling units and the nodes of a fine prediction grid discretising the study area (Chapters \@ref(SpatialCoverage) and \@ref(kmeans)).
+
+In model-based sampling designs the samples are obtained by minimising a criterion that is defined in terms of variances of prediction errors. An example is the mean kriging variance criterion, i.e. the average of the kriging variances over all nodes of the prediction grid. Model-based sampling therefore requires prior knowledge of the model of spatial variation. Such a model must be specified and justified. Once this model is given the sample can be optimised. In Chapter \@ref(MBgridspacing) I show how a spatial model can be used to optimise the spacing of a square grid given a requirement on the accuracy of the map. The grid spacing determines the number of sampling units, so this optimisation boils down to determining the required sample size. In Chapter \@ref(MBSamplePattern) I show how a sample of a given size can be further optimised through optimisation of the spatial coordinates of the sampling units.
+
+In Chapter \@ref(GeneralIntro) I introduced the design-based and model-based approaches for sampling and statistical inference. Note that a model-based approach does not necessarily imply model-based sampling. The adjective model-based refers to the model-based inference, not to the selection of the units. In a model-based approach sampling units can be, but need not be, selected by model-based sampling. If they are, then both in selecting the units and in mapping a statistical model is used. In most cases the two models differ: once the  sample data are collected, these are used to update the postulated model used for sampling design. This updated model is then used for mapping.
+
+Besides geometric and model-based sampling designs for spatial survey a third category can be distinguished: sampling designs that are adaptations of experimental designs. An adaptation is necessary because in contrast to experiments, in observational studies one is not free to choose combinations of levels of different factors. For instance, when two covariates are strongly positively correlated, it may happen that there are no units with a relatively large value for one covariate and a relatively small value for the other covariate.
+
+In a full factorial design\index{Full factorial design} all combinations of factor levels are observed. For instance, suppose we have only two covariates, e.g., application rates for N and P in an agricultural experiment, and four levels for each covariate. To account for possible non-linear effects, a good option is to have multiple plots for all $4 \times 4$ combinations. This is referred to as a full factorial design. With $k$ factors and $l$ levels per factor the total number of observations is $l^k$. With numerous factors and/or numerous levels per factor this becomes unfeasible in practice. Alternative designs have been developed that need fewer observations but still provide detailed information about how the study variable responds to changes in the factor levels. Examples are Latin hypercube samples\index{Latin hypercube sample} and response surface designs\index{Response surface design}. The survey sampling analogues of these experimental designs are described in Chapters \@ref(cLHS) and \@ref(SpatialResponseSurface), respectively.  
+
+```{r, echo=FALSE}
+rm(list=ls())
+```

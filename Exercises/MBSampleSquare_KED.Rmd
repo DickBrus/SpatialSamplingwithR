@@ -1,0 +1,146 @@
+---
+title: "Exercise showing effect of nugget of residual semivariogram on optimised sample pattern for kriging with an external drift"
+author: "Dick Brus"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(sp)
+library(spsann)
+library(gstat)
+library(ggplot2)
+```
+
+## Discretisation grid
+
+Create a grid that discretises the population. Add column with covariate (which is equal to the s1 coordinate)
+
+```{r}
+s1 <- s2 <- 1:20 - 0.5
+grid <- expand.grid(s1,s2)
+names(grid) <- c("s1","s2")
+grid$x <- grid$s1
+```
+
+## Residual variogram
+
+We will optimise the coordinates of sampling points for KED in which Easting is used as a covariate. First define residual variogram.
+
+```{r}
+sill <- 2
+range <- 4
+nugget <- 0
+partial_sill <- sill - nugget
+vgm_gstat <- vgm(model="Exp", psill=partial_sill, range=range, nugget=nugget)
+```
+
+Specify the candidate sampling points. Note that not the grid points themselves are used as candidate points, but all points within the grid cells with the grid points at their centers. So the set of candidate points is not finite but infinite. In the optimisation a new candidate point is selected in two steps. First a grid cell is randomly selected. Secondly, a random point within the selected grid cell is selected.
+
+```{r}
+candi <- grid[,c(1,2)]
+names(candi) <- c("x","y")
+```
+
+## Optimising the sampling locations
+
+### The simulated annealing schedule
+
+Define the schedule for simulated annealing. Note that both the initial acceptance rate  and the initial temperature are set, which may seem weird as the acceptance rate is a function of the initial temperature: $P =e^{\frac{-\Delta f}{T}}$. The initial acceptance rate is used as a threshold value. If an initial temperature is chosen that leads to an acceptance rate smaller than the chosen value for the initial acceptance rate, then the optimisation stops. In this case a larger value for the initial temperature must be chosen.
+
+The chain.length is the number of iterations during which the temperature is kept constant. The value for chain.length is a multiplier, see ?scheduleSPSANN. So when for instance 50 locations are optimised, and a value 2 is chosen for chain.length, the chain length equals 50 x 2 = 100 iterations. 
+
+```{r}
+schedule <- scheduleSPSANN(initial.acceptance = 0.8,
+                           initial.temperature = 0.07,
+                           temperature.decrease=0.90,
+                           chains=500,
+                           chain.length=10,
+                           stopping=10,
+                           x.max=5, y.max=5,
+                           cellsize=1)
+```
+
+### Optimisation of sampling locations
+
+Now start the simulated annealing algorithm.
+
+```{r}
+set.seed(314)
+res <- optimMKV(
+  points = 16, 
+  candi = candi, 
+  covars=grid, 
+  vgm = vgm_gstat,
+  eqn = z ~ x, 
+  schedule = schedule,
+  track=TRUE)
+
+save(res,file="../results/MBSampleSquare_KED_NoNugget_16pnts.RData")
+```
+
+## Optimisation using semivariogram with nugget
+
+Repeat the optimisation with semivariogram with large nugget, and with pure nugget semivariogram. The sill parameter and the range parameter are kept constant.
+
+```{r}
+# Semivariogram with large nugget
+nugget <- 1.5
+partial_sill <- sill - nugget
+vgm_gstat <- vgm(model="Exp", psill=partial_sill, range=range, nugget=nugget)
+
+set.seed(314)
+res <- optimMKV(
+  points = 16, 
+  candi = candi, 
+  covars=grid, 
+  vgm = vgm_gstat,
+  eqn = z ~ x, 
+  schedule = schedule,
+  track=TRUE)
+
+save(res,file="../results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
+
+#Pure nugget semivariogram
+vgm_gstat <- vgm(model="Nug", psill=sill, range=0)
+set.seed(314)
+res <- optimMKV(
+  points = 16, 
+  candi = candi, 
+  covars=grid, 
+  vgm = vgm_gstat,
+  eqn = z ~ x, 
+  schedule = schedule,
+  track=TRUE)
+
+save(res,file="../results/MBSampleSquare_KED_PureNugget_16pnts.RData")
+```
+
+
+## Result
+
+Plot the optimised samples.
+
+```{r}
+load(file="results/MBSampleSquare_KED_NoNugget_16pnts.RData")
+sample_nonug<-res$points
+load(file="results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
+sample_largenug<-res$points
+load(file="results/MBSampleSquare_KED_PureNugget_16pnts.RData")
+sample_purenug<-res$points
+
+mysamples <- rbind(sample_nonug,sample_largenug,sample_purenug)
+mysamples$model <- rep(c("no","large","pure"), each=16)
+
+ggplot(data=mysamples) +
+  geom_tile(data=grid, mapping = aes(x = s1, y = s2, fill = s1)) +
+  geom_point(mapping = aes(x = x, y = y), colour="red", size=1.5) +
+  scale_fill_continuous(name="x",type= "viridis") +
+  geom_vline(xintercept=c(5,10,15)) +
+  geom_hline(yintercept=c(5,10,15)) +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
+  facet_wrap(~ model) +
+  coord_fixed()
+```
+

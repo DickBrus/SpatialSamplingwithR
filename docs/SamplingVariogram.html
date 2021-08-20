@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 25 Sampling for estimating the semivariogram | Spatial sampling with R</title>
+  <meta name="description" content="Chapter 25 Sampling for estimating the semivariogram | Spatial sampling with R" />
+  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 25 Sampling for estimating the semivariogram | Spatial sampling with R" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:image" content="/cover.png" />
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 25 Sampling for estimating the semivariogram | Spatial sampling with R" />
+  
+  
+  <meta name="twitter:image" content="/cover.png" />
+
+<meta name="author" content="Dick J. Brus" />
+
+
+<meta name="date" content="2021-08-20" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="MBSamplePattern.html"/>
+<link rel="next" href="Validation.html"/>
+<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Spatial sampling with R</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="GeneralIntro.html"><a href="GeneralIntro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#BasicConcepts"><i class="fa fa-check"></i><b>1.1</b> Basic sampling concepts</a>
+<ul>
+<li class="chapter" data-level="1.1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#PopulationParameters"><i class="fa fa-check"></i><b>1.1.1</b> Population parameters</a></li>
+<li class="chapter" data-level="1.1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#descriptive-statistics-versus-inference-about-a-population"><i class="fa fa-check"></i><b>1.1.2</b> Descriptive statistics versus inference about a population</a></li>
+<li class="chapter" data-level="1.1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#random-sampling-versus-probability-sampling"><i class="fa fa-check"></i><b>1.1.3</b> Random sampling versus probability sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#DBvsMB"><i class="fa fa-check"></i><b>1.2</b> Design-based versus model-based approach</a></li>
+<li class="chapter" data-level="1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Datasets"><i class="fa fa-check"></i><b>1.3</b> Populations used in sampling experiments</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Voorst"><i class="fa fa-check"></i><b>1.3.1</b> Soil organic matter in Voorst (Netherlands)</a></li>
+<li class="chapter" data-level="1.3.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Poppy"><i class="fa fa-check"></i><b>1.3.2</b> Poppy fields in Kandahar (Afghanistan)</a></li>
+<li class="chapter" data-level="1.3.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#aboveground-biomass-in-eastern-amazonia"><i class="fa fa-check"></i><b>1.3.3</b> Aboveground biomass in Eastern Amazonia</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>I Probability sampling for estimating (sub)population parameters</b></span></li>
+<li class="chapter" data-level="2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html"><i class="fa fa-check"></i><b>2</b> Introduction to probability sampling</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#HTestimator"><i class="fa fa-check"></i><b>2.1</b> Horvitz-Thompson estimator</a></li>
+<li class="chapter" data-level="2.2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#hansen-hurwitz-estimator"><i class="fa fa-check"></i><b>2.2</b> Hansen-Hurwitz estimator</a></li>
+<li class="chapter" data-level="2.3" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#using-models-in-design-based-approach"><i class="fa fa-check"></i><b>2.3</b> Using models in design-based approach</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="SI.html"><a href="SI.html"><i class="fa fa-check"></i><b>3</b> Simple random sampling</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="SI.html"><a href="SI.html#HTestimatorSI"><i class="fa fa-check"></i><b>3.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="SI.html"><a href="SI.html#PopProportion"><i class="fa fa-check"></i><b>3.1.1</b> Population proportion</a></li>
+<li class="chapter" data-level="3.1.2" data-path="SI.html"><a href="SI.html#CDF"><i class="fa fa-check"></i><b>3.1.2</b> Cumulative distribution function and quantiles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="SI.html"><a href="SI.html#VarMeanSI"><i class="fa fa-check"></i><b>3.2</b> Sampling variance of estimator of population mean, total and proportion</a></li>
+<li class="chapter" data-level="3.3" data-path="SI.html"><a href="SI.html#SIcircularplots"><i class="fa fa-check"></i><b>3.3</b> Simple random sampling of circular plots</a>
+<ul>
+<li class="chapter" data-level="3.3.1" data-path="SI.html"><a href="SI.html#sampling-from-a-finite-set-of-fixed-circles"><i class="fa fa-check"></i><b>3.3.1</b> Sampling from a finite set of fixed circles</a></li>
+<li class="chapter" data-level="3.3.2" data-path="SI.html"><a href="SI.html#sampling-from-an-infinite-set-of-floating-circles"><i class="fa fa-check"></i><b>3.3.2</b> Sampling from an infinite set of floating circles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="SI.html"><a href="SI.html#ConfidenceInterval"><i class="fa fa-check"></i><b>3.4</b> Confidence interval estimates</a>
+<ul>
+<li class="chapter" data-level="3.4.1" data-path="SI.html"><a href="SI.html#ConfidenceIntervalProportion"><i class="fa fa-check"></i><b>3.4.1</b> Confidence interval for proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="STSI.html"><a href="STSI.html"><i class="fa fa-check"></i><b>4</b> Stratified simple random sampling</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="STSI.html"><a href="STSI.html#EstimatorsSTSI"><i class="fa fa-check"></i><b>4.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="4.1.1" data-path="STSI.html"><a href="STSI.html#estimation-of-population-proportion-cumulative-distribution-function-and-quantiles"><i class="fa fa-check"></i><b>4.1.1</b> Estimation of population proportion, cumulative distribution function and quantiles</a></li>
+<li class="chapter" data-level="4.1.2" data-path="STSI.html"><a href="STSI.html#WhyStratify"><i class="fa fa-check"></i><b>4.1.2</b> Why should we stratify?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="STSI.html"><a href="STSI.html#CISTSI"><i class="fa fa-check"></i><b>4.2</b> Confidence interval estimate</a></li>
+<li class="chapter" data-level="4.3" data-path="STSI.html"><a href="STSI.html#STSIallocation"><i class="fa fa-check"></i><b>4.3</b> Allocation of sample size to strata</a></li>
+<li class="chapter" data-level="4.4" data-path="STSI.html"><a href="STSI.html#cumrootf"><i class="fa fa-check"></i><b>4.4</b> <em>Cum-root-f</em> stratification</a></li>
+<li class="chapter" data-level="4.5" data-path="STSI.html"><a href="STSI.html#kmeansstratification"><i class="fa fa-check"></i><b>4.5</b> Stratification with multiple covariates</a></li>
+<li class="chapter" data-level="4.6" data-path="STSI.html"><a href="STSI.html#geostrata"><i class="fa fa-check"></i><b>4.6</b> Geographical stratification</a></li>
+<li class="chapter" data-level="4.7" data-path="STSI.html"><a href="STSI.html#multi-way-stratification"><i class="fa fa-check"></i><b>4.7</b> Multi-way stratification</a></li>
+<li class="chapter" data-level="4.8" data-path="STSI.html"><a href="STSI.html#MultivariateStratification"><i class="fa fa-check"></i><b>4.8</b> Multivariate stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="SY.html"><a href="SY.html"><i class="fa fa-check"></i><b>5</b> Systematic random sampling</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="SY.html"><a href="SY.html#EstVarSY"><i class="fa fa-check"></i><b>5.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="SY.html"><a href="SY.html#approximating-the-sampling-variance-of-the-estimator-of-the-mean"><i class="fa fa-check"></i><b>5.1.1</b> Approximating the sampling variance of the estimator of the mean</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="Cl.html"><a href="Cl.html"><i class="fa fa-check"></i><b>6</b> Cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="Cl.html"><a href="Cl.html#clustersamplingestimators"><i class="fa fa-check"></i><b>6.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="6.2" data-path="Cl.html"><a href="Cl.html#clusters-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>6.2</b> Clusters selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="6.3" data-path="Cl.html"><a href="Cl.html#simple-random-sampling-of-clusters"><i class="fa fa-check"></i><b>6.3</b> Simple random sampling of clusters</a></li>
+<li class="chapter" data-level="6.4" data-path="Cl.html"><a href="Cl.html#StratifiedCl"><i class="fa fa-check"></i><b>6.4</b> Stratified cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="Twostage.html"><a href="Twostage.html"><i class="fa fa-check"></i><b>7</b> Two-stage cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="Twostage.html"><a href="Twostage.html#twostagesamplingestimators"><i class="fa fa-check"></i><b>7.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="7.2" data-path="Twostage.html"><a href="Twostage.html#primary-sampling-units-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>7.2</b> Primary sampling units selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="7.3" data-path="Twostage.html"><a href="Twostage.html#simple-random-sampling-of-primary-sampling-units"><i class="fa fa-check"></i><b>7.3</b> Simple random sampling of primary sampling units</a></li>
+<li class="chapter" data-level="7.4" data-path="Twostage.html"><a href="Twostage.html#StratifiedTwostage"><i class="fa fa-check"></i><b>7.4</b> Stratified two-stage cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="pps.html"><a href="pps.html"><i class="fa fa-check"></i><b>8</b> Sampling with probabilities proportional to size</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="pps.html"><a href="pps.html#ppswr"><i class="fa fa-check"></i><b>8.1</b> Probability-proportional-to-size sampling with replacement</a></li>
+<li class="chapter" data-level="8.2" data-path="pps.html"><a href="pps.html#ppswor"><i class="fa fa-check"></i><b>8.2</b> Probability-proportional-to-size sampling without replacement</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="pps.html"><a href="pps.html#Systematicpps"><i class="fa fa-check"></i><b>8.2.1</b> Systematic pps sampling without replacement</a></li>
+<li class="chapter" data-level="8.2.2" data-path="pps.html"><a href="pps.html#pivotalmethod"><i class="fa fa-check"></i><b>8.2.2</b> The pivotal method</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html"><i class="fa fa-check"></i><b>9</b> Balanced and well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Balanced"><i class="fa fa-check"></i><b>9.1</b> Balanced sampling</a>
+<ul>
+<li class="chapter" data-level="9.1.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#balanced-sample-versus-balanced-sampling-design"><i class="fa fa-check"></i><b>9.1.1</b> Balanced sample versus balanced sampling design</a></li>
+<li class="chapter" data-level="9.1.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#unequal-inclusion-probabilities"><i class="fa fa-check"></i><b>9.1.2</b> Unequal inclusion probabilities</a></li>
+<li class="chapter" data-level="9.1.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#StratifiedsamplingasBalancedsampling"><i class="fa fa-check"></i><b>9.1.3</b> Stratified random sampling</a></li>
+<li class="chapter" data-level="9.1.4" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Multiwaystratification"><i class="fa fa-check"></i><b>9.1.4</b> Multi-way stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Spreaded"><i class="fa fa-check"></i><b>9.2</b> Well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.2.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#LPM"><i class="fa fa-check"></i><b>9.2.1</b> Local pivotal method</a></li>
+<li class="chapter" data-level="9.2.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#GRTS"><i class="fa fa-check"></i><b>9.2.2</b> Generalised random-tessellation stratified sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#BalancedandSpreaded"><i class="fa fa-check"></i><b>9.3</b> Balanced sampling with spreading</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="Modelassisted.html"><a href="Modelassisted.html"><i class="fa fa-check"></i><b>10</b> Model-assisted estimation</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="Modelassisted.html"><a href="Modelassisted.html#GREG"><i class="fa fa-check"></i><b>10.1</b> Generalized regression estimator</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimator"><i class="fa fa-check"></i><b>10.1.1</b> Simple and multiple regression estimators</a></li>
+<li class="chapter" data-level="10.1.2" data-path="Modelassisted.html"><a href="Modelassisted.html#penalised-least-squares-estimation"><i class="fa fa-check"></i><b>10.1.2</b> Penalised least squares estimation</a></li>
+<li class="chapter" data-level="10.1.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimatorSTSI"><i class="fa fa-check"></i><b>10.1.3</b> Regression estimator with stratified simple random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimator"><i class="fa fa-check"></i><b>10.2</b> Ratio estimator</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimatorSTSI"><i class="fa fa-check"></i><b>10.2.1</b> Ratio estimators with stratified simple random sampling</a></li>
+<li class="chapter" data-level="10.2.2" data-path="Modelassisted.html"><a href="Modelassisted.html#PoststratifiedEstimator"><i class="fa fa-check"></i><b>10.2.2</b> Poststratified estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RandomForest"><i class="fa fa-check"></i><b>10.3</b> Model-assisted estimation using machine learning techniques</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-regression-tree"><i class="fa fa-check"></i><b>10.3.1</b> Predicting with a regression tree</a></li>
+<li class="chapter" data-level="10.3.2" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-random-forest"><i class="fa fa-check"></i><b>10.3.2</b> Predicting with a random forest</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="Modelassisted.html"><a href="Modelassisted.html#big-data-and-volunteer-data"><i class="fa fa-check"></i><b>10.4</b> Big data and volunteer data</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="Twophase.html"><a href="Twophase.html"><i class="fa fa-check"></i><b>11</b> Two-phase random sampling</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="Twophase.html"><a href="Twophase.html#TwophaseStratification"><i class="fa fa-check"></i><b>11.1</b> Two-phase random sampling for stratification</a></li>
+<li class="chapter" data-level="11.2" data-path="Twophase.html"><a href="Twophase.html#TwophaseRegression"><i class="fa fa-check"></i><b>11.2</b> Two-phase random sampling for regression</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html"><i class="fa fa-check"></i><b>12</b> Computing the required sample size</a>
+<ul>
+<li class="chapter" data-level="12.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#standard-error-of-estimator"><i class="fa fa-check"></i><b>12.1</b> Standard error of estimator</a></li>
+<li class="chapter" data-level="12.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#ReqSampleSizeLengthCI"><i class="fa fa-check"></i><b>12.2</b> Length of confidence interval</a>
+<ul>
+<li class="chapter" data-level="12.2.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#length-of-confidence-interval-for-a-proportion"><i class="fa fa-check"></i><b>12.2.1</b> Length of confidence interval for a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#statistical-testing-of-hypothesis"><i class="fa fa-check"></i><b>12.3</b> Statistical testing of hypothesis</a>
+<ul>
+<li class="chapter" data-level="12.3.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#sample-size-for-testing-a-proportion"><i class="fa fa-check"></i><b>12.3.1</b> Sample size for testing a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#DesignEffect"><i class="fa fa-check"></i><b>12.4</b> Accounting for design effect</a></li>
+<li class="chapter" data-level="12.5" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#BayesianSampleSize"><i class="fa fa-check"></i><b>12.5</b> Bayesian sample size determination</a>
+<ul>
+<li class="chapter" data-level="12.5.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#bayesian-criteria-for-sample-size-computation"><i class="fa fa-check"></i><b>12.5.1</b> Bayesian criteria for sample size computation</a></li>
+<li class="chapter" data-level="12.5.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#mixed-bayesian-likelihood-approach"><i class="fa fa-check"></i><b>12.5.2</b> Mixed Bayesian-likelihood approach</a></li>
+<li class="chapter" data-level="12.5.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-population-mean"><i class="fa fa-check"></i><b>12.5.3</b> Estimation of population mean</a></li>
+<li class="chapter" data-level="12.5.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-a-population-proportion"><i class="fa fa-check"></i><b>12.5.4</b> Estimation of a population proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html"><i class="fa fa-check"></i><b>13</b> Model-based optimisation of probability sampling designs</a>
+<ul>
+<li class="chapter" data-level="13.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#model-based-optimisation-of-sampling-design-type-and-sample-size"><i class="fa fa-check"></i><b>13.1</b> Model-based optimisation of sampling design type and sample size</a>
+<ul>
+<li class="chapter" data-level="13.1.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#AnalyticalApproach"><i class="fa fa-check"></i><b>13.1.1</b> Analytical approach</a></li>
+<li class="chapter" data-level="13.1.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#GeostatisticalSimulationApproach"><i class="fa fa-check"></i><b>13.1.2</b> Geostatistical simulation approach</a></li>
+<li class="chapter" data-level="13.1.3" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#MBpredSamplingVarBayes"><i class="fa fa-check"></i><b>13.1.3</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="13.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#Ospats"><i class="fa fa-check"></i><b>13.2</b> Model-based optimisation of spatial strata</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html"><i class="fa fa-check"></i><b>14</b> Sampling for estimating parameters of (small) domains</a>
+<ul>
+<li class="chapter" data-level="14.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#LargeDomainsDirectEstimator"><i class="fa fa-check"></i><b>14.1</b> Direct estimator for large domains</a></li>
+<li class="chapter" data-level="14.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallDomainsModelAssisted"><i class="fa fa-check"></i><b>14.2</b> Model-assisted estimators for small domains</a>
+<ul>
+<li class="chapter" data-level="14.2.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#RegressionestimatorSmallDomain"><i class="fa fa-check"></i><b>14.2.1</b> Regression estimator</a></li>
+<li class="chapter" data-level="14.2.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#synthetic-estimator"><i class="fa fa-check"></i><b>14.2.2</b> Synthetic estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="14.3" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallAreaModelBased"><i class="fa fa-check"></i><b>14.3</b> Model-based prediction</a>
+<ul>
+<li class="chapter" data-level="14.3.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#random-intercept-model"><i class="fa fa-check"></i><b>14.3.1</b> Random intercept model</a></li>
+<li class="chapter" data-level="14.3.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#geostatistical-model"><i class="fa fa-check"></i><b>14.3.2</b> Geostatistical model</a></li>
+</ul></li>
+<li class="chapter" data-level="14.4" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#supplemental-probability-sampling-of-small-domains"><i class="fa fa-check"></i><b>14.4</b> Supplemental probability sampling of small domains</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html"><i class="fa fa-check"></i><b>15</b> Repeated sample surveys for monitoring population parameters</a>
+<ul>
+<li class="chapter" data-level="15.1" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-designs"><i class="fa fa-check"></i><b>15.1</b> Space-time designs</a></li>
+<li class="chapter" data-level="15.2" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-population-parameters"><i class="fa fa-check"></i><b>15.2</b> Space-time population parameters</a></li>
+</ul></li>
+<li class="part"><span><b>II Sampling for mapping</b></span></li>
+<li class="chapter" data-level="16" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html"><i class="fa fa-check"></i><b>16</b> Introduction to sampling for mapping</a>
+<ul>
+<li class="chapter" data-level="16.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#when-is-probability-sampling-not-required"><i class="fa fa-check"></i><b>16.1</b> When is probability sampling not required?</a></li>
+<li class="chapter" data-level="16.2" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#sampling-for-simultaneously-mapping-and-estimating-means"><i class="fa fa-check"></i><b>16.2</b> Sampling for simultaneously mapping and estimating means</a>
+<ul>
+<li class="chapter" data-level="16.2.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#balanced-stratified-random-sampling"><i class="fa fa-check"></i><b>16.2.1</b> Balanced stratified random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="16.3" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#broad-overview-of-sampling-designs-for-mapping"><i class="fa fa-check"></i><b>16.3</b> Broad overview of sampling designs for mapping</a></li>
+</ul></li>
+<li class="chapter" data-level="17" data-path="Regulargrid.html"><a href="Regulargrid.html"><i class="fa fa-check"></i><b>17</b> Sampling on a regular grid</a></li>
+<li class="chapter" data-level="18" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html"><i class="fa fa-check"></i><b>18</b> Spatial coverage sampling</a>
+<ul>
+<li class="chapter" data-level="18.1" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html#SpatialInfill"><i class="fa fa-check"></i><b>18.1</b> Spatial infill sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="19" data-path="kmeans.html"><a href="kmeans.html"><i class="fa fa-check"></i><b>19</b> Covariate space coverage sampling</a>
+<ul>
+<li class="chapter" data-level="19.1" data-path="kmeans.html"><a href="kmeans.html#covariate-space-infill-sampling"><i class="fa fa-check"></i><b>19.1</b> Covariate space infill sampling</a></li>
+<li class="chapter" data-level="19.2" data-path="kmeans.html"><a href="kmeans.html#performance-of-covariate-space-coverage-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>19.2</b> Performance of covariate space coverage sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="20" data-path="cLHS.html"><a href="cLHS.html"><i class="fa fa-check"></i><b>20</b> Conditioned Latin hypercube sampling</a>
+<ul>
+<li class="chapter" data-level="20.1" data-path="cLHS.html"><a href="cLHS.html#cLHIS"><i class="fa fa-check"></i><b>20.1</b> Conditioned Latin hypercube infill sampling</a></li>
+<li class="chapter" data-level="20.2" data-path="cLHS.html"><a href="cLHS.html#performance-of-conditioned-latin-hypercube-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>20.2</b> Performance of conditioned Latin hypercube sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="21" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html"><i class="fa fa-check"></i><b>21</b> Spatial response surface sampling</a>
+<ul>
+<li class="chapter" data-level="21.1" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#IncreaseSampleSize"><i class="fa fa-check"></i><b>21.1</b> Increasing the sample size</a></li>
+<li class="chapter" data-level="21.2" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#stratified-spatial-response-surface-sampling"><i class="fa fa-check"></i><b>21.2</b> Stratified spatial response surface sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="22" data-path="Introkriging.html"><a href="Introkriging.html"><i class="fa fa-check"></i><b>22</b> Introduction to kriging</a>
+<ul>
+<li class="chapter" data-level="22.1" data-path="Introkriging.html"><a href="Introkriging.html#BlockKriging"><i class="fa fa-check"></i><b>22.1</b> Block-kriging</a></li>
+<li class="chapter" data-level="22.2" data-path="Introkriging.html"><a href="Introkriging.html#IntroKED"><i class="fa fa-check"></i><b>22.2</b> Kriging with an external drift</a></li>
+<li class="chapter" data-level="22.3" data-path="Introkriging.html"><a href="Introkriging.html#VariogramEstimation"><i class="fa fa-check"></i><b>22.3</b> Estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.3.1" data-path="Introkriging.html"><a href="Introkriging.html#MoM"><i class="fa fa-check"></i><b>22.3.1</b> Method-of-moments</a></li>
+<li class="chapter" data-level="22.3.2" data-path="Introkriging.html"><a href="Introkriging.html#MLestimationVariogram"><i class="fa fa-check"></i><b>22.3.2</b> Maximum likelihood</a></li>
+</ul></li>
+<li class="chapter" data-level="22.4" data-path="Introkriging.html"><a href="Introkriging.html#ResidualVariogram"><i class="fa fa-check"></i><b>22.4</b> Estimating the residual semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.4.1" data-path="Introkriging.html"><a href="Introkriging.html#IterativeMoM"><i class="fa fa-check"></i><b>22.4.1</b> Iterative method-of-moments</a></li>
+<li class="chapter" data-level="22.4.2" data-path="Introkriging.html"><a href="Introkriging.html#REML"><i class="fa fa-check"></i><b>22.4.2</b> Restricted maximum likelihood</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="23" data-path="MBgridspacing.html"><a href="MBgridspacing.html"><i class="fa fa-check"></i><b>23</b> Model-based optimisation of grid spacing</a>
+<ul>
+<li class="chapter" data-level="23.1" data-path="MBgridspacing.html"><a href="MBgridspacing.html#GridspacingOK"><i class="fa fa-check"></i><b>23.1</b> Optimal grid spacing for ordinary kriging</a></li>
+<li class="chapter" data-level="23.2" data-path="MBgridspacing.html"><a href="MBgridspacing.html#controlling-the-mean-or-a-quantile-of-the-ordinary-kriging-variance"><i class="fa fa-check"></i><b>23.2</b> Controlling the mean or a quantile of the ordinary kriging variance</a></li>
+<li class="chapter" data-level="23.3" data-path="MBgridspacing.html"><a href="MBgridspacing.html#optimal-grid-spacing-for-block-kriging"><i class="fa fa-check"></i><b>23.3</b> Optimal grid spacing for block-kriging</a></li>
+<li class="chapter" data-level="23.4" data-path="MBgridspacing.html"><a href="MBgridspacing.html#MBgridspacingKED"><i class="fa fa-check"></i><b>23.4</b> Optimal grid spacing for kriging with an external drift</a></li>
+<li class="chapter" data-level="23.5" data-path="MBgridspacing.html"><a href="MBgridspacing.html#BayesianGridSpacing"><i class="fa fa-check"></i><b>23.5</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="24" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html"><i class="fa fa-check"></i><b>24</b> Model-based optimisation of sampling pattern</a>
+<ul>
+<li class="chapter" data-level="24.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SSA"><i class="fa fa-check"></i><b>24.1</b> Spatial simulated annealing</a></li>
+<li class="chapter" data-level="24.2" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternOK"><i class="fa fa-check"></i><b>24.2</b> Optimising the sample pattern for ordinary kriging</a></li>
+<li class="chapter" data-level="24.3" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternKED"><i class="fa fa-check"></i><b>24.3</b> Optimising the sample pattern for kriging with an external drift</a></li>
+<li class="chapter" data-level="24.4" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling"><i class="fa fa-check"></i><b>24.4</b> Model-based infill sampling</a>
+<ul>
+<li class="chapter" data-level="24.4.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling-for-kriging-with-an-external-drift"><i class="fa fa-check"></i><b>24.4.1</b> Model-based infill sampling for kriging with an external drift</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="25" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html"><i class="fa fa-check"></i><b>25</b> Sampling for estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="25.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#nested-sampling"><i class="fa fa-check"></i><b>25.1</b> Nested sampling</a></li>
+<li class="chapter" data-level="25.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#independent-sampling-of-pairs-of-points"><i class="fa fa-check"></i><b>25.2</b> Independent sampling of pairs of points</a></li>
+<li class="chapter" data-level="25.3" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#samplingforvariogram"><i class="fa fa-check"></i><b>25.3</b> Model-based optimisation of sample pattern for semivariogram estimation</a>
+<ul>
+<li class="chapter" data-level="25.3.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#UncertainSemivariogramParameters"><i class="fa fa-check"></i><b>25.3.1</b> Uncertainty about semivariogram parameters</a></li>
+<li class="chapter" data-level="25.3.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#uncertainty-about-the-kriging-variance"><i class="fa fa-check"></i><b>25.3.2</b> Uncertainty about the kriging variance</a></li>
+</ul></li>
+<li class="chapter" data-level="25.4" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#SamplingEstimationandPrediction"><i class="fa fa-check"></i><b>25.4</b> Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction</a></li>
+<li class="chapter" data-level="25.5" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#a-practical-solution"><i class="fa fa-check"></i><b>25.5</b> A practical solution</a></li>
+</ul></li>
+<li class="chapter" data-level="26" data-path="Validation.html"><a href="Validation.html"><i class="fa fa-check"></i><b>26</b> Sampling for validation of maps</a>
+<ul>
+<li class="chapter" data-level="26.1" data-path="Validation.html"><a href="Validation.html#map-quality-indices"><i class="fa fa-check"></i><b>26.1</b> Map quality indices</a>
+<ul>
+<li class="chapter" data-level="26.1.1" data-path="Validation.html"><a href="Validation.html#estimation-of-map-quality-indices"><i class="fa fa-check"></i><b>26.1.1</b> Estimation of map quality indices</a></li>
+</ul></li>
+<li class="chapter" data-level="26.2" data-path="Validation.html"><a href="Validation.html#real-world-case-study"><i class="fa fa-check"></i><b>26.2</b> Real-world case study</a>
+<ul>
+<li class="chapter" data-level="26.2.1" data-path="Validation.html"><a href="Validation.html#estimation-of-the-population-mean-error-and-mean-squared-error"><i class="fa fa-check"></i><b>26.2.1</b> Estimation of the population Mean Error and Mean Squared Error</a></li>
+<li class="chapter" data-level="26.2.2" data-path="Validation.html"><a href="Validation.html#estimation-of-the-standard-error-of-the-estimated-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.2</b> Estimation of the standard error of the estimated population ME and MSE</a></li>
+<li class="chapter" data-level="26.2.3" data-path="Validation.html"><a href="Validation.html#estimation-of-mec"><i class="fa fa-check"></i><b>26.2.3</b> Estimation of MEC</a></li>
+<li class="chapter" data-level="26.2.4" data-path="Validation.html"><a href="Validation.html#statistical-testing-of-hypothesis-about-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.4</b> Statistical testing of hypothesis about population ME and MSE</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="27" data-path="Approaches.html"><a href="Approaches.html"><i class="fa fa-check"></i><b>27</b> Design-based, model-based and model-assisted approach for sampling and inference</a>
+<ul>
+<li class="chapter" data-level="27.1" data-path="Approaches.html"><a href="Approaches.html#two-sources-of-randomness"><i class="fa fa-check"></i><b>27.1</b> Two sources of randomness</a></li>
+<li class="chapter" data-level="27.2" data-path="Approaches.html"><a href="Approaches.html#identically-and-independently-distributed-i.i.d."><i class="fa fa-check"></i><b>27.2</b> “Identically and independently distributed” (i.i.d.)</a></li>
+<li class="chapter" data-level="27.3" data-path="Approaches.html"><a href="Approaches.html#BiasandVariance"><i class="fa fa-check"></i><b>27.3</b> Bias and variance</a></li>
+<li class="chapter" data-level="27.4" data-path="Approaches.html"><a href="Approaches.html#effectivesamplesize"><i class="fa fa-check"></i><b>27.4</b> Effective sample size</a></li>
+<li class="chapter" data-level="27.5" data-path="Approaches.html"><a href="Approaches.html#ExploitSpatialStructure"><i class="fa fa-check"></i><b>27.5</b> Exploiting spatial structure in design-based approach</a></li>
+<li class="chapter" data-level="27.6" data-path="Approaches.html"><a href="Approaches.html#ModelassistedvsModeldependent"><i class="fa fa-check"></i><b>27.6</b> Model-assisted versus model-dependent</a></li>
+</ul></li>
+<li class="appendix"><span><b>Appendices</b></span></li>
+<li class="chapter" data-level="A" data-path="Answers.html"><a href="Answers.html"><i class="fa fa-check"></i><b>A</b> Answers to exercises</a>
+<ul>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#introduction-to-probability-sampling"><i class="fa fa-check"></i>Introduction to probability sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#simple-random-sampling"><i class="fa fa-check"></i>Simple random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#stratified-random-sampling"><i class="fa fa-check"></i>Stratified random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#systematic-random-sampling"><i class="fa fa-check"></i>Systematic random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#cluster-random-sampling"><i class="fa fa-check"></i>Cluster random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-stage-random-sampling"><i class="fa fa-check"></i>Two-stage random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-with-probabilities-proportional-to-size"><i class="fa fa-check"></i>Sampling with probabilities proportional to size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#balanced-and-well-spread-sampling"><i class="fa fa-check"></i>Balanced and well-spread sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#ratio-and-regression-estimator"><i class="fa fa-check"></i>Ratio and regression estimator</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-phase-random-sampling"><i class="fa fa-check"></i>Two-phase random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#required-sample-size"><i class="fa fa-check"></i>Required sample size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-prediction-of-sampling-variance-of-estimated-mean"><i class="fa fa-check"></i>Model-based prediction of sampling variance of estimated mean</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#regular-grid-sampling"><i class="fa fa-check"></i>Regular grid sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#spatial-coverage-sampling"><i class="fa fa-check"></i>Spatial coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#covariate-space-coverage-sampling"><i class="fa fa-check"></i>Covariate space coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#conditioned-latin-hypercube-sampling"><i class="fa fa-check"></i>Conditioned Latin hypercube sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-the-grid-spacing"><i class="fa fa-check"></i>Model-based optimisation of the grid spacing</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-sampling-pattern"><i class="fa fa-check"></i>Model-based optimisation of sampling pattern</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-estimating-the-semivariogram"><i class="fa fa-check"></i>Sampling for estimating the semivariogram</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-validation"><i class="fa fa-check"></i>Sampling for validation</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Spatial sampling with R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="SamplingVariogram" class="section level1" number="25">
+<h1><span class="header-section-number">Chapter 25</span> Sampling for estimating the semivariogram</h1>
+<p>For model-based sampling as described in Chapters <a href="MBgridspacing.html#MBgridspacing">23</a> and <a href="MBSamplePattern.html#MBSamplePattern">24</a> we must specify the (residual) semivariogram. In case we do not have a reasonable prior estimate from a similar study, we may decide to collect first data with the specific aim of estimating the semivariogram. This semivariogram is subsequently used to design a model-based sample for mapping. This chapter is about how to design a reconnaissance sample survey for estimating the semivariogram.</p>
+<p>The first question is how many observations we need for this. <span class="citation"><a href="#ref-web92" role="doc-biblioref">Webster and Oliver</a> (<a href="#ref-web92" role="doc-biblioref">1992</a>)</span> gave as a rule of thumb that 150 to 225 points are needed to obtain a reliable semivariogram when estimated by the method-of-moments. <span class="citation"><a href="#ref-lar00b" role="doc-biblioref">Lark</a> (<a href="#ref-lar00b" role="doc-biblioref">2000</a>)</span> showed that with maximum likelihood (ML) estimation two-third to only half of the observations are needed to achieve equal precision of the estimated semivariogram parameters. Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described in this chapter, nested sampling and independent sampling of pairs of points. A following section is devoted to model-based optimisation of the sample pattern for semivariogram estimation. The final section is about how to design a single sample that can be used both for estimating the semivariogram and prediction (mapping).</p>
+<div id="nested-sampling" class="section level2" number="25.1">
+<h2><span class="header-section-number">25.1</span> Nested sampling</h2>
+<p>Nested sampling can be used to estimate the semivariance at several chosen separation distances, see <span class="citation"><a href="#ref-Oliver1986" role="doc-biblioref">Oliver and Webster</a> (<a href="#ref-Oliver1986" role="doc-biblioref">1986</a>)</span> and <span class="citation"><a href="#ref-Webster2006" role="doc-biblioref">Webster et al.</a> (<a href="#ref-Webster2006" role="doc-biblioref">2006</a>)</span>. We must first decide on these separation distances. We need point-pairs at various separations, and especially for small separations so that we get reliable estimates of this part of the semivariogram, which has a strong effect on the kriging weights. Usually separation distances are chosen in a geometric progression, for instance 2, 8, 32, 128 and 512 m. The multiplier, which is four in this example, should be not too small; as a rule of thumb use three or larger.</p>
+<p>There are two versions of nested sampling. In the first version, in the first stage several main stations are selected in a way that they cover the study area well, for instance by spatial coverage sampling. In the second stage each of the main stations is used as a starting point to select one point at a distance equal to the largest chosen separation distance (512 m in the example), in a random direction from the main station. This doubles the sample size. In the third stage all points selected in the previous stages (main stations of stage 1 plus the points of stage 2) are used as starting points to select one point at a distance equal to the second largest separation distance, and so on. All points selected in the various stages are included in the nested sample. The code chunk below shows the function for random selection of one point at distance <span class="math inline">\(h\)</span> from a starting point. Note the while loop which continues until a point is found that is inside the area. this is checked with function <code>over</code> of package <strong>sp</strong>.</p>
+<div class="sourceCode" id="cb476"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb476-1"><a href="SamplingVariogram.html#cb476-1" aria-hidden="true" tabindex="-1"></a>SelectPoint <span class="ot">&lt;-</span> <span class="cf">function</span>(start, h, area){</span>
+<span id="cb476-2"><a href="SamplingVariogram.html#cb476-2" aria-hidden="true" tabindex="-1"></a>  dxy <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="dv">2</span>)</span>
+<span id="cb476-3"><a href="SamplingVariogram.html#cb476-3" aria-hidden="true" tabindex="-1"></a>  inArea <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb476-4"><a href="SamplingVariogram.html#cb476-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(<span class="fu">is.na</span>(inArea)) {</span>
+<span id="cb476-5"><a href="SamplingVariogram.html#cb476-5" aria-hidden="true" tabindex="-1"></a>    angle <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">min=</span><span class="dv">0</span>, <span class="at">max=</span><span class="dv">2</span><span class="sc">*</span>pi)</span>
+<span id="cb476-6"><a href="SamplingVariogram.html#cb476-6" aria-hidden="true" tabindex="-1"></a>    dxy[<span class="dv">1</span>] <span class="ot">&lt;-</span> h<span class="sc">*</span><span class="fu">sin</span>(angle); dxy[<span class="dv">2</span>] <span class="ot">&lt;-</span> h<span class="sc">*</span><span class="fu">cos</span>(angle)</span>
+<span id="cb476-7"><a href="SamplingVariogram.html#cb476-7" aria-hidden="true" tabindex="-1"></a>    xypnt <span class="ot">&lt;-</span> start<span class="sc">+</span>dxy</span>
+<span id="cb476-8"><a href="SamplingVariogram.html#cb476-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coordinates</span>(xypnt) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb476-9"><a href="SamplingVariogram.html#cb476-9" aria-hidden="true" tabindex="-1"></a>    inArea <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">over</span>(<span class="at">x=</span>xypnt, <span class="at">y=</span>area))[<span class="dv">1</span>]</span>
+<span id="cb476-10"><a href="SamplingVariogram.html#cb476-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb476-11"><a href="SamplingVariogram.html#cb476-11" aria-hidden="true" tabindex="-1"></a>  xypoint <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(xypnt)</span>
+<span id="cb476-12"><a href="SamplingVariogram.html#cb476-12" aria-hidden="true" tabindex="-1"></a>  xypoint</span>
+<span id="cb476-13"><a href="SamplingVariogram.html#cb476-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The first stage of the second version is equal to that of the first version. In the second stage each of the main stations serves as a starting point for randomly selecting a <em>pair of points</em> with a separation distance equal to the largest chosen separation distance, with the main station halfway. In the third stage each of the substations is used to select in the same way a pair of points separated by the second largest chosen distance, and so on. Only the points selected in the final stage are used as sampling points. The <strong>R</strong> code below shows the function for random selection of two points separated by <span class="math inline">\(h\)</span> distance units, with a starting point halfway the pair of points. Note that the while loop continues until both points of a pair are inside the area.</p>
+<div class="sourceCode" id="cb477"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb477-1"><a href="SamplingVariogram.html#cb477-1" aria-hidden="true" tabindex="-1"></a>SelectPair <span class="ot">&lt;-</span> <span class="cf">function</span>(start, h, area){</span>
+<span id="cb477-2"><a href="SamplingVariogram.html#cb477-2" aria-hidden="true" tabindex="-1"></a>  dxy <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="dv">2</span>)</span>
+<span id="cb477-3"><a href="SamplingVariogram.html#cb477-3" aria-hidden="true" tabindex="-1"></a>  xypoints <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb477-4"><a href="SamplingVariogram.html#cb477-4" aria-hidden="true" tabindex="-1"></a>  inArea1 <span class="ot">&lt;-</span> inArea2 <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb477-5"><a href="SamplingVariogram.html#cb477-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(<span class="fu">is.na</span>(inArea1) <span class="sc">|</span> <span class="fu">is.na</span>(inArea2)) {</span>
+<span id="cb477-6"><a href="SamplingVariogram.html#cb477-6" aria-hidden="true" tabindex="-1"></a>    angle <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">min=</span><span class="dv">0</span>, <span class="at">max=</span><span class="dv">2</span><span class="sc">*</span>pi)</span>
+<span id="cb477-7"><a href="SamplingVariogram.html#cb477-7" aria-hidden="true" tabindex="-1"></a>    dxy[<span class="dv">1</span>] <span class="ot">&lt;-</span> h<span class="sc">*</span><span class="fu">sin</span>(angle)<span class="sc">/</span><span class="dv">2</span>; dxy[<span class="dv">2</span>] <span class="ot">&lt;-</span> h<span class="sc">*</span><span class="fu">cos</span>(angle)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb477-8"><a href="SamplingVariogram.html#cb477-8" aria-hidden="true" tabindex="-1"></a>    xypnt1 <span class="ot">&lt;-</span> start<span class="sc">+</span>dxy</span>
+<span id="cb477-9"><a href="SamplingVariogram.html#cb477-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coordinates</span>(xypnt1) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb477-10"><a href="SamplingVariogram.html#cb477-10" aria-hidden="true" tabindex="-1"></a>    inArea1 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">over</span>(<span class="at">x=</span>xypnt1, <span class="at">y=</span>area))[<span class="dv">1</span>]</span>
+<span id="cb477-11"><a href="SamplingVariogram.html#cb477-11" aria-hidden="true" tabindex="-1"></a>    dxy[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="sc">-</span>dxy[<span class="dv">1</span>]; dxy[<span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="sc">-</span>dxy[<span class="dv">2</span>]</span>
+<span id="cb477-12"><a href="SamplingVariogram.html#cb477-12" aria-hidden="true" tabindex="-1"></a>    xypnt2 <span class="ot">&lt;-</span> start<span class="sc">+</span>dxy</span>
+<span id="cb477-13"><a href="SamplingVariogram.html#cb477-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coordinates</span>(xypnt2) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb477-14"><a href="SamplingVariogram.html#cb477-14" aria-hidden="true" tabindex="-1"></a>    inArea2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">over</span>(<span class="at">x=</span>xypnt2, <span class="at">y=</span>area))[<span class="dv">1</span>]</span>
+<span id="cb477-15"><a href="SamplingVariogram.html#cb477-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb477-16"><a href="SamplingVariogram.html#cb477-16" aria-hidden="true" tabindex="-1"></a>  xypoints <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">as.data.frame</span>(xypnt1), <span class="fu">as.data.frame</span>(xypnt2))</span>
+<span id="cb477-17"><a href="SamplingVariogram.html#cb477-17" aria-hidden="true" tabindex="-1"></a>  xypoints</span>
+<span id="cb477-18"><a href="SamplingVariogram.html#cb477-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The <strong>R</strong> code below shows the selection of a nested sample from the Hunter Valley using both versions. Only one main station is selected. In total sixteen points are selected in four stages. The separation distances are 2000, 1000, 500 and 250 m. Note that the separation distances are in descending order. The largest separation distance should not be chosen too large, because then, when the main station is somewhere in the middle of the study area, it may happen that using the first version no pair can be found with that separation distance. A similar problem may occur with the second version when in subsequent stages a station is selected near the border of the study area. A copy of the data frame <code>grd</code> is made because both the original data frame is needed as well as a gridded version of this data frame.</p>
+<div class="sourceCode" id="cb478"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb478-1"><a href="SamplingVariogram.html#cb478-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
+<span id="cb478-2"><a href="SamplingVariogram.html#cb478-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file=</span><span class="st">&quot;data/HunterValley.RData&quot;</span>)</span>
+<span id="cb478-3"><a href="SamplingVariogram.html#cb478-3" aria-hidden="true" tabindex="-1"></a>grd <span class="ot">&lt;-</span> grdHunterValley</span>
+<span id="cb478-4"><a href="SamplingVariogram.html#cb478-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(grd)[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;s1&quot;</span>,<span class="st">&quot;s2&quot;</span>)</span>
+<span id="cb478-5"><a href="SamplingVariogram.html#cb478-5" aria-hidden="true" tabindex="-1"></a><span class="co">#make a copy of grd (class of grd is changed)</span></span>
+<span id="cb478-6"><a href="SamplingVariogram.html#cb478-6" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> grd</span>
+<span id="cb478-7"><a href="SamplingVariogram.html#cb478-7" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(grd) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb478-8"><a href="SamplingVariogram.html#cb478-8" aria-hidden="true" tabindex="-1"></a>lags <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2000</span>,<span class="dv">1000</span>,<span class="dv">500</span>,<span class="dv">250</span>)</span></code></pre></div>
+<p>The next code chunk is an implementation of the first version of nested sampling.</p>
+<div class="sourceCode" id="cb479"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb479-1"><a href="SamplingVariogram.html#cb479-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">614</span>)</span>
+<span id="cb479-2"><a href="SamplingVariogram.html#cb479-2" aria-hidden="true" tabindex="-1"></a>id <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(grid),<span class="dv">1</span>)</span>
+<span id="cb479-3"><a href="SamplingVariogram.html#cb479-3" aria-hidden="true" tabindex="-1"></a>mainstation <span class="ot">&lt;-</span> grid[id,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)]</span>
+<span id="cb479-4"><a href="SamplingVariogram.html#cb479-4" aria-hidden="true" tabindex="-1"></a>newpnt <span class="ot">&lt;-</span> <span class="fu">SelectPoint</span>(<span class="at">start=</span>mainstation, <span class="at">h=</span>lags[<span class="dv">1</span>], <span class="at">area=</span>grd)</span>
+<span id="cb479-5"><a href="SamplingVariogram.html#cb479-5" aria-hidden="true" tabindex="-1"></a>mynestedsample <span class="ot">&lt;-</span> <span class="fu">rbind</span>(mainstation, newpnt)</span>
+<span id="cb479-6"><a href="SamplingVariogram.html#cb479-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">length</span>(lags)) {</span>
+<span id="cb479-7"><a href="SamplingVariogram.html#cb479-7" aria-hidden="true" tabindex="-1"></a>  newpnts <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb479-8"><a href="SamplingVariogram.html#cb479-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(mynestedsample)) {</span>
+<span id="cb479-9"><a href="SamplingVariogram.html#cb479-9" aria-hidden="true" tabindex="-1"></a>    pnts <span class="ot">&lt;-</span> <span class="fu">SelectPoint</span>(</span>
+<span id="cb479-10"><a href="SamplingVariogram.html#cb479-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">start=</span>mynestedsample[i,], <span class="at">h=</span>lags[j], <span class="at">area=</span>grd)</span>
+<span id="cb479-11"><a href="SamplingVariogram.html#cb479-11" aria-hidden="true" tabindex="-1"></a>    newpnts <span class="ot">&lt;-</span> <span class="fu">rbind</span>(newpnts, pnts)</span>
+<span id="cb479-12"><a href="SamplingVariogram.html#cb479-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb479-13"><a href="SamplingVariogram.html#cb479-13" aria-hidden="true" tabindex="-1"></a>  mynestedsample <span class="ot">&lt;-</span> <span class="fu">rbind</span>(mynestedsample, newpnts)</span>
+<span id="cb479-14"><a href="SamplingVariogram.html#cb479-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>R</strong> code for the second version is in the next code chunk.</p>
+<div class="sourceCode" id="cb480"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb480-1"><a href="SamplingVariogram.html#cb480-1" aria-hidden="true" tabindex="-1"></a>id <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(grid), <span class="dv">1</span>)</span>
+<span id="cb480-2"><a href="SamplingVariogram.html#cb480-2" aria-hidden="true" tabindex="-1"></a>mainstation <span class="ot">&lt;-</span> grid[id,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)] </span>
+<span id="cb480-3"><a href="SamplingVariogram.html#cb480-3" aria-hidden="true" tabindex="-1"></a>pnt <span class="ot">&lt;-</span> <span class="fu">SelectPoint</span>(<span class="at">start=</span>mainstation, <span class="at">h=</span>lags[<span class="dv">1</span>], <span class="at">area=</span>grd)</span>
+<span id="cb480-4"><a href="SamplingVariogram.html#cb480-4" aria-hidden="true" tabindex="-1"></a>stations <span class="ot">&lt;-</span> <span class="fu">rbind</span>(mainstation, pnt)</span>
+<span id="cb480-5"><a href="SamplingVariogram.html#cb480-5" aria-hidden="true" tabindex="-1"></a>allstations <span class="ot">&lt;-</span>  <span class="fu">rbind</span>(mainstation, pnt)</span>
+<span id="cb480-6"><a href="SamplingVariogram.html#cb480-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">length</span>(lags)) {</span>
+<span id="cb480-7"><a href="SamplingVariogram.html#cb480-7" aria-hidden="true" tabindex="-1"></a>  newstations <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb480-8"><a href="SamplingVariogram.html#cb480-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(stations)) {</span>
+<span id="cb480-9"><a href="SamplingVariogram.html#cb480-9" aria-hidden="true" tabindex="-1"></a>    pnts <span class="ot">&lt;-</span> <span class="fu">SelectPair</span>(<span class="at">start=</span>stations[i,], <span class="at">h=</span>lags[j], <span class="at">area=</span>grd)</span>
+<span id="cb480-10"><a href="SamplingVariogram.html#cb480-10" aria-hidden="true" tabindex="-1"></a>    newstations <span class="ot">&lt;-</span> <span class="fu">rbind</span>(newstations, pnts)</span>
+<span id="cb480-11"><a href="SamplingVariogram.html#cb480-11" aria-hidden="true" tabindex="-1"></a>    allstations <span class="ot">&lt;-</span> <span class="fu">rbind</span>(allstations, pnts)</span>
+<span id="cb480-12"><a href="SamplingVariogram.html#cb480-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb480-13"><a href="SamplingVariogram.html#cb480-13" aria-hidden="true" tabindex="-1"></a>  stations <span class="ot">&lt;-</span> newstations</span>
+<span id="cb480-14"><a href="SamplingVariogram.html#cb480-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb480-15"><a href="SamplingVariogram.html#cb480-15" aria-hidden="true" tabindex="-1"></a>mynestedsample_2 <span class="ot">&lt;-</span> stations</span></code></pre></div>
+<p>Figure <a href="SamplingVariogram.html#fig:BalancedNestedSample">25.1</a> shows the two selected nested samples. For the sample selected with the second version also the stations that served as starting point for the selection of the pairs of points are plotted.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:BalancedNestedSample"></span>
+<img src="SpatialSampling_files/figure-html/BalancedNestedSample-1.png" alt="Balanced nested samples from Hunter Valley, selected with the two versions. In the subfigure of the second version the selected sampling points (symbol x) are plotted together with the selected stations (halfway the two points of a pair)." width="100%" />
+<p class="caption">
+Figure 25.1: Balanced nested samples from Hunter Valley, selected with the two versions. In the subfigure of the second version the selected sampling points (symbol x) are plotted together with the selected stations (halfway the two points of a pair).
+</p>
+</div>
+<p>The sample of Figure <a href="SamplingVariogram.html#fig:BalancedNestedSample">25.1</a> is an example of a <em>balanced</em> nested sample: in all stages all stations selected in the previous stage are used to select a pair of points. If in the first version of nested sampling all points selected in all previous stages are used to select a new point, then this also results in a balanced nested sample. The number of pairs of points separated by a given distance doubles with every stage. As a consequence, the estimated semivariances for the smallest separation distance are much more precise than for the largest distance. We are most uncertain about the estimated semivariances for the largest separation distances. If in the first stage only one pair of points is selected separated by the largest distance, then we have only one degree of freedom for estimating the variance component associated with this stage. It is more efficient to select more than one main station, say about ten, and to select fewer points in the final stages. For instance, with the second version we may decide to select a pair of points at only half the number of stations selected in the one-but-last stage. The nested sample then becomes unbalanced.</p>
+<p>The model for nested sampling with four stages is a hierarchical ANOVA model with random effects:</p>
+<p><span class="math display" id="eq:ANOVAmodelnested">\[\begin{equation}
+Z_{ijk}=\mu+A_i+B_{ij}+C_{ijk}+\epsilon_{ijkl} \;.
+\tag{25.1}
+\end{equation}\]</span></p>
+<p>with <span class="math inline">\(\mu\)</span> the mean, <span class="math inline">\(A_i\)</span> the effect of the <span class="math inline">\(i\)</span>th first stage station, <span class="math inline">\(B_{ij}\)</span> the effect of the <span class="math inline">\(j\)</span>th second stage station within the <span class="math inline">\(i\)</span>th first stage station, and so on. <span class="math inline">\(A_i\)</span>, <span class="math inline">\(B_{ij}\)</span>, <span class="math inline">\(C_{ijk}\)</span> and <span class="math inline">\(\epsilon_{ijkl}\)</span> are random quantities (random effects), all with zero mean, and variances <span class="math inline">\(\sigma^2_1\)</span>, <span class="math inline">\(\sigma^2_2\)</span>, <span class="math inline">\(\sigma^2_3\)</span> and <span class="math inline">\(\sigma^2_4\)</span> respectively.</p>
+<p>For balanced designs the variance components can be estimated by the method-of-moments from a hierarchical ANOVA. The first step is to assign factors to the sampling points that indicate the grouping of the sampling points in the various stages. The number of factors needed is the number of stages minus one. All factors have two levels. Figure <a href="SamplingVariogram.html#fig:FactorLevelsBalancedNestedSample">25.2</a> shows the levels of the three factors. The levels of the first factor show the strongest spatial clustering, those of the second factor the one-but strongest, and so on.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:FactorLevelsBalancedNestedSample"></span>
+<img src="SpatialSampling_files/figure-html/FactorLevelsBalancedNestedSample-1.png" alt="The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the first version." width="100%" />
+<p class="caption">
+Figure 25.2: The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the first version.
+</p>
+</div>
+<p>The <strong>R</strong> code below shows the construction of the three factors for the second version of nested sampling.</p>
+<div class="sourceCode" id="cb481"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb481-1"><a href="SamplingVariogram.html#cb481-1" aria-hidden="true" tabindex="-1"></a>mynestedsample_2<span class="sc">$</span>factor1 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">each=</span><span class="dv">8</span>)</span>
+<span id="cb481-2"><a href="SamplingVariogram.html#cb481-2" aria-hidden="true" tabindex="-1"></a>mynestedsample_2<span class="sc">$</span>factor2 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">each=</span><span class="dv">4</span>)</span>
+<span id="cb481-3"><a href="SamplingVariogram.html#cb481-3" aria-hidden="true" tabindex="-1"></a>mynestedsample_2<span class="sc">$</span>factor3 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">each=</span><span class="dv">2</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:FactorLevelsBalancedNestedSample2"></span>
+<img src="SpatialSampling_files/figure-html/FactorLevelsBalancedNestedSample2-1.png" alt="The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the second version." width="100%" />
+<p class="caption">
+Figure 25.3: The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the second version.
+</p>
+</div>
+<p>For unbalanced nested designs the variance components can be estimated by restricted maximum likelihood (REML) <span class="citation">(<a href="#ref-Webster2006" role="doc-biblioref">Webster et al. 2006</a>)</span>. REML estimation is also recommended if in Equation <a href="SamplingVariogram.html#eq:ANOVAmodelnested">(25.1)</a> instead of a constant mean <span class="math inline">\(\mu\)</span> the mean is a linear combination of one or more covariates (fixed effects). The semivariances at the chosen separation distances are obtained by cumulating the estimated variance components.</p>
+<p>The <strong>R</strong> code below shows how the variance components and semivariances can be estimated, once the data are collected and added to the data frame, with the function <code>lme</code> of the package <strong>nlme</strong> <span class="citation">(<a href="#ref-Pinheiro2014" role="doc-biblioref">J. Pinheiro et al. 2014</a>)</span>. This function fits linear mixed-effects models and allows for nested random effects. It can be used both for balanced and unbalanced nested samples, and for a constant mean or a mean that is a linear combination of covariates. The argument <code>fixed</code> is a formula describing the fixed effects, with the response variable on the left of the ~ operator, and the covariates for the mean on the right. If a constant mean is assumed, as in our example, this is indicated by a 1 on the right of the ~ operator. The argument <code>random</code> is a one-sided formula (no response variable is on the left of the ~ operator). On the right of the <span class="math inline">\(|\)</span> separator, the nested structure of the data is specified using the factors of Figure <a href="SamplingVariogram.html#fig:FactorLevelsBalancedNestedSample">25.2</a>. The 1 on the left of the <span class="math inline">\(|\)</span> separator means that we assume that all regression coefficients associated with the covariates are fixed (non-random) quantities.</p>
+<div class="sourceCode" id="cb482"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb482-1"><a href="SamplingVariogram.html#cb482-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(nlme)</span>
+<span id="cb482-2"><a href="SamplingVariogram.html#cb482-2" aria-hidden="true" tabindex="-1"></a>lmodel <span class="ot">&lt;-</span> <span class="fu">lme</span>(<span class="at">fixed=</span>z<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>mynestedsample,</span>
+<span id="cb482-3"><a href="SamplingVariogram.html#cb482-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">random=</span><span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>factor1<span class="sc">/</span>factor2<span class="sc">/</span>factor3)</span>
+<span id="cb482-4"><a href="SamplingVariogram.html#cb482-4" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">VarCorr</span>(lmodel))</span>
+<span id="cb482-5"><a href="SamplingVariogram.html#cb482-5" aria-hidden="true" tabindex="-1"></a>sigmas <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res[<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">6</span>,<span class="dv">7</span>),<span class="dv">1</span>])</span>
+<span id="cb482-6"><a href="SamplingVariogram.html#cb482-6" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">rev</span>(sigmas)</span>
+<span id="cb482-7"><a href="SamplingVariogram.html#cb482-7" aria-hidden="true" tabindex="-1"></a>semivar <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(sigmas)</span></code></pre></div>
+<p>Random sampling of the points is not strictly needed because a model-based approach is followed here. The model of Equation <a href="SamplingVariogram.html#eq:ANOVAmodelnested">(25.1)</a> is a superpopulation model, i.e. we assume that the population is generated by this model. <span class="citation"><a href="#ref-Papritz2011" role="doc-biblioref">Papritz et al.</a> (<a href="#ref-Papritz2011" role="doc-biblioref">2011</a>)</span>, for instance, selected the points (using the second version) non-randomly to improve the control of the nested subareas and the average separation distances.</p>
+<p><span class="citation"><a href="#ref-Lark2011CAGEO" role="doc-biblioref">Lark</a> (<a href="#ref-Lark2011CAGEO" role="doc-biblioref">2011</a>)</span> describes a method for optimisation of a nested design, given the total number of points and the chosen separation distances.</p>
+<div id="exercises-29" class="section level4 unnumbered">
+<h4>Exercises</h4>
+<ol style="list-style-type: decimal">
+<li>Write an <strong>R</strong> script to select with the first version a balanced nested sample from the Hunter Valley. Use as separation distances 1,000, 500, 200, 100 and 50 m.
+<ul>
+<li>Add the factors that are needed for estimating the variance components to the <code>data.frame</code> with the selected sampling points.<br />
+</li>
+<li>Overlay the sampling points with the <code>SpatialPixelsDataFrame</code>, and estimate the semivariances for the attribute compound topographic index (cti).</li>
+</ul></li>
+</ol>
+</div>
+</div>
+<div id="independent-sampling-of-pairs-of-points" class="section level2" number="25.2">
+<h2><span class="header-section-number">25.2</span> Independent sampling of pairs of points</h2>
+<p>With the nested design the estimated semivariances for the different separation distances are not independent. Independent estimated semivariances can be obtained by independent random selection of pairs of points (IPP sampling). Independence hear means design-independence, see Section @ref(i.i.d.). Similar to a regression model, a semivariogram can be defined as a superpopulation model or as a population model. In this section a semivariogram is defined at the population level. Such a semivariogram is referred to as a non-ergodic semivariogram or local semivariogram <span class="citation">(<a href="#ref-bru94b" role="doc-biblioref">Brus and de Gruijter 1994</a>)</span>. For simple random sampling of pont-pairs this method is very straightforward. For each separation distance a pont-pair is selected by first selecting fully randomly one point from the study area. Then the second point is randomly selected from the circle with the first point at its center and a radius equal to the chosen separation distance. If this second point is outside the study area, both points are ignored. This is repeated until we have the required pont-pairs for this separation distance.</p>
+<div class="sourceCode" id="cb483"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb483-1"><a href="SamplingVariogram.html#cb483-1" aria-hidden="true" tabindex="-1"></a>SIpairs <span class="ot">&lt;-</span> <span class="cf">function</span>(h, n, area) {</span>
+<span id="cb483-2"><a href="SamplingVariogram.html#cb483-2" aria-hidden="true" tabindex="-1"></a>  topo <span class="ot">&lt;-</span> <span class="fu">as</span>(<span class="fu">getGridTopology</span>(area), <span class="st">&quot;data.frame&quot;</span>)</span>
+<span id="cb483-3"><a href="SamplingVariogram.html#cb483-3" aria-hidden="true" tabindex="-1"></a>  cellsize <span class="ot">&lt;-</span> topo<span class="sc">$</span>cellsize[<span class="dv">1</span>]</span>
+<span id="cb483-4"><a href="SamplingVariogram.html#cb483-4" aria-hidden="true" tabindex="-1"></a>  xy <span class="ot">&lt;-</span> <span class="fu">coordinates</span>(area)</span>
+<span id="cb483-5"><a href="SamplingVariogram.html#cb483-5" aria-hidden="true" tabindex="-1"></a>  dxy <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="dv">2</span>)</span>
+<span id="cb483-6"><a href="SamplingVariogram.html#cb483-6" aria-hidden="true" tabindex="-1"></a>  xypnts1 <span class="ot">&lt;-</span> xypnts2 <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb483-7"><a href="SamplingVariogram.html#cb483-7" aria-hidden="true" tabindex="-1"></a>  i <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb483-8"><a href="SamplingVariogram.html#cb483-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (i <span class="sc">&lt;=</span> n) {</span>
+<span id="cb483-9"><a href="SamplingVariogram.html#cb483-9" aria-hidden="true" tabindex="-1"></a>    id1 <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="at">n=</span><span class="fu">length</span>(area), <span class="at">size=</span><span class="dv">1</span>)</span>
+<span id="cb483-10"><a href="SamplingVariogram.html#cb483-10" aria-hidden="true" tabindex="-1"></a>    xypnt1 <span class="ot">&lt;-</span> xy[id1,]</span>
+<span id="cb483-11"><a href="SamplingVariogram.html#cb483-11" aria-hidden="true" tabindex="-1"></a>    xypnt1[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">jitter</span>(xypnt1[<span class="dv">1</span>], <span class="at">amount=</span>cellsize<span class="sc">/</span><span class="dv">2</span>)</span>
+<span id="cb483-12"><a href="SamplingVariogram.html#cb483-12" aria-hidden="true" tabindex="-1"></a>    xypnt1[<span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="fu">jitter</span>(xypnt1[<span class="dv">2</span>], <span class="at">amount=</span>cellsize<span class="sc">/</span><span class="dv">2</span>)</span>
+<span id="cb483-13"><a href="SamplingVariogram.html#cb483-13" aria-hidden="true" tabindex="-1"></a>    angle <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">min=</span><span class="dv">0</span>, <span class="at">max=</span><span class="dv">2</span><span class="sc">*</span>pi)</span>
+<span id="cb483-14"><a href="SamplingVariogram.html#cb483-14" aria-hidden="true" tabindex="-1"></a>    dxy[<span class="dv">1</span>] <span class="ot">&lt;-</span> h<span class="sc">*</span><span class="fu">sin</span>(angle); dxy[<span class="dv">2</span>] <span class="ot">&lt;-</span> h<span class="sc">*</span><span class="fu">cos</span>(angle)</span>
+<span id="cb483-15"><a href="SamplingVariogram.html#cb483-15" aria-hidden="true" tabindex="-1"></a>    xypnt2 <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">t</span>(xypnt1<span class="sc">+</span>dxy))</span>
+<span id="cb483-16"><a href="SamplingVariogram.html#cb483-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coordinates</span>(xypnt2) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb483-17"><a href="SamplingVariogram.html#cb483-17" aria-hidden="true" tabindex="-1"></a>    inArea <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">over</span>(<span class="at">x=</span>xypnt2, <span class="at">y=</span>area))[<span class="dv">1</span>]</span>
+<span id="cb483-18"><a href="SamplingVariogram.html#cb483-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(inArea)) {</span>
+<span id="cb483-19"><a href="SamplingVariogram.html#cb483-19" aria-hidden="true" tabindex="-1"></a>      xypnts1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(xypnts1, xypnt1)</span>
+<span id="cb483-20"><a href="SamplingVariogram.html#cb483-20" aria-hidden="true" tabindex="-1"></a>      xypnts2 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(xypnts2, <span class="fu">as.data.frame</span>(xypnt2))</span>
+<span id="cb483-21"><a href="SamplingVariogram.html#cb483-21" aria-hidden="true" tabindex="-1"></a>      i <span class="ot">&lt;-</span> i<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb483-22"><a href="SamplingVariogram.html#cb483-22" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb483-23"><a href="SamplingVariogram.html#cb483-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rm</span>(xypnt1, xypnt2)</span>
+<span id="cb483-24"><a href="SamplingVariogram.html#cb483-24" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb483-25"><a href="SamplingVariogram.html#cb483-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(xypnts1, xypnts2)</span>
+<span id="cb483-26"><a href="SamplingVariogram.html#cb483-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>IPP sampling is illustrated below with the compound topographic index (cti) data of the Hunter Valley. Five separation distances are chosen, collected in numeric <code>h</code>, and for each distance <span class="math inline">\(n=100\)</span> pont-pairs are selected by simple random sampling.</p>
+<div class="sourceCode" id="cb484"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb484-1"><a href="SamplingVariogram.html#cb484-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
+<span id="cb484-2"><a href="SamplingVariogram.html#cb484-2" aria-hidden="true" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">50</span>,<span class="dv">100</span>,<span class="dv">200</span>,<span class="dv">500</span>,<span class="dv">1000</span>)</span>
+<span id="cb484-3"><a href="SamplingVariogram.html#cb484-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb484-4"><a href="SamplingVariogram.html#cb484-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb484-5"><a href="SamplingVariogram.html#cb484-5" aria-hidden="true" tabindex="-1"></a>allpairs <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb484-6"><a href="SamplingVariogram.html#cb484-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(h)){</span>
+<span id="cb484-7"><a href="SamplingVariogram.html#cb484-7" aria-hidden="true" tabindex="-1"></a>  pairs <span class="ot">&lt;-</span> <span class="fu">SIpairs</span>(<span class="at">h=</span>h[i], <span class="at">n=</span>n, <span class="at">area=</span>grd)</span>
+<span id="cb484-8"><a href="SamplingVariogram.html#cb484-8" aria-hidden="true" tabindex="-1"></a>  allpairs <span class="ot">&lt;-</span> <span class="fu">rbind</span>(allpairs, pairs, <span class="at">make.row.names=</span><span class="cn">FALSE</span>)</span>
+<span id="cb484-9"><a href="SamplingVariogram.html#cb484-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The data frame file <code>allpairs</code> has four columns: the spatial coordinates of the first and of the second point of a pair. An overlay is made of the selected points with the <code>SpatialPixelsDataFrame</code> and the cti values are extracted.</p>
+<div class="sourceCode" id="cb485"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb485-1"><a href="SamplingVariogram.html#cb485-1" aria-hidden="true" tabindex="-1"></a>pnt1 <span class="ot">&lt;-</span> allpairs[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)]</span>
+<span id="cb485-2"><a href="SamplingVariogram.html#cb485-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(pnt1) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb485-3"><a href="SamplingVariogram.html#cb485-3" aria-hidden="true" tabindex="-1"></a>z1 <span class="ot">&lt;-</span> <span class="fu">over</span>(<span class="at">x=</span>pnt1, <span class="at">y=</span>grd)[<span class="dv">4</span>]</span>
+<span id="cb485-4"><a href="SamplingVariogram.html#cb485-4" aria-hidden="true" tabindex="-1"></a>pnt2 <span class="ot">&lt;-</span> allpairs[,<span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>)]</span>
+<span id="cb485-5"><a href="SamplingVariogram.html#cb485-5" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(pnt2) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb485-6"><a href="SamplingVariogram.html#cb485-6" aria-hidden="true" tabindex="-1"></a>z2 <span class="ot">&lt;-</span> <span class="fu">over</span>(<span class="at">x=</span>pnt2, <span class="at">y=</span>grd)[<span class="dv">4</span>]</span>
+<span id="cb485-7"><a href="SamplingVariogram.html#cb485-7" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">h=</span><span class="fu">rep</span>(h, <span class="at">each=</span>n), z1, z2)</span>
+<span id="cb485-8"><a href="SamplingVariogram.html#cb485-8" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mysample)[<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;z1&quot;</span>,<span class="st">&quot;z2&quot;</span>)</span></code></pre></div>
+<p>The semivariances for the chosen separation distances are estimated, as well as the variance of these estimated semivariances.</p>
+<div class="sourceCode" id="cb486"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb486-1"><a href="SamplingVariogram.html#cb486-1" aria-hidden="true" tabindex="-1"></a>gammah <span class="ot">&lt;-</span> vgammah <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(h))</span>
+<span id="cb486-2"><a href="SamplingVariogram.html#cb486-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(h)){</span>
+<span id="cb486-3"><a href="SamplingVariogram.html#cb486-3" aria-hidden="true" tabindex="-1"></a>  units <span class="ot">&lt;-</span> <span class="fu">which</span>(mysample<span class="sc">$</span>h<span class="sc">==</span>h[i])</span>
+<span id="cb486-4"><a href="SamplingVariogram.html#cb486-4" aria-hidden="true" tabindex="-1"></a>  pairsh <span class="ot">&lt;-</span> mysample[units,]</span>
+<span id="cb486-5"><a href="SamplingVariogram.html#cb486-5" aria-hidden="true" tabindex="-1"></a>  gammah[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>((pairsh<span class="sc">$</span>z1<span class="sc">-</span>pairsh<span class="sc">$</span>z2)<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">/</span><span class="dv">2</span> </span>
+<span id="cb486-6"><a href="SamplingVariogram.html#cb486-6" aria-hidden="true" tabindex="-1"></a>  vgammah[i] <span class="ot">&lt;-</span> <span class="fu">var</span>((pairsh<span class="sc">$</span>z1<span class="sc">-</span>pairsh<span class="sc">$</span>z2)<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">/</span>(n<span class="sc">*</span><span class="dv">4</span>)</span>
+<span id="cb486-7"><a href="SamplingVariogram.html#cb486-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>A spherical model with nugget is fitted to the sample semivariogram, using function <code>nls</code>, with weights equal to the reciprocal of the estimated variances of the estimated semivariances.</p>
+<div class="sourceCode" id="cb487"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb487-1"><a href="SamplingVariogram.html#cb487-1" aria-hidden="true" tabindex="-1"></a>samplevariogram <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(h, gammah, vgammah)</span>
+<span id="cb487-2"><a href="SamplingVariogram.html#cb487-2" aria-hidden="true" tabindex="-1"></a>SphNug <span class="ot">&lt;-</span> <span class="cf">function</span>(h, range, psill, nugget) {</span>
+<span id="cb487-3"><a href="SamplingVariogram.html#cb487-3" aria-hidden="true" tabindex="-1"></a>  h <span class="ot">&lt;-</span> h<span class="sc">/</span>range</span>
+<span id="cb487-4"><a href="SamplingVariogram.html#cb487-4" aria-hidden="true" tabindex="-1"></a>  nugget<span class="sc">+</span>psill<span class="sc">*</span><span class="fu">ifelse</span>(h<span class="sc">&lt;</span><span class="dv">1</span>, (<span class="fl">1.5</span><span class="sc">*</span>h<span class="fl">-0.5</span><span class="sc">*</span>h<span class="sc">^</span><span class="dv">3</span>), <span class="dv">1</span>)</span>
+<span id="cb487-5"><a href="SamplingVariogram.html#cb487-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb487-6"><a href="SamplingVariogram.html#cb487-6" aria-hidden="true" tabindex="-1"></a>fit.var <span class="ot">&lt;-</span> <span class="fu">nls</span>(</span>
+<span id="cb487-7"><a href="SamplingVariogram.html#cb487-7" aria-hidden="true" tabindex="-1"></a>  gammah<span class="sc">~</span><span class="fu">SphNug</span>(h, range, psill, nugget),</span>
+<span id="cb487-8"><a href="SamplingVariogram.html#cb487-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">data=</span>samplevariogram,</span>
+<span id="cb487-9"><a href="SamplingVariogram.html#cb487-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">start=</span><span class="fu">list</span>(<span class="at">psill=</span><span class="dv">4</span>, <span class="at">range=</span><span class="dv">200</span>, <span class="at">nugget=</span><span class="dv">1</span>),</span>
+<span id="cb487-10"><a href="SamplingVariogram.html#cb487-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">weights=</span><span class="dv">1</span><span class="sc">/</span>vgammah, <span class="at">algorithm=</span><span class="st">&quot;port&quot;</span>, <span class="at">lower=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>))</span>
+<span id="cb487-11"><a href="SamplingVariogram.html#cb487-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pars <span class="ot">&lt;-</span> <span class="fu">signif</span>(<span class="fu">coef</span>(fit.var),<span class="dv">3</span>))</span></code></pre></div>
+<pre><code> psill  range nugget 
+  3.29 188.00   1.21 </code></pre>
+<p>Figure <a href="SamplingVariogram.html#fig:variogramCTI">25.4</a> shows the sample semivariogram and the fitted model.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:variogramCTI"></span>
+<img src="SpatialSampling_files/figure-html/variogramCTI-1.png" alt="Sample semivariogram obtained by independent sampling of pairs of points, and fitted spherical model of cti in Hunter Valley." width="80%" />
+<p class="caption">
+Figure 25.4: Sample semivariogram obtained by independent sampling of pairs of points, and fitted spherical model of cti in Hunter Valley.
+</p>
+</div>
+<p>The covariances of the estimated semivariances at different separation distances are 0, as the pont-pairs are selected independently. This keeps estimation of the variances and covariances of the estimated semivariogram parameters simple. In the next code chunk this is done by bootstrapping. In bootstrapping for each separation distance a simple random sample <em>with replacement</em> of pont-pairs is drawn. The number of draws is equal to the total number of pairs per separation distance. So a pair can be selected more than once. Every run of the bootstrap results in as many bootstrap samples as there are separation distances. These bootstrap samples are used to fit a semivariogram model. This whole procedure is repeated a large number of times, say <span class="math inline">\(R\)</span> times, resulting in <span class="math inline">\(R\)</span> vectors with model parameters, from which we can estimate the variances and covariances of the semivariogram parameters.</p>
+<div class="sourceCode" id="cb489"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb489-1"><a href="SamplingVariogram.html#cb489-1" aria-hidden="true" tabindex="-1"></a>allpars <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb489-2"><a href="SamplingVariogram.html#cb489-2" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb489-3"><a href="SamplingVariogram.html#cb489-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>R) {</span>
+<span id="cb489-4"><a href="SamplingVariogram.html#cb489-4" aria-hidden="true" tabindex="-1"></a>  gammah <span class="ot">&lt;-</span> vgammah <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(h))</span>
+<span id="cb489-5"><a href="SamplingVariogram.html#cb489-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(h)) {</span>
+<span id="cb489-6"><a href="SamplingVariogram.html#cb489-6" aria-hidden="true" tabindex="-1"></a>    units <span class="ot">&lt;-</span> <span class="fu">which</span>(mysample<span class="sc">$</span>h<span class="sc">==</span>h[i])</span>
+<span id="cb489-7"><a href="SamplingVariogram.html#cb489-7" aria-hidden="true" tabindex="-1"></a>    pairs <span class="ot">&lt;-</span> mysample[units,]</span>
+<span id="cb489-8"><a href="SamplingVariogram.html#cb489-8" aria-hidden="true" tabindex="-1"></a>    ids <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="at">size=</span>n, <span class="at">replace=</span><span class="cn">TRUE</span>)</span>
+<span id="cb489-9"><a href="SamplingVariogram.html#cb489-9" aria-hidden="true" tabindex="-1"></a>    mybtps <span class="ot">&lt;-</span> pairs[ids,]</span>
+<span id="cb489-10"><a href="SamplingVariogram.html#cb489-10" aria-hidden="true" tabindex="-1"></a>    gammah[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>((mybtps<span class="sc">$</span>z1<span class="sc">-</span>mybtps<span class="sc">$</span>z2)<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">/</span><span class="dv">2</span> </span>
+<span id="cb489-11"><a href="SamplingVariogram.html#cb489-11" aria-hidden="true" tabindex="-1"></a>    vgammah[i] <span class="ot">&lt;-</span> <span class="fu">var</span>((mybtps<span class="sc">$</span>z1<span class="sc">-</span>mybtps<span class="sc">$</span>z2)<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>)<span class="sc">/</span>(n<span class="sc">*</span><span class="dv">4</span>)</span>
+<span id="cb489-12"><a href="SamplingVariogram.html#cb489-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb489-13"><a href="SamplingVariogram.html#cb489-13" aria-hidden="true" tabindex="-1"></a>  samplevariogram <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(h, gammah, vgammah)</span>
+<span id="cb489-14"><a href="SamplingVariogram.html#cb489-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tryCatch</span>({fittedvariogram <span class="ot">&lt;-</span> <span class="fu">nls</span>(</span>
+<span id="cb489-15"><a href="SamplingVariogram.html#cb489-15" aria-hidden="true" tabindex="-1"></a>    gammah<span class="sc">~</span><span class="fu">SphNug</span>(h, range, psill, nugget), </span>
+<span id="cb489-16"><a href="SamplingVariogram.html#cb489-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">data=</span>samplevariogram, </span>
+<span id="cb489-17"><a href="SamplingVariogram.html#cb489-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">start=</span><span class="fu">list</span>(<span class="at">psill=</span><span class="dv">4</span>, <span class="at">range=</span><span class="dv">200</span>, <span class="at">nugget=</span><span class="dv">1</span>), </span>
+<span id="cb489-18"><a href="SamplingVariogram.html#cb489-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">weights=</span><span class="dv">1</span><span class="sc">/</span>vgammah, <span class="at">algorithm=</span><span class="st">&quot;port&quot;</span>, <span class="at">lower=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>))</span>
+<span id="cb489-19"><a href="SamplingVariogram.html#cb489-19" aria-hidden="true" tabindex="-1"></a>  pars <span class="ot">&lt;-</span> <span class="fu">coef</span>(fittedvariogram)</span>
+<span id="cb489-20"><a href="SamplingVariogram.html#cb489-20" aria-hidden="true" tabindex="-1"></a>  allpars <span class="ot">&lt;-</span> <span class="fu">rbind</span>(allpars,pars)}, <span class="at">error=</span><span class="cf">function</span>(e){})</span>
+<span id="cb489-21"><a href="SamplingVariogram.html#cb489-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb489-22"><a href="SamplingVariogram.html#cb489-22" aria-hidden="true" tabindex="-1"></a><span class="co">#compute variance-covariance matrix</span></span>
+<span id="cb489-23"><a href="SamplingVariogram.html#cb489-23" aria-hidden="true" tabindex="-1"></a><span class="fu">signif</span>(<span class="fu">var</span>(allpars),<span class="dv">3</span>)</span></code></pre></div>
+<pre><code>         psill   range  nugget
+psill    1.160   -44.6  -0.803
+range  -44.600 66700.0 172.000
+nugget  -0.803   172.0   1.070</code></pre>
+<p>Note the large variance for the range parameter (standard deviation is 215 m), and the negative covariance of the nugget and partial sill parameter (Pearson correlation coefficient is -0.62). Histograms of the three estimated semivariogram parameters are shown in Figure <a href="SamplingVariogram.html#fig:histogramsvariogramparameters">25.5</a>.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:histogramsvariogramparameters"></span>
+<img src="SpatialSampling_files/figure-html/histogramsvariogramparameters-1.png" alt="Sampling distribution of the estimators of the parameters of a spherical semivariogram with nugget of cti in Hunter Valley." width="100%" />
+<p class="caption">
+Figure 25.5: Sampling distribution of the estimators of the parameters of a spherical semivariogram with nugget of cti in Hunter Valley.
+</p>
+</div>
+<p><span class="citation"><a href="#ref-Marcelli2019" role="doc-biblioref">Marcelli, Corona, and Fattorini</a> (<a href="#ref-Marcelli2019" role="doc-biblioref">2019</a>)</span> show how a probability sample of <em>points</em> (instead of pairs of points) can be used in design-based estimation of the semivariogram. From the <span class="math inline">\(n\)</span> randomly selected points <span class="math inline">\(n (n-1)/2\)</span> pont-pairs are constructed, and the <em>second-order inclusion probabilities</em> of these pont-pairs are used in estimating the mean semivariance for separation distance classes. This sampling strategy makes better use of the data, and therefore is potentially more efficient than IPP sampling.</p>
+<div id="exercises-30" class="section level4 unnumbered">
+<h4>Exercises</h4>
+<ol start="2" style="list-style-type: decimal">
+<li>Write an <strong>R</strong> script to select simple random samples of pairs of points for estimating the semivariogram of cti in Hunter Valley. Use as separation distances 25, 50, 100, 200 and 400 m. Note that these separation distances are smaller than used above. Select 100 pairs per separation distance.
+<ul>
+<li>Compute the sample semivariogram and estimate a spherical model with nugget using function <code>nls</code>.<br />
+</li>
+<li>Compare the estimated semivariogram parameters with the estimates obtained with the larger separation distances.<br />
+</li>
+<li>Estimate the variance-covariance matrix of the estimated semivariogram parameters by bootstrapping.<br />
+</li>
+<li>Compare the variances of the estimated semivariogram parameters with the variances obtained with the larger separation distances. Which variance is changed most?</li>
+</ul></li>
+</ol>
+</div>
+</div>
+<div id="samplingforvariogram" class="section level2" number="25.3">
+<h2><span class="header-section-number">25.3</span> Model-based optimisation of sample pattern for semivariogram estimation</h2>
+<p>There is rich literature on model-based optimisation of the sampling locations for semivariogram estimation. Several design criteria (minimisation criteria) have been proposed for optimising the sampling locations. Various authors have proposed a measure of the uncertainty about the semivariogram parameters as a minimisation criterion. This is because the kriging variance, which could be used as an optimisation criterion, is sensitive to errors in the estimated semivariogram. <span class="citation"><a href="#ref-lar02" role="doc-biblioref">Lark</a> (<a href="#ref-lar02" role="doc-biblioref">2002</a>)</span> proposed to use a measure of the uncertainty about the kriging variance as a minimisation criterion.</p>
+<div id="UncertainSemivariogramParameters" class="section level3" number="25.3.1">
+<h3><span class="header-section-number">25.3.1</span> Uncertainty about semivariogram parameters</h3>
+<p><span class="citation"><a href="#ref-mul99" role="doc-biblioref">Müller and Zimmerman</a> (<a href="#ref-mul99" role="doc-biblioref">1999</a>)</span> and <span class="citation"><a href="#ref-bog99" role="doc-biblioref">Bogaert and Russo</a> (<a href="#ref-bog99" role="doc-biblioref">1999</a>)</span> proposed the determinant of the variance-covariance matrix of semivariogram parameters, estimated by generalised least squares to fit the experimental method-of-moments semivariogram. For instance, if we have two semivariogram parameters, <span class="math inline">\(\theta_1\)</span> and <span class="math inline">\(\theta_2\)</span>, the determinant of the <span class="math inline">\(2\times2\)</span> variance-covariance matrix equals <span class="math inline">\(var(\theta_1) var(\theta_2) - (covar(\theta_1,\theta_2))^2\)</span>. So, if the two estimated parameters are correlated, the determinant of the matrix is smaller than if they are uncorrelated and the covariance term is 0. The determinant is a measure of our <em>joint</em> uncertainty about the semivariogram parameters.</p>
+<p><span class="citation"><a href="#ref-zhu05" role="doc-biblioref">Zhu and Stein</a> (<a href="#ref-zhu05" role="doc-biblioref">2005</a>)</span> proposed as a minimisation criterion the logarithm of the determinant of the inverse Fisher information matrix in maximum likelihood (ML) estimation of the semivariogram, hereafter shortly denoted by logdet. The Fisher information about a semivariogram parameter is a function of the likelihood of the semivariogram parameter; the likelihood of a semivariogram parameter is the probability of the data as a function of the semivariogram parameter. The logarithm of this likelihood can be plotted against values of the parameter. The flatter the log-likelihood surface, the less information is in the data about the parameter. The flatness of the surface can be measured by the first derivative of the log-likelihood to the semivariogram parameter. Strong negative or positive derivative values indicate a steep surface. The Fisher information for a model parameter is defined as the expectation of the <em>square</em> of the first derivative of the log-likelihood to that semivariogram parameter, see <span class="citation"><a href="#ref-Ly2017" role="doc-biblioref">Ly et al.</a> (<a href="#ref-Ly2017" role="doc-biblioref">2017</a>)</span> for a nice tutorial on this subject. The more information, the less uncertain we are about the parameter, which explains why the inverse of the Fisher information can be used as a measure of uncertainty. The inverse Fisher information matrix contains the variances and covariances of the estimated semivariogram parameters.</p>
+<p>The code chunks hereafter show how logdet can be computed. It makes use of the result of <span class="citation"><a href="#ref-Kitanidis87" role="doc-biblioref">P. K. Kitanidis</a> (<a href="#ref-Kitanidis87" role="doc-biblioref">1987</a>)</span> who showed that each element of the Fisher information matrix <span class="math inline">\(\mathbf{I}(\theta)\)</span> can be obtained with (see also <span class="citation"><a href="#ref-lar02" role="doc-biblioref">Lark</a> (<a href="#ref-lar02" role="doc-biblioref">2002</a>)</span>)</p>
+<p><span class="math display" id="eq:FisherInformation">\[\begin{equation}
+[\mathbf{I}(\theta)]_{ij}=\frac{1}{2}\mathrm{Tr}\left[\mathbf{A}^{-1}\frac{\partial\mathbf{A}}{\partial\theta_i}\mathbf{A}^{-1}\frac{\partial\mathbf{A}}{\partial\theta_j}\right]\;,
+\tag{25.2}
+\end{equation}\]</span></p>
+<p>with <span class="math inline">\(\mathbf{A}\)</span> the correlation matrix of the sampling points, <span class="math inline">\(\frac{\partial\mathbf{A}}{\partial\theta_i}\)</span> the partial derivative of the correlation matrix to the <span class="math inline">\(i\)</span>th semivariogram parameter, and Tr[<span class="math inline">\(\cdot\)</span>] the trace of a matrix.</p>
+<p>As an illustration I selected a simple random sample of 100 points from Hunter valley. A matrix with distances between the points of a sample is computed. Preliminary values for the semivariogram parameters <span class="math inline">\(\xi\)</span> (ratio of spatial dependence) and <span class="math inline">\(\phi\)</span> (distance parameter) are specified by visual inspection of the sample semivariogram, and the <strong>gstat</strong> function <code>variogramLine</code> is used to compute the correlation matrix.</p>
+<div class="sourceCode" id="cb491"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb491-1"><a href="SamplingVariogram.html#cb491-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
+<span id="cb491-2"><a href="SamplingVariogram.html#cb491-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gstat)</span>
+<span id="cb491-3"><a href="SamplingVariogram.html#cb491-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb491-4"><a href="SamplingVariogram.html#cb491-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb491-5"><a href="SamplingVariogram.html#cb491-5" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(grd), n)</span>
+<span id="cb491-6"><a href="SamplingVariogram.html#cb491-6" aria-hidden="true" tabindex="-1"></a>mysample0 <span class="ot">&lt;-</span> grd[units,]</span>
+<span id="cb491-7"><a href="SamplingVariogram.html#cb491-7" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(mysample0) <span class="ot">&lt;-</span> <span class="er">~</span>Easting<span class="sc">+</span>Northing</span>
+<span id="cb491-8"><a href="SamplingVariogram.html#cb491-8" aria-hidden="true" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">spDists</span>(mysample0)</span>
+<span id="cb491-9"><a href="SamplingVariogram.html#cb491-9" aria-hidden="true" tabindex="-1"></a>xi <span class="ot">&lt;-</span> <span class="fl">0.8</span>; phi <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb491-10"><a href="SamplingVariogram.html#cb491-10" aria-hidden="true" tabindex="-1"></a>thetas <span class="ot">&lt;-</span> <span class="fu">c</span>(xi,phi)</span>
+<span id="cb491-11"><a href="SamplingVariogram.html#cb491-11" aria-hidden="true" tabindex="-1"></a>vgmodel <span class="ot">&lt;-</span> <span class="fu">vgm</span>(</span>
+<span id="cb491-12"><a href="SamplingVariogram.html#cb491-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">psill=</span>thetas[<span class="dv">1</span>],</span>
+<span id="cb491-13"><a href="SamplingVariogram.html#cb491-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">range=</span>thetas[<span class="dv">2</span>], <span class="at">nugget=</span><span class="dv">1</span><span class="sc">-</span>thetas[<span class="dv">1</span>])</span>
+<span id="cb491-14"><a href="SamplingVariogram.html#cb491-14" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmodel, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>In the next step the semivariogram parameters are slightly changed one-by-one. The changes, referred to as perturbation, are a small fraction of the preliminary semivariogram parameter values. The perturbed semivariogram parameters are used to compute the perturbed correlation matrices (<code>pA</code>) and the partial derivatives of the correlation matrix (<code>dA</code>) for each perturbation.</p>
+<div class="sourceCode" id="cb492"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb492-1"><a href="SamplingVariogram.html#cb492-1" aria-hidden="true" tabindex="-1"></a>perturbation <span class="ot">&lt;-</span> <span class="fl">0.01</span></span>
+<span id="cb492-2"><a href="SamplingVariogram.html#cb492-2" aria-hidden="true" tabindex="-1"></a>pA <span class="ot">&lt;-</span> dA <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb492-3"><a href="SamplingVariogram.html#cb492-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)) {</span>
+<span id="cb492-4"><a href="SamplingVariogram.html#cb492-4" aria-hidden="true" tabindex="-1"></a>  thetas_pert <span class="ot">&lt;-</span> thetas</span>
+<span id="cb492-5"><a href="SamplingVariogram.html#cb492-5" aria-hidden="true" tabindex="-1"></a>  thetas_pert[i] <span class="ot">&lt;-</span> (<span class="dv">1</span><span class="sc">+</span>perturbation)<span class="sc">*</span>thetas[i]</span>
+<span id="cb492-6"><a href="SamplingVariogram.html#cb492-6" aria-hidden="true" tabindex="-1"></a>  vgmodel_pert <span class="ot">&lt;-</span> <span class="fu">vgm</span>(</span>
+<span id="cb492-7"><a href="SamplingVariogram.html#cb492-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">psill=</span>thetas_pert[<span class="dv">1</span>], </span>
+<span id="cb492-8"><a href="SamplingVariogram.html#cb492-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">range=</span>thetas_pert[<span class="dv">2</span>], <span class="at">nugget=</span><span class="dv">1</span><span class="sc">-</span>thetas_pert[<span class="dv">1</span>])</span>
+<span id="cb492-9"><a href="SamplingVariogram.html#cb492-9" aria-hidden="true" tabindex="-1"></a>  pA[[i]] <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(</span>
+<span id="cb492-10"><a href="SamplingVariogram.html#cb492-10" aria-hidden="true" tabindex="-1"></a>    vgmodel_pert, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb492-11"><a href="SamplingVariogram.html#cb492-11" aria-hidden="true" tabindex="-1"></a>  dA[[i]] <span class="ot">&lt;-</span> (pA[[i]]<span class="sc">-</span>A)<span class="sc">/</span>(thetas[i]<span class="sc">*</span>perturbation)</span>
+<span id="cb492-12"><a href="SamplingVariogram.html#cb492-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Finally the Fisher information matrix is computed, using Equation <a href="SamplingVariogram.html#eq:FisherInformation">(25.2)</a>, the matrix is inverted, and the determinant is computed.</p>
+<div class="sourceCode" id="cb493"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb493-1"><a href="SamplingVariogram.html#cb493-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(matrixcalc)</span>
+<span id="cb493-2"><a href="SamplingVariogram.html#cb493-2" aria-hidden="true" tabindex="-1"></a>invA <span class="ot">&lt;-</span> <span class="fu">chol2inv</span>(<span class="fu">chol</span>(A))</span>
+<span id="cb493-3"><a href="SamplingVariogram.html#cb493-3" aria-hidden="true" tabindex="-1"></a>I <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="fu">length</span>(thetas), <span class="fu">length</span>(thetas))</span>
+<span id="cb493-4"><a href="SamplingVariogram.html#cb493-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)){</span>
+<span id="cb493-5"><a href="SamplingVariogram.html#cb493-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> i<span class="sc">:</span><span class="fu">length</span>(thetas)){</span>
+<span id="cb493-6"><a href="SamplingVariogram.html#cb493-6" aria-hidden="true" tabindex="-1"></a>    I[i,j] <span class="ot">&lt;-</span> I[j,i] <span class="ot">&lt;-</span> </span>
+<span id="cb493-7"><a href="SamplingVariogram.html#cb493-7" aria-hidden="true" tabindex="-1"></a>      <span class="fl">0.5</span><span class="sc">*</span><span class="fu">matrix.trace</span>(invA<span class="sc">%*%</span>dA[[i]]<span class="sc">%*%</span>invA<span class="sc">%*%</span>dA[[j]])</span>
+<span id="cb493-8"><a href="SamplingVariogram.html#cb493-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb493-9"><a href="SamplingVariogram.html#cb493-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb493-10"><a href="SamplingVariogram.html#cb493-10" aria-hidden="true" tabindex="-1"></a>(invI <span class="ot">&lt;-</span> <span class="fu">chol2inv</span>(<span class="fu">chol</span>(I)))</span></code></pre></div>
+<pre><code>            [,1]        [,2]
+[1,]   0.1291458   -29.63607
+[2,] -29.6360672 10957.87394</code></pre>
+<div class="sourceCode" id="cb495"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb495-1"><a href="SamplingVariogram.html#cb495-1" aria-hidden="true" tabindex="-1"></a>logdet0 <span class="ot">&lt;-</span> <span class="fu">determinant</span>(invI, <span class="at">logarithm=</span><span class="cn">TRUE</span>)<span class="sc">$</span>modulus</span></code></pre></div>
+<p>Note the large variance of the distance parameter, equal to 10958. The standard error of the ratio of spatial dependence parameter <span class="math inline">\(\xi\)</span> equals 0.36 (the square root of the value in the first column and first row of the inverse Fisher information matrix), and for the distance parameter <span class="math inline">\(\phi\)</span> it is 105 m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters as quantified by the logarithm of the determinant of the matrix equals 6.286. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation.</p>
+<p>Function <code>optimUSER</code> of package <strong>spsann</strong> can be used to search for the locations with the minimum value of logdet. This function has been used before in Section <a href="MBSamplePattern.html#SamplePatternOK">24.2</a>. This package cannot deal with the 22124 candidate grid nodes of Hunter Valley, these are too many. I therefore selected a subgrid of 50 m <span class="math inline">\(\times\)</span> 50 m. Note that the argument <code>cellsize</code> is also set to this number. The objective function <code>logdet</code> is defined in <strong>R</strong> script <a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R">ObjectiveFunctions4MBSamplingVariogram.R</a><a href="#fn29" class="footnote-ref" id="fnref29"><sup>29</sup></a>. Argument <code>points</code> specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample by function <code>optimUSER</code>. Argument <code>model</code> specifies the model <em>type</em>, using the characters of <strong>gstat</strong>. Argument <code>thetas</code> specifies the preliminary semivariogram parameter values. <code>Argument</code> perturbation specifies how much the variogram parameters are changed to compute the perturbed correlation matrices (<code>pA</code>) and the partial derivatives of the correlation matrix (<code>dA</code>).</p>
+<div class="sourceCode" id="cb496"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb496-1"><a href="SamplingVariogram.html#cb496-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span> (<span class="st">&quot;Rscripts/ObjectiveFunctions4MBSamplingVariogram.R&quot;</span>)</span>
+<span id="cb496-2"><a href="SamplingVariogram.html#cb496-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(grd) <span class="ot">&lt;-</span> <span class="er">~</span>Easting<span class="sc">+</span>Northing</span>
+<span id="cb496-3"><a href="SamplingVariogram.html#cb496-3" aria-hidden="true" tabindex="-1"></a>candi <span class="ot">&lt;-</span> <span class="fu">spsample</span>(grd, <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">cellsize=</span><span class="fu">c</span>(<span class="dv">50</span>,<span class="dv">50</span>))</span>
+<span id="cb496-4"><a href="SamplingVariogram.html#cb496-4" aria-hidden="true" tabindex="-1"></a>candi <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(candi)</span>
+<span id="cb496-5"><a href="SamplingVariogram.html#cb496-5" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(candi) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>,<span class="st">&quot;y&quot;</span>)</span>
+<span id="cb496-6"><a href="SamplingVariogram.html#cb496-6" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">scheduleSPSANN</span>(</span>
+<span id="cb496-7"><a href="SamplingVariogram.html#cb496-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance=</span><span class="fl">0.8</span>,</span>
+<span id="cb496-8"><a href="SamplingVariogram.html#cb496-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.temperature=</span><span class="fl">0.03</span>, <span class="at">temperature.decrease=</span><span class="fl">0.8</span>,</span>
+<span id="cb496-9"><a href="SamplingVariogram.html#cb496-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains=</span><span class="dv">500</span>, <span class="at">chain.length=</span><span class="dv">2</span>, <span class="at">stopping=</span><span class="dv">5</span>,</span>
+<span id="cb496-10"><a href="SamplingVariogram.html#cb496-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">x.min=</span><span class="dv">0</span>, <span class="at">y.min=</span><span class="dv">0</span>, <span class="at">cellsize=</span><span class="dv">50</span>)</span>
+<span id="cb496-11"><a href="SamplingVariogram.html#cb496-11" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb496-12"><a href="SamplingVariogram.html#cb496-12" aria-hidden="true" tabindex="-1"></a>rslt <span class="ot">&lt;-</span> <span class="fu">optimUSER</span>(</span>
+<span id="cb496-13"><a href="SamplingVariogram.html#cb496-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">points=</span><span class="dv">100</span>, <span class="at">candi=</span>candi,</span>
+<span id="cb496-14"><a href="SamplingVariogram.html#cb496-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">fun=</span>logdet,</span>
+<span id="cb496-15"><a href="SamplingVariogram.html#cb496-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">thetas=</span>thetas, <span class="at">perturbation=</span><span class="fl">0.01</span>,</span>
+<span id="cb496-16"><a href="SamplingVariogram.html#cb496-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">schedule=</span>schedule, <span class="at">track=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Figure <a href="SamplingVariogram.html#fig:MBVariogram">25.6</a> shows the optimised sample of 100 points. The logdet of the optimised sample equals 2.346 which is 37% of the value of the simple random sample used above to illustrate the computations. The optimised sample shows strong spatial clustering. Connecting neighbouring points of the sample by lines results in a sort of mycelium.</p>
+</div>
+<div id="uncertainty-about-the-kriging-variance" class="section level3" number="25.3.2">
+<h3><span class="header-section-number">25.3.2</span> Uncertainty about the kriging variance</h3>
+<p><span class="citation"><a href="#ref-lar02" role="doc-biblioref">Lark</a> (<a href="#ref-lar02" role="doc-biblioref">2002</a>)</span> proposed as a minimisation criterion the estimation variance of the kriging variance due to uncertainty in the ML estimates of the semivariogram parameters (hereafter denoted by VKV). This variance is approximated by a first order Taylor series, requiring the partial derivatives of the kriging variance with respect to the semivariogram parameters:</p>
+<p><span class="math display" id="eq:varkrigingvar">\[\begin{equation}
+VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i} \frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_j}\;,
+\tag{25.3}
+\end{equation}\]</span></p>
+<p>with <span class="math inline">\(p\)</span> the number of semivariogram parameters, <span class="math inline">\(\mathrm{Cov}(\theta_i,\theta_j)\)</span> the covariances of the semivariogram parameters <span class="math inline">\(\theta_i\)</span> and <span class="math inline">\(\theta_j\)</span> (elements of the inverse of the Fisher information matrix <span class="math inline">\(\mathbf{I}^{-1}(\boldsymbol{\theta})\)</span>) (Equation <a href="SamplingVariogram.html#eq:FisherInformation">(25.2)</a>), and <span class="math inline">\(\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}\)</span> the partial derivative of the kriging variance to the <span class="math inline">\(i\)</span>th semivariogram parameter at prediction location <span class="math inline">\(\mathbf{s}_0)\)</span>.</p>
+<p>The first step is to select a sample for the second sampling round in which data are collected for mapping. For this a spatial coverage sample is selected, using function <code>stratify</code> of package <strong>spcosa</strong>, see Chapter <a href="SpatialCoverage.html#SpatialCoverage">18</a>. The observations on this sample are used for prediction by kriging. The population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred square grid of 101 points, the evaluation sample. (In the code chunk below <code>n=100</code> is used in function <code>spsample</code>, but actually 101 locations are selected.)</p>
+<div class="sourceCode" id="cb497"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb497-1"><a href="SamplingVariogram.html#cb497-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spcosa)</span>
+<span id="cb497-2"><a href="SamplingVariogram.html#cb497-2" aria-hidden="true" tabindex="-1"></a>grd <span class="ot">&lt;-</span> grdHunterValley</span>
+<span id="cb497-3"><a href="SamplingVariogram.html#cb497-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(grd)[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;s1&quot;</span>,<span class="st">&quot;s2&quot;</span>)</span>
+<span id="cb497-4"><a href="SamplingVariogram.html#cb497-4" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(grd) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb497-5"><a href="SamplingVariogram.html#cb497-5" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb497-6"><a href="SamplingVariogram.html#cb497-6" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb497-7"><a href="SamplingVariogram.html#cb497-7" aria-hidden="true" tabindex="-1"></a>myStrata <span class="ot">&lt;-</span> <span class="fu">stratify</span>(grd, <span class="at">nStrata=</span>n, <span class="at">equalArea=</span><span class="cn">FALSE</span>, <span class="at">nTry=</span><span class="dv">10</span>)</span>
+<span id="cb497-8"><a href="SamplingVariogram.html#cb497-8" aria-hidden="true" tabindex="-1"></a>mySCsample <span class="ot">&lt;-</span> <span class="fu">as</span>(<span class="fu">spsample</span>(myStrata), <span class="st">&quot;SpatialPoints&quot;</span>)</span>
+<span id="cb497-9"><a href="SamplingVariogram.html#cb497-9" aria-hidden="true" tabindex="-1"></a>myevalsample <span class="ot">&lt;-</span> <span class="fu">spsample</span>(</span>
+<span id="cb497-10"><a href="SamplingVariogram.html#cb497-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">x=</span>grd, <span class="at">n=</span><span class="dv">100</span>, <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">offset=</span><span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>))</span></code></pre></div>
+<p>The following code chunks show how the estimation variance of the kriging variance at the evaluation point is computed. First the correlation matrix of the spatial coverage sample (<code>A</code>), and the correlation matrix of the spatial coverage sample and the evaluation points (<code>A0</code>) is computed. Correlation matrix <code>A</code> is extended with a column and row with ones, see Equation <a href="Introkriging.html#eq:krigingeqsmatrix">(22.4)</a>.</p>
+<div class="sourceCode" id="cb498"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb498-1"><a href="SamplingVariogram.html#cb498-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">spDists</span>(mySCsample)</span>
+<span id="cb498-2"><a href="SamplingVariogram.html#cb498-2" aria-hidden="true" tabindex="-1"></a>vgmodel <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">psill=</span>thetas[<span class="dv">1</span>], <span class="at">range=</span>thetas[<span class="dv">2</span>],</span>
+<span id="cb498-3"><a href="SamplingVariogram.html#cb498-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">nugget=</span><span class="dv">1</span><span class="sc">-</span>thetas[<span class="dv">1</span>])</span>
+<span id="cb498-4"><a href="SamplingVariogram.html#cb498-4" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmodel, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb498-5"><a href="SamplingVariogram.html#cb498-5" aria-hidden="true" tabindex="-1"></a>nobs <span class="ot">&lt;-</span> <span class="fu">length</span>(mySCsample)</span>
+<span id="cb498-6"><a href="SamplingVariogram.html#cb498-6" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data=</span><span class="dv">0</span>, <span class="at">nrow=</span>nobs<span class="sc">+</span><span class="dv">1</span>, <span class="at">ncol=</span>nobs<span class="sc">+</span><span class="dv">1</span>)</span>
+<span id="cb498-7"><a href="SamplingVariogram.html#cb498-7" aria-hidden="true" tabindex="-1"></a>B[<span class="dv">1</span><span class="sc">:</span>nobs,<span class="dv">1</span><span class="sc">:</span>nobs] <span class="ot">&lt;-</span> A</span>
+<span id="cb498-8"><a href="SamplingVariogram.html#cb498-8" aria-hidden="true" tabindex="-1"></a>B[<span class="dv">1</span><span class="sc">:</span>nobs,nobs<span class="sc">+</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb498-9"><a href="SamplingVariogram.html#cb498-9" aria-hidden="true" tabindex="-1"></a>B[nobs<span class="sc">+</span><span class="dv">1</span>,<span class="dv">1</span><span class="sc">:</span>nobs] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb498-10"><a href="SamplingVariogram.html#cb498-10" aria-hidden="true" tabindex="-1"></a>D0 <span class="ot">&lt;-</span> <span class="fu">spDists</span>(<span class="at">x=</span>myevalsample, <span class="at">y=</span>mySCsample)</span>
+<span id="cb498-11"><a href="SamplingVariogram.html#cb498-11" aria-hidden="true" tabindex="-1"></a>A0 <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmodel, <span class="at">dist_vector=</span>D0, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Next the semivariogram parameters are perturbed one-by-one, and the perturbed correlation matrices <code>pA</code> and <code>pA0</code> are computed.</p>
+<div class="sourceCode" id="cb499"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb499-1"><a href="SamplingVariogram.html#cb499-1" aria-hidden="true" tabindex="-1"></a>pA  <span class="ot">&lt;-</span> pA0 <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb499-2"><a href="SamplingVariogram.html#cb499-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)) {</span>
+<span id="cb499-3"><a href="SamplingVariogram.html#cb499-3" aria-hidden="true" tabindex="-1"></a>  thetas_pert <span class="ot">&lt;-</span> thetas</span>
+<span id="cb499-4"><a href="SamplingVariogram.html#cb499-4" aria-hidden="true" tabindex="-1"></a>  thetas_pert[i] <span class="ot">&lt;-</span> (<span class="dv">1</span><span class="sc">+</span>perturbation)<span class="sc">*</span>thetas[i]</span>
+<span id="cb499-5"><a href="SamplingVariogram.html#cb499-5" aria-hidden="true" tabindex="-1"></a>  vgmodel_pert <span class="ot">&lt;-</span> <span class="fu">vgm</span>(</span>
+<span id="cb499-6"><a href="SamplingVariogram.html#cb499-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">psill=</span>thetas_pert[<span class="dv">1</span>], </span>
+<span id="cb499-7"><a href="SamplingVariogram.html#cb499-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">range=</span>thetas_pert[<span class="dv">2</span>], <span class="at">nugget=</span><span class="dv">1</span><span class="sc">-</span>thetas_pert[<span class="dv">1</span>]) </span>
+<span id="cb499-8"><a href="SamplingVariogram.html#cb499-8" aria-hidden="true" tabindex="-1"></a>  pA[[i]] <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(</span>
+<span id="cb499-9"><a href="SamplingVariogram.html#cb499-9" aria-hidden="true" tabindex="-1"></a>    vgmodel_pert, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb499-10"><a href="SamplingVariogram.html#cb499-10" aria-hidden="true" tabindex="-1"></a>  pA0[[i]] <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(</span>
+<span id="cb499-11"><a href="SamplingVariogram.html#cb499-11" aria-hidden="true" tabindex="-1"></a>    vgmodel_pert, <span class="at">dist_vector=</span>D0, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb499-12"><a href="SamplingVariogram.html#cb499-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb499-13"><a href="SamplingVariogram.html#cb499-13" aria-hidden="true" tabindex="-1"></a>pB <span class="ot">&lt;-</span> pb <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb499-14"><a href="SamplingVariogram.html#cb499-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)) {</span>
+<span id="cb499-15"><a href="SamplingVariogram.html#cb499-15" aria-hidden="true" tabindex="-1"></a>  pB[[i]] <span class="ot">&lt;-</span> B</span>
+<span id="cb499-16"><a href="SamplingVariogram.html#cb499-16" aria-hidden="true" tabindex="-1"></a>  pB[[i]][<span class="dv">1</span><span class="sc">:</span>nobs,<span class="dv">1</span><span class="sc">:</span>nobs] <span class="ot">&lt;-</span> pA[[i]]</span>
+<span id="cb499-17"><a href="SamplingVariogram.html#cb499-17" aria-hidden="true" tabindex="-1"></a>  pb[[i]] <span class="ot">&lt;-</span> <span class="fu">cbind</span>(pA0[[i]],<span class="dv">1</span>)</span>
+<span id="cb499-18"><a href="SamplingVariogram.html#cb499-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Next the kriging variance and perturbed kriging variances are computed, and the partial derivatives of the kriging variance with respect to the semivariogram parameters are approximated. See Equations <a href="Introkriging.html#eq:krigingweights">(22.6)</a> and <a href="Introkriging.html#eq:OKvariance">(22.7)</a> for how the kriging weights <code>l</code> and the kriging variance <code>var</code> are computed.</p>
+<div class="sourceCode" id="cb500"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb500-1"><a href="SamplingVariogram.html#cb500-1" aria-hidden="true" tabindex="-1"></a>var <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(myevalsample))</span>
+<span id="cb500-2"><a href="SamplingVariogram.html#cb500-2" aria-hidden="true" tabindex="-1"></a>pvar <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow=</span><span class="fu">length</span>(myevalsample), <span class="at">ncol=</span><span class="fu">length</span>(thetas))</span>
+<span id="cb500-3"><a href="SamplingVariogram.html#cb500-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(myevalsample)) {</span>
+<span id="cb500-4"><a href="SamplingVariogram.html#cb500-4" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">c</span>(A0[i,],<span class="dv">1</span>)</span>
+<span id="cb500-5"><a href="SamplingVariogram.html#cb500-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#compute kriging weights and Lagrange multiplier</span></span>
+<span id="cb500-6"><a href="SamplingVariogram.html#cb500-6" aria-hidden="true" tabindex="-1"></a>  l <span class="ot">&lt;-</span> <span class="fu">solve</span>(B,b) </span>
+<span id="cb500-7"><a href="SamplingVariogram.html#cb500-7" aria-hidden="true" tabindex="-1"></a>  var[i] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span>l[<span class="dv">1</span><span class="sc">:</span>nobs]<span class="sc">%*%</span>A0[i,]<span class="sc">-</span>l[nobs<span class="sc">+</span><span class="dv">1</span>]</span>
+<span id="cb500-8"><a href="SamplingVariogram.html#cb500-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)){</span>
+<span id="cb500-9"><a href="SamplingVariogram.html#cb500-9" aria-hidden="true" tabindex="-1"></a>    pl <span class="ot">&lt;-</span> <span class="fu">solve</span>(pB[[j]], pb[[j]][i,])</span>
+<span id="cb500-10"><a href="SamplingVariogram.html#cb500-10" aria-hidden="true" tabindex="-1"></a>    pvar[i,j] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span>pl[<span class="dv">1</span><span class="sc">:</span>nobs]<span class="sc">%*%</span>pA0[[j]][i,]<span class="sc">-</span>pl[nobs<span class="sc">+</span><span class="dv">1</span>]</span>
+<span id="cb500-11"><a href="SamplingVariogram.html#cb500-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb500-12"><a href="SamplingVariogram.html#cb500-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb500-13"><a href="SamplingVariogram.html#cb500-13" aria-hidden="true" tabindex="-1"></a>dvar <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb500-14"><a href="SamplingVariogram.html#cb500-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)) {</span>
+<span id="cb500-15"><a href="SamplingVariogram.html#cb500-15" aria-hidden="true" tabindex="-1"></a>  dvar[[i]] <span class="ot">&lt;-</span> (pvar[,i]<span class="sc">-</span>var)<span class="sc">/</span>(thetas[i]<span class="sc">*</span>perturbation)</span>
+<span id="cb500-16"><a href="SamplingVariogram.html#cb500-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Finally the partial derivatives of the kriging variance are used to approximate the estimation variance of the kriging variance. For this the variances and covariances of the estimated semivariogram parameters are needed, estimated by the inverse of the Fisher information matrix (<code>invI</code>), see Equation <a href="SamplingVariogram.html#eq:varkrigingvar">(25.3)</a>. Matrix <code>invI</code> computed in the previous Section <a href="SamplingVariogram.html#UncertainSemivariogramParameters">25.3.1</a> for the simple random sample of 100 points is used for this. Note that this variance-covariance matrix is computed from the sample for variogram estimation, not from the spatial coverage sample of the second sampling round used for prediction.</p>
+<div class="sourceCode" id="cb501"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb501-1"><a href="SamplingVariogram.html#cb501-1" aria-hidden="true" tabindex="-1"></a>VKV <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(var))</span>
+<span id="cb501-2"><a href="SamplingVariogram.html#cb501-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)){</span>
+<span id="cb501-3"><a href="SamplingVariogram.html#cb501-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)){</span>
+<span id="cb501-4"><a href="SamplingVariogram.html#cb501-4" aria-hidden="true" tabindex="-1"></a>    VKVij <span class="ot">&lt;-</span> invI[i,j]<span class="sc">*</span>dvar[[i]]<span class="sc">*</span>dvar[[j]]</span>
+<span id="cb501-5"><a href="SamplingVariogram.html#cb501-5" aria-hidden="true" tabindex="-1"></a>    VKV <span class="ot">&lt;-</span> VKV<span class="sc">+</span>VKVij</span>
+<span id="cb501-6"><a href="SamplingVariogram.html#cb501-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb501-7"><a href="SamplingVariogram.html#cb501-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb501-8"><a href="SamplingVariogram.html#cb501-8" aria-hidden="true" tabindex="-1"></a>MVKV0 <span class="ot">&lt;-</span> <span class="fu">mean</span>(VKV)</span></code></pre></div>
+<p>For the simple random sample of 100 points the square root of the estimation variance of the kriging variance at the evaluation point equals 0.166. The mean kriging variance at these points equals 0.768, so the uncertainty about the kriging variance is substantial. Hereafter we will see how much this estimation variance can be reduced by optimising the sample with spatial simulated annealing.</p>
+<p>As for logdet the sample with minimum value for MVKV can be searched for using <strong>spsann</strong> function <code>optimUSER</code>. The objective function <code>varkrigvar</code> is defined in <strong>R</strong> script <a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R">ObjectiveFunctions4MBSamplingVariogram.R</a><a href="#fn30" class="footnote-ref" id="fnref30"><sup>30</sup></a>. Argument <code>points</code> specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample. The argument <code>psample</code> is used to specify the sample used for prediction at the evaluation points (after the second round of sampling). The argument <code>esample</code> is to specify the sample with evaluation points, used to estimate the population mean of VKV.</p>
+<div class="sourceCode" id="cb502"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb502-1"><a href="SamplingVariogram.html#cb502-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span> (<span class="st">&quot;Rscripts/ObjectiveFunctions4MBSamplingVariogram.R&quot;</span>)</span>
+<span id="cb502-2"><a href="SamplingVariogram.html#cb502-2" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">scheduleSPSANN</span>(</span>
+<span id="cb502-3"><a href="SamplingVariogram.html#cb502-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance=</span><span class="fl">0.8</span>,</span>
+<span id="cb502-4"><a href="SamplingVariogram.html#cb502-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.temperature=</span><span class="fl">0.0004</span>, <span class="at">temperature.decrease=</span><span class="fl">0.8</span>,</span>
+<span id="cb502-5"><a href="SamplingVariogram.html#cb502-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains=</span><span class="dv">500</span>, <span class="at">chain.length=</span><span class="dv">2</span>, <span class="at">stopping=</span><span class="dv">5</span>,</span>
+<span id="cb502-6"><a href="SamplingVariogram.html#cb502-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">x.min=</span><span class="dv">0</span>, <span class="at">y.min=</span><span class="dv">0</span>, <span class="at">cellsize=</span><span class="dv">50</span>)</span>
+<span id="cb502-7"><a href="SamplingVariogram.html#cb502-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb502-8"><a href="SamplingVariogram.html#cb502-8" aria-hidden="true" tabindex="-1"></a>rslt <span class="ot">&lt;-</span> <span class="fu">optimUSER</span>(</span>
+<span id="cb502-9"><a href="SamplingVariogram.html#cb502-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">points=</span><span class="dv">100</span>, <span class="at">candi=</span>candi,</span>
+<span id="cb502-10"><a href="SamplingVariogram.html#cb502-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">fun=</span>varkrigvar,</span>
+<span id="cb502-11"><a href="SamplingVariogram.html#cb502-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">psample=</span>mySCsample, <span class="at">esample=</span>myevalsample,</span>
+<span id="cb502-12"><a href="SamplingVariogram.html#cb502-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">model=</span> <span class="st">&quot;Exp&quot;</span>, <span class="at">thetas=</span>thetas,</span>
+<span id="cb502-13"><a href="SamplingVariogram.html#cb502-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">perturbation=</span><span class="fl">0.01</span>, <span class="at">schedule=</span>schedule, <span class="at">track=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Figure <a href="SamplingVariogram.html#fig:MBVariogram">25.6</a> shows the optimised sample. The minimised value of MVKV is 27 % of the value of the simple random sample used to illustrate the computations. As for logdet the optimised sample shows strong spatial clustering. However, the shape is quite different. The sample minimised for MVKV is more a spatial coverage sample of an ellipse.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:MBVariogram"></span>
+<img src="SpatialSampling_files/figure-html/MBVariogram-1.png" alt="Optimised pattern of 100 sampling points for semivariogram estimation, using the logarithm of the determinant of the inverse Fisher information matrix (logdet) or the mean estimation variance of the kriging variance (MVKV) as minimisation criterion." width="100%" />
+<p class="caption">
+Figure 25.6: Optimised pattern of 100 sampling points for semivariogram estimation, using the logarithm of the determinant of the inverse Fisher information matrix (logdet) or the mean estimation variance of the kriging variance (MVKV) as minimisation criterion.
+</p>
+</div>
+<p>Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters <span class="math inline">\(\boldsymbol{\theta}\)</span>, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, <span class="math inline">\(\hat{\boldsymbol{\theta}}\)</span>, leads to a locally optimal design at <span class="math inline">\(\hat{\boldsymbol{\theta}}\)</span>. For that reason <span class="citation"><a href="#ref-bog99" role="doc-biblioref">Bogaert and Russo</a> (<a href="#ref-bog99" role="doc-biblioref">1999</a>)</span> and <span class="citation"><a href="#ref-zhu05" role="doc-biblioref">Zhu and Stein</a> (<a href="#ref-zhu05" role="doc-biblioref">2005</a>)</span> proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. <span class="citation"><a href="#ref-lar02" role="doc-biblioref">Lark</a> (<a href="#ref-lar02" role="doc-biblioref">2002</a>)</span> computed the average of the estimation variance of the kriging variance over a number of semivariograms.</p>
+<p>Both methods for sample optimisation rely on, amongst others, the assumption that the mean and variance are constant throughout the area. Under this assumption it is no problem that the sampling units are spatially clustered. So we assume that the semivariogram estimated from the data collected in a small portion of the study area is representative for the whole study area. If we do not feel comfortable with this assumption, spreading out the sampling units by the sampling methods described in the next two sections can be a good option.</p>
+<div id="exercises-31" class="section level4 unnumbered">
+<h4>Exercises</h4>
+<ol start="3" style="list-style-type: decimal">
+<li>Write an <strong>R</strong> script to design a model-based sample of 100 points for the Hunter Valley, to estimate the semivariogram for a study variable. Use logdet as a minimisation criterion. Optimisation with this criterion requires a prior estimate of the semivariogram. Use for this an exponential semivariogram with a distance parameter of 200 m and a ratio of spatial dependence of 0.5. Compare the sample with the optimised sample in Figure <a href="SamplingVariogram.html#fig:MBVariogram">25.6</a>, which was obtained with a spatial dependence ratio of 0.8.</li>
+<li>Repeat this for MVKV as a minimisation criterion.</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="SamplingEstimationandPrediction" class="section level2" number="25.4">
+<h2><span class="header-section-number">25.4</span> Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction</h2>
+<p>In practice, often a reconnaissance survey for semivariogram estimation is not feasible, and a single sample must be designed that is suitable both for estimating the model parameters and prediction with the estimated model parameters. Another reason is that in a reconnaissance survey we seldom can afford a sample size large enough to obtain reliable estimates of the model parameters. <span class="citation"><a href="#ref-Papritz2011" role="doc-biblioref">Papritz et al.</a> (<a href="#ref-Papritz2011" role="doc-biblioref">2011</a>)</span> found that for a sample size of 192 points the estimated variance components with balanced and unbalanced nested designs were highly uncertain. For this reason it is attractive to use also the sampling points designed for spatial prediction (mapping) for estimating the semivariogram. From this it follows that designing two samples, one for estimating the semivariogram and one for spatial prediction, is suboptimal. Designing one sample that can be used both for estimation of the model parameters and for prediction potentially is more efficient.</p>
+<p>Finally, with nested sampling and sampling of independent pairs of points we aim at estimating the semivariogram of the residuals of a constant mean (see Equation <a href="SamplingVariogram.html#eq:ANOVAmodelnested">(25.1)</a>). In other words, with these designs we aim at estimating the parameters of a semivariogram model used in ordinary kriging. In situations where we have covariates that can partly explain the spatial variation of the study variable, kriging with an external drift is more appropriate. In these situations the reconnaissance survey should be tailored at estimating both the regression coefficients associated with the covariates and the parameters of the residual semivariogram.</p>
+<p>Model-based methods for designing a single sample for estimating the model parameters and for prediction with the estimated model parameters are proposed, amongst others, by <span class="citation"><a href="#ref-zim06" role="doc-biblioref">Zimmerman</a> (<a href="#ref-zim06" role="doc-biblioref">2006</a>)</span>, <span class="citation"><a href="#ref-zhu06" role="doc-biblioref">Zhu and Stein</a> (<a href="#ref-zhu06" role="doc-biblioref">2006</a>)</span>, <span class="citation"><a href="#ref-zhu06b" role="doc-biblioref">Zhu and Zhang</a> (<a href="#ref-zhu06b" role="doc-biblioref">2006</a>)</span> and <span class="citation"><a href="#ref-Marchant2007" role="doc-biblioref">Marchant and Lark</a> (<a href="#ref-Marchant2007" role="doc-biblioref">2007</a>)</span>. The methods use a different minimisation criterion. <span class="citation"><a href="#ref-zim06" role="doc-biblioref">Zimmerman</a> (<a href="#ref-zim06" role="doc-biblioref">2006</a>)</span> proposed to minimise the kriging variance (at the center of a square grid) that is augmented by an amount that accounts for the additional uncertainty in the kriging predictions due to uncertainty in the semivariogram parameters, hereafter referred to as the <em>augmented kriging variance</em> (AKV):</p>
+<p><span class="math display" id="eq:augmentedvar">\[\begin{equation}
+AKV(\mathbf{s}_0) = V_\mathrm{OK}(\mathbf{s}_0) + \mathrm{E}[\tau^2(\mathbf{s}_0)]\;,
+\tag{25.4}
+\end{equation}\]</span></p>
+<p>with <span class="math inline">\(V_\mathrm{OK}(\mathbf{s}_0)\)</span> the ordinary kriging variance, see Equation <a href="Introkriging.html#eq:OKvariance">(22.7)</a>, and <span class="math inline">\(\mathrm{E}[\tau^2(\mathbf{s}_0)]\)</span> the expectation of the additional variance component due to uncertainty about the semivariogram parameters estimated by ML. The additional variance component is approximated by a first order Taylor series):</p>
+<p><span class="math display" id="eq:tausq">\[\begin{equation}
+\mathrm{E}[\tau^2(\mathbf{s}_0)]=\sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \frac{\partial \lambda^{\mathrm{T}}} {\partial \theta_i} \mathbf{A}\frac{\partial \lambda} {\partial \theta_j}\;,
+\tag{25.5}
+\end{equation}\]</span></p>
+<p>with <span class="math inline">\(\frac{\partial \lambda} {\partial \theta_j}\)</span> the vector of partial derivatives of the kriging weights with respect to the <span class="math inline">\(j\)</span>th semivariogram parameter. As before in Chapter <a href="MBSamplePattern.html#MBSamplePattern">24</a> I use the mean of the AKV over the nodes of a prediction grid (evaluation grid) as a minimisation criterion (MAKV). The same criterion can also be used in situations where we have maps of covariates that we want to use in prediction. In that case the aim is to design a single sample that is used both for estimating the <em>residual</em> semivariogram and for prediction by kriging with an external drift. The ordinary kriging variance <span class="math inline">\(V_\mathrm{OK}(\mathbf{s}_0)\)</span> in Equation <a href="SamplingVariogram.html#eq:augmentedvar">(25.4)</a> is then replaced by the prediction error variance with kriging with an external drift <span class="math inline">\(V_\mathrm{KED}(\mathbf{s}_0)\)</span>, see Equation <a href="Introkriging.html#eq:KEDvariance">(22.17)</a>.</p>
+<p><span class="citation"><a href="#ref-zhu06" role="doc-biblioref">Zhu and Stein</a> (<a href="#ref-zhu06" role="doc-biblioref">2006</a>)</span> proposed as a minimisation criterion a linear combination of the augmented kriging variance (Equation <a href="SamplingVariogram.html#eq:augmentedvar">(25.4)</a> and the estimation variance of the kriging variance (Equation <a href="SamplingVariogram.html#eq:varkrigingvar">(25.3)</a>, the <em>estimation adjusted criterion</em> (EAC):</p>
+<p><span class="math display" id="eq:EAC">\[\begin{equation}
+EAC(\mathbf{s}_0) = AKV(\mathbf{s}_0) + \frac{1}{2V_{\mathrm{OK}}(\mathbf{s}_0)} VKV(\mathbf{s}_0))\;.
+\tag{25.6}
+\end{equation}\]</span></p>
+<p>Again, the mean of the EAC values (MEAC) over the nodes of a prediction grid (evaluation) is used as a minimisation criterion.</p>
+<p>Computing time for optimisation of the coordinates of a large sample, say <span class="math inline">\(&gt; 50\)</span> points, can become prohibitively long. To reduce computing time <span class="citation"><a href="#ref-zhu06" role="doc-biblioref">Zhu and Stein</a> (<a href="#ref-zhu06" role="doc-biblioref">2006</a>)</span> proposed a two-step approach. In the first step, for a fixed proportion <span class="math inline">\(p \in (0,1)\)</span> the locations of <span class="math inline">\((1-p) \cdot n\)</span> points are optimised for prediction with given parameters, for instance by minimising MKV. This ‘prediction sample’ is supplemented with <span class="math inline">\(p\cdot n\)</span> points, so that the two combined samples of size <span class="math inline">\(n\)</span> minimise logdet or MVKV. This is repeated for different values of <span class="math inline">\(p\)</span>. In the second step MEAC is computed for the combined samples of size <span class="math inline">\(n\)</span>, and the proportion and associated sample with minimum MEAC is selected.</p>
+<p>A simplification of this two-step approach is to select in the first step a square grid or a spatial coverage sample (Chapter <a href="SpatialCoverage.html#SpatialCoverage">18</a>), and to supplement this sample by a fixed number of points whose coordinates are optimised by spatial simulated annealing (SSA), using either MAKV or MEAC computed from both samples (grid sample or spatial coverage sample plus supplemental sample) as a minimisation criterion. In SSA the grid or spatial coverage sample is fixed, i.e. the locations are not further optimised. <span class="citation"><a href="#ref-Lark2018" role="doc-biblioref">Lark and Marchant</a> (<a href="#ref-Lark2018" role="doc-biblioref">2018</a>)</span> recommended as a rule of thumb to add about 10% of the fixed sample as short distance points.</p>
+<p>The following code chunks show how the AKV and EAC can be computed. First a spatial coverage sample of 90 points is selected using function <code>stratify</code> of package <strong>spcosa</strong>, see Chapter <a href="SpatialCoverage.html#SpatialCoverage">18</a>. In addition, a simple random sample of ten points is selected. This sample is the initial supplemental sample, whose locations are optimised. A square grid of approximately 100 points is selected for evaluation of the minimisation criterion.</p>
+<div class="sourceCode" id="cb503"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb503-1"><a href="SamplingVariogram.html#cb503-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spcosa)</span>
+<span id="cb503-2"><a href="SamplingVariogram.html#cb503-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(grd) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb503-3"><a href="SamplingVariogram.html#cb503-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">90</span></span>
+<span id="cb503-4"><a href="SamplingVariogram.html#cb503-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb503-5"><a href="SamplingVariogram.html#cb503-5" aria-hidden="true" tabindex="-1"></a>myStrata <span class="ot">&lt;-</span> <span class="fu">stratify</span>(grd, <span class="at">nStrata=</span>n, <span class="at">equalArea=</span><span class="cn">FALSE</span>, <span class="at">nTry=</span><span class="dv">10</span>)</span>
+<span id="cb503-6"><a href="SamplingVariogram.html#cb503-6" aria-hidden="true" tabindex="-1"></a>mySCsample <span class="ot">&lt;-</span> <span class="fu">as</span>(<span class="fu">spsample</span>(myStrata), <span class="st">&quot;SpatialPoints&quot;</span>)</span>
+<span id="cb503-7"><a href="SamplingVariogram.html#cb503-7" aria-hidden="true" tabindex="-1"></a>nsup <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb503-8"><a href="SamplingVariogram.html#cb503-8" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(grd), nsup)</span>
+<span id="cb503-9"><a href="SamplingVariogram.html#cb503-9" aria-hidden="true" tabindex="-1"></a>mysupsample0 <span class="ot">&lt;-</span> <span class="fu">as</span>(grd[units,], <span class="st">&quot;SpatialPoints&quot;</span>)</span>
+<span id="cb503-10"><a href="SamplingVariogram.html#cb503-10" aria-hidden="true" tabindex="-1"></a>myevalsample <span class="ot">&lt;-</span> <span class="fu">spsample</span>(</span>
+<span id="cb503-11"><a href="SamplingVariogram.html#cb503-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">x=</span>grd, <span class="at">n=</span><span class="dv">100</span>, <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">offset=</span><span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>))</span></code></pre></div>
+<p>The next step is to compute the inverse of the Fisher information matrix, given a preliminary semivariogram model, which is used as the variance-covariance matrix of the estimated semivariogram parameters. Contrary to Section <a href="SamplingVariogram.html#samplingforvariogram">25.3</a> now <em>all</em> sampling locations are used to compute this matrix. The locations of the spatial coverage sample and the supplemental sample are merged into one <code>SpatialPoints</code> object.</p>
+<div class="sourceCode" id="cb504"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb504-1"><a href="SamplingVariogram.html#cb504-1" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">rbind</span>(mysupsample0, mySCsample)</span></code></pre></div>
+<p>For how the inverse of the Fisher information matrix is computed, I refer to the code chunks in Section <a href="SamplingVariogram.html#samplingforvariogram">25.3</a>.</p>
+<p>In the next code chunk for each evaluation point the kriging weights (<code>L</code>), the kriging variance (<code>var</code>), the perturbed kriging weights (<code>pL</code>) and perturbed kriging variances (<code>pvar</code>) are computed. In the final lines the partial derivatives of the kriging weights (<code>dL</code>) and of the kriging variances (<code>dvar</code>) with respect to the semivariogram parameters are computed. The partial derivatives of the kriging variances with respect to the semivariogram parameters are needed for computing the estimation variance of the kriging variance, see Equation <a href="SamplingVariogram.html#eq:varkrigingvar">(25.3)</a>, which is needed for computing criterion EAC, see Equation <a href="SamplingVariogram.html#eq:EAC">(25.6)</a>.</p>
+<div class="sourceCode" id="cb505"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb505-1"><a href="SamplingVariogram.html#cb505-1" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow=</span><span class="fu">length</span>(myevalsample), <span class="at">ncol=</span>nobs)</span>
+<span id="cb505-2"><a href="SamplingVariogram.html#cb505-2" aria-hidden="true" tabindex="-1"></a>pL <span class="ot">&lt;-</span> <span class="fu">array</span>(</span>
+<span id="cb505-3"><a href="SamplingVariogram.html#cb505-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dim=</span><span class="fu">c</span>(<span class="fu">length</span>(myevalsample),<span class="fu">length</span>(mysample),<span class="fu">length</span>(thetas)))</span>
+<span id="cb505-4"><a href="SamplingVariogram.html#cb505-4" aria-hidden="true" tabindex="-1"></a>var <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(myevalsample))</span>
+<span id="cb505-5"><a href="SamplingVariogram.html#cb505-5" aria-hidden="true" tabindex="-1"></a>pvar <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow=</span><span class="fu">length</span>(myevalsample), <span class="at">ncol=</span><span class="fu">length</span>(thetas))</span>
+<span id="cb505-6"><a href="SamplingVariogram.html#cb505-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(myevalsample)) {</span>
+<span id="cb505-7"><a href="SamplingVariogram.html#cb505-7" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">c</span>(A0[i,],<span class="dv">1</span>)</span>
+<span id="cb505-8"><a href="SamplingVariogram.html#cb505-8" aria-hidden="true" tabindex="-1"></a>  l <span class="ot">&lt;-</span> <span class="fu">solve</span>(B,b)</span>
+<span id="cb505-9"><a href="SamplingVariogram.html#cb505-9" aria-hidden="true" tabindex="-1"></a>  L[i,] <span class="ot">&lt;-</span> l[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
+<span id="cb505-10"><a href="SamplingVariogram.html#cb505-10" aria-hidden="true" tabindex="-1"></a>  var[i] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span>l[<span class="dv">1</span><span class="sc">:</span>nobs]<span class="sc">%*%</span>A0[i,]<span class="sc">-</span>l[<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span>nobs)]</span>
+<span id="cb505-11"><a href="SamplingVariogram.html#cb505-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)){</span>
+<span id="cb505-12"><a href="SamplingVariogram.html#cb505-12" aria-hidden="true" tabindex="-1"></a>    pl <span class="ot">&lt;-</span> <span class="fu">solve</span>(pB[[j]], pb[[j]][i,])</span>
+<span id="cb505-13"><a href="SamplingVariogram.html#cb505-13" aria-hidden="true" tabindex="-1"></a>    pL[i,,j] <span class="ot">&lt;-</span> pl[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
+<span id="cb505-14"><a href="SamplingVariogram.html#cb505-14" aria-hidden="true" tabindex="-1"></a>    pvar[i,j] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span>pl[<span class="dv">1</span><span class="sc">:</span>nobs]<span class="sc">%*%</span>pA0[[j]][i,]<span class="sc">-</span>pl[<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span>nobs)]</span>
+<span id="cb505-15"><a href="SamplingVariogram.html#cb505-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb505-16"><a href="SamplingVariogram.html#cb505-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb505-17"><a href="SamplingVariogram.html#cb505-17" aria-hidden="true" tabindex="-1"></a>dL <span class="ot">&lt;-</span> dvar <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb505-18"><a href="SamplingVariogram.html#cb505-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(thetas)) {</span>
+<span id="cb505-19"><a href="SamplingVariogram.html#cb505-19" aria-hidden="true" tabindex="-1"></a>  dL[[i]] <span class="ot">&lt;-</span> (pL[,,i]<span class="sc">-</span>L)<span class="sc">/</span>(thetas[i]<span class="sc">*</span>perturbation)</span>
+<span id="cb505-20"><a href="SamplingVariogram.html#cb505-20" aria-hidden="true" tabindex="-1"></a>  dvar[[i]] <span class="ot">&lt;-</span> (pvar[,i]<span class="sc">-</span>var)<span class="sc">/</span>(thetas[i]<span class="sc">*</span>perturbation)</span>
+<span id="cb505-21"><a href="SamplingVariogram.html#cb505-21" aria-hidden="true" tabindex="-1"></a>}         </span></code></pre></div>
+<p>In the next code the expected variance due to uncertainty about the semivariogram parameters (Equation <a href="SamplingVariogram.html#eq:tausq">(25.5)</a>) is computed.</p>
+<div class="sourceCode" id="cb506"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb506-1"><a href="SamplingVariogram.html#cb506-1" aria-hidden="true" tabindex="-1"></a>tausq <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(myevalsample))</span>
+<span id="cb506-2"><a href="SamplingVariogram.html#cb506-2" aria-hidden="true" tabindex="-1"></a>tausqk <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb506-3"><a href="SamplingVariogram.html#cb506-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(myevalsample)) {</span>
+<span id="cb506-4"><a href="SamplingVariogram.html#cb506-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(dL)){</span>
+<span id="cb506-5"><a href="SamplingVariogram.html#cb506-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(dL)){</span>
+<span id="cb506-6"><a href="SamplingVariogram.html#cb506-6" aria-hidden="true" tabindex="-1"></a>      tausqijk <span class="ot">&lt;-</span> invI[i,j]<span class="sc">*</span><span class="fu">t</span>(dL[[i]][k,])<span class="sc">%*%</span>A<span class="sc">%*%</span>dL[[j]][k,] </span>
+<span id="cb506-7"><a href="SamplingVariogram.html#cb506-7" aria-hidden="true" tabindex="-1"></a>      tausqk <span class="ot">&lt;-</span> tausqk<span class="sc">+</span>tausqijk</span>
+<span id="cb506-8"><a href="SamplingVariogram.html#cb506-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb506-9"><a href="SamplingVariogram.html#cb506-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb506-10"><a href="SamplingVariogram.html#cb506-10" aria-hidden="true" tabindex="-1"></a>  tausq[k] <span class="ot">&lt;-</span> tausqk</span>
+<span id="cb506-11"><a href="SamplingVariogram.html#cb506-11" aria-hidden="true" tabindex="-1"></a>  tausqk <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb506-12"><a href="SamplingVariogram.html#cb506-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The AKVs are computed by adding the kriging variances and the extra variances due to semivariogram uncertainty (Equation <a href="SamplingVariogram.html#eq:augmentedvar">(25.4)</a>). The estimation variances of the kriging variances are computed (<code>VKV</code>), and the EAC values. Both the AKV and EAC differ among the evaluation points. As a summary, the mean of the two variables is computed.</p>
+<div class="sourceCode" id="cb507"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb507-1"><a href="SamplingVariogram.html#cb507-1" aria-hidden="true" tabindex="-1"></a>augmentedvar <span class="ot">&lt;-</span> var<span class="sc">+</span>tausq</span>
+<span id="cb507-2"><a href="SamplingVariogram.html#cb507-2" aria-hidden="true" tabindex="-1"></a>MAKV0 <span class="ot">&lt;-</span> <span class="fu">mean</span>(augmentedvar)</span>
+<span id="cb507-3"><a href="SamplingVariogram.html#cb507-3" aria-hidden="true" tabindex="-1"></a>VKV <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(var))</span>
+<span id="cb507-4"><a href="SamplingVariogram.html#cb507-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(dvar)){</span>
+<span id="cb507-5"><a href="SamplingVariogram.html#cb507-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(dvar)){</span>
+<span id="cb507-6"><a href="SamplingVariogram.html#cb507-6" aria-hidden="true" tabindex="-1"></a>    VKVij <span class="ot">&lt;-</span> invI[i,j]<span class="sc">*</span>dvar[[i]]<span class="sc">*</span>dvar[[j]]</span>
+<span id="cb507-7"><a href="SamplingVariogram.html#cb507-7" aria-hidden="true" tabindex="-1"></a>    VKV <span class="ot">&lt;-</span> VKV<span class="sc">+</span>VKVij</span>
+<span id="cb507-8"><a href="SamplingVariogram.html#cb507-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb507-9"><a href="SamplingVariogram.html#cb507-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb507-10"><a href="SamplingVariogram.html#cb507-10" aria-hidden="true" tabindex="-1"></a>EAC <span class="ot">&lt;-</span> augmentedvar<span class="sc">+</span>(VKV<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span>var))</span>
+<span id="cb507-11"><a href="SamplingVariogram.html#cb507-11" aria-hidden="true" tabindex="-1"></a>MEAC0 <span class="ot">&lt;-</span> <span class="fu">mean</span>(EAC)</span></code></pre></div>
+<p>For the spatial coverage sample of 90 points supplemented by a simple random sample of ten points MAKV equals 0.846, MEAC equals 0.896.</p>
+<p>The sample can be optimised with <strong>spsann</strong> function <code>optimUSER</code>. The argument <code>points</code> is a list containing a data frame (or matrix) with the coordinates of the fixed points (specified with sub-argument <code>fixed</code>), and an integer of the number of supplemental points of which the locations are optimised (specified with sub-argument <code>free</code>). Recall that an important difference with Section <a href="SamplingVariogram.html#samplingforvariogram">25.3</a> is that the free and fixed sample are merged, and are used together, both for estimating the semivariogram and for prediction. The objective functions <code>augvar</code> and <code>EAC</code> are defined in <strong>R</strong> script <a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R">ObjectiveFunctions4MBSamplingVariogram.R</a><a href="#fn31" class="footnote-ref" id="fnref31"><sup>31</sup></a>.</p>
+<div class="sourceCode" id="cb508"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb508-1"><a href="SamplingVariogram.html#cb508-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span> (<span class="st">&quot;Rscripts/ObjectiveFunctions4MBSamplingVariogram.R&quot;</span>)</span>
+<span id="cb508-2"><a href="SamplingVariogram.html#cb508-2" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">scheduleSPSANN</span>(</span>
+<span id="cb508-3"><a href="SamplingVariogram.html#cb508-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance=</span><span class="fl">0.8</span>,</span>
+<span id="cb508-4"><a href="SamplingVariogram.html#cb508-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.temperature=</span><span class="fl">0.008</span>, <span class="at">temperature.decrease=</span><span class="fl">0.8</span>,</span>
+<span id="cb508-5"><a href="SamplingVariogram.html#cb508-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains=</span><span class="dv">500</span>, <span class="at">chain.length=</span><span class="dv">20</span>, <span class="at">stopping=</span><span class="dv">10</span>,</span>
+<span id="cb508-6"><a href="SamplingVariogram.html#cb508-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">x.min=</span><span class="dv">0</span>, <span class="at">y.min=</span><span class="dv">0</span>, <span class="at">cellsize=</span><span class="dv">50</span>)</span>
+<span id="cb508-7"><a href="SamplingVariogram.html#cb508-7" aria-hidden="true" tabindex="-1"></a>fixed <span class="ot">&lt;-</span> <span class="fu">coordinates</span>(mySCsample)</span>
+<span id="cb508-8"><a href="SamplingVariogram.html#cb508-8" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(fixed) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>,<span class="st">&quot;y&quot;</span>)</span>
+<span id="cb508-9"><a href="SamplingVariogram.html#cb508-9" aria-hidden="true" tabindex="-1"></a>pnts <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">fixed=</span>fixed, <span class="at">free=</span><span class="dv">10</span>)</span>
+<span id="cb508-10"><a href="SamplingVariogram.html#cb508-10" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb508-11"><a href="SamplingVariogram.html#cb508-11" aria-hidden="true" tabindex="-1"></a>rslt <span class="ot">&lt;-</span> <span class="fu">optimUSER</span>(</span>
+<span id="cb508-12"><a href="SamplingVariogram.html#cb508-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">points=</span>pnts, <span class="at">candi=</span>candi,</span>
+<span id="cb508-13"><a href="SamplingVariogram.html#cb508-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">fun=</span>augvar,</span>
+<span id="cb508-14"><a href="SamplingVariogram.html#cb508-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">esample=</span>myevalsample,</span>
+<span id="cb508-15"><a href="SamplingVariogram.html#cb508-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">model=</span><span class="st">&quot;Exp&quot;</span>, <span class="at">thetas=</span>thetas, <span class="at">perturbation=</span><span class="fl">0.01</span>,</span>
+<span id="cb508-16"><a href="SamplingVariogram.html#cb508-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">schedule=</span>schedule, <span class="at">track=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Figure <a href="SamplingVariogram.html#fig:FigMBEK">25.7</a> shows for the Hunter Valley spatial coverage samples of 90 points, supplemented by ten points optimised by SSA, using MAKV and MEAC as a minimisation criterion.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:FigMBEK"></span>
+<img src="SpatialSampling_files/figure-html/FigMBEK-1.png" alt="Optimised sample of ten points supplemented to spatial coverage sample, for semivariogram estimation and prediction, using the mean augmented kriging variance (MAKV) or the mean estimation adjusted criterion (MEAC) as minimisation criterion." width="100%" />
+<p class="caption">
+Figure 25.7: Optimised sample of ten points supplemented to spatial coverage sample, for semivariogram estimation and prediction, using the mean augmented kriging variance (MAKV) or the mean estimation adjusted criterion (MEAC) as minimisation criterion.
+</p>
+</div>
+<p>Figure <a href="SamplingVariogram.html#fig:FigMBEK">25.7</a> shows that with MAKV as a minimisation criterion there is one point that is very close to a spatial coverage sample point (distance <span class="math inline">\(&lt;2\)</span> m.). A histogram of the shortest distance to the spatial coverage sample is shown in Figure <a href="SamplingVariogram.html#fig:HistogramShortestDistance">25.8</a>. With MEAC two points are at very short distance of the spatial coverage sample (<span class="math inline">\(&lt; 3\)</span> m). The average distance between neighbouring spatial coverage sampling points equals 381.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:HistogramShortestDistance"></span>
+<img src="SpatialSampling_files/figure-html/HistogramShortestDistance-1.png" alt="Shortest distance of supplemental sample, optimised with mean augmented kriging variance (AKV) and mean estimation adjusted criterion (EAC), to spatial coverage sample." width="100%" />
+<p class="caption">
+Figure 25.8: Shortest distance of supplemental sample, optimised with mean augmented kriging variance (AKV) and mean estimation adjusted criterion (EAC), to spatial coverage sample.
+</p>
+</div>
+<p>The MAKV of the optimised sample equals 0.775 which is 92% of the MAKV of the initial sample. The MEAC of the optimised sample equals 0.788 which is 88% of the MEAC of the initial sample. The reduction of these two criteria through the optimisation is much smaller than for logdet and MVKV in Section <a href="SamplingVariogram.html#samplingforvariogram">25.3</a>. This can be explained by the small number of sampling units that is optimised: only the locations of ten units are optimised, 90 are fixed. In Section <a href="SamplingVariogram.html#samplingforvariogram">25.3</a> all 100 locations were optimised.</p>
+<div id="exercises-32" class="section level4 unnumbered">
+<h4>Exercises</h4>
+<ol start="5" style="list-style-type: decimal">
+<li>Write an <strong>R</strong> script to select from the Hunter Valley a spatial coverage sample of 90 points supplemented by 10 points. Use MEAC as a minimisation criterion, an exponential semivariogram with a distance parameter of 200 m and a ratio of spatial dependence of 0.5. Compare the sample with the optimised sample in Figure <a href="SamplingVariogram.html#fig:FigMBEK">25.7</a>, which was obtained with a spatial dependence ratio of 0.8.</li>
+</ol>
+</div>
+</div>
+<div id="a-practical-solution" class="section level2" number="25.5">
+<h2><span class="header-section-number">25.5</span> A practical solution</h2>
+<p>Based on the optimised samples shown above, a very straightforward, simple sampling design for estimating the model parameters and for prediction is a spatial coverage sample supplemented with randomly selected points in between the points of the spatial coverage sample at some chosen, fixed distances. Figure <a href="SamplingVariogram.html#fig:SpatialCoveragePlus">25.9</a> shows an example. A subsample of ten points is selected from the 90 points of the spatial coverage sample, using simple random sampling without replacement. These points are used as a starting point to select a point at a distance of 20 m in a random direction.</p>
+<div class="sourceCode" id="cb509"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb509-1"><a href="SamplingVariogram.html#cb509-1" aria-hidden="true" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb509-2"><a href="SamplingVariogram.html#cb509-2" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb509-3"><a href="SamplingVariogram.html#cb509-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb509-4"><a href="SamplingVariogram.html#cb509-4" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(mySCsample), m, <span class="at">replace=</span><span class="cn">FALSE</span>)</span>
+<span id="cb509-5"><a href="SamplingVariogram.html#cb509-5" aria-hidden="true" tabindex="-1"></a>mySCsubsample <span class="ot">&lt;-</span> mySCsample[units,]</span>
+<span id="cb509-6"><a href="SamplingVariogram.html#cb509-6" aria-hidden="true" tabindex="-1"></a>dxy <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow=</span>m, <span class="at">ncol=</span><span class="dv">2</span>)</span>
+<span id="cb509-7"><a href="SamplingVariogram.html#cb509-7" aria-hidden="true" tabindex="-1"></a>angle <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="at">n=</span>m, <span class="at">min=</span><span class="dv">0</span>, <span class="at">max=</span><span class="dv">2</span><span class="sc">*</span>pi)</span>
+<span id="cb509-8"><a href="SamplingVariogram.html#cb509-8" aria-hidden="true" tabindex="-1"></a>dxy[,<span class="dv">1</span>]<span class="ot">=</span>h<span class="sc">*</span><span class="fu">sin</span>(angle); dxy[,<span class="dv">2</span>]<span class="ot">=</span>h<span class="sc">*</span><span class="fu">cos</span>(angle)</span>
+<span id="cb509-9"><a href="SamplingVariogram.html#cb509-9" aria-hidden="true" tabindex="-1"></a>mysupsample <span class="ot">&lt;-</span> mySCsubsample<span class="sc">+</span>dxy</span></code></pre></div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:SpatialCoveragePlus"></span>
+<img src="SpatialSampling_files/figure-html/SpatialCoveragePlus-1.png" alt="Spatial coverage sample of 90 points supplemented by ten points at short distance (20 m) from randomly selected spatial coverage point." width="70%" />
+<p class="caption">
+Figure 25.9: Spatial coverage sample of 90 points supplemented by ten points at short distance (20 m) from randomly selected spatial coverage point.
+</p>
+</div>
+<p>The MAKV of this practical sample equals 0.801, and the MEAC equals 0.809. For MAKV 36% of the maximal reduction is realised by this practical solution; for MEAC this is 20%.</p>
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-bog99" class="csl-entry">
+Bogaert, P., and D. Russo. 1999. <span>“Optimal Spatial Sampling Design for the Estimation of the Variogram Based on a Least Squares Approach.”</span> <em>Water Resources Research</em> 35: 1275–89.
+</div>
+<div id="ref-bru94b" class="csl-entry">
+Brus, D. J., and J. J. de Gruijter. 1994. <span>“Estimation of Nonergodic Variograms and Their Sampling Variance by Design-Based Sampling Strategies.”</span> <em>Mathematical Geology</em> 26: 437–54.
+</div>
+<div id="ref-Kitanidis87" class="csl-entry">
+Kitanidis, P. K. 1987. <span>“Parametric Estimation of Covariances of Regionalised Variables.”</span> <em>Water Resources Bulletin</em> 23: 557–67.
+</div>
+<div id="ref-lar00b" class="csl-entry">
+Lark, R. M. 2000. <span>“Estimating Variograms of Soil Properties by the Method-of-Moments and Maximum Likelihood.”</span> <em>European Journal of Soil Science</em> 51: 717–28.
+</div>
+<div id="ref-lar02" class="csl-entry">
+———. 2002. <span>“Optimised Spatial Sampling of Soil for Estimation of the Variogram by Maximum Likelihood.”</span> <em>Geoderma</em> 105: 49–80.
+</div>
+<div id="ref-Lark2011CAGEO" class="csl-entry">
+———. 2011. <span>“<span class="nocase">Spatially nested sampling schemes for spatial variance components: Scope for their optimisation</span>.”</span> <em>Computers &amp; Geosciences</em> <span>37</span> (<span>10</span>): 1633–41. <a href="https://doi.org/{10.1016/j.cageo.2010.12.010}">https://doi.org/{10.1016/j.cageo.2010.12.010}</a>.
+</div>
+<div id="ref-Lark2018" class="csl-entry">
+Lark, R. M., and B. Marchant. 2018. <span>“How Should a Spatial-Coverage Sample Design for a Geostatistical Soil Survey Be Supplemented to Support Estimation of Spatial Covariance Parameters?”</span> <em>Geoderma</em> 319: 89–99. https://doi.org/<a href="https://doi.org/10.1016/j.geoderma.2017.12.022">https://doi.org/10.1016/j.geoderma.2017.12.022</a>.
+</div>
+<div id="ref-Ly2017" class="csl-entry">
+Ly, A., M. Marsman, J. Verhagen, R. P. P. P. Grasman, and E. J. Wagenmakers. 2017. <span>“A Tutorial on Fisher Information.”</span> arXiv:1705.01064 [Math.ST]. 2017. <a href="https://arxiv.org/abs/1705.01064">https://arxiv.org/abs/1705.01064</a>.
+</div>
+<div id="ref-Marcelli2019" class="csl-entry">
+Marcelli, A., P. Corona, and L. Fattorini. 2019. <span>“Design-Based Estimation of Mark Variograms in Forest Ecosystem Surveys.”</span> <em>Spatial Statistic</em> 30: 27–38.
+</div>
+<div id="ref-Marchant2007" class="csl-entry">
+Marchant, B. P., and R. M. Lark. 2007. <span>“<span class="nocase">optimised sample schemes for geostatistical surveys</span>.”</span> <em><span>Mathematical Geology</span></em> <span>39</span> (<span>1</span>): 113–34. <a href="https://doi.org/{10.1007/s11004-006-9069-1}">https://doi.org/{10.1007/s11004-006-9069-1}</a>.
+</div>
+<div id="ref-mul99" class="csl-entry">
+Müller, W. G., and D. L. Zimmerman. 1999. <span>“Optimal Designs for Variogram Estimation.”</span> <em>Environmetrics</em> 10: 23–27.
+</div>
+<div id="ref-Oliver1986" class="csl-entry">
+Oliver, M. A., and R. Webster. 1986. <span>“Combining Nested and Linear Sampling for Determining the Scale and Form of Spatial Variation of Regionalized Variables.”</span> <em>Geographical Analysis</em> 18: 227–42.
+</div>
+<div id="ref-Papritz2011" class="csl-entry">
+Papritz, A., A. Duemig, C. Zimmermann, H. H. Gerke, B. Felderer, I. Koegel-Knabner, W. Schaaf, and R. Schulin. 2011. <span>“<span class="nocase">Uncertainty of variance component estimates in nested sampling: a case study on the field-scale spatial variability of a restored soil</span>.”</span> <em>European Journal of Soil Science</em> <span>62</span> (<span>3</span>): 479–95. <a href="https://doi.org/{10.1111/j.1365-2389.2011.01363.x}">https://doi.org/{10.1111/j.1365-2389.2011.01363.x}</a>.
+</div>
+<div id="ref-Pinheiro2014" class="csl-entry">
+Pinheiro, J., D. Bates, S. DebRoy, D. Sarkar, and R Core Team. 2014. <em><span class="nocase">nlme</span>: Linear and Nonlinear Mixed Effects Models</em>. <a href="http://CRAN.R-project.org/package=nlme">http://CRAN.R-project.org/package=nlme</a>.
+</div>
+<div id="ref-web92" class="csl-entry">
+Webster, R., and M. A. Oliver. 1992. <span>“Sample Adequately to Estimate Variograms of Soil Properties.”</span> <em>Journal of Soil Science</em> 43: 177–92.
+</div>
+<div id="ref-Webster2006" class="csl-entry">
+Webster, R., S. J. Welham, J. M. Potts, and M. A. Oliver. 2006. <span>“Estimating the Spatial Scales of Regionalized Variables by Nested Sampling, Hierarchical Analysis of Variance and Residual Maximum Likelihood.”</span> <em>Computers and Geosciences</em> 32: 1320–33.
+</div>
+<div id="ref-zhu05" class="csl-entry">
+Zhu, Z., and M. L. Stein. 2005. <span>“Spatial Sampling Design for Parameter Estimation of the Covariance Function.”</span> <em>Journal of Statistical Planning and Inference</em> 134: 583–603.
+</div>
+<div id="ref-zhu06" class="csl-entry">
+———. 2006. <span>“Spatial Sampling Design for Prediction with Estimated Parameters.”</span> <em>Journal of Agricultural  Biological and Environmental Statistics</em> 11: 24–44.
+</div>
+<div id="ref-zhu06b" class="csl-entry">
+Zhu, Z., and H. Zhang. 2006. <span>“Spatial Sampling Under the Infill Asymptotic Framework.”</span> <em>Environmetrics</em> 17: 323–37.
+</div>
+<div id="ref-zim06" class="csl-entry">
+Zimmerman, D. L. 2006. <span>“Optimal Network Design for Spatial Prediction, Covariance Parameter Estimation, and Empirical Prediction.”</span> <em>Environmetrics</em> 17: 635–52.
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="29">
+<li id="fn29"><p><a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R" class="uri">https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R</a><a href="SamplingVariogram.html#fnref29" class="footnote-back">↩︎</a></p></li>
+<li id="fn30"><p><a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R" class="uri">https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R</a><a href="SamplingVariogram.html#fnref30" class="footnote-back">↩︎</a></p></li>
+<li id="fn31"><p><a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R" class="uri">https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R</a><a href="SamplingVariogram.html#fnref31" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="MBSamplePattern.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="Validation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/30-Sampling4VariogramEstimation.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["SpatialSampling.pdf", "SpatialSampling.epub"],
+"search": {
+"engine": "lunr",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

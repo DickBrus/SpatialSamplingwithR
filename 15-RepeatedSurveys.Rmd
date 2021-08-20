@@ -1,0 +1,134 @@
+# Repeated sample surveys for monitoring population parameters {#RepeatedSurveys}
+
+The previous chapters are all about sampling to estimate population parameters *at a given time*. The survey is done in a relatively short period of time, so that we can safely assume that the study variable did not change during that period. This chapter is about repeating the sample survey two or more times, to estimate a temporal change in a population parameter\index{Repeated surveys for monitoring}. Sampling locations are selected by probability sampling, by any design type. Sampling times are not selected randomly, but purposively. For instance, to monitor the carbon stock in the soil of a country, we may decide to repeat the survey after five years, in the same season of the year as the first sampling round.
+
+## Space-time designs
+
+@gru06 present an overview of space-time designs\index{Space-time design}. Four of these designs are schematically shown in Figure \@ref(fig:SpaceTimeDesigns). With repeated sampling in two-dimensional space there are three dimensions: two spatial and one time dimension. In Figure  \@ref(fig:SpaceTimeDesigns) the sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. Twenty sampling locations are selected by simple random sampling.
+
+In the static-synchronous design\index{Space-time design!static-synchronous design}, also referred to as a pure panel\index{Pure panel}, all sampling locations selected in the first survey are revisited in the subsequent surveys. On the contrary, in an independent synchronous design\index{Space-time design!independent-synchronous design}, in each survey a probability sample is selected independent from the samples selected in the previous surveys. The serially alternating design\index{Space-time design!serially alternating design} is a compromise between a static-synchronous and an independent synchronous design. The sample selected in the first survey is revisited in the third survey. The sample of the second survey is selected independently from the sample of the first survey, and these locations are revisited in the fourth survey. In this case the period of revisits is two, i.e. two sampling intervals between successive surveys, but this can also be increased. For instance with a period of three, three samples are selected independently from each other for the first three surveys . The sample of the first survey is revisited in the fourth survey, et cetera. Another compromise design is a supplemented panel\index{Space-time design!supplemented panel design}. In this space-time design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. The samples of the subsequent surveys are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \@ref(fig:SpaceTimeDesigns), one-half of the sampling locations (ten locations) are fixed, i.e. revisited in all surveys, but the proportion of fixed sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even optimised.
+
+```{r SpaceTimeDesigns, echo=FALSE, out.width="100%", fig.asp=0.8, fig.cap="Space-time designs for monitoring population parameters. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemeneted panel design."}
+
+#pure panel
+set.seed(314)
+Space <- sample.int(n=1000, size=20, replace=FALSE)
+mysampleSS <- data.frame(
+    Space=rep(x=Space, times=4),
+    Time=rep(x=c(1, 2, 3, 4), each=length(Space)),
+    Panel=rep("a", 4*length(Space)) #unselect this line for figure withpanelsaslegend
+)
+mysampleSS$design<-"SS"
+
+#independent synchronous
+Space <- sample.int(n=1000, size=80, replace=FALSE)
+mysampleIS <- data.frame(
+    Space,
+    Time=rep(x=c(1, 2, 3, 4), each=20)
+)
+mysampleIS$Panel <- rep(x=c("a","b","c","d"), each=20)
+mysampleIS$design <- "IS"
+
+#serially alternating
+# set periodicity
+p <- 2
+# construct data.frame
+mysample1 <- NULL
+for (i in seq_len(p)) {
+    mysample1 <- 
+      rbind(mysample1,
+            data.frame(Space=sample.int(n=1000, size=20, replace=FALSE), Time=i, Panel=letters[i]))
+}
+mysample2 <- mysample1
+mysample2$Time <- mysample1$Time + p
+mysample2$Panel <- mysample1$Panel
+mysampleSA <- rbind(mysample1, mysample2)
+mysampleSA$design <- "SA"
+
+#supplemented panel
+p <- 5 #number of panels
+mysample1 <- NULL
+for (i in seq_len(p)) {
+    mysample1 <- rbind(
+        mysample1,
+        data.frame(
+            Space=sample.int(n=1000, size=10, replace=FALSE),
+            Time=(i==1)*1+(i>1)*(i-1),
+            Panel=letters[i])
+    )
+}
+mysample2<-NULL
+mysample2$Space[1:10] <- mysample1$Space[1:10]
+mysample2$Space[11:20] <- mysample1$Space[1:10]
+mysample2$Space[21:30] <- mysample1$Space[1:10]
+
+mysample2$Time <- rep(x=c(2, 3, 4), each=10)
+mysample2$Panel <- rep(x="a", each=30)
+mysampleSP <- rbind(mysample1, mysample2)
+mysampleSP$design<-"SP"
+
+#rotating panel
+p <- 5 #number of panels
+mysample1 <- NULL
+for (i in seq_len(p)) {
+    mysample1 <- rbind(
+        mysample1,
+        data.frame(
+            Space=sample.int(n=1000, size=10, replace=FALSE),
+            Time=(i==1)*1+(i>1)*(i-1),
+            Panel=letters[i])
+        )
+}
+mysample2<-NULL
+mysample2$Space[1:10] <- mysample1$Space[11:20]
+mysample2$Space[11:20] <- mysample1$Space[21:30]
+mysample2$Space[21:30] <- mysample1$Space[31:40]
+
+mysample2$Time <- rep(x=c(2, 3, 4), each=10)
+mysample2$Panel <- rep(x=c("b", "c", "d"), each=10)
+mysampleRP <- rbind(mysample1, mysample2)
+mysampleRP$design<-"RP"
+
+mysample<-rbind(mysampleSS,mysampleIS,mysampleSA,mysampleSP)
+mysample$design<-factor(x=mysample$design,levels=c("SS","IS","SA","SP"),ordered=TRUE)
+
+# create plot
+ggplot(data=mysample) +
+            geom_point(mapping=aes(x=Space, y=Time, shape=factor(Panel), colour=factor(Panel)), size=2) +
+            scale_x_continuous(limits=c(0, 1000)) +
+            scale_y_continuous(breaks=1:4) +
+            scale_shape(name="panel", solid=FALSE) +
+            scale_colour_viridis_d(name="panel")+
+            facet_wrap(~design)
+```
+In Figure \@ref(fig:SpaceTimeDesigns) the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the static-synchronous design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the independent synchronous design there are as many panels as there ar surveys. In the serially alternating design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS and SA) all sampling locations of a given survey are in the same panel. This is not the case in the supplemented panel design. In each survey two panels are observed, one panel of fixed sampling locations (pure panel part of sample), and another panel of swarming sampling locations. The concept of panels is needed hereafter in estimating space-time population parameters.  
+
+## Space-time population parameters
+
+The data of repeated surveys can be used to estimate various parameters. In this chapter I show how to estimate the current population parameter, i.e. the population parameter in the latest survey, the change of the population parameter between two surveys, and the temporal trend of the population parameter. The current population parameter need not be defined here as only one survey (one sampling time) is involved in this parameter, so that the definitions in Section \@ref(PopulationParameters) are also relevant here. The change of the population parameter is defined as the population parameter at a given survey minus this parameter at an earlier survey. For instance, the change of an infinite population mean\index{Change of population mean (total)} is defined as
+
+\begin{equation}
+\bar{d}_{2,1}=\frac{1}{A}\left(\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_2) \;\mathrm{d}\mathbf{s}-\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_1) \;\mathrm{d}\mathbf{s}\right)\;,
+(\#eq:ChangePopMean)
+\end{equation}
+
+With more than two surveys an interesting population parameter is the *average change* per time unit of the population parameter, referred to as the temporal trend\index{Temporal trend}. It is defined as a linear combination of the population parameters at the sampling times. For instance, the temporal trend of the population mean\index{Temporal trend !of population mean (total)} is defined as [@Breidt99]
+
+\begin{equation}
+b=\sum_{j=1}^r w_j \bar{z}_j \;,
+(\#eq:TrendofMean)
+\end{equation}
+
+with $r$ the number of sampling times and $\bar{z}_j$ the population mean at time $t_j$, and weights $w_j$ equal to
+
+\begin{equation}
+w_j = \frac{t_j-\bar{t}}{\sum_{j=1}^r(t_j-\bar{t})^2} \;,
+(\#eq:weightsTrendofMean)
+\end{equation}
+
+with $\bar{t}$ the mean of the sampling times. Note that the temporal trend is defined as a parameter of a space-time population, not as a parameter of a time-series model.
+
+```{r, echo=FALSE}
+rm(list=ls())
+```
+

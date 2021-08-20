@@ -1,0 +1,45 @@
+# Sampling on a regular grid {#Regulargrid}
+
+Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid-points are not used for design-based estimation of the population mean or total, and for that reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square, triangular and hexagonal. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
+
+Besides the shape of the grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation, and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per point, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m$^2$, and $n$ is the number of sampling units (sample size).
+
+Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. The argument `offset` is used to select non-randomly a grid. A sample size can be specified, using argument `n`; alternatively a grid spacing can be specified using argument `cellsize`.
+
+```{r grid}
+library(sp)
+load("data/Voorst.RData")
+gridded(grdVoorst) <- ~s1+s2
+mysample <- spsample(
+  x=grdVoorst, type="regular", cellsize=c(200,200),
+  offset=c(0.5,0.5)) %>% as(.,"data.frame")
+```
+
+Figure \@ref(fig:gridVoorst) shows the selected square grid.
+
+```{r gridVoorst, echo=FALSE, out.width='100%', fig.cap="Non-random square grid sample from Voorst."}
+grdVoorst <- as(grdVoorst, "data.frame")
+ggplot()+
+  geom_raster(data=grdVoorst, mapping=aes(x=s1/1000, y=s2/1000), fill="grey")+
+  geom_point(data=mysample, mapping=aes(x=x1/1000,y=x2/1000), size=2) +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()
+n <- nrow(mysample)
+```
+
+The number of grid points in this example equals `r n`. Nodes of the square grid in parts of the area not belonging to the population of interest, such as built-up areas and roads, are discarded by `spsample`, because these areas are not included in the sampling frame file `grdVoorst`. As a consequence, there are some undersampled areas\index{Undersampled area}, for instance in the middle of the study area where two roads cross. If we use the square grid in spatial interpolation, e.g., by ordinary kriging, we are more uncertain about the predictions in these undersampled areas than in areas where the grid is complete. In the next chapter I show how this local undersampling can be avoided.
+
+#### Exercises {-}
+
+1. Write an **R** script to select a square grid of size 100 from the three woredas in Ethiopia. The data.frame `grdEthiopia` is stored in `data/CovariatesThreeWoredasEthiopia.RData`. Use argument `offset=c(0.5,0.5)` so that the starting point of the grid is not selected randomly.   
+    +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?  
+    +  Select a square grid with a spacing of 10.2 distance units (km), and compute the sample size.   
+    +  Write a for-loop to select 200 times a square grid of on average 100 points with random starting point. Set a seed so that results can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size and plot a histogram.  
+    +  Select a square grid of exactly 100 points.  
+  
+```{r, echo=FALSE}
+rm(list=ls())
+```
+
+

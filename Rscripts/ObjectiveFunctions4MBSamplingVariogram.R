@@ -1,0 +1,349 @@
+logdet<-function(points, model, thetas, perturbation)  {
+  points <- as.data.frame(points)
+  coordinates(points) <- ~x+y
+  
+  #compute distance matrix of sample for variogram estimation
+  D <- spDists(points)
+  vgmodel <- vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1])
+  A <- variogramLine(vgmodel,dist_vector=D,covariance=TRUE)
+  pA <- dA <- list()
+  for (i in 1:length(thetas)) {
+    thetas.pert <- thetas
+    thetas.pert[i] <- (1+perturbation)*thetas[i]
+    vgmodel.pert <- vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1])
+    pA[[i]] <- variogramLine(vgmodel.pert,dist_vector=D,covariance=TRUE)
+    dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
+  }
+  
+  cholA <- try(chol(A),silent=TRUE)
+  if (is.character(cholA)){
+    return(1E20)} else {
+      # inverse of the correlation matrix
+      invA <- chol2inv(chol(A))
+      # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
+      I <- matrix(0,length(thetas),length(thetas))
+      for (i in 1:length(thetas)){
+        for (j in i:length(thetas)){
+          I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+        }
+      }
+      
+      cholI <- try(chol(I),silent=TRUE)
+      if (is.character(cholI)){
+        return(1E20)} else {
+          
+          # inverse of the Fisher information matrix
+          invI <- chol2inv(chol(I))
+          
+          logdet <- determinant(invI,logarithm=TRUE)$modulus
+          logdet} 
+    }
+}
+
+varkrigvar<-function(points, psample, esample, model, thetas, perturbation)  {
+  nobs <- nrow(points)
+  points <- as.data.frame(points)
+  coordinates(points) <- ~x+y
+  #compute distance matrix of sample for variogram estimation
+  D <- spDists(points)
+  vgmodel <- vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1])
+  A <- variogramLine(vgmodel,dist_vector=D,covariance=TRUE)
+  pA <- dA <- list()
+  for (i in 1:length(thetas)) {
+    thetas.pert <- thetas
+    thetas.pert[i] <- (1+perturbation)*thetas[i]
+    vgmodel.pert <- vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1])
+    pA[[i]] <- variogramLine(vgmodel.pert,dist_vector=D,covariance=TRUE)
+    dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
+  }
+  cholA <- try(chol(A),silent=TRUE)
+  if (is.character(cholA)){
+    return(1E20)} else {
+      # inverse of the correlation matrix
+      invA <- chol2inv(chol(A))
+      # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
+      I <- matrix(0,length(thetas),length(thetas))
+      for (i in 1:length(thetas)){
+        for (j in i:length(thetas)){
+          I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+        }
+      }
+      cholI <- try(chol(I),silent=TRUE)
+      if (is.character(cholI)){
+        return(1E20)} else {
+          # inverse of the Fisher information matrix
+          invI <- chol2inv(chol(I))
+          #compute distance matrix and correlation matrix of sampling points used for prediction
+          D <- spDists(psample)
+          A <- variogramLine(vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1]),
+                             dist_vector=D,covariance=TRUE)
+          #extend correlation matrix A with a column and row with ones (ordinary kriging)
+          nobs<-length(psample)
+          B <- matrix(data=0,nrow=nobs+1,ncol=nobs+1)
+          B[1:nobs,1:nobs] <- A
+          B[1:nobs,nobs+1] <- 1
+          B[nobs+1,1:nobs] <- 1
+          #compute matrix with correlations between evaluation nodes and sampling points used for prediction
+          D0 <- spDists(x=esample,y=psample)
+          A0 <- variogramLine(vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1]),
+                              dist_vector=D0,covariance=TRUE) 
+          b <- cbind(A0,1)
+          #compute perturbed correlation matrix (pA)
+          pA <- pA0 <- list()
+          for (i in 1:length(thetas)) {
+            thetas.pert <- thetas
+            thetas.pert[i] <- (1+perturbation)*thetas[i]
+            pA[[i]] <- variogramLine(vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1]),
+                                     dist_vector=D,covariance=TRUE) 
+            pA0[[i]] <- variogramLine(vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1]),
+                                      dist_vector=D0,covariance=TRUE)
+          }
+          #extend pA and pA0 with ones
+          pB <- pb <-list()
+          for (i in 1:length(thetas)) {
+            pB[[i]] <- matrix(data=0,nrow=nobs+1,ncol=nobs+1)
+            pB[[i]][1:nobs,1:nobs] <-pA[[i]]
+            pB[[i]][1:nobs,nobs+1] <- 1
+            pB[[i]][nobs+1,1:nobs] <- 1
+            pb[[i]] <- cbind(pA0[[i]],1)
+          }
+          #compute perturbed kriging variances (pvar)
+          var <- numeric(length=length(esample)) #kriging variance
+          pvar <- matrix(nrow=length(esample),ncol=length(thetas)) #matrix with perturbed kriging variances
+          for (i in 1:length(esample)) {
+            b <- c(A0[i,],1)
+            l <- solve(B,b)
+            var[i] <- 1 - l[1:nobs] %*% A0[i,] - l[nobs+1]
+            for (j in 1:length(thetas)){
+              pl <- solve(pB[[j]],pb[[j]][i,])
+              pvar[i,j] <- 1 - pl[1:nobs] %*% pA0[[j]][i,] - pl[nobs+1]
+            }
+          }
+          #approximate partial derivatives of kriging variance to correlogram parameters
+          dvar <- list()
+          for (i in 1:length(thetas)) {
+            dvar[[i]] <- (pvar[,i]-var)/(thetas[i]*perturbation)
+          }         
+          #compute variance of kriging variance for evaluation points.
+          VV <- numeric(length=length(var))
+          for (i in 1:length(thetas)){
+            for (j in 1:length(thetas)){
+              VVij <- invI[i,j]*dvar[[i]]*dvar[[j]]
+              VV <- VV+VVij
+            }
+          }
+          MVV <- mean(VV)
+          MVV
+        }
+    }
+}
+
+augvar<-function(points, esample, model, thetas, perturbation)  {
+  points <- as.data.frame(points)
+  nobs <- nrow(points)
+  coordinates(points) <- ~x+y
+
+  D <- spDists(points)
+  vgmodel <- vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1])
+  A <- variogramLine(vgmodel,dist_vector=D,covariance=TRUE)
+  pA <- dA <- list()
+  for (i in 1:length(thetas)) {
+    thetas.pert <- thetas
+    thetas.pert[i] <- (1+perturbation)*thetas[i]
+    vgmodel.pert <- vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1])
+    pA[[i]] <- variogramLine(vgmodel.pert,dist_vector=D,covariance=TRUE)
+    dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
+  }
+  
+  cholA <- try(chol(A),silent=TRUE)
+  if (is.character(cholA)){
+    return(1E20)} else {
+      # inverse of the covariance matrix
+      invA <- chol2inv(chol(A))
+      # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
+      I <- matrix(0,length(thetas),length(thetas))
+      for (i in 1:length(thetas)){
+        for (j in i:length(thetas)){
+          I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+        }
+      }
+      
+      cholI <- try(chol(I),silent=TRUE)
+      if (is.character(cholI)){
+        return(1E20)} else {
+          
+          # inverse of the Fisher information matrix
+          invI <- chol2inv(chol(I))
+          
+          nrowB <- nobs + 1
+          B <- matrix(data=0,nrow=nrowB,ncol=nrowB)
+          B[1:nobs,1:nobs] <- A
+          B[1:nobs,(nobs+1):nrowB] <- 1
+          B[(nobs+1):nrowB,1:nobs] <- 1
+          
+          #compute matrix with covariances between prediction nodes and sampling points
+          D0 <- spDists(x=esample,y=points)
+          vgmodel <- vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1])
+          A0 <- variogramLine(vgmodel,dist_vector=D0,covariance=TRUE) 
+          #compute pB and pb by extending pA and pA0 with X
+          pB <- pA0 <- pb <-list()
+          for (i in 1:length(thetas)) {
+            pB[[i]] <- B
+            pB[[i]][1:nobs,1:nobs] <- pA[[i]]
+            
+            thetas.pert <- thetas
+            thetas.pert[i] <- (1+perturbation)*thetas[i]
+            vgmodel.pert <- vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1])
+            pA0[[i]] <- variogramLine(vgmodel.pert,dist_vector=D0,covariance=TRUE)
+            pb[[i]] <- cbind(pA0[[i]],1)
+          }
+          
+          L <- matrix(nrow=length(esample),ncol=nobs) #matrix with kriging weights
+          pL <- array(dim=c(length(esample),length(points),length(thetas))) #array with perturbed kriging weights
+          var <- numeric(length=length(esample)) #kriging variance
+          pvar <- matrix(nrow=length(esample),ncol=length(thetas)) #matrix with perturbed kriging variances
+          for (i in 1:length(esample)) {
+            b <- c(A0[i,],1)
+            l <- solve(B,b)
+            L[i,] <- l[1:nobs]
+            var[i] <- 1 - l[1:nobs] %*% A0[i,] - l[-(1:nobs)]
+            for (j in 1:length(thetas)){
+              pl <- solve(pB[[j]],pb[[j]][i,])
+              pL[i,,j] <- pl[1:nobs]
+              pvar[i,j] <- 1 - pl[1:nobs] %*% pA0[[j]][i,] - pl[-(1:nobs)]
+            }
+          }
+          
+          dvar <- dL <- list()
+          for (i in 1:length(thetas)) {
+            dvar[[i]] <- (pvar[,i]-var)/(thetas[i]*perturbation)
+            dL[[i]] <- (pL[,,i] - L)/(thetas[i]*perturbation)
+          }         
+          #tausq: expectation of additional variance due to uncertainty in ML estimates of variogram parameters, see Eq. 5 Lark and Marchant 2018
+          tausq <- numeric(length=length(esample))
+          tausqk <- 0
+          for (k in 1:length(esample)) {
+            for (i in 1:length(dL)){
+              for (j in 1:length(dL)){
+                tausqijk <- invI[i,j]*t(dL[[i]][k,])%*%A%*%dL[[j]][k,]
+                tausqk <- tausqk+tausqijk
+              }
+            }
+            tausq[k] <- tausqk
+            tausqk<-0
+          }
+          augmentedvar <- var+tausq
+          MVar <- mean(augmentedvar)
+          MVar
+        }
+    }
+}
+
+EAC<-function(points, esample, model, thetas, perturbation)  {
+  points <- as.data.frame(points)
+  nobs <- nrow(points)
+  coordinates(points) <- ~x+y
+  
+  D <- spDists(points)
+  vgmodel <- vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1])
+  A <- variogramLine(vgmodel,dist_vector=D,covariance=TRUE)
+  pA <- dA <- list()
+  for (i in 1:length(thetas)) {
+    thetas.pert <- thetas
+    thetas.pert[i] <- (1+perturbation)*thetas[i]
+    vgmodel.pert <- vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1])
+    pA[[i]] <- variogramLine(vgmodel.pert,dist_vector=D,covariance=TRUE)
+    dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
+  }
+  
+  cholA <- try(chol(A),silent=TRUE)
+  if (is.character(cholA)){
+    return(1E20)} else {
+      # inverse of the covariance matrix
+      invA <- chol2inv(chol(A))
+      # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
+      I <- matrix(0,length(thetas),length(thetas))
+      for (i in 1:length(thetas)){
+        for (j in i:length(thetas)){
+          I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+        }
+      }
+      
+      cholI <- try(chol(I),silent=TRUE)
+      if (is.character(cholI)){
+        return(1E20)} else {
+          
+          # inverse of the Fisher information matrix
+          invI <- chol2inv(chol(I))
+          
+          nrowB <- nobs + 1
+          B <- matrix(data=0,nrow=nrowB,ncol=nrowB)
+          B[1:nobs,1:nobs] <- A
+          B[1:nobs,(nobs+1):nrowB] <- 1
+          B[(nobs+1):nrowB,1:nobs] <- 1
+          
+          #compute matrix with covariances between prediction nodes and sampling points
+          D0 <- spDists(x=esample,y=points)
+          vgmodel <- vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1])
+          A0 <- variogramLine(vgmodel,dist_vector=D0,covariance=TRUE) 
+          #compute pB and pb by extending pA and pA0 with X
+          pB <- pA0 <- pb <-list()
+          for (i in 1:length(thetas)) {
+            pB[[i]] <- B
+            pB[[i]][1:nobs,1:nobs] <- pA[[i]]
+            
+            thetas.pert <- thetas
+            thetas.pert[i] <- (1+perturbation)*thetas[i]
+            vgmodel.pert <- vgm(model=model,psill=thetas.pert[1],range=thetas.pert[2],nugget=1-thetas.pert[1])
+            pA0[[i]] <- variogramLine(vgmodel.pert,dist_vector=D0,covariance=TRUE)
+            pb[[i]] <- cbind(pA0[[i]],1)
+          }
+          
+          L <- matrix(nrow=length(esample),ncol=nobs) #matrix with kriging weights
+          pL <- array(dim=c(length(esample),length(points),length(thetas))) #array with perturbed kriging weights
+          var <- numeric(length=length(esample)) #kriging variance
+          pvar <- matrix(nrow=length(esample),ncol=length(thetas)) #matrix with perturbed kriging variances
+          for (i in 1:length(esample)) {
+            b <- c(A0[i,],1)
+            l <- solve(B,b)
+            L[i,] <- l[1:nobs]
+            var[i] <- 1 - l[1:nobs] %*% A0[i,] - l[-(1:nobs)]
+            for (j in 1:length(thetas)){
+              pl <- solve(pB[[j]],pb[[j]][i,])
+              pL[i,,j] <- pl[1:nobs]
+              pvar[i,j] <- 1 - pl[1:nobs] %*% pA0[[j]][i,] - pl[-(1:nobs)]
+            }
+          }
+          
+          dvar <- dL <- list()
+          for (i in 1:length(thetas)) {
+            dvar[[i]] <- (pvar[,i]-var)/(thetas[i]*perturbation)
+            dL[[i]] <- (pL[,,i] - L)/(thetas[i]*perturbation)
+          }         
+          #tausq: expectation of additional variance due to uncertainty in ML estimates of variogram parameters, see Eq. 5 Lark and Marchant 2018
+          tausq <- numeric(length=length(esample))
+          tausqk <- 0
+          for (k in 1:length(esample)) {
+            for (i in 1:length(dL)){
+              for (j in 1:length(dL)){
+                tausqijk <- invI[i,j]*t(dL[[i]][k,])%*%A%*%dL[[j]][k,]
+                tausqk <- tausqk+tausqijk
+              }
+            }
+            tausq[k] <- tausqk
+            tausqk<-0
+          }
+          augmentedvar <- var+tausq
+          #VV: variance of kriging variance, see Eq. 9 Lark (2002) Geoderma. This variance is computed per evaluation point
+          VV <- numeric(length=length(var))
+          for (i in 1:length(dvar)){
+            for (j in 1:length(dvar)){
+              VVij <- invI[i,j]*dvar[[i]]*dvar[[j]]
+              VV <- VV+VVij
+            }
+          }
+          EAC <- mean(augmentedvar+VV/(2*var)) #Estimation Adjusted Criterion of Zhu and Stein (2006), see Eq. 2.16
+          EAC
+        }
+    }
+}

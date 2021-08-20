@@ -1,0 +1,112 @@
+---
+title: "Exercise optimisation of sample pattern for ordinary kriging, using the P90 of the ordinary kriging variance as a criterion"
+author: "Dick Brus"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+
+```{r}
+library(gstat)
+library(sp)
+library(spsann)
+library(ggplot2)
+```
+
+
+## Semivariogram
+
+The parameters of an exponential semivariogram are specified. These parameters are shown in Table 23.1 
+```{r}
+vgm_lnECe <- vgm(model = "Exp", psill = 0.336, range = 192, nugget = 0.116)
+```
+
+## Read discretisation grid
+
+Read square grid that discretises the study area. This 25 x 25 grid serves as the evaluation sample, and is also used to select candidate sampling points.
+
+```{r}
+load(file="data/CottonResearchFarm.RData")
+mysample_eval <- EM_CRF[,c("x1","x2")]
+names(mysample_eval) <- c("x","y")
+candi <- mysample_eval
+```
+
+## Objective function
+
+Define function to compute objective function (P90 of ordinary kriging variance) for a given sample.
+
+```{r}
+QOKV <- function(points, esample, model, nmax, prob) {
+  points <- as.data.frame(points)
+  coordinates(points) <- ~x+y
+  # add dummy variable
+  points$dum=1
+  # compute variance of prediction error
+  res <- krige(
+    formula = dum~1,
+    locations = points,
+    newdata = esample,
+    model = model,
+    nmax = nmax,
+    debug.level = 0
+  )
+  quantile(res$var1.var, probs=prob)
+}
+```
+
+## Optimisation of sample pattern through simulated annealing
+
+Define the simulated annealing schedule.
+
+```{r}
+#Specify annealing schedule
+schedule <- scheduleSPSANN(
+  initial.acceptance = 0.8,
+  initial.temperature = 0.005,
+  temperature.decrease = 0.9,
+  chains = 100,
+  chain.length = 2,
+  stopping = 10,
+  x.min = 25, y.min = 25,
+  cellsize = 25)
+```
+
+
+Start the optimisation through annealing.
+
+```{r}
+coordinates(mysample_eval) <- ~x+y
+
+set.seed(314)
+rslt <- optimUSER(
+  points = 50,
+  candi = candi,
+  fun = QOKV,
+  esample = mysample_eval,
+  model = vgm_lnECe,
+  nmax = 20,
+  prob = 0.9,
+  schedule = schedule,
+  track = TRUE)
+
+mysample <- candi[rslt$points$id,]
+save(mysample, file="../results/MBSample_OK_P90_Uzbekistan.RData")
+```
+
+## Result
+
+```{r}
+ggplot(data=EM_CRF) +
+  geom_raster(mapping = aes(x = x1/1000, y = x2/1000),fill="grey")+
+  geom_point(data = mysample, mapping = aes(x = x/1000, y = y/1000), shape = 2,size= 2)+
+  scale_x_continuous(name = "Easting (km)")+
+  scale_y_continuous(name = "Northing (km)")+
+  coord_fixed() 
+```
+

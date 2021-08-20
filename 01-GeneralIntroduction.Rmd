@@ -1,0 +1,318 @@
+# Introduction {#GeneralIntro}
+
+This book is about sampling for spatial *surveys*. A survey\index{Survey} is an inventory of an object of study about which statements will be made, referred to as the population of interest or target population, by collecting data on the population. Examples are a survey of the organic carbon stored in the soil of a country, the water quality of a lake, the wood volume in a forest, the total annual yield of rice in a country, etc. So this book is about *observational research*, not about experiments. In experiments observations are done under controlled circumstances, think of an experiment on crop yields as a function of application rates of fertilizer. Several levels of fertilizer application rate are chosen and randomly assigned to experimental plots. In observational research factors that influence the study variable are not controlled. This implies that in observational research no conclusions can be drawn on causal relations.
+
+If the whole population is observed this is referred to as a *census*\index{Census}. In general we cannot afford such a census. Only some parts of the population are selected and properties of the study variable are observed (measured) on these selected parts only. Such a survey is referred to as a *sample survey*\index{Sample survey}. The observations are subsequently used to derive characteristics of the whole population. For instance, to estimate the wood volume in a forest, we cannot afford to measure the wood volume of every tree in the forest. Instead, some trees are selected, the wood volume of these trees is measured, and based on these measurements the total wood volume in the forest is estimated.
+
+## Basic sampling concepts {#BasicConcepts}
+
+In this book the populations of interest have a spatial dimension. In selecting parts of such populations for observation we may account for the spatial coordinates of the parts, but this is not strictly needed. Examples of spatial sampling designs are designs selecting sampling units that are spread out throughout the study area, often leading to more precise estimates of the population mean or total.
+
+Two types of populations can be distinguished: discrete and continuous populations. *Discrete populations* consist of discrete, natural objects, think of trees, agricultural fields, lakes etc. These objects are referred to as *population units*\index{Population unit}. The total number of population units in a discrete population\index{Population!discrete population} is finite. A finite spatial population of discrete units can be denoted by $\mathcal{U}=\{u(\mathbf{s}_1),u(\mathbf{s}_2), \dots , u(\mathbf{s}_N)\}$, with $u(\mathbf{s}_k)$ the unit located at $\mathbf{s}_k$, where $\mathbf{s}$ is a vector with spatial coordinates. The population units naturally serve as the *elementary sampling units*\index{Elementary sampling unit}. In this book the spatial populations are two-dimensional, so a vector $\mathbf{s}$ has two coordinates, Easting and Northing. 
+
+Other populations may, for the purpose of sampling, be considered as a physical continuum, e.g. the soil in a region, the water in a lake, the crop on a field if interest lies in crop properties per areal unit of the field^[If interest lies in properties per plant, the population is discrete.]. Such continuous, spatial populations can be denoted by $\mathcal{U}=\{u(\mathbf{s}), \mathbf{s} \in \mathcal{A} \}$, with $\mathcal{A}$ the study area. Discrete objects that can serve as elementary sampling unit do not exist in such *continuous populations*\index{Population!continuous population}. We must define these elementary sampling units. The elementary sampling units can be areal units, e.g. 10 m by 10 m squares or circular plots with a radius of 5 m, or "points", i.e. units that have an area that is so small compared to the area of the population that the area can be ignored. 
+
+In this book a population unit and an elementary sampling unit can be an individual object of a discrete population, as well as a point or areal sampling unit\index{Areal sampling unit} of a continuous population.
+
+The size and geometry of the elementary units used in sampling a continuous population is referred to as the sample support\index{Sample support}. The total number of elementary sampling units in a continuous population can be finite, e.g. all 25 m by 25 m (disjoint) raster cells in an area (raster cells in Figure \@ref(fig:support)), or infinite, e.g. all points in an area, or all squares or circular plots with a given radius that are allowed to overlap in an area (circles in Figure \@ref(fig:support)). 
+
+```{r support, echo=FALSE, out.width='100%', fig.cap="Three sample supports: points, squares and circles. With disjoint squares the population is finite. With points, and squares or circles that are allowed to overlap as sample support the population is infinite."}
+#Point support
+set.seed(314)
+s1 <- runif(10,min=-4,max=104)
+s2 <- runif(10,min=-4,max=104)
+mysisample <- data.frame(x=s1,y=s2)
+
+plt1 <- ggplot() +
+  geom_tile(aes(x=50,y=50), width=100, height=100, fill="grey") +
+  geom_point(data=mysisample,aes(x=x, y=y), size=1) +
+  scale_x_continuous(name="", limits=c(0,100)) +
+  scale_y_continuous(name="", limits=c(0,100)) +
+  coord_fixed()
+
+#Square support
+x <- y <- seq(from=5, to=95, by=10)
+grid <- expand.grid(x,y)
+names(grid) <- c("x","y")
+units <- sample.int(nrow(grid), size=10, replace=FALSE)
+mysisample <- grid[units,]
+
+plt2 <- ggplot(data=grid) +
+  geom_tile(mapping=aes(x=x, y=y),width=10,height=10,fill="grey") +
+  geom_tile(data=mysisample,mapping=aes(x=x, y=y), colour="red", size=0.8, width=10, height=10, fill=NA)+
+  scale_x_continuous(name="") +
+  scale_y_continuous(name="") +
+  coord_fixed()
+
+#Circle support
+set.seed(315)
+s1 <- runif(10,min=0,max=100)
+s2 <- runif(10,min=0,max=100)
+circles <- data.frame(s1,s2)
+
+plt3 <- ggplot() +
+  geom_tile(aes(x=50,y=50), width=100, height=100, fill="grey") +
+  geom_point(data=circles,aes(x=s1, y=s2), size=1) +
+  geom_circle(data=circles, aes(x0=s1, y0=s2, r=4)) +
+  scale_x_continuous(name="") +
+  scale_y_continuous(name="") +
+  coord_fixed()
+
+grid.arrange(plt1, plt2, plt3, nrow=1)
+```
+
+With areal elementary sampling units, ideally the selected elementary units are exhaustively observed, so that a measurement of the total or mean of the study variable within an areal unit is obtained, think for instance of the total aboveground biomass. In some cases this is not feasible, think for instance of measuring the mean of some soil property in squares of 25 m x 25 m. In this case from each selected square a sample of points is selected, and the measurement is done on the selected points. These measurements at points are used to estimate the mean of the squares. @Stehman2018 introduced the concept of a response design\index{Response design} as "the protocol used to determine the reference condition of an element of the population". So in this case the response design is the sampling design and estimator for the mean of the areal units.  
+
+Ideally the sample support is constant, but in some situations a varying sample support cannot be avoided. Think, for instance, of square sampling units in an irregularly shaped study area. Near the border of the study area there are squares that cross the border. The part of a square that falls outside the study area is not observed. So the support of the observation on these sampling units near the border is smaller than for the squares in the interior of the study area. See also Section \@ref(SIcircularplots).
+
+To sample a finite spatial population, the population units are listed in a data frame. This data frame contains the spatial coordinates of the population units, and other information needed for selecting sampling units according to a specific design. Think, for instance, of the labels of more or less homogeneous subpopulations (used as strata in stratified random sampling, see Chapter \@ref(STSI)), and the labels of clusters of population units, for instance, all units in a polygon of a map (used in cluster random sampling, see Chapter \@ref(Cl)). Besides, if we have information about covariates possibly related to the study variable, which we would like to use in selecting the population units, these covariates are added to the list. The list used for selecting sampling units is referred to as the *sampling frame*\index{Sampling frame}. 
+
+In this book also continuous populations are sampled using a list as a sampling frame. The infinite population is discretised by the nodes of a fine square grid. The grid nodes are listed in the sampling frame. So the infinite population is represented by a finite list of points that are the centers of square grid cells. The advantage of this is that existing **R** packages for sampling of finite populations can also be used for sampling infinite populations.
+
+If the disjoint square grid cells are the elementary sampling units (sample support is a square) the population is finite, and the grid cells can be selected through selection of their centers that are listed in the sampling frame. The grid cells can be selected without or with replacement.
+
+If the elementary sampling units are points (sample support is a point), the population is infinite. In this case sampling of points can be implemented by a two-step approach. In the first step grid cells are selected without or with replacement, and in the second step one or more points are selected within the selected grid cells. Figure \@ref(fig:SamplingFromInfinitePopulation) is an illustration of this two-step approach for simple random sampling of points from a discretised infinite population. Ten grid cells are selected by simple random sampling with replacement. Every time a grid cell is selected one point is randomly selected from that grid cell. Note that a grid cell can be selected more than once, so that more than one point will be selected from that grid cell. Note also that we may select a point that falls outside the boundary of the study area. This is actually the case with one grid cell in Figure \@ref(fig:SamplingFromInfinitePopulation). These points outside the study area are discarded and replaced by a randomly selected new point inside the study area. Finally, note that near the boundary there are small areas that are not covered by a grid cell, so that no points can be selected in these areas. It is important that the discretisation grid is fine enough to keep the discretisation error\index{Discretisation error} so small that it can be ignored. The alternative is to extend the discretisation grid beyond the boundaries of the study area so that the full study area is covered by grid cells.
+
+```{r SamplingFromInfinitePopulation, echo=FALSE, fig.cap="Sampling of points from discretised infinite population. The grid cells are randomly selected with replacement. Each time a grid cell is selected a random point is selected random from that grid cell."}
+library(rgdal)
+library(ggplot2)
+
+Field <- readOGR(dsn="data", layer="Melle17", verbose=FALSE)
+# remove projection attributes
+proj4string(Field) <- NA_character_
+Field@data$id <- rownames(Field@data)
+
+#select centred square grid from Field
+mygrid <- spsample(Field, type="regular", cellsize=c(2,2), offset=c(0.5,0.5))
+xygrid <- data.frame(coordinates(mygrid))
+
+set.seed(314)
+units <- sample.int(nrow(xygrid), size=10)
+mysample <- xygrid[units,]
+
+mysample.pnts <- mysample
+cellsize <- 2
+mysample.pnts$x1 <- jitter(mysample.pnts$x1, amount=cellsize/2)
+mysample.pnts$x2 <- jitter(mysample.pnts$x2, amount=cellsize/2)
+
+FieldPoints <- fortify(Field, region="id")
+
+# merge the "fortified" data with the data from our spatial object
+FieldDF <- merge(FieldPoints, Field@data, by="id")
+
+ggField <- ggplot() +
+  geom_path(data=FieldDF, aes(x=long/1000, y=lat/1000), color="black") +
+  geom_tile(data=xygrid,mapping=aes(x=x1/1000, y=x2/1000), width=2/1000,height=2/1000, size=0.6, colour="black", fill=NA) +
+  geom_tile(data=mysample,mapping=aes(x=x1/1000, y=x2/1000), width=2/1000, height=2/1000, size=0.8, colour="red", fill=NA) +
+  geom_point(data=mysample.pnts,mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="red")+
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed() +
+  theme(legend.position="none")
+print(ggField)
+```
+
+### Population parameters {#PopulationParameters}
+
+The sample data are used to estimate characteristics of the whole population\index{Population parameter}, e.g. the population mean\index{Population mean} or total\index{Population total}, some quantile e.g. the median or 90th percentile, or even the entire cumulative frequency distribution.
+
+A finite population total is defined as
+
+\begin{equation}
+t(z) = \sum_{k \in \mathcal{U}} z_k = \sum_{k=1}^N z_k \;,
+(\#eq:FinitePopTotal)
+\end{equation}
+
+with $N$ the number of population units, and $z_k$ the study variable for population unit $i$. A finite population mean is defined as a finite population total divided by $N$. An infinite population total is defined as an integral of the study variable over the study area:
+
+\begin{equation}
+t(z) = \int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s}) \;\mathrm{d}\mathbf{s} \;.
+(\#eq:InfinitePopTotal)
+\end{equation}
+
+An infinite population mean is defined a finite population total divided by the area, $A$, covered by the population. 
+
+A finite population proportion\index{Population proportion} is defined as the population mean of an 0/1 indicator $y$ with value 1 if the condition is satisfied, and 0 otherwise:
+
+\begin{equation}
+p=\frac{\sum_{k \in \mathcal{U}}y_k}{N} \;.
+(\#eq:PopulationProportion)
+\end{equation}
+
+A cumulative distribution function\index{Cumulative distribution function} (CDF) is defined as
+
+\begin{equation}
+F(z)=\sum_{x\leq z} f(x) \;,
+(\#eq:CDF)
+\end{equation}
+
+with $f(x)$ the proportion of population units whose value for the study variable $z$ equals $x$. A population quantile\index{Population quantile}, for instance the population median or the population 90th percentile is defined as
+
+\begin{equation}
+q_p= F^{-1}(p) \;,
+(\#eq:PopQuantile)
+\end{equation}
+
+where $p$ is a number between 0 and 1 (e.g 0.5 for the median, 0.9 for the 90th percentile), and $F^{-1}(p)$ is the smallest value of the study variable $z$ satisfying $F(z)\geq p$.
+
+In surveys of spatial populations the aim can also be to make a map of the population.
+
+### Descriptive statistics versus inference about a population
+
+As we have observed only a (small) part of the population, we are uncertain about the population parameter estimates and map. By using statistical methods we can quantify how uncertain we are about these results. In decision making it can be important to take this uncertainty into account. An example is a survey of water quality. In Europe the concentration levels of nutrients are regulated in the European Water Framework Directive. To test whether the mean concentration of a nutrient complies with its standard, it is important to account for the uncertainty in the estimated mean. When the estimated mean is just below the standard, there is still a large probability that the population mean exceeds the standard. This example shows that it is important to distinguish computing descriptive statistics from characterizing the population using the sample data. For instance, we can compute the sample mean (average of the sample data) without error, but if we use this sample mean as an *estimate* of the population mean, there is certainly an error in this estimate.
+
+### Random sampling versus probability sampling
+
+Many sampling methods are available. At the highest level one may distinguish random from non-random sampling methods. In random sampling a subset of population units is randomly selected from the population, using a random number generator. In non-random sampling no such (pseudo) random number generator is used. Examples of non-random sampling are convenience sampling e.g. along roads, arbitrary sampling i.e. sampling without a specific purpose in mind, and targeted sampling e.g. at sites suspected of soil pollution.
+
+In the literature the term random sampling is often used for arbitrary sampling\index{Arbitrary sampling}, i.e. sampling without a specific purpose in mind. To avoid confusion the term *probability sampling*\index{Probability sampling} is used for random sampling using a (pseudo) random number generator, so that for any unit in the population the probability of selecting that unit is known. More precisely, a probability sample is a sample from a population such that every unit of the population has a positive probability of being included in the sample. Besides, these *inclusion probabilities* must be known, at least for the selected units, as they are needed in estimation. This is explained in following chapters.
+
+## Design-based versus model-based approach {#DBvsMB}
+
+The choice between probability or non-probability sampling\index{Non-probability sampling} is closely connected with the choice between a design-based\index{Design-based approach} or model-based approach\index{Model-based approach} for sampling and statistical inference (estimation, hypothesis testing). The difference between these two approaches is a rather technical subject, and therefore not to discourage you already in this very first chapter, I keep it short. In Chapter \@ref(Approaches) I elaborate on the fundamental difference of these two approaches and a third approach, the model-assisted approach, which can be seen as a compromise of the design-based and model-based approach.
+
+```{r approach, echo=FALSE}
+approach <- data.frame(Approach=c("Design-based","","Model-based"), Sampling=c("Probability sampling","","Probability sampling not required"), Inference=c("Based on sampling distribution", "(no model-used)","Based on statistical model"))
+
+knitr::kable(
+  approach, caption = 'Statistical approaches for sampling and inference.',
+  booktabs = TRUE
+) %>%
+  kable_classic()
+```
+
+In the design-based approach units are selected by probability sampling (Table \@ref(tab:approach)). Estimates are based on the inclusion probabilities of the sampling units as determined by the sampling design (design-based inference). No model is used in estimation. On the contrary, in a model-based approach a statistical model is used in prediction, i.e. a model with a random error term, for instance a regression model. As the model already contains a random error term, probability sampling is not required in this approach.
+
+Which statistical approach is best largely depends on the aim of the survey, see @bru97 and @gru06. Broadly speaking the following aims can be distinguished:
+
+1. To *estimate parameters* (mean, total, proportion, percentile) for the population.  
+2. To *estimate parameters* (mean, total, proportion, percentile) for several subpopulations.  
+3. To *map the study variable*^[A map of the study variable is obtained by predicting the study variable at the points of a very fine grid discretising the study area.]. 
+
+When the aim is to map the study variable, a model-based approach is the most natural option. This implies that for this aim probability sampling is not required. For estimating (sub)population parameters\index{Population parameter} in principle both approaches are suitable. The more subpopulations\index{Subpopulation} are distinguished, the more attractive a model-based approach becomes. If the units are selected by probability sampling, then estimates of the population parameters can be obtained by design-based or model-based inference. This flexibility can be attractive, for instance when the sample size is rather small for model building. When the sampling units are not selected by probability sampling, model-free, design-based estimation is impossible, and model-based estimation is the only option.
+
+## Populations used in sampling experiments {#Datasets}
+
+In this book various data sets are used to illustrate the sampling designs. Three data sets, Voorst, Kandahar and Eastern Amazonia, are exhaustive, i.e. for all population units data of the study variable and ancillary data are available.  Two exhaustive data sets\index{Exhaustive data set}, Voorst in the Netherlands and Kandahar in Afghanistan, are obtained through  simulation\index{Simulation}, i.e. by drawing numbers from a probability distribution. Sample data from these two study areas are used to calibrate a statistical model. This model is subsequently used to simulate values of the study variable for all population units. Voorst actually is an infinite population of points. However, this study area is discretised by a fine grid, and the study variable, the soil organic matter concentration, is simulated for all nodes of this discretisation grid. Kandahar is a finite population consisting of 965 squares of size 5 km $\times$ 5 km. The study variable is the area cultivated with poppy. Eastern Amazonia is a map in raster format, with a resolution of 1 km $\times$ 1 km. The study variable is the aboveground biomass as derived from remotes sensing images. The aboveground biomass value of a raster cell is treated as the average biomass of that raster cell. 
+
+The exhaustive data sets are used in the first part of this book on probability sampling for estimating population means and totals. By taking the population as the reality, we know the population mean and total. Also, for any randomly selected sample from this population, the study variable values for the selected sampling units are known, so that we can *estimate*  the population mean or total from this sample. The estimated mean (total) can then be compared with the population mean (total). The difference between these two is the *sampling error*\index{Sampling error} in the estimated mean (total). This opens up the possibility of repeating the selection of random samples with a given sampling design a large number of times, estimating the population mean (total) for every sample, so that a frequency distribution of the estimated population mean is obtained. Ideally, the mean of this frequency distribution, referred at as the *sampling distribution*\index{Sampling distribution}, is equal to the population mean (mean sampling error equals zero), and the variance of the estimated means is small. Another advantage is that sampling designs can be compared on the basis of the sampling distribution, for instance the sampling distributions of stratified random sampling and simple random sampling, to evaluate whether the stratification leads to more accurate estimates of the population mean.
+
+Besides, various data sets are used with data for a sample of population units only. These data sets are described at places where they are first used.
+
+### Soil organic matter in Voorst (Netherlands) {#Voorst}
+
+The study area of Voorst is located in the eastern part of the Netherlands. The size of the study area is 6 km by 1 km. At 132 points samples of the topsoil were collected by graduate students of Wageningen University, which were analyzed in the laboratory on soil organic matter (SOM) concentrations (in g per kg). The map is created by conditional geostatistical simulation of natural logarithms of SOM on a 25 m by 25 m grid, followed by backtransformation, using a linear mixed model with spatially correlated residuals and combinations of soil type and land use as a qualitative predictor (factor). Figure \@ref(fig:mapVoorst) shows the simulated map of SOM. 
+
+```{r mapVoorst, echo=FALSE,  out.width='100%', fig.cap="Simulated soil organic matter concentration (g/kg) in Voorst."}
+load("data/Voorst.RData")
+ggplot(data=grdVoorst) +
+        geom_raster(mapping=aes(x=s1/1000, y=s2/1000, fill=z)) +
+        scale_x_continuous(name="Easting  (km)") +
+        scale_y_continuous(name="Northing  (km)") +
+        scale_fill_viridis_c(name="SOM") +
+        coord_fixed()
+```
+
+The histogram of the simulated values at all 7528 grid cells shows that SOM is skewed to the right (Figure \@ref(fig:histogramVoorst)).
+
+```{r histogramVoorst, echo=FALSE, fig.asp=0.7, fig.cap="Histogram of simulated soil organic matter concentration (g/kg) in Voorst."}
+ggplot(grdVoorst) +
+  geom_histogram(aes(x=z), breaks=seq(from=0, to=50, by=2), fill="black", alpha=0.5, colour="black") +
+  scale_y_continuous(name="Frequency") +
+  scale_x_continuous(name="SOM (g/kg)")
+```
+
+Summary statistics are:
+
+```{r, echo=FALSE}
+summary(grdVoorst$z)
+```
+
+The ancillary information consist of a map of soil classes and a land use map, which are combined to five soil-land use combinations (Figure \@ref(fig:SoilLanduseCombinationsVoorst)). The first letter in the labels for the combinations stands for the soil type: B for beekeerdgrond (sandy wetland soil with gleyic properties), E for enkeerdgrond (sandy soil with thick anthropogenic humic topsoil), P for podzols (sandy soil with eluviated horizon below the topsoil), R for river clay soil,  and X for sandy soils. The second letter is for land use: A for agriculture (grassland, arable land), and F for forest.
+
+```{r SoilLanduseCombinationsVoorst, echo=FALSE, out.width='100%', fig.cap="Soil-land use combinations in study area Voorst (Netherlands)."}
+ggplot() +
+  geom_raster(data=grdVoorst, mapping=aes(x=s1/1000, y=s2/1000, fill=stratum)) +
+    scale_fill_manual(
+      name="",
+      values=c(BA="darkgreen", EA="brown", PA="orange", RA="green", XF="grey")
+    ) +  
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()
+```
+
+### Poppy fields in Kandahar (Afghanistan) {#Poppy}
+
+Cultivation of poppy for opium production is a serious problem in Afghanistan. The United Nations Organization on Drugs and Crime (UNODC) monitors the area cultivated with poppy through detailed analysis of areal photographs and satellite images. This is laborious, and for that reason this analysis is restricted to a probability sample of 5 km by 5 km squares. These sample data are then used to estimate the total poppy area [@UNODC2014].
+
+In 2014 the poppy area of 83 squares in the province of Kandahar (Afghanistan) was determined, as well as the agricultural area of all 965 squares in this province. These data were used to simulate a map of poppy area per 5 km by 5 km square. The map is simulated with an ordinary kriging model for the logit transform of the proportion of the agricultural area within a 5 km by 5 km square cultivated with poppy. For privacy reasons the field was simulated *unconditionally* on these sample data. Figure \@ref(fig:mapsKandahar) shows the map with the agricultural area in hectares per 5 km $\times$ 5 km square, and the simulated poppy area in hectares, per square. The histogram of the simulated poppy area per square shows very strong positive skew (Figure \@ref(fig:histogramPoppyarea)). For 375 squares the simulated poppy area was smaller than 1 ha. 
+
+```{r mapsKandahar, echo=FALSE, fig.cap="Agricultural area and simulated area cultivated with opium poppy, in hectares per 5 km by 5 km squares in Kandahar (Afghanistan)."}
+load("data/Kandahar.RData")
+
+df <- grdKandahar %>%
+  pivot_longer(cols=c("agri", "poppy"))
+df$name <- factor(df$name, levels=c("poppy","agri"), ordered=TRUE)
+ggplot(data=df) +
+  geom_raster(mapping=aes(x=x, y=y, fill=value)) +
+  scale_fill_viridis_c(name="Area (ha)") +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed() +
+  facet_wrap(~ name, ncol=1, nrow=2)
+```
+
+```{r histogramPoppyarea, echo=FALSE, fig.asp=0.7, fig.cap="Histogram of simulated poppy area (ha) per 5 km by 5 km square in Kandahar."}
+ggplot(grdKandahar) +
+  geom_histogram(aes(x=poppy), breaks=seq(from=0, to=2200, by=100), fill="black", alpha=0.5, colour="black") +
+  scale_y_continuous(name="Frequency") +
+  scale_x_continuous(name="Poppy area (ha)")
+```
+
+### Aboveground biomass in Eastern Amazonia
+
+This data set consists of data on the aboveground live woody biomass (AGB) in megatons per ha [@Baccini2012]. A rectangular area of 1642 km by 928 km in Eastern Amazonia (Brazil) was selected from this data set, and aggregated to a map with a resolution of 1 km $\times$ 1 km. Besides, a stack of five ecologically relevant covariates of the same spatial extent was prepared, being MODIS long term mean of short-wave infrared radiation (SWIR2), Primary Production in kg C per m$^2$ (Terra_PP), average precipitation in driest month in mm (Prec_dm), Elevation in m, and Clay content in g per kg soil.  All covariates were either resampled using bilinear interpolation, or aggregated to conform with the grid of the above-ground biomass map. Figure \@ref(fig:mapsAmazonia) shows a map of AGB and SWIR2.
+
+```{r mapsAmazonia, echo=FALSE, out.width='100%', fig.cap="Aboveground biomas in megatons per ha (AGB), and short-wave infrared radiation (SWIR2) of Eastern Amazonia (Brazil)."}
+load("data/Amazonia_1km.RData")
+
+plt1 <- ggplot(gridAmazonia) +
+  geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=AGB)) +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  scale_fill_viridis_c(name="AGB") +
+  coord_fixed()
+
+plt2 <- ggplot(gridAmazonia) +
+  geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=SWIR2)) +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  scale_fill_viridis_c(name="SWIR2") +
+  coord_fixed()
+
+grid.arrange(plt1, plt2, nrow=2)
+```
+
+Figure \@ref(fig:matrixscatter) shows a matrix of two-dimensional density plots of aboveground biomass and the five covariates, made with function `ggpairs` of **R** package **GGally** [@GGally]. The covariate with the strongest correlation with AGB is SWIR2. The Pearson correlation coefficient with AGB is -0.80. The relation does not look linear. The correlation of AGB with the covariates Terra_PP and Prec_dm is weakly positive. All correlations are significant, but this is not meaningful because of the very large number of data used in computing the correlation coefficients.
+
+```{r matrixscatter, echo=FALSE, fig.asp= .66, out.width='100%', fig.cap="Matrix of two-dimensional density plots of aboveground biomass (AGB) and five covariates of Eastern Amazonia (Brazil)."}
+library(GGally)
+density2d <- function(data, mapping, ...) {
+    ggplot(data=data, mapping=mapping) +
+        geom_density2d_filled(...)
+}
+gridAmazonia %>% 
+  dplyr::select(AGB, SWIR2, Terra_PP, Prec_dm, Elevation, Clay) %>%
+  slice_sample(n=50000) %>%
+  ggpairs(
+    upper=list(continuous="cor"),
+    lower=list(continuous=density2d)
+  ) 
+```
+
+
+```{r, echo=FALSE}
+rm(list=ls())
+```
+

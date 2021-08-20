@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Spatial sampling with R</title>
+  <meta name="description" content="Spatial sampling with R" />
+  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Spatial sampling with R" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:image" content="/cover.png" />
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Spatial sampling with R" />
+  
+  
+  <meta name="twitter:image" content="/cover.png" />
+
+<meta name="author" content="Dick J. Brus" />
+
+
+<meta name="date" content="2021-08-20" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+
+<link rel="next" href="GeneralIntro.html"/>
+<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Spatial sampling with R</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="GeneralIntro.html"><a href="GeneralIntro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#BasicConcepts"><i class="fa fa-check"></i><b>1.1</b> Basic sampling concepts</a>
+<ul>
+<li class="chapter" data-level="1.1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#PopulationParameters"><i class="fa fa-check"></i><b>1.1.1</b> Population parameters</a></li>
+<li class="chapter" data-level="1.1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#descriptive-statistics-versus-inference-about-a-population"><i class="fa fa-check"></i><b>1.1.2</b> Descriptive statistics versus inference about a population</a></li>
+<li class="chapter" data-level="1.1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#random-sampling-versus-probability-sampling"><i class="fa fa-check"></i><b>1.1.3</b> Random sampling versus probability sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#DBvsMB"><i class="fa fa-check"></i><b>1.2</b> Design-based versus model-based approach</a></li>
+<li class="chapter" data-level="1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Datasets"><i class="fa fa-check"></i><b>1.3</b> Populations used in sampling experiments</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Voorst"><i class="fa fa-check"></i><b>1.3.1</b> Soil organic matter in Voorst (Netherlands)</a></li>
+<li class="chapter" data-level="1.3.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Poppy"><i class="fa fa-check"></i><b>1.3.2</b> Poppy fields in Kandahar (Afghanistan)</a></li>
+<li class="chapter" data-level="1.3.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#aboveground-biomass-in-eastern-amazonia"><i class="fa fa-check"></i><b>1.3.3</b> Aboveground biomass in Eastern Amazonia</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>I Probability sampling for estimating (sub)population parameters</b></span></li>
+<li class="chapter" data-level="2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html"><i class="fa fa-check"></i><b>2</b> Introduction to probability sampling</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#HTestimator"><i class="fa fa-check"></i><b>2.1</b> Horvitz-Thompson estimator</a></li>
+<li class="chapter" data-level="2.2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#hansen-hurwitz-estimator"><i class="fa fa-check"></i><b>2.2</b> Hansen-Hurwitz estimator</a></li>
+<li class="chapter" data-level="2.3" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#using-models-in-design-based-approach"><i class="fa fa-check"></i><b>2.3</b> Using models in design-based approach</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="SI.html"><a href="SI.html"><i class="fa fa-check"></i><b>3</b> Simple random sampling</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="SI.html"><a href="SI.html#HTestimatorSI"><i class="fa fa-check"></i><b>3.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="SI.html"><a href="SI.html#PopProportion"><i class="fa fa-check"></i><b>3.1.1</b> Population proportion</a></li>
+<li class="chapter" data-level="3.1.2" data-path="SI.html"><a href="SI.html#CDF"><i class="fa fa-check"></i><b>3.1.2</b> Cumulative distribution function and quantiles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="SI.html"><a href="SI.html#VarMeanSI"><i class="fa fa-check"></i><b>3.2</b> Sampling variance of estimator of population mean, total and proportion</a></li>
+<li class="chapter" data-level="3.3" data-path="SI.html"><a href="SI.html#SIcircularplots"><i class="fa fa-check"></i><b>3.3</b> Simple random sampling of circular plots</a>
+<ul>
+<li class="chapter" data-level="3.3.1" data-path="SI.html"><a href="SI.html#sampling-from-a-finite-set-of-fixed-circles"><i class="fa fa-check"></i><b>3.3.1</b> Sampling from a finite set of fixed circles</a></li>
+<li class="chapter" data-level="3.3.2" data-path="SI.html"><a href="SI.html#sampling-from-an-infinite-set-of-floating-circles"><i class="fa fa-check"></i><b>3.3.2</b> Sampling from an infinite set of floating circles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="SI.html"><a href="SI.html#ConfidenceInterval"><i class="fa fa-check"></i><b>3.4</b> Confidence interval estimates</a>
+<ul>
+<li class="chapter" data-level="3.4.1" data-path="SI.html"><a href="SI.html#ConfidenceIntervalProportion"><i class="fa fa-check"></i><b>3.4.1</b> Confidence interval for proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="STSI.html"><a href="STSI.html"><i class="fa fa-check"></i><b>4</b> Stratified simple random sampling</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="STSI.html"><a href="STSI.html#EstimatorsSTSI"><i class="fa fa-check"></i><b>4.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="4.1.1" data-path="STSI.html"><a href="STSI.html#estimation-of-population-proportion-cumulative-distribution-function-and-quantiles"><i class="fa fa-check"></i><b>4.1.1</b> Estimation of population proportion, cumulative distribution function and quantiles</a></li>
+<li class="chapter" data-level="4.1.2" data-path="STSI.html"><a href="STSI.html#WhyStratify"><i class="fa fa-check"></i><b>4.1.2</b> Why should we stratify?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="STSI.html"><a href="STSI.html#CISTSI"><i class="fa fa-check"></i><b>4.2</b> Confidence interval estimate</a></li>
+<li class="chapter" data-level="4.3" data-path="STSI.html"><a href="STSI.html#STSIallocation"><i class="fa fa-check"></i><b>4.3</b> Allocation of sample size to strata</a></li>
+<li class="chapter" data-level="4.4" data-path="STSI.html"><a href="STSI.html#cumrootf"><i class="fa fa-check"></i><b>4.4</b> <em>Cum-root-f</em> stratification</a></li>
+<li class="chapter" data-level="4.5" data-path="STSI.html"><a href="STSI.html#kmeansstratification"><i class="fa fa-check"></i><b>4.5</b> Stratification with multiple covariates</a></li>
+<li class="chapter" data-level="4.6" data-path="STSI.html"><a href="STSI.html#geostrata"><i class="fa fa-check"></i><b>4.6</b> Geographical stratification</a></li>
+<li class="chapter" data-level="4.7" data-path="STSI.html"><a href="STSI.html#multi-way-stratification"><i class="fa fa-check"></i><b>4.7</b> Multi-way stratification</a></li>
+<li class="chapter" data-level="4.8" data-path="STSI.html"><a href="STSI.html#MultivariateStratification"><i class="fa fa-check"></i><b>4.8</b> Multivariate stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="SY.html"><a href="SY.html"><i class="fa fa-check"></i><b>5</b> Systematic random sampling</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="SY.html"><a href="SY.html#EstVarSY"><i class="fa fa-check"></i><b>5.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="SY.html"><a href="SY.html#approximating-the-sampling-variance-of-the-estimator-of-the-mean"><i class="fa fa-check"></i><b>5.1.1</b> Approximating the sampling variance of the estimator of the mean</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="Cl.html"><a href="Cl.html"><i class="fa fa-check"></i><b>6</b> Cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="Cl.html"><a href="Cl.html#clustersamplingestimators"><i class="fa fa-check"></i><b>6.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="6.2" data-path="Cl.html"><a href="Cl.html#clusters-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>6.2</b> Clusters selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="6.3" data-path="Cl.html"><a href="Cl.html#simple-random-sampling-of-clusters"><i class="fa fa-check"></i><b>6.3</b> Simple random sampling of clusters</a></li>
+<li class="chapter" data-level="6.4" data-path="Cl.html"><a href="Cl.html#StratifiedCl"><i class="fa fa-check"></i><b>6.4</b> Stratified cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="Twostage.html"><a href="Twostage.html"><i class="fa fa-check"></i><b>7</b> Two-stage cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="Twostage.html"><a href="Twostage.html#twostagesamplingestimators"><i class="fa fa-check"></i><b>7.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="7.2" data-path="Twostage.html"><a href="Twostage.html#primary-sampling-units-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>7.2</b> Primary sampling units selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="7.3" data-path="Twostage.html"><a href="Twostage.html#simple-random-sampling-of-primary-sampling-units"><i class="fa fa-check"></i><b>7.3</b> Simple random sampling of primary sampling units</a></li>
+<li class="chapter" data-level="7.4" data-path="Twostage.html"><a href="Twostage.html#StratifiedTwostage"><i class="fa fa-check"></i><b>7.4</b> Stratified two-stage cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="pps.html"><a href="pps.html"><i class="fa fa-check"></i><b>8</b> Sampling with probabilities proportional to size</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="pps.html"><a href="pps.html#ppswr"><i class="fa fa-check"></i><b>8.1</b> Probability-proportional-to-size sampling with replacement</a></li>
+<li class="chapter" data-level="8.2" data-path="pps.html"><a href="pps.html#ppswor"><i class="fa fa-check"></i><b>8.2</b> Probability-proportional-to-size sampling without replacement</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="pps.html"><a href="pps.html#Systematicpps"><i class="fa fa-check"></i><b>8.2.1</b> Systematic pps sampling without replacement</a></li>
+<li class="chapter" data-level="8.2.2" data-path="pps.html"><a href="pps.html#pivotalmethod"><i class="fa fa-check"></i><b>8.2.2</b> The pivotal method</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html"><i class="fa fa-check"></i><b>9</b> Balanced and well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Balanced"><i class="fa fa-check"></i><b>9.1</b> Balanced sampling</a>
+<ul>
+<li class="chapter" data-level="9.1.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#balanced-sample-versus-balanced-sampling-design"><i class="fa fa-check"></i><b>9.1.1</b> Balanced sample versus balanced sampling design</a></li>
+<li class="chapter" data-level="9.1.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#unequal-inclusion-probabilities"><i class="fa fa-check"></i><b>9.1.2</b> Unequal inclusion probabilities</a></li>
+<li class="chapter" data-level="9.1.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#StratifiedsamplingasBalancedsampling"><i class="fa fa-check"></i><b>9.1.3</b> Stratified random sampling</a></li>
+<li class="chapter" data-level="9.1.4" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Multiwaystratification"><i class="fa fa-check"></i><b>9.1.4</b> Multi-way stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Spreaded"><i class="fa fa-check"></i><b>9.2</b> Well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.2.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#LPM"><i class="fa fa-check"></i><b>9.2.1</b> Local pivotal method</a></li>
+<li class="chapter" data-level="9.2.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#GRTS"><i class="fa fa-check"></i><b>9.2.2</b> Generalised random-tessellation stratified sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#BalancedandSpreaded"><i class="fa fa-check"></i><b>9.3</b> Balanced sampling with spreading</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="Modelassisted.html"><a href="Modelassisted.html"><i class="fa fa-check"></i><b>10</b> Model-assisted estimation</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="Modelassisted.html"><a href="Modelassisted.html#GREG"><i class="fa fa-check"></i><b>10.1</b> Generalized regression estimator</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimator"><i class="fa fa-check"></i><b>10.1.1</b> Simple and multiple regression estimators</a></li>
+<li class="chapter" data-level="10.1.2" data-path="Modelassisted.html"><a href="Modelassisted.html#penalised-least-squares-estimation"><i class="fa fa-check"></i><b>10.1.2</b> Penalised least squares estimation</a></li>
+<li class="chapter" data-level="10.1.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimatorSTSI"><i class="fa fa-check"></i><b>10.1.3</b> Regression estimator with stratified simple random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimator"><i class="fa fa-check"></i><b>10.2</b> Ratio estimator</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimatorSTSI"><i class="fa fa-check"></i><b>10.2.1</b> Ratio estimators with stratified simple random sampling</a></li>
+<li class="chapter" data-level="10.2.2" data-path="Modelassisted.html"><a href="Modelassisted.html#PoststratifiedEstimator"><i class="fa fa-check"></i><b>10.2.2</b> Poststratified estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RandomForest"><i class="fa fa-check"></i><b>10.3</b> Model-assisted estimation using machine learning techniques</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-regression-tree"><i class="fa fa-check"></i><b>10.3.1</b> Predicting with a regression tree</a></li>
+<li class="chapter" data-level="10.3.2" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-random-forest"><i class="fa fa-check"></i><b>10.3.2</b> Predicting with a random forest</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="Modelassisted.html"><a href="Modelassisted.html#big-data-and-volunteer-data"><i class="fa fa-check"></i><b>10.4</b> Big data and volunteer data</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="Twophase.html"><a href="Twophase.html"><i class="fa fa-check"></i><b>11</b> Two-phase random sampling</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="Twophase.html"><a href="Twophase.html#TwophaseStratification"><i class="fa fa-check"></i><b>11.1</b> Two-phase random sampling for stratification</a></li>
+<li class="chapter" data-level="11.2" data-path="Twophase.html"><a href="Twophase.html#TwophaseRegression"><i class="fa fa-check"></i><b>11.2</b> Two-phase random sampling for regression</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html"><i class="fa fa-check"></i><b>12</b> Computing the required sample size</a>
+<ul>
+<li class="chapter" data-level="12.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#standard-error-of-estimator"><i class="fa fa-check"></i><b>12.1</b> Standard error of estimator</a></li>
+<li class="chapter" data-level="12.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#ReqSampleSizeLengthCI"><i class="fa fa-check"></i><b>12.2</b> Length of confidence interval</a>
+<ul>
+<li class="chapter" data-level="12.2.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#length-of-confidence-interval-for-a-proportion"><i class="fa fa-check"></i><b>12.2.1</b> Length of confidence interval for a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#statistical-testing-of-hypothesis"><i class="fa fa-check"></i><b>12.3</b> Statistical testing of hypothesis</a>
+<ul>
+<li class="chapter" data-level="12.3.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#sample-size-for-testing-a-proportion"><i class="fa fa-check"></i><b>12.3.1</b> Sample size for testing a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#DesignEffect"><i class="fa fa-check"></i><b>12.4</b> Accounting for design effect</a></li>
+<li class="chapter" data-level="12.5" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#BayesianSampleSize"><i class="fa fa-check"></i><b>12.5</b> Bayesian sample size determination</a>
+<ul>
+<li class="chapter" data-level="12.5.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#bayesian-criteria-for-sample-size-computation"><i class="fa fa-check"></i><b>12.5.1</b> Bayesian criteria for sample size computation</a></li>
+<li class="chapter" data-level="12.5.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#mixed-bayesian-likelihood-approach"><i class="fa fa-check"></i><b>12.5.2</b> Mixed Bayesian-likelihood approach</a></li>
+<li class="chapter" data-level="12.5.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-population-mean"><i class="fa fa-check"></i><b>12.5.3</b> Estimation of population mean</a></li>
+<li class="chapter" data-level="12.5.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-a-population-proportion"><i class="fa fa-check"></i><b>12.5.4</b> Estimation of a population proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html"><i class="fa fa-check"></i><b>13</b> Model-based optimisation of probability sampling designs</a>
+<ul>
+<li class="chapter" data-level="13.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#model-based-optimisation-of-sampling-design-type-and-sample-size"><i class="fa fa-check"></i><b>13.1</b> Model-based optimisation of sampling design type and sample size</a>
+<ul>
+<li class="chapter" data-level="13.1.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#AnalyticalApproach"><i class="fa fa-check"></i><b>13.1.1</b> Analytical approach</a></li>
+<li class="chapter" data-level="13.1.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#GeostatisticalSimulationApproach"><i class="fa fa-check"></i><b>13.1.2</b> Geostatistical simulation approach</a></li>
+<li class="chapter" data-level="13.1.3" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#MBpredSamplingVarBayes"><i class="fa fa-check"></i><b>13.1.3</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="13.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#Ospats"><i class="fa fa-check"></i><b>13.2</b> Model-based optimisation of spatial strata</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html"><i class="fa fa-check"></i><b>14</b> Sampling for estimating parameters of (small) domains</a>
+<ul>
+<li class="chapter" data-level="14.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#LargeDomainsDirectEstimator"><i class="fa fa-check"></i><b>14.1</b> Direct estimator for large domains</a></li>
+<li class="chapter" data-level="14.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallDomainsModelAssisted"><i class="fa fa-check"></i><b>14.2</b> Model-assisted estimators for small domains</a>
+<ul>
+<li class="chapter" data-level="14.2.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#RegressionestimatorSmallDomain"><i class="fa fa-check"></i><b>14.2.1</b> Regression estimator</a></li>
+<li class="chapter" data-level="14.2.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#synthetic-estimator"><i class="fa fa-check"></i><b>14.2.2</b> Synthetic estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="14.3" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallAreaModelBased"><i class="fa fa-check"></i><b>14.3</b> Model-based prediction</a>
+<ul>
+<li class="chapter" data-level="14.3.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#random-intercept-model"><i class="fa fa-check"></i><b>14.3.1</b> Random intercept model</a></li>
+<li class="chapter" data-level="14.3.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#geostatistical-model"><i class="fa fa-check"></i><b>14.3.2</b> Geostatistical model</a></li>
+</ul></li>
+<li class="chapter" data-level="14.4" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#supplemental-probability-sampling-of-small-domains"><i class="fa fa-check"></i><b>14.4</b> Supplemental probability sampling of small domains</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html"><i class="fa fa-check"></i><b>15</b> Repeated sample surveys for monitoring population parameters</a>
+<ul>
+<li class="chapter" data-level="15.1" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-designs"><i class="fa fa-check"></i><b>15.1</b> Space-time designs</a></li>
+<li class="chapter" data-level="15.2" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-population-parameters"><i class="fa fa-check"></i><b>15.2</b> Space-time population parameters</a></li>
+</ul></li>
+<li class="part"><span><b>II Sampling for mapping</b></span></li>
+<li class="chapter" data-level="16" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html"><i class="fa fa-check"></i><b>16</b> Introduction to sampling for mapping</a>
+<ul>
+<li class="chapter" data-level="16.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#when-is-probability-sampling-not-required"><i class="fa fa-check"></i><b>16.1</b> When is probability sampling not required?</a></li>
+<li class="chapter" data-level="16.2" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#sampling-for-simultaneously-mapping-and-estimating-means"><i class="fa fa-check"></i><b>16.2</b> Sampling for simultaneously mapping and estimating means</a>
+<ul>
+<li class="chapter" data-level="16.2.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#balanced-stratified-random-sampling"><i class="fa fa-check"></i><b>16.2.1</b> Balanced stratified random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="16.3" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#broad-overview-of-sampling-designs-for-mapping"><i class="fa fa-check"></i><b>16.3</b> Broad overview of sampling designs for mapping</a></li>
+</ul></li>
+<li class="chapter" data-level="17" data-path="Regulargrid.html"><a href="Regulargrid.html"><i class="fa fa-check"></i><b>17</b> Sampling on a regular grid</a></li>
+<li class="chapter" data-level="18" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html"><i class="fa fa-check"></i><b>18</b> Spatial coverage sampling</a>
+<ul>
+<li class="chapter" data-level="18.1" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html#SpatialInfill"><i class="fa fa-check"></i><b>18.1</b> Spatial infill sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="19" data-path="kmeans.html"><a href="kmeans.html"><i class="fa fa-check"></i><b>19</b> Covariate space coverage sampling</a>
+<ul>
+<li class="chapter" data-level="19.1" data-path="kmeans.html"><a href="kmeans.html#covariate-space-infill-sampling"><i class="fa fa-check"></i><b>19.1</b> Covariate space infill sampling</a></li>
+<li class="chapter" data-level="19.2" data-path="kmeans.html"><a href="kmeans.html#performance-of-covariate-space-coverage-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>19.2</b> Performance of covariate space coverage sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="20" data-path="cLHS.html"><a href="cLHS.html"><i class="fa fa-check"></i><b>20</b> Conditioned Latin hypercube sampling</a>
+<ul>
+<li class="chapter" data-level="20.1" data-path="cLHS.html"><a href="cLHS.html#cLHIS"><i class="fa fa-check"></i><b>20.1</b> Conditioned Latin hypercube infill sampling</a></li>
+<li class="chapter" data-level="20.2" data-path="cLHS.html"><a href="cLHS.html#performance-of-conditioned-latin-hypercube-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>20.2</b> Performance of conditioned Latin hypercube sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="21" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html"><i class="fa fa-check"></i><b>21</b> Spatial response surface sampling</a>
+<ul>
+<li class="chapter" data-level="21.1" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#IncreaseSampleSize"><i class="fa fa-check"></i><b>21.1</b> Increasing the sample size</a></li>
+<li class="chapter" data-level="21.2" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#stratified-spatial-response-surface-sampling"><i class="fa fa-check"></i><b>21.2</b> Stratified spatial response surface sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="22" data-path="Introkriging.html"><a href="Introkriging.html"><i class="fa fa-check"></i><b>22</b> Introduction to kriging</a>
+<ul>
+<li class="chapter" data-level="22.1" data-path="Introkriging.html"><a href="Introkriging.html#BlockKriging"><i class="fa fa-check"></i><b>22.1</b> Block-kriging</a></li>
+<li class="chapter" data-level="22.2" data-path="Introkriging.html"><a href="Introkriging.html#IntroKED"><i class="fa fa-check"></i><b>22.2</b> Kriging with an external drift</a></li>
+<li class="chapter" data-level="22.3" data-path="Introkriging.html"><a href="Introkriging.html#VariogramEstimation"><i class="fa fa-check"></i><b>22.3</b> Estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.3.1" data-path="Introkriging.html"><a href="Introkriging.html#MoM"><i class="fa fa-check"></i><b>22.3.1</b> Method-of-moments</a></li>
+<li class="chapter" data-level="22.3.2" data-path="Introkriging.html"><a href="Introkriging.html#MLestimationVariogram"><i class="fa fa-check"></i><b>22.3.2</b> Maximum likelihood</a></li>
+</ul></li>
+<li class="chapter" data-level="22.4" data-path="Introkriging.html"><a href="Introkriging.html#ResidualVariogram"><i class="fa fa-check"></i><b>22.4</b> Estimating the residual semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.4.1" data-path="Introkriging.html"><a href="Introkriging.html#IterativeMoM"><i class="fa fa-check"></i><b>22.4.1</b> Iterative method-of-moments</a></li>
+<li class="chapter" data-level="22.4.2" data-path="Introkriging.html"><a href="Introkriging.html#REML"><i class="fa fa-check"></i><b>22.4.2</b> Restricted maximum likelihood</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="23" data-path="MBgridspacing.html"><a href="MBgridspacing.html"><i class="fa fa-check"></i><b>23</b> Model-based optimisation of grid spacing</a>
+<ul>
+<li class="chapter" data-level="23.1" data-path="MBgridspacing.html"><a href="MBgridspacing.html#GridspacingOK"><i class="fa fa-check"></i><b>23.1</b> Optimal grid spacing for ordinary kriging</a></li>
+<li class="chapter" data-level="23.2" data-path="MBgridspacing.html"><a href="MBgridspacing.html#controlling-the-mean-or-a-quantile-of-the-ordinary-kriging-variance"><i class="fa fa-check"></i><b>23.2</b> Controlling the mean or a quantile of the ordinary kriging variance</a></li>
+<li class="chapter" data-level="23.3" data-path="MBgridspacing.html"><a href="MBgridspacing.html#optimal-grid-spacing-for-block-kriging"><i class="fa fa-check"></i><b>23.3</b> Optimal grid spacing for block-kriging</a></li>
+<li class="chapter" data-level="23.4" data-path="MBgridspacing.html"><a href="MBgridspacing.html#MBgridspacingKED"><i class="fa fa-check"></i><b>23.4</b> Optimal grid spacing for kriging with an external drift</a></li>
+<li class="chapter" data-level="23.5" data-path="MBgridspacing.html"><a href="MBgridspacing.html#BayesianGridSpacing"><i class="fa fa-check"></i><b>23.5</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="24" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html"><i class="fa fa-check"></i><b>24</b> Model-based optimisation of sampling pattern</a>
+<ul>
+<li class="chapter" data-level="24.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SSA"><i class="fa fa-check"></i><b>24.1</b> Spatial simulated annealing</a></li>
+<li class="chapter" data-level="24.2" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternOK"><i class="fa fa-check"></i><b>24.2</b> Optimising the sample pattern for ordinary kriging</a></li>
+<li class="chapter" data-level="24.3" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternKED"><i class="fa fa-check"></i><b>24.3</b> Optimising the sample pattern for kriging with an external drift</a></li>
+<li class="chapter" data-level="24.4" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling"><i class="fa fa-check"></i><b>24.4</b> Model-based infill sampling</a>
+<ul>
+<li class="chapter" data-level="24.4.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling-for-kriging-with-an-external-drift"><i class="fa fa-check"></i><b>24.4.1</b> Model-based infill sampling for kriging with an external drift</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="25" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html"><i class="fa fa-check"></i><b>25</b> Sampling for estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="25.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#nested-sampling"><i class="fa fa-check"></i><b>25.1</b> Nested sampling</a></li>
+<li class="chapter" data-level="25.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#independent-sampling-of-pairs-of-points"><i class="fa fa-check"></i><b>25.2</b> Independent sampling of pairs of points</a></li>
+<li class="chapter" data-level="25.3" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#samplingforvariogram"><i class="fa fa-check"></i><b>25.3</b> Model-based optimisation of sample pattern for semivariogram estimation</a>
+<ul>
+<li class="chapter" data-level="25.3.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#UncertainSemivariogramParameters"><i class="fa fa-check"></i><b>25.3.1</b> Uncertainty about semivariogram parameters</a></li>
+<li class="chapter" data-level="25.3.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#uncertainty-about-the-kriging-variance"><i class="fa fa-check"></i><b>25.3.2</b> Uncertainty about the kriging variance</a></li>
+</ul></li>
+<li class="chapter" data-level="25.4" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#SamplingEstimationandPrediction"><i class="fa fa-check"></i><b>25.4</b> Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction</a></li>
+<li class="chapter" data-level="25.5" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#a-practical-solution"><i class="fa fa-check"></i><b>25.5</b> A practical solution</a></li>
+</ul></li>
+<li class="chapter" data-level="26" data-path="Validation.html"><a href="Validation.html"><i class="fa fa-check"></i><b>26</b> Sampling for validation of maps</a>
+<ul>
+<li class="chapter" data-level="26.1" data-path="Validation.html"><a href="Validation.html#map-quality-indices"><i class="fa fa-check"></i><b>26.1</b> Map quality indices</a>
+<ul>
+<li class="chapter" data-level="26.1.1" data-path="Validation.html"><a href="Validation.html#estimation-of-map-quality-indices"><i class="fa fa-check"></i><b>26.1.1</b> Estimation of map quality indices</a></li>
+</ul></li>
+<li class="chapter" data-level="26.2" data-path="Validation.html"><a href="Validation.html#real-world-case-study"><i class="fa fa-check"></i><b>26.2</b> Real-world case study</a>
+<ul>
+<li class="chapter" data-level="26.2.1" data-path="Validation.html"><a href="Validation.html#estimation-of-the-population-mean-error-and-mean-squared-error"><i class="fa fa-check"></i><b>26.2.1</b> Estimation of the population Mean Error and Mean Squared Error</a></li>
+<li class="chapter" data-level="26.2.2" data-path="Validation.html"><a href="Validation.html#estimation-of-the-standard-error-of-the-estimated-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.2</b> Estimation of the standard error of the estimated population ME and MSE</a></li>
+<li class="chapter" data-level="26.2.3" data-path="Validation.html"><a href="Validation.html#estimation-of-mec"><i class="fa fa-check"></i><b>26.2.3</b> Estimation of MEC</a></li>
+<li class="chapter" data-level="26.2.4" data-path="Validation.html"><a href="Validation.html#statistical-testing-of-hypothesis-about-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.4</b> Statistical testing of hypothesis about population ME and MSE</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="27" data-path="Approaches.html"><a href="Approaches.html"><i class="fa fa-check"></i><b>27</b> Design-based, model-based and model-assisted approach for sampling and inference</a>
+<ul>
+<li class="chapter" data-level="27.1" data-path="Approaches.html"><a href="Approaches.html#two-sources-of-randomness"><i class="fa fa-check"></i><b>27.1</b> Two sources of randomness</a></li>
+<li class="chapter" data-level="27.2" data-path="Approaches.html"><a href="Approaches.html#identically-and-independently-distributed-i.i.d."><i class="fa fa-check"></i><b>27.2</b> “Identically and independently distributed” (i.i.d.)</a></li>
+<li class="chapter" data-level="27.3" data-path="Approaches.html"><a href="Approaches.html#BiasandVariance"><i class="fa fa-check"></i><b>27.3</b> Bias and variance</a></li>
+<li class="chapter" data-level="27.4" data-path="Approaches.html"><a href="Approaches.html#effectivesamplesize"><i class="fa fa-check"></i><b>27.4</b> Effective sample size</a></li>
+<li class="chapter" data-level="27.5" data-path="Approaches.html"><a href="Approaches.html#ExploitSpatialStructure"><i class="fa fa-check"></i><b>27.5</b> Exploiting spatial structure in design-based approach</a></li>
+<li class="chapter" data-level="27.6" data-path="Approaches.html"><a href="Approaches.html#ModelassistedvsModeldependent"><i class="fa fa-check"></i><b>27.6</b> Model-assisted versus model-dependent</a></li>
+</ul></li>
+<li class="appendix"><span><b>Appendices</b></span></li>
+<li class="chapter" data-level="A" data-path="Answers.html"><a href="Answers.html"><i class="fa fa-check"></i><b>A</b> Answers to exercises</a>
+<ul>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#introduction-to-probability-sampling"><i class="fa fa-check"></i>Introduction to probability sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#simple-random-sampling"><i class="fa fa-check"></i>Simple random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#stratified-random-sampling"><i class="fa fa-check"></i>Stratified random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#systematic-random-sampling"><i class="fa fa-check"></i>Systematic random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#cluster-random-sampling"><i class="fa fa-check"></i>Cluster random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-stage-random-sampling"><i class="fa fa-check"></i>Two-stage random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-with-probabilities-proportional-to-size"><i class="fa fa-check"></i>Sampling with probabilities proportional to size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#balanced-and-well-spread-sampling"><i class="fa fa-check"></i>Balanced and well-spread sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#ratio-and-regression-estimator"><i class="fa fa-check"></i>Ratio and regression estimator</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-phase-random-sampling"><i class="fa fa-check"></i>Two-phase random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#required-sample-size"><i class="fa fa-check"></i>Required sample size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-prediction-of-sampling-variance-of-estimated-mean"><i class="fa fa-check"></i>Model-based prediction of sampling variance of estimated mean</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#regular-grid-sampling"><i class="fa fa-check"></i>Regular grid sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#spatial-coverage-sampling"><i class="fa fa-check"></i>Spatial coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#covariate-space-coverage-sampling"><i class="fa fa-check"></i>Covariate space coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#conditioned-latin-hypercube-sampling"><i class="fa fa-check"></i>Conditioned Latin hypercube sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-the-grid-spacing"><i class="fa fa-check"></i>Model-based optimisation of the grid spacing</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-sampling-pattern"><i class="fa fa-check"></i>Model-based optimisation of sampling pattern</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-estimating-the-semivariogram"><i class="fa fa-check"></i>Sampling for estimating the semivariogram</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-validation"><i class="fa fa-check"></i>Sampling for validation</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Spatial sampling with R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">Spatial sampling with R</h1>
+<p class="author"><em>Dick J. Brus</em></p>
+<p class="date"><em>2021-08-20</em></p>
+</div>
+<div id="preface" class="section level1 unnumbered">
+<h1>Preface</h1>
+<p>Since the start of the R Series of Chapman and Hall/CRC in 2011 numerous books have been published on the statistical analysis and modelling of data using <strong>R</strong>. Until now no book was published in this series on how these data can be best collected. From my viewpoint this was an omission, as scientific research often starts with data collection. If the data collection is part of the project, it might be a good idea to start thinking right at the start of the project instead of after the data have been collected, to make a well-founded decision on how many data are needed and on the type of sampling design.</p>
+<p>In the past decades numerous wall-to-wall data sets are collected by remote sensing devices such as satellites and drones. These remote sensing images are valuable sources of information of the natural environment and resources. The question may arise how useful it still is in this big data era to collect data in the field at a restricted number of sampling locations. Do we really need these data to estimate a population mean or total, for instance of the aboveground biomass or carbon stocks in the soil, or to map these study variables? In many cases the answer is that it is indeed still useful to collect sample data on the study variable, because the remote sensing images provide only proxys of the study variable. The variables derived from the remote sensing images can be related to the study variable, but we still need groundtruth data of the study variable to model this relation. By combining the wall-to-wall data of covariates and the sample data of the groundtruth we can increase the accuracy of the survey result compared to using only one of these data sources.</p>
+<p>The handbook Sampling for Natural Resource Monitoring (SNRM) <span class="citation">(<a href="#ref-gru06" role="doc-biblioref">de Gruijter et al. 2006</a>)</span> presents an overview of sampling strategies for the survey of natural resources at a given point in time, as well as for how these resources can be monitored through repeated surveys. This new book can be seen as a follow-up of SNRM. In SNRM spatial sampling designs for survey and space–time designs for monitoring are described and illustrated with notional and real world examples. Estimators for global and local quantities in space and in space–time, and for the variance of these estimators are presented. However, neither computer code for how a sample with a given design can be selected, nor code for how the estimates can be computed is presented in SNRM. This new book fills this gap.</p>
+<p>This book describes and illustrates classical, basic sampling designs for spatial survey, as well as more recently developed, advanced sampling designs and estimators. Part I of the book is about random sampling designs for estimating a mean, total or proportion of a population or of several subpopulations. Part II focuses on sampling designs for mapping.</p>
+<p>The computer code is written in the popular programming language <strong>R</strong> <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2020</a>)</span>. There are several good reasons for choosing <strong>R</strong> as a language. First of all it is open source, giving users the right to view the source code and modify it to their needs. Second, as a result of this open source, numerous add-on packages have been developed, and this number is still increasing. Happily enough also quite a few add-on packages have been published for sampling design and analysis. All these add-on packages make the writing of computer code much more simple. Even very advanced statistical methods for sampling design and statistical analysis are now in the reach of many scientists: only a few lines of <strong>R</strong> code are needed to do the work. A risk is that the appliers of the packages do not fully understand the implemented statistical method. This understanding is not needed to obtain a result. For this reason I decided not to jump to the add-on packages right after the theory, but to follow a more gradual approach. First I show in as simple as possible <strong>R</strong> code how a sample can be selected with a given sampling design and how the (sub)population parameters can be estimated. After that I show how the same result can be obtained with an add-on package.</p>
+<p>The target group of this book are practitioners of sample surveys, as well as students in environmental, ecological, agricultural science or any other science in which knowledge about a population of interest is collected through spatial sampling. I have added exercises to quite a few chapters, making this book suitable as a textbook for students. The answers to the exercises can be found in the appendix of this book. Large parts of the book are self-contained, requiring no prior knowledge of statistics. For the chapters in Part I on more advanced sampling designs, such as balanced sampling, and advanced estimators of (sub)population parameters (model-assisted estimators), knowledge of matrix algebra and regression analysis is required. For the final chapters of Part II basic knowledge of geostatistics is required. This knowledge is also needed for some chapters in Part I. For that reason I have added a chapter introducing the basics of geostatistics (Chapter @ref{Introkriging).</p>
+<p>A gitbook version of this book (html files) is available at <a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master" class="uri">https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master</a>. This is also the place where you can report errata and comment on text and/or <strong>R</strong> code.</p>
+<!-- Mention **R** package **SPSRBook** with the data files used in this book and some **R** functions. Package **SPSRBook** is not available on CRAN. It must be installed with remotes::github(...) -->
+<div id="acknowledgements" class="section level2 unnumbered">
+<h2>Acknowledgements</h2>
+<p>In 2006 our handbook Sampling for Natural Resource Monitoring (SNRM) was published <span class="citation">(<a href="#ref-gru06" role="doc-biblioref">de Gruijter et al. 2006</a>)</span>. Soon after this milestone Jaap retired from Wageningen University and Research (WUR). Now I arrived in the aftermath of my career at WUR. Since a couple of years I was thinking of a revision of our handbook, to repair errors and to include new developments in sampling design. Then I realized that to increase the impact of our book, it might be a better idea to write a new book, showing with computer code how the sampling designs can be implemented, and how the sample data can be used in statistical inference.</p>
+<p>A nice side effect of the publication of SNRM was that I was asked to give sampling courses at many places in the world: China, Ethiopia, Uzbekistan, Australia and various countries in the European Union. I have very good memories of these courses, they made my life as a scientist very joyful. For these courses I wrote numerous scripts with computer code, using the popular programming language <strong>R</strong> <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2020</a>)</span>. My naive idea was that all I had to do is to bundle these <strong>R</strong> scripts into an Rmarkdown document <span class="citation">(<a href="#ref-Xie2020" role="doc-biblioref">Xie, Dervieux, and Riederer 2020</a>)</span>, and add some text explaining the theory and the <strong>R</strong> code. As usual, it appeared to be much more work than expected, but I am very happy that I was able to finish the job just before my retirement. My experience as a statistical consultant is that many researchers pay little attention to the method for data collection. Too many researchers start thinking when the data are there. Often I had to conclude that the way the data were collected was suboptimal, or even unsuitable for their aim. I hope that this new book may help researchers, practitioners and students to implement proper sampling designs, tailored at their problems at hand, so that valuable data are collected that can be used to answer the research questions.</p>
+<p>I could not have written this book without the help of many fellow researchers. First, I am very grateful for the support I received from the authors of various packages used in this book: Thomas Lumley for his support with package <strong>survey</strong>, Yves Tillé and Alina Gabriela Matei with package <strong>sampling</strong>, Anton Grafström with package <strong>Balancedsampling</strong>, Giulio Barcaroli and Marco Ballin with package <strong>SamplingStrata</strong>, Andreas Hill and Alex Massey with package <strong>Forestinventory</strong>, and Martins Liberts with package <strong>surveyplanning</strong>. No need to say that I am responsible for all shortcomings of the <strong>R</strong> code.</p>
+<p>Second, I would like to thank the following researchers for their valuable comments on (parts) of the book: Gerard Heuvelink (Wageningen University and ISRIC World Soil Information, Netherlands), David Rossiter (Cornell University, USA and ISRIC World Soil Information, Netherlands), Yuha Heikkinen (Luke, Natural Resources Institute, Finland), Steve Stehman (SUNY College of Environmental Science and Forestry, USA), Anton Grafström (Swedish University of Agricultural Sciences), Dennis Walvoort (Wageningen University and Research, Netherlands) and Ben Marchant (British Geological Survey, United Kingdom). Dennis Walvoort also was very supportive with the writing of various <strong>R</strong> scripts.
+<!--and the **R** package of this book **SPSRBook**. --></p>
+<p>Finally, I would like to thank Alexandre Wadoux (University of Sydney) for preparing the data set of aboveground biomass and numerous environmental and climatological covariates of Eastern Amazonia (Brazil); Coen Bussink (UN Organization on Drugs and Crime) for giving permission to use data on the occurrence of opium poppy fields in Kandahar (Afghanistan), Akmal Akramkhanov for providing the data set with measurements of the salinity of soil at a farm which is part of a regional Cotton Research
+Station in Khorezm (Uzbekistan). These data were collected in the ZEF/UNESCO Landscape Restructuring project in Khorezm province, with financial support by the German Ministry for Education and Research (BMBF; project number 0339970A); Lin Yang (Nanjing University) for giving permission to use the data on soil organic matter concentration in Xuancheng (China) collected in a project supported by the National Natural Science Foundation of China (Project No 41471178, 41431177); Hailu Shiferaw (Ethiopian Agricultural Transformation Agency) to allow me to use the soil organic matter data in three woredas in Ethiopia; Siegfried Hofman (Flemish Institute for Technological Research) for giving permission to use the nitrate-N data of several agricultural fields in Flanders (Belgium); and Budiman Minasny (University of Sydney) for giving permission to use the raster maps with terrain attributes in Hunter Valley (Australia).</p>
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-gru06" class="csl-entry">
+de Gruijter, J. J., D. J. Brus, M. F. P. Bierkens, and M. Knotters. 2006. <em>Sampling for Natural Resource Monitoring</em>. Berlin: Springer.
+</div>
+<div id="ref-R2020" class="csl-entry">
+R Core Team. 2020. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-Xie2020" class="csl-entry">
+Xie, Yihui, Christophe Dervieux, and Emily Riederer. 2020. <em>R Markdown Cookbook</em>. First. Chapman &amp; Hall/CRC.
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="GeneralIntro.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/index.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["SpatialSampling.pdf", "SpatialSampling.epub"],
+"search": {
+"engine": "lunr",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

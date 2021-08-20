@@ -1,0 +1,1456 @@
+# Model-assisted estimation {#Modelassisted}
+
+In many cases ancillary information is available that could be useful to increase the accuracy of the estimated mean or total of the study variable. The ancillary variable(s) can be qualitative (i.e. classifications) or quantitative. As we have seen before, both types of ancillary variable can be used at the design stage, i.e. in selecting the sampling units, to improve the performance of the sampling strategy, for instance by stratification (Chapter \@ref(STSI)), selecting sampling units with probabilities proportional to size (Chapter \@ref(pps)), or through balancing and/or spreading the sample on the covariates (Chapter \@ref(BalancedSpreaded)). In this chapter I explain how these covariates can be used at the stage of *estimation*, once the data are collected.
+
+In the design-based approach for sampling various estimators are developed that exploit one or more covariates. These estimators are derived from different superpopulation model\index{Superpopulation model} of the study variable. A superpopulation model is a statistical model that can be used to generate an infinite number of populations, a superpopulation, through simulation. An example is the simulation of spatial populations using a geostatistical model, through sequential Gaussian simulation, see Chapter \@ref(MBpredictionofDesignVariance). A superpopulation is a construct, it does not exist in reality. We assume that the population of interest is one of the populations that can be generated with the chosen model. The combination of probability sampling and estimators that are build on a superpopulation model, is referred to as the model-assisted approach\index{Model-assisted approach}. Also in the model-based approach a superpopulation model is used, however, its role is fundamentally different from that in the model-assisted approach, see Chapter \@ref(Approaches). To stress the different use of the superpopulation model in the model-assisted approach this model is referred to as the "working model"\index{Working model}, i.e. the superpopulation model that is used to derive a model-assisted estimator.
+
+@Breidt2017 present an overview of model-assisted estimators derived from a general working model:
+
+\begin{equation}
+z_k = \mu(\mathbf{x}_k)+\epsilon_k\;,
+(\#eq:workingmodel)
+\end{equation}
+
+with $\mu(\mathbf{x}_k)$ the model mean\index{Model mean} for population unit $k$ which is a function of the covariate values of that unit collected in vector $\mathbf{x}_k = (1, x_{1,k}, \dots , x_{J,k})^\mathrm{T}$, and $\epsilon_k$ a random variable with zero mean. The model mean $\mu(\mathbf{x}_k)$ can be a linear or a non-linear combination of the covariates. If the study variable and the covariate values were observed for all population units, all these data can be used to compute a so-called hypothetical population fit\index{Population fit of model parameters} of the model parameters. These model parameters can then be used to compute *estimates* of the model means $\mu(\mathbf{x}_k)$, denoted by $m(\mathbf{x}_k)$, for all population units. For instance, with a multiple regression model $m(\mathbf{x}_k)=\mathbf{x}_k^T \mathbf{b}$, with $\mathbf{b}$ the vector with regression coefficients estimated from observations of the study variable $z$ and the covariates on *all* population units. In practice we have a sample only, which is used to estimate $m(\mathbf{x}_k)$ by $\hat{m}(\mathbf{x}_k)$. For the multiple regression model $\hat{m}(\mathbf{x}_k)= \mathbf{x}_k^T \mathbf{\hat{b}}$, with $\mathbf{\hat{b}}$ the vector with regression coefficients estimated from the sample data. This leads to the generalised difference estimator\index{Generalised difference estimator} [@Wu2001]:
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{dif}}=\frac{1}{N} \sum_{k=1}^N \hat{m}(\mathbf{x}_k) + \frac{1}{N} \sum_{k \in \mathcal{S}} \frac{z_k-\hat{m}(\mathbf{x}_k)}{\pi_k}\;,
+(\#eq:GeneralizedDifferenceEstimator)
+\end{equation}
+
+with $\pi_k$ the inclusion probability of unit $k$. The first term is the population mean of model predictions of the study variable, the second term is the $\pi$ estimator of the population mean of the residuals. 
+
+A wide variety of model-assisted estimators have been developed and tested in the past decades. They differ in the working model used to obtain the estimates $\hat{m}(\mathbf{x}_k)$ in Equation \@ref(eq:GeneralizedDifferenceEstimator). The best known class of model-assisted estimators is the generalised regression estimator\index{Regression estimator!generalised regression estimator} that uses a linear model in prediction [@sar92]. Alternative model-assisted estimators are the estimators using machine learning techniques for prediction. In the era of big data with a vastly increasing number of exhaustive data sets, and a rapid development of machine learning techniques, these estimators have great potentials for spatial sample survey.
+
+## Generalized regression estimator {#GREG}
+
+The working model of the generalised regression estimator is the heteroscedastic multiple linear regression model\index{Heteroscedastic multiple linear regression model}:
+
+\begin{equation}
+Z_k = \mathbf{x}^\mathrm{T}_k \boldsymbol{\beta}+\epsilon_k \;,
+(\#eq:GREGmodel)
+\end{equation}
+
+with $\epsilon_k$ uncorrelated residuals, with zero mean and variance $\sigma^2(\epsilon_k)$. Note that I use uppercase $Z$ to distinguish the random variable $Z_k$ of unit $k$ from one realization of this random variable for unit $k$ in the population of interest, $z_k$. Further note that the variance of the residuals $\sigma^2(\epsilon_k)$ need not be constant but may differ among the population units. If $\{z_k,x_{1,k}, \dots , x_{J,k}\}$ were observed for all units $k= 1, \dots , N$ in the population, the regression coefficients $\boldsymbol{\beta}$ would be estimated by
+
+\begin{equation}
+\mathbf{b} = \left(\sum_{k=1}^N \frac{\mathbf{x}_k\mathbf{x}_k^{\mathrm{T}}}{\sigma^2(\epsilon_k)}  \right)^{-1} \sum_{k=1}^N \frac{\mathbf{x}_k z_k}{\sigma^2(\epsilon_k)}\;,
+(\#eq:populationfitGREG)
+\end{equation}
+
+with $\mathbf{x}_k$ the vector $(1, x_{1,k}, \dots , x_{J,k})^\mathrm{T}$, and $\sigma^2(\epsilon_k)$ the variance of the residual of unit $k$. So, similar to the distinction between model mean and population mean (see Chapter \@ref(Approaches)), here the model regression coefficients\index{Model regression coefficient} $\boldsymbol{\beta}$ are distinguished from the population regression coefficients\index{Population regression coefficient} $\mathbf{b}$. The means $m(\mathbf{x}_k)$ would then be computed by
+
+\begin{equation}
+m(\mathbf{x}_k) = \mathbf{x}_k^{\mathrm{T}} \mathbf{b}\;.
+(\#eq:mxi)
+\end{equation}
+
+If we have a probability sample from the population of interest, $\mathbf{b}$ is estimated by replacing the population totals in Equation \@ref(eq:populationfitGREG) by their $\pi$ estimators:
+
+\begin{equation}
+\hat{\mathbf{b}} = \left(\sum_{k \in \mathcal{S}} \frac{\mathbf{x}_k\mathbf{x}_k^{\mathrm{T}}}{\sigma^2(\epsilon_k) \pi_k}  \right)^{-1} \sum_{k \in \mathcal{S}} \frac{\mathbf{x}_k z_k}{\sigma^2(\epsilon_k) \pi_k} \;,
+(\#eq:EstimatorGREGCoefficients)
+\end{equation}
+
+Note that with unequal inclusion probabilities, the design-based estimators of the population regression coefficients differ from the usual ordinary least squares\index{Ordinary least squares} (OLS) estimators of the regression coefficients defined as model parameters. The values $\hat{b}_j$ are estimates of the *population parameters* $b_j$.
+
+The mean values $m(\mathbf{x}_k)$ are now estimated by
+
+\begin{equation}
+\hat{m}(\mathbf{x}_k) = \mathbf{x}_k^{\mathrm{T}} \hat{\mathbf{b}}\;.
+(\#eq:estmxi)
+\end{equation}
+
+Plugging Equation \@ref(eq:estmxi) into the generalised difference estimator, Equation \@ref(eq:GeneralizedDifferenceEstimator), leads to the generalised regression estimator\index{Regression estimator!generalised regression estimator} for the population mean:
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{regr}} = \frac{1}{N} \sum_{k=1}^N \mathbf{x}_k^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{N} \sum_{k \in \mathcal{S}} \frac{z_k-\mathbf{x}^\mathrm{T}_k\hat{\mathbf{b}}} {\pi_k}
+  \;.
+(\#eq:GREG)
+\end{equation}
+
+This estimator can also be written as
+
+\begin{equation}
+\hat{\bar{z}}_{\text{regr}}= \hat{\bar{z}}_{\pi}+\sum_{j=1}^J \hat{b}_j(\bar{x}_j-\hat{\bar{x}}_{j,\pi})  \;,
+(\#eq:GREG2)
+\end{equation}
+
+with $\hat{\bar{z}}_{\pi}$ and $\hat{\bar{x}}_{j,\pi}$ the $\pi$ estimator of the study variable $z$ and the $j$th covariate, respectively, $\bar{x}_j$ the population mean of the $j$th covariate, and $\hat{b}_j$ the estimated slope coefficient associated with the $j$th covariate. So the generalised regression estimate is equal to the $\pi$ estimate when the estimated means of the covariates are equal to the population means. This is the rationale of balanced sampling (Chapter \@ref(BalancedSpreaded)).
+
+The alternative formulation of the regression estimator (Equation \@ref(eq:GREG2)) shows that we do not need to know the covariate values for all population units. Knowledge of the population means of the covariates is sufficient. This is because a linear relation is assumed between the study variable and the covariates. On the contrary, for non-linear working models such as a random forest model, exhaustive knowledge of the covariates is needed so that the estimated mean $\hat{m}(\mathbf{x}_k)$ in Equation \@ref(eq:GeneralizedDifferenceEstimator) can be computed for every unit in the population.
+
+@sar92 worked out the generalised regression estimator for various superpopulation models, such as the simple and multiple linear regression model, the ratio model and the ANOVA model.
+
+### Simple and multiple regression estimators {#RegressionEstimator}
+
+The working model of the simple and multiple regression estimator is the homoscedastic linear regression model\index{Homoscedastic linear regression model}. The only difference with the heteroscedastic model (Equation \@ref(eq:GREGmodel)) is that the variance of the residuals is assumed constant: $\sigma^2(\epsilon_k) = \sigma^2(\epsilon), k = 1 , \dots , N$.
+
+In the simple linear regression model the mean is a linear combination of a single covariate, $\mu(x_k)= \alpha + \beta\;x_k$. The simple linear regression model\index{Simple linear regression model} leads to the simple regression estimator\index{Regression estimator!simple regression estimator}. With simple random sampling this estimator for the population mean is
+
+\begin{equation}
+\hat{\bar{z}}_{\text{regr}}= \bar{z}_{\mathcal{S}}+\hat{b}\left( \bar{x}-\bar{x}_{\mathcal{S}}\right) \;,
+(\#eq:SimpleRegressionEstimatorSI)
+\end{equation}
+
+where $\bar{z}_{\mathcal{S}}$ and $\bar{x}_{\mathcal{S}}$ are the sample means of the study variable and the covariate, respectively, $\bar{x}$ is the population mean of the covariate, and $\hat{b}$ is the estimated slope coefficient:
+
+\begin{equation}
+\hat{b}=\frac{\sum_{k \in \mathcal{S}} (x_k-\bar{x}_{\mathcal{S}})(z_k-\bar{z}_{\mathcal{S}})}{\sum_{k \in \mathcal{S}}(x_k-\bar{x}_{\mathcal{S}})^2} \;.
+(\#eq:OLSSlope)
+\end{equation}
+
+The rationale of the regression estimator is that when the estimated mean of the covariate is, for instance, smaller than the population mean of the covariate, then with a positive correlation between the study variable and covariate, also the estimated mean of the study variable is expected to be smaller than the population mean of the study variable. The difference between the population mean and estimated mean of the covariate can be used to improve the $\pi$ estimate of the mean of $z$ (which is for simple random sampling equal to the sample mean $\bar{z}_{\mathcal{S}}$), by adding a term proportional to the difference between the estimated mean and population mean of the covariate. As a scaling factor the estimated slope of the fitted regression line is used.
+
+The sampling variance of this regression estimator can be estimated by computing first the regression residuals $e_k= z_k - \hat{z}_k,\, i = 1 \dots n$ at the sampling points. To compute these residuals we also need an estimate of the intercept. With simple random sampling this intercept can be estimated by
+
+\begin{equation}
+\hat{a} = \bar{z}_{\mathcal{S}} - \hat{b}\; \bar{x}_{\mathcal{S}}\;.
+(\#eq:OLSIntercept)
+\end{equation}
+
+The sampling variance of the regression estimator is *approximately* equal to the sampling variance of the estimator of the mean of these residuals:
+
+\begin{equation}
+\widehat{V}\!\left(\hat{\bar{z}}_{\mathrm{regr}}\right)=\frac{\widehat{S^{2}}(e)}{n} \;,
+(\#eq:VarianceRegressionEstimatorSI)
+\end{equation}
+
+with $\widehat{S^{2}}(e)$ the estimated population variance of the regression residuals
+
+\begin{equation}
+\widehat{S^{2}}(e)=\frac{1}{n-1}\sum_{k \in \mathcal{S}} e_k^2 \;.
+(\#eq:VarianceResiduals)
+\end{equation}
+
+The variance estimator is an approximation because the regression coefficients are also estimated from the sample, which makes the regression estimator nonlinear. The approximation of the variance is based on a Taylor linearisation\index{Taylor linearisation of regression estimator} of the regression estimator (@sar92, p. 235). For simple random sampling without replacement from finite populations, the variance estimator must be multiplied by the finite population correction factor  $1-n/N$, see Chapter \@ref(SI).
+
+In the multiple linear regression model\index{Multiple linear regression model} the mean is a linear function of multiple covariates. This model leads to the multiple regression estimator \index{Regression estimator!multiple regression estimator}. With simple random sampling the population regression coefficients of this estimator can be estimated by
+
+\begin{equation}
+\hat{\mathbf{b}} = \left(\sum_{k \in \mathcal{S}} \mathbf{x}_k\mathbf{x}_k^{\mathrm{T}} \right)^{-1} \sum_{k \in \mathcal{S}} \mathbf{x}_k z_k \;.
+(\#eq:EstimatorMultipleRegressionCoefficients)
+\end{equation}
+
+Comparison with the general regression estimator of the population regression coefficients (Equation \@ref(eq:EstimatorGREGCoefficients)) shows that both the variance of the residuals, $\sigma^2(\epsilon_k)$, and the inclusion probabilities $\pi_k$ are missing, as they are (assumed) constant.
+
+The simple regression estimator is illustrated with Eastern Amazonia, see Section \@ref(Datasets). The population mean of the aboveground biomass (AGB) is estimated by the simple regression estimator, using natural logarithms of  MODIS short-wave infrared radiation (SWIR2) as a covariate.
+
+```{r, echo=FALSE}
+load("data/Amazonia_1km.RData")
+gridAmazonia$lnSWIR2 <- log(gridAmazonia$SWIR2)
+units <- sample.int(nrow(gridAmazonia), size=10000, replace=FALSE)
+mysample <- gridAmazonia[units,c("AGB","lnSWIR2")]
+lm_pop <- lm(AGB~lnSWIR2, data=gridAmazonia)
+ab <- coef(lm_pop)
+r <- cor(gridAmazonia$AGB, gridAmazonia$lnSWIR2)
+```
+
+The correlation coefficient equals `r as.character(round(r,3))`. The slope of the fitted line equals `r as.character(round(ab[2],1))`. Now a simple random sample without replacement of 100 units is selected, and the two population regression coefficients are estimated with Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). 
+
+```{r}
+N <- nrow(gridAmazonia) 
+n <- 100
+set.seed(321)
+units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
+mysample <- gridAmazonia[units,c("AGB","lnSWIR2")]
+X <- matrix(nrow=n,ncol=2,data=1)
+X[,2] <- mysample$lnSWIR2
+XX <- t(X) %*% X
+XX_inv <- chol2inv(chol(XX))
+Xz <- t(X) %*% mysample$AGB
+print(ab <- t(XX_inv %*% Xz))
+```
+
+The same estimates are obtained by ordinary least squares (OLS) fitting of the model with function `lm`. 
+
+```{r}
+lm_sample <- lm(AGB~lnSWIR2, data=mysample)
+print(ab.mb <- coef(lm_sample))
+```
+
+But care must be taken: the design-based estimates of the population regression coefficients are only equal to these model-based OLS estimates of the regression coefficients for equal probability sampling designs. Also be aware that the variance of the design-based estimates of the population regression coefficients is not equal to the model-based variance of the model regression coefficients. See Section 11.2.2.1 in @loh99 for how to estimate the variance of the design-based estimates of the population regression coefficients.
+
+Figure \@ref(fig:ScatterAGBvsSWIR2) shows the scatter plot for the sample and the fitted simple linear regression model. 
+
+```{r ScatterAGBvsSWIR2, echo=FALSE, fig.asp=.6, fig.cap="Scatterplot and fitted simple linear regression model for aboveground biomass (AGB), using lnSWIR2 as predictor, for simple random sample."}
+ggplot(data=mysample) +
+        geom_point(mapping=aes(x=lnSWIR2, y=AGB)) +
+        geom_abline(intercept=ab[1], slope=ab[2])+
+        scale_x_continuous(name="lnSWIR2") +
+        scale_y_continuous(name="AGB")
+```
+
+The simple random sample is used to estimate the population mean of the study variable AGB by the simple regression estimator, and to approximate the sampling variance of the regression estimator. The residuals of the fitted model can be extracted with function `residuals`, because in this case the model-based estimates of the regression coefficients are equal to the design-based estimates.
+
+```{r}
+mx_pop <- mean(gridAmazonia$lnSWIR2) 
+mx_sam <- mean(mysample$lnSWIR2) 
+mz_sam <- mean(mysample$AGB)
+mz_regr <- mz_sam+ab[2]*
+  (mx_pop-mx_sam)
+e <- residuals(lm_sample)
+S2e <- var(e)
+N <- nrow(gridAmazonia)
+se_mz_regr <- sqrt((1-n/N)*S2e/n)
+```
+
+The difference $\delta(x)$ between the population mean of the covariate lnSWIR2 (`r as.character(round(mx_pop,3))`) and its estimated mean (`r as.character(round(mx_sam,3))`) equals `r as.character(round(mx_pop - mx_sam,3))`. We may expect the difference between the unknown population mean of the study variable AGB and its sample mean (`r as.character(round(mz_sam,3))`) to be equal to $\delta(x)$, multiplied by the estimated slope of the line, which equals `r as.character(round(ab[2],1))`. The result (`r as.character(round(ab[2]*(mx_pop - mx_sam),4))`) is added to the simple random sample estimate. 
+
+The estimated approximate standard error of the regression estimator equals `r as.character(round(se_mz_regr,3))`. The approximated variance is a simplification of a more complicated approximation derived from writing the regression estimator of the population total as a weighted sum of the observations divided by the inclusion probabilities, see Equation (6.5.9) in @sar92. The alternative expression for the regression estimator of the population mean is
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{regr}}=\frac{1}{N}\sum_{k \in \mathcal{S}} g_k \frac{z_k}{\pi_k}\;,
+(\#eq:AlternativeRegressionEstimator)
+\end{equation}
+
+with $g_k$ the weight attached to the observation on sampling unit $k$. For simple random sampling the weights are equal to (Equation 6.5.12 in @sar92)
+
+\begin{equation}
+g_k = 1+\frac{(\bar{x}-\bar{x}_{\mathcal{S}})(x_k-\bar{x}_{\mathcal{S}})}{\widehat{S^2}(x)}\;.
+(\#eq:RegressionWeights)
+\end{equation}
+
+```{r}
+S2x <- sum((mysample$lnSWIR2-mean(mysample$lnSWIR2))^2)/n
+g <- 1+((mx_pop-mx_sam)*(mysample$lnSWIR2-mx_sam))/S2x
+```
+
+The sample mean of the weights equals one,
+
+```{r}
+mean(g)
+```
+
+and the sample mean of the product of the weights and the covariate $x$ equals the population mean of the covariate.
+
+```{r}
+all.equal(mean(g*mysample$lnSWIR2),mean(gridAmazonia$lnSWIR2))
+```
+
+In other words, the sample is calibrated on the known population means. The variance of the regression estimator of the population mean can then be approximated by (Section 6.6 in @sar92)
+
+\begin{equation}
+\widehat{V}\!\left(\hat{\bar{z}}_{\mathrm{regr}}\right)=\left(1-\frac{n}{N}\right)\frac{\sum_{k \in \mathcal{S}} g_k^2e_k^2}{n(n-1)} \;.
+(\#eq:AlternativeVarianceRegressionEstimator)
+\end{equation}
+
+Comparing this with Equation \@ref(eq:VarianceRegressionEstimatorSI) shows that in the first approximation we assumed that all weights are equal to one.
+
+```{r}
+S2ge <- sum(g^2*e^2)/(n-1)
+(se_mz_regr <- sqrt((1-n/N)*S2ge/n))
+```
+
+The regression estimator and its standard error can be computed with package **survey**. After specifying the sampling design with function `svydesign`, function `calibrate` is used to calibrate the sample on the known population totals $N$ and $t(x) = \sum_{k=1}^N x_k$, with $x_k$ the value of covariate lnSWIR2 for unit $k$. 
+
+```{r}
+library(survey)
+mysample$fpc <- N
+design_si <- svydesign(id=~1, data=mysample,  fpc=~fpc)
+populationtotals <- c(N,sum(gridAmazonia$lnSWIR2))
+mysample_cal <- calibrate(
+  design_si, formula=~lnSWIR2, population=populationtotals,
+  calfun="linear")
+```
+
+The calibrated weights\index{Calibrated weights} can be extracted with function `weights`. These weights are divided by the inclusion probabilities $\pi=n/N$, so that the sample sum of the weights equals $N$, and not the sample size $n$ (as in the code chunk above), 
+
+```{r}
+g <- weights(mysample_cal)
+all.equal(sum(g),N)
+```
+and the sample sum of the product of the weights and the covariate equals the population total of the covariate:
+
+```{r}
+all.equal(sum(g*mysample$lnSWIR2),sum(gridAmazonia$lnSWIR2))
+```
+
+Finally, the population mean can be estimated with function `svymean`. This is simply the sample sum of the product of the weights and the study variable AGB, divided by $N$.
+
+```{r}
+svymean(~AGB, mysample_cal)
+```
+
+Figure \@ref(fig:SamplingDistributionRegression) shows the sampling distribution of the simple regression estimator along with the distribution of the $\pi$ estimator, obtained by repeating simple random sampling of 100 units and estimation 10,000 times.
+
+```{r, eval=FALSE, echo=FALSE}
+number_of_samples <- 10000
+mz_HT <- mz_regr <- v_mz_regr <-  numeric(length=number_of_samples)
+set.seed(314)
+for (i in 1:number_of_samples) {  
+  units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
+  mysample <- gridAmazonia[units,c("AGB","lnSWIR2")]
+  mz_HT[i] <- mean(mysample$AGB)
+  mysample$fpc <- N
+  design_si <- svydesign(id=~1, data=mysample,  fpc=~fpc)
+  mysample_cal <- calibrate(design_si, formula=~lnSWIR2, population=populationtotals, calfun="linear")
+  res <- svymean(~AGB,mysample_cal) %>% as.data.frame(.)
+  mz_regr[i] <- res$mean
+  v_mz_regr[i] <- res$AGB^2
+}
+save(mz_HT,mz_regr,v_mz_regr, file="results/SimpleRegressionEstimatesAGB_Amazonia.RData")
+```
+
+```{r SamplingDistributionRegression, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of simple regression estimator and $\\pi$ estimator of mean aboveground biomass (AGB) in Eastern Amazonia, for simple random sampling without replacement of size 100."}
+load(file="results/SimpleRegressionEstimatesAGB_Amazonia.RData")
+estimates <- data.frame(mz_regr,mz_HT)
+names(estimates) <- c("Regression","HT")
+df <- estimates %>% pivot_longer(.,cols=c("Regression","HT"))
+df$name <- factor(df$name, levels=c("Regression","HT"), ordered=TRUE)
+ggplot(data=df) +
+    geom_boxplot(aes(y=value, x=name)) +
+    geom_hline(yintercept=mean(gridAmazonia$AGB), colour="red")+
+    scale_x_discrete(name="Estimator") +
+    scale_y_continuous(name="Estimated mean AGB")
+
+bias <- mean(mz_regr)-mean(gridAmazonia$AGB)
+v_mz_regr_sim <- var(mz_regr)
+m_v_mz_regr_sim <- mean(v_mz_regr)
+v_mz_SI <- (1-n/N)*var(gridAmazonia$AGB)/n
+gain <- v_mz_SI/var(mz_regr)
+```
+
+The average of the 10,000 regression estimates equals `r as.character(round(mean(mz_regr),3))`. The population mean of the study variable AGB equals `r as.character(round(mean(gridAmazonia$AGB),3))`, so the estimated bias of the regression estimator equals `r as.character(round(bias,3))`. The variance of the 10,000 regression estimates equals `r as.character(round(v_mz_regr_sim,3))`, and the average of the 10,000 estimated approximate variances equals `r as.character(round(m_v_mz_regr_sim,3))`. The gain in precision due to the regression estimator, quantified by the ratio of the variance of the $\pi$ estimator to the variance of the regression estimator equals `r as.character(round(gain,3))`.
+
+Using multiple covariates in the regression estimator is straightforward with the function `calibrate`. As a first step the best model is selected with function `regsubsets` of package **leaps** [@leaps].
+
+```{r}
+library(leaps)
+n <- 100
+set.seed(321)
+units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
+covars <- c("AGB","lnSWIR2","Terra_PP","Prec_dm",
+            "Elevation","Clay")
+mysample <- gridAmazonia[units,covars]
+models <- regsubsets(AGB~., data=mysample, nvmax=4)
+res.sum <- summary(models)
+res.sum$outmat
+```
+
+The best model with one predictor is the model with lnSWIR2, the best model with two predictors is the one with lnSWIR2 and Terra_PP, etc. Of these models the third model, i.e. the model with lnSWIR2, Terra_PP and Elevation is the best when using adjusted $R^2$ as a selection criterion.
+
+```{r}
+which.max(res.sum$adjr2)
+```
+
+The standard error of the estimated mean of AGB is somewhat reduced by adding the covariates Terra_PP and Elevation to the regression estimator.
+
+```{r}
+mysample$fpc <- nrow(gridAmazonia)
+design_si <- svydesign(id=~1, data=mysample, fpc=~fpc)
+totals <- c(nrow(gridAmazonia),
+            sum(gridAmazonia$lnSWIR2),
+            sum(gridAmazonia$Terra_PP),
+            sum(gridAmazonia$Elevation))
+mysample_cal <- calibrate(
+  design_si, formula=~lnSWIR2+Terra_PP+Elevation,
+  population=totals, calfun="linear")
+svymean(~AGB, mysample_cal)
+```
+
+Another interesting package for model-assisted estimation is package **mase** [@mase2018]. The regression estimate can be computed with function `greg`.
+
+```{r}
+library(mase)
+covars <- c("lnSWIR2","Terra_PP","Elevation")
+res <- greg(
+  y=mysample$AGB, xsample=mysample[covars],
+  xpop=gridAmazonia[covars], pi=rep(n/N,n),
+  var_est=TRUE, var_method="LinHTSRS", model="linear")
+res$pop_mean
+```
+
+The multiple regression estimate is equal to the estimate obtained with function `calibrate` of package **survey**. The estimated standard error equals
+
+```{r}
+sqrt(res$pop_mean_var)
+```
+
+which is slightly smaller than the standard error computed with package **survey**. This standard error is computed by ignoring the g-weights [@McConville2020].  
+
+```{r, eval=FALSE}
+mlr <- lm(AGB~lnSWIR2+Terra_PP+Elevation,data=mysample)
+e <- residuals(mlr)
+S2e <- var(e)
+print(se <- sqrt((1-n/N)*S2e/n))
+```
+
+### Penalised least squares estimation
+
+In the previous section I first selected a best subset of covariates before using these covariates in estimating the population regression coefficients. The alternative is to skip the selection of the best model, and to estimate the population regression coefficients of *all* covariates by penalised least squares estimation\index{Penalised least squares estimation} (PLS). In PLS a penalty equal to the sum of the absolute or squared values of the population regression coefficients is added to the minimisation criterion, see  @McConville2020 for details. PLS is implemented in function `gregElasticNet` of package **mase**. 
+
+```{r}
+covars <- c("lnSWIR2","Terra_PP","Prec_dm","Elevation","Clay")
+res <- gregElasticNet(
+  y=mysample$AGB, xsample=mysample[covars],
+  xpop=gridAmazonia[covars], pi=rep(n/N,n),
+  var_est=TRUE, var_method="LinHTSRS", model="linear",
+  lambda="lambda.min", cvfolds=100)
+signif(res$coefficients,4)
+```
+
+All five covariates are used in prediction, but the coefficients associated with these predictors are small except for lnSWIR2.
+
+The estimated standard error is considerably larger than the standard error obtained with lnSWIR2, Terra_PP and Elevation as predictors, so in this case the elastic net regression estimator\index{Regression estimator!elastic net regression estimator} works not as well as the multiple regression estimator using the best subset of the covariates.
+
+```{r}
+sqrt(res$pop_mean_var)
+```
+
+#### Exercises {-}
+
+1. The data for this Exercise are in `data/Amazonia_1km.RData`. Write an **R** script to
+    + Compute the sampling variance of the simple regression estimator of the mean of AGB, using lnSWIR2 as a covariate, for simple random sampling and sample sizes of 10, 25 and 100, assuming that the population regression coefficients are perfectly known. Hint: fit a simple linear regression model on all data, and compute the population variance of the residuals.  
+    + Select 10,000 times a simple random sample with replacement of size 10 (use a for-loop). Use each sample to estimate the population mean of AGB with the simple regression estimator (using sample estimates of the population regression coefficients), and estimate the approximate variance of the estimator of the mean.  Compute the variance of the 10,000 regression estimates and the average of the 10,000 approximate variance estimates. Repeat this for sample sizes 25, 100.   
+    + Compute for each sample size the difference between the experimental variance (variance of the 10,000 regression estimates) and the variance obtained with the population fit of the regression model as a proportion of the experimental variance. Explain what you see.   
+    + Compute for each sample size the difference between the average of the 10,000 approximated variances and the experimental variance, as a proportion of the experimental variance. Explain what you see.  
+
+### Regression estimator with stratified simple random sampling {#RegressionEstimatorSTSI}
+
+With stratified simple random sampling there are two regression estimators, the *separate* and the *combined* regression estimator. In the first estimator the regression estimator for simple random sampling is applied at the level of the strata\index{Regression estimator!separate regression estimator}. This implies that for each stratum separately a vector with population regression coefficients $\mathbf{b}_h$ is estimated. The regression estimates of the stratum means are then combined by computing the weighted average, using the relative sizes of the strata as weights:
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{sregr}}=\sum_{h=1}^H w_h \hat{\bar{z}}_{\text{regr,}h} \;,
+(\#eq:SeparateRegressionEstimator)
+\end{equation}
+
+with, for the simple linear estimator
+
+\begin{equation}
+\hat{\bar{z}}_{\text{regr,}h} = \bar{z}_{\mathcal{S}h}+\hat{b}_h\left( \bar{x}_h-\bar{x}_{\mathcal{S}h}\right) \;,
+(\#eq:RegressionEstimatorStratumMean)
+\end{equation}
+
+with $\bar{z}_{\mathcal{S}h}$ and $\bar{x}_{\mathcal{S}h}$ the stratum sample means of the study variable and covariate, respectively, $\bar{x}_h$ the  mean of the covariate in stratum $h$, and $\hat{b}_h$ the estimated slope coefficient for stratum $h$.
+
+The variance of this separate regression estimator of the population mean can be estimated by first estimating the variances of the regression estimators of the stratum means using Equation \@ref(eq:VarianceRegressionEstimatorSI), and then combining these variances using Equation \@ref(eq:EstVarMeanSTSI).
+
+The separate regression estimator is illustrated with Eastern Amazonia. Biomes are used as strata. There are four biomes, the levels of which are given short names using function `levels`. 
+
+```{r}
+library(sampling)
+gridAmazonia$Biome <- as.factor(gridAmazonia$Biome)
+levels(gridAmazonia$Biome)
+```
+
+```{r}
+biomes <- c("Mangrove", "Forest.dry","Grassland","Forest.moist")
+levels(gridAmazonia$Biome) <- biomes
+```
+
+Moist forest is by far the largest stratum, it covers 92\% of the area. Mangrove, dry forest and grassland cover 0.4\%, 2.3\% and 5.5\% of the area, respectively.  A stratified simple random sample of size 100 is selected using function `strata` of package **sampling** [@Tille2016], see Chapter \@ref(STSI). I chose five units as a minimum sample size. Note that the stratum sample sizes are not proportional to their size.
+
+```{r}
+ord <- unique(gridAmazonia$Biome)
+N_h <-  table(gridAmazonia$Biome)
+n_h <- c(5,5,5,85)
+set.seed(314)
+units <- sampling::strata(
+  gridAmazonia, stratanames="Biome", size=n_h[ord],
+  method="srswor")
+mysample <- getdata(gridAmazonia,units)
+```
+
+As a first step in estimation, for each stratum the mean of the covariate over all units in a stratum (population mean per stratum) and the sample means of the study variable and covariate are computed.
+
+```{r}
+mx_h_pop <- tapply(
+  gridAmazonia$lnSWIR2, INDEX=gridAmazonia$Biome, FUN=mean)
+mzh_sam <- tapply(
+  mysample$AGB, INDEX=mysample$Biome, FUN=mean)
+mx_h_sam <- tapply(
+  mysample$lnSWIR2, INDEX=mysample$Biome, FUN=mean)
+```
+
+The next step is to estimate the regression coefficients per stratum. This is done in a for-loop. The estimated slope coefficient is used to compute the regression estimator per stratum. The residuals are extracted to approximate the variance of the regression estimator per stratum.
+
+```{r}
+b_h <- mz_h_regr <- v_mz_h_regr <- numeric(length=4)
+for (i in 1:4) {
+  subsam <- subset(
+    mysample, mysample$Biome==levels(gridAmazonia$Biome)[i])
+  lm_sample <- lm(AGB~lnSWIR2, data=subsam)
+  b_h[i] <- coef(lm_sample)[2]
+  mz_h_regr[i] <- mzh_sam[i]+b_h[i]*
+    (mx_h_pop[i]-mx_h_sam[i])
+  e <- residuals(lm_sample)
+  S2e_h <- var(e)
+  v_mz_h_regr[i] <- (1-n_h[i]/N_h[i])*S2e_h/n_h[i]
+}
+```
+
+Finally, the separate regression estimate is computed as a weighted average of the regression estimates per stratum,
+
+```{r}
+w_h <- N_h/sum(N_h)
+print(mz_sepreg <- sum(w_h*mz_h_regr))
+```
+
+and its standard error by the square root of the pooled variances of the regression estimator per stratum, using the squared relative size of the strata as weights. 
+
+```{r}
+sum(w_h^2*v_mz_h_regr) %>% sqrt(.)
+```
+
+The separate regression estimator can be computed with package **survey**. The computation of the population totals merits special attention. For the regression estimator with *simple* random sampling these totals are the total number of populations units and the population total of the covariate lnSWIR2. These are the population totals associated with the columns of the design matrix that is constructed with function `lm` to estimate the regression coefficients. The column with ones results in an estimated intercept, the column with lnSWIR2 values in an estimated slope.
+
+The model that is fitted now is an ANCOVA model\index{ANCOVA model} with the factor Biome and covariate lnSWIR2.
+
+```{r}
+ancova <- lm(AGB~Biome*lnSWIR2, data=mysample)
+```
+
+**R** uses the so-called cornerstone representation of the ANCOVA model. The reference level is stratum Mangrove. The question is what population totals must be assigned to the function `calibrate` with this ANCOVA model. To make this clear, let us have a look at the columns of the design matrix, used to fit the ANCOVA model. Only the first five rows are printed.
+
+```{r}
+designmat <- model.matrix(ancova, mysample)
+```
+
+```{r, echo=FALSE}
+rownames(designmat) <- NULL
+designmat[c(1:5),]
+```
+
+With this model formulation the first population total is the total number of population units. The second, third and fourth population totals are the number of population units in stratum levels 2, 3 and 4. The fifth population total is the population total of covariate lnSWIR2, and the sixth, seventh and eighth population totals are the totals of covariate lnSWIR2 in stratum levels 2, 3 and 4. Note that the line `names(totals) <- names(coef(ancova))` is not strictly needed. This is just to suppress a warning that the names of the numeric with the population totals does not match the names of the columns of the design matrix. As a consequence we do not need to fit the ANCOVA model, as shown in the code chunk above, either. 
+
+```{r}
+N_h <- as.numeric(N_h)
+lut <- data.frame(Biome=biomes,N_h)
+mysample <- merge(x=mysample, y=lut)
+design_stsi <- svydesign(id=~1, strata=~factor(Biome),
+                         data=mysample, fpc=~N_h)
+tx_pop <- sum(gridAmazonia$lnSWIR2)
+tx_h_pop <- N_h*mx_h_pop
+totals <- c(sum(N_h),N_h[c(2,3,4)],tx_pop,tx_h_pop[c(2,3,4)])
+names(totals) <- names(coef(ancova))
+mysample_cal <- calibrate(
+  design_stsi, formula=~Biome*lnSWIR2, population=totals,
+  calfun="linear")
+svymean(~AGB, mysample_cal)
+```
+
+Alternatively, we may use the following formula in function `lm`.
+
+```{r}
+ancova2 <- lm(AGB~0+Biome/lnSWIR2, data=mysample)
+designmat <- model.matrix(ancova, mysample)
+```
+
+```{r, echo=FALSE}
+rownames(designmat) <- NULL
+designmat[c(1:5),]
+```
+
+With this formula the population totals are the number of population units in stratum levels 1, 2, 3 and 4, and the population totals of covariate lnSWIR2 per stratum.
+
+```{r}
+totals <- c(N_h,tx_h_pop)
+names(totals) <- names(coef(ancova2))
+mysample_cal <- calibrate(
+  design_stsi, formula=~0+Biome/lnSWIR2, population=totals,
+  calfun="linear")
+svymean(~AGB, mysample_cal)
+```
+
+Recall the alternative formulation of the regression estimator, Equation \@ref(eq:AlternativeRegressionEstimator), and that the sample sum of the $z$-expanded values multiplied by the calibrated weights $g_k$ are equal to the population totals. This explains why the population totals should match the columns of the design matrix.
+
+#### Combined regression estimator
+
+The alternative to the separate regression estimator is the combined regression estimator\index{Regression estimator!combined regression estimator}
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{cregr}} = \hat{\bar{z}}_{\pi}+\hat{b}\left( \bar{x}-\hat{\bar{x}}_{\pi}\right) \;,
+(\#eq:CombinedRegressionEstimator)
+\end{equation}
+
+with $\hat{b}$ the estimated slope coefficient, estimated by Equation \@ref(eq:EstimatorGREGCoefficients), discarding the variance of the residuals $\sigma^2(\epsilon_k)$ as they are assumed constant, and using the appropriate inclusion probabilities which differ among the strata, and $\hat{\bar{z}}_{\pi}$ and $\hat{\bar{x}}_{\pi}$ the $\pi$ estimators of the population mean of the study variable and the covariate with stratified simple random sampling, respectively.
+
+In the combined regression estimator only one regression coefficient $b$ is estimated, the slope coefficient for the entire population. This combined regression estimator is recommended when the stratum sample sizes are small as in our case, so that the estimated regression coefficients per stratum, $\hat{b}_h$, become unreliable. The estimators above are for infinite populations and for stratified simple random sampling with replacement of finite populations. For sampling without replacement from finite populations, finite population corrections $1-n_h/N_h$ must be added to the numerator and denominator of $\hat{b}$.
+
+The approximate variance of the combined regression estimator can be estimated as follows:  
+
+1. Compute residuals: $e_k = z_k - (\hat{a}_{\pi} + \hat{b} x_k)$.  
+2. Estimate for each stratum the variance of the estimator of the mean of the residuals: $\widehat{V}\!\left(\hat{\bar{e}}_h\right)=\widehat{S^{2}}_h(e)/n_h$, with $\widehat{S^{2}}_h(e)$ the estimated variance of the residuals in stratum $h$.    
+3. Combine the estimated variances per stratum: $\widehat{V}\!\left(\hat{\bar{z}}_{\text{cregr}}\right)=\sum_{h=1}^Hw^2_h\widehat{V}\!\left(\hat{\bar{e}}_h\right)$.
+
+The next code chunk shows the estimation procedure. First the population means of the study variable AGB and of the covariate lnSWIR2 are estimated by the $\pi$ estimator, see Chapter \@ref(STSI).
+
+```{r}
+mz_h_HT <- tapply(mysample$AGB, INDEX=mysample$Biome, FUN=mean)
+mx_h_HT <- tapply(mysample$lnSWIR2, INDEX=mysample$Biome, FUN=mean)
+mz_HT <- sum(w_h*mz_h_HT)
+mx_HT <- sum(w_h*mx_h_HT)
+```
+
+The next step is to estimate the population regression coefficients, using Equation \@ref(eq:EstimatorGREGCoefficients) in which the variances $\sigma^2(\epsilon_k)$ can be dropped, as these are assumed constant. The inclusion probabilities are in the column `Prob` of `mysample`.  
+
+```{r}
+W <- diag(x=1/mysample$Prob,nrow=n,ncol=n)
+X <- matrix(nrow=n,ncol=2,data=1)
+X[,2] <- mysample$lnSWIR2
+XW <- crossprod(X, W)
+XWX <- XW %*% X
+XWX_inv <- chol2inv(chol(XWX))
+XWz <- XW %*% mysample$AGB
+print(ab <- t(XWX_inv %*% XWz))
+```
+
+Note that the same estimates are obtained by model-based estimation, using weighted least squares\index{Weighted least squares}, based on the assumption of that the variances $\sigma^2(\epsilon_k)$ are proportional to the inclusion probabilities (which is a weird assumption).
+
+```{r}
+lm_wls <- lm(AGB~lnSWIR2, weights=1/Prob, data=mysample)
+coef(lm_wls)
+```
+
+So in model-based estimation the weights differ among the units because of assumed differences in the variance of the residuals, whereas in design-based estimation we assign different weights because the units have different inclusion  probabilities [@loh99].
+
+Finally the combined regression estimate is computed.
+
+```{r}
+print(mz_combreg <- mz_HT+ab[2]*(mx_pop-mx_HT))
+```
+
+To approximate the variance of the combined regression estimator first the residuals are computed. Then these residuals are used to estimate the spatial variance of the residuals within the strata, $\widehat{S^{2}}_h(e)$, and the variance of the estimator of the mean of the residuals, $\widehat{V}\!\left(\hat{\bar{e}}_h\right)$.
+
+```{r}
+mysample$e <- mysample$AGB-(ab[1]+ab[2]*mysample$lnSWIR2)
+v_me_h <- numeric(length=4)
+for (i in 1:4) {
+  subsam <- subset(
+    mysample, mysample$Biome==levels(gridAmazonia$Biome)[i])
+  S2e_h <- var(subsam$e)
+  v_me_h[i] <- (1-n_h[i]/N_h[i])*S2e_h/n_h[i]
+}
+print(sqrt(sum(w_h^2*v_me_h)))
+```
+
+Computing the combined regression estimator with package **survey** goes as follows.
+
+```{r}
+design_stsi <- svydesign(
+  id=~1, strata=~factor(Biome), data=mysample, fpc=~N_h)
+totals <- c(nrow(gridAmazonia),sum(gridAmazonia$lnSWIR2))
+mysample_cal <- calibrate(
+  design_stsi, formula=~lnSWIR2, population=totals,
+  calfun="linear")
+svymean(~AGB, mysample_cal)
+```
+
+Function `calibrate` computes the regression estimate and its standard error with the calibrated weights\index{Calibrated weights} $g_k$ (Equation 6.5.12 in @sar92). This explains the difference between the two standard errors. In the next code chunk the standard error of the regression estimator is computed with the calibrated weights $g_k$.
+
+```{r}
+lut <- data.frame(Biome=biomes,pi=n_h/N_h)
+mysample <- merge(x=mysample, y=lut)
+S2x <- sum(((mysample$lnSWIR2-mx_HT)^2)/mysample$pi)/
+  sum(mysample$pi^-1)
+g <- 1+(mx_pop-mx_HT)*(mysample$lnSWIR2-mx_HT)/S2x
+lm_sample <- lm(AGB~lnSWIR2, weights=1/Prob, data=mysample)
+e <- residuals(lm_sample)
+ge <- g*e
+S2geh <- tapply(ge,INDEX=mysample$Biome,FUN=var)
+print(sqrt(sum(w_h^2*(1-n_h/N_h)*S2geh/n_h)))
+```
+
+## Ratio estimator {#RatioEstimator}
+
+In some cases it is reasonable to assume that the fitted line passes through the origin. An example is the case study on poppy area in Kandahar (Chapter \@ref(pps)). The covariate is the agricultural area within the 5 km $\times$ 5 km squares that serve as sampling units. It is reasonable to assume that when the covariate equals zero, also the poppy area is zero. So, if we have an estimate of the ratio of the total poppy area in the population to the total agricultural area in the population, and besides know the total agricultural area in the population, the total poppy area in the population can be estimated by multiplying the estimated ratio with the known population total agricultural area:
+
+\begin{equation}
+\hat{t}_{\mathrm{ratio}}(z)=\frac{\hat{t}_{\pi}(z)}{\hat{t}_{\pi}(x)} \;t(x) =  \hat{b} \;t(x)\;,
+(\#eq:RatioEstimator)
+\end{equation}
+
+with $\hat{t}_{\pi}(z)$ and $\hat{t}_{\pi}(x)$ the $\pi$ estimators of the total of the study variable (poppy area) and ancillary variable (agricultural area), respectively, and $t(x)$ the total of the ancillary variable, which must be known.
+
+The working model\index{Working model} of the ratio estimator\index{Ratio estimator} is a heteroscedastic model, i.e. a model with non-constant variance (see Exercise 2, hereafter):
+
+\begin{eqnarray}
+Z(x_k) &=& \beta \;x_k  + \epsilon_k \notag \\
+\sigma^2(\epsilon_k) &=& \sigma^2 x_k\;,
+(\#eq:ratiomodel)
+\end{eqnarray}
+
+with $\beta$ the slope of the line, and $\sigma^2$ a constant (variance of residual for $x_k = 1$).
+
+This is a general estimator that can be used for any sampling design, not only for simple random sampling. For simple random sampling the population means of $z$ and $x$ are estimated by the sample means.
+
+For simple random sampling the sampling variance of the ratio estimator of the population total can be approximated by
+
+\begin{equation}
+\widehat{V}\!\left(\hat{t}_{\mathrm{ratio}}(z)\right)=N^2\frac{\widehat{S^{2}}(e)}{n} \;,
+(\#eq:VarianceRatioEstimatorSI)
+\end{equation}
+
+with $\widehat{S^{2}}(e)$ the estimated variance of the residuals $e_k=z_k-\hat{b}x_k$:
+
+\begin{equation}
+\widehat{S^{2}}(e)=\frac{1}{n-1}\sum_{k \in \mathcal{S}}e_k^2 \;.
+(\#eq:VarianceResidualsRatioEstimator)
+\end{equation}
+
+For simple random sampling without replacement from finite populations Equation \@ref(eq:VarianceRatioEstimatorSI) must be multiplied by $\left(1-\frac{n}{N}\right)$.
+
+The ratio estimator for the total poppy area and the estimator of its variance for a simple random sample without replacement can be estimated as follows.
+
+```{r}
+load("data/Kandahar.RData")
+n <- 50
+N <- nrow(grdKandahar)
+units <- sample.int(N, size=n, replace=FALSE)
+mysample <- grdKandahar[units,]
+b <- mean(mysample$poppy)/mean(mysample$agri)
+tx_pop <- sum(grdKandahar$agri)
+print(tz_ratio <- b*tx_pop)
+e <- mysample$poppy-b*mysample$agri
+print(se_tz_ratio <- sqrt(N^2*(1-(n/N))*var(e)/n))
+```
+
+A better variance approximation is obtained with Equation \@ref(eq:AlternativeVarianceRegressionEstimator). For the ratio model and simple random sampling the calibrated weights are equal to (@sar92, p. 248)
+
+\begin{equation}
+g = \frac{t(x)}{\hat{t}_{\pi}(x)} \;,
+(\#eq:weightsratiomodel)
+\end{equation}
+
+with $t(x)$ the population total of the covariate, and $\hat{t}_{\pi}(x)$ the $\pi$ estimator of the population total of the covariate.
+
+```{r}
+pi <- n/N
+tx_HT <- sum(mysample$agri/pi)
+g <- tx_pop/tx_HT
+S2ge <- sum(g^2*e^2)/(n-1)
+print(se_tz_ratio <- sqrt(N^2*(1-n/N)*S2ge/n))
+```
+
+Note that to compute `S2ge` $n-1$ is used, as we have now one population regression coefficient only. The ratio  estimate and its standard error can be computed with package **survey** as follows.
+
+```{r}
+mysample$N <-N
+design_si <- svydesign(id=~1, data=mysample, fpc=~N)
+b <- svyratio(~poppy, ~agri, design=design_si)
+predict(b, total=tx_pop)
+```
+
+
+```{r SamplingDistributionRatio, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of ratio estimator and $\\pi$ estimator of total poppy area (ha) in Kandahar with simple random sampling of size 50."}
+number_of_samples <- 10000
+tz_ratio <- v_tz_ratio <- tz_HT <- numeric(length=number_of_samples)
+set.seed(314)
+for (i in 1:number_of_samples) {
+  mysample <- sample.int(N,size=n,replace=FALSE)
+  b <- mean(grdKandahar$poppy[mysample])/mean(grdKandahar$agri[mysample])
+  tz_ratio[i] <- b*tx_pop
+  e <- grdKandahar$poppy[mysample]-b*grdKandahar$agri[mysample]
+  v_tz_ratio[i] <- N^2*(1-(n/N))*var(e)/n
+  tz_HT[i] <- mean(grdKandahar$poppy[mysample])*N
+}
+
+estimates <- data.frame(tz_ratio,tz_HT)
+names(estimates) <- c("Ratio","HT")
+df <- estimates %>% pivot_longer(.,cols=c("Ratio","HT"))
+df$name <- factor(df$name, levels=c("Ratio","HT"), ordered=TRUE)
+ggplot(data=df) +
+    geom_boxplot(aes(y=value, x=name)) +
+    geom_hline(yintercept=mean(grdKandahar$poppy)*N, colour="red")+
+    scale_x_discrete(name="Estimator") +
+    scale_y_continuous(name="Estimated total poppy area")
+
+m_tz_ratio_sim <- mean(tz_ratio)
+bias <- mean(tz_ratio)-sum(grdKandahar$poppy)
+v_tz_ratio_sim <- var(tz_ratio)
+m_v_tz_ratio_sim <- mean(v_tz_ratio)
+gain <- var(tz_HT)/var(tz_ratio)
+```
+
+Figure \@ref(fig:SamplingDistributionRatio) shows the sampling distribution of the ratio estimator and $\pi$ estimator, obtained by repeating simple random sampling of size 50 and estimation 10,000 times. The average of the 10,000 ratio estimates of the total poppy area equals `r as.character(round(m_tz_ratio_sim,0))`. The population total of poppy equals `r as.character(round(sum(grdKandahar$poppy),0))`, so the estimated bias of the ratio estimator equals `r as.character(round(bias,0))`. The boxplots in Figure \@ref(fig:SamplingDistributionRatio) show that the ratio estimator has less extreme outliers. The standard deviation of the 10,000 ratio estimates equals `r as.character(round(sqrt(v_tz_ratio_sim),0))`. The gain in precision due to the ratio estimator, quantified by the ratio of the variance of the $\pi$ estimator to the variance of the ratio estimator equals `r as.character(round(gain,2))`.
+
+#### Exercises {-}
+
+2. Write an **R** script to compute the ratio of the population total poppy area and population total agricultural area ($t(z)/t(x)$). Then use all data to fit a linear model without intercept for the poppy area, using the agricultural area as a covariate, assuming that the variance of the residuals is proportional to the agricultural area (heteroscedastic model). Hint: use function `lm` with argument `formula = poppy \sim agri-1` and argument `weights=1/agri`. Also fit a model without intercept, assuming a constant variance of the residuals (homoscedastic model). Compare the estimated slopes of the two models with the ratio of the total poppy area and total agricultural area.  
+
+### Ratio estimators with stratified simple random sampling {#RatioEstimatorSTSI}
+
+With stratified simple random sampling, there are, similar to the regression estimator, two options: either estimate the ratios separately for the strata, or estimate a combined ratio. The separate ratio estimator\index{Ratio estimator!separate ratio estimator} of the population total is
+
+\begin{equation}
+\hat{t}_{\mathrm{sratio}}(z)=\sum_{h=1}^H \hat{t}_{\mathrm{ratio},h}(z) \;,
+(\#eq:SeparateRatioEstimatorSTSI)
+\end{equation}
+
+with
+
+\begin{equation}
+\hat{t}_{\mathrm{ratio},h}(z)=\frac{\hat{t}_{\pi,h}(z)}{\hat{t}_{\pi,h}(x)} t_h(x) \;,
+(\#eq:RatioEstimatorStratumTotal)
+\end{equation}
+
+in which $\hat{t}_{\pi,h}(z)$ and $\hat{t}_{\pi,h}(x)$ are the $\pi$ estimators of the population total of the study variable and the covariate for stratum $h$, respectively.
+
+The combined ratio estimator\index{Ratio estimator!combined ratio estimator} is
+
+\begin{equation}
+\hat{t}_{\mathrm{cratio}}(z)=\frac{\sum_{h=1}^H\hat{t}_{\pi,h}(z)}{\sum_{h=1}^H\hat{t}_{\pi,h}(x)} t(x) \;.
+(\#eq:CombinedRatioEstimatorSTSI)
+\end{equation}
+
+The code chunk below shows how the combined and separate regression estimator can be computed with package **survey**. First two equal-sized strata are computed using the median of the covariate `agri` as a stratum break. Stratum sample sizes are computed, and a stratified simple random sample without replacement is selected.
+
+```{r}
+breaks <- quantile(grdKandahar$agri,probs=0.5)
+grdKandahar$stratum <- findInterval(grdKandahar$agri,breaks)+1
+N_h <-  table(grdKandahar$stratum)
+n_h <- round(n*N_h/sum(N_h))
+set.seed(314)
+units <- sampling::strata(
+  grdKandahar, stratanames="stratum", size=n_h, method="srswor")
+mysample <- getdata(grdKandahar,units)
+```
+
+The stratum sizes `N_h` are added to `mysample`, the function `svydesign` is to specify the sampling design, function `svyratio` is used to estimate the population ratio and its variance, and finally function `predict` is used to estimate the population total.
+
+```{r}
+lut <- data.frame(stratum=c(1,2),N_h)
+mysample <- merge(x=mysample, y=lut)
+design_stsi <- svydesign(
+  id=~1,strata=~stratum, data=mysample, fpc=~Freq)
+common <- svyratio(~poppy, ~agri, design_stsi, separate=FALSE)
+predict(common, total=sum(grdKandahar$agri))
+```
+
+The same estimate is obtained with function `calibrate`.
+
+```{r}
+mysample_cal <- calibrate(
+  design_stsi, ~agri-1, population=tx_pop, variance=1)
+svytotal(~poppy, mysample_cal)
+```
+
+Computing the separate ratio estimator goes along the same lines. The output object of function `svyratio` contains the estimated ratio and its variance for each stratum separately. To predict the population total the stratum totals of the covariate must be assigned to argument `total` of function ` predict`.
+
+```{r}
+separate <- svyratio(~poppy, ~agri, design_stsi, separate=TRUE)
+tx_h_pop <- tapply(
+  grdKandahar$agri, INDEX=grdKandahar$stratum, FUN=sum)
+predict(separate, total=tx_h_pop)
+```
+
+### Poststratified estimator {#PoststratifiedEstimator}
+
+In stratified random sampling (Chapter \@ref(STSI)) the population is divided into several disjoint subpopulations, and from each subpopulation a probability sample is selected. The subpopulations then serve as strata. The larger the difference in the stratum means and the smaller the variance within the strata, the larger the gain in precision compared to simple random sampling, see Section \@ref(WhyStratify).
+
+The alternative to using the subpopulations as strata when selecting the population units is to use them as poststrata in estimating the population mean. For instance, if we have selected a simple random sample from a spatial population, and we have a map of subpopulations possibly related to the study variable, then these subpopulations still can be used in the poststratified estimator\index{Poststratified estimator}. What only needs to be done is to classify the selected units. The subpopulations that serve as poststrata are referred to as groups hereafter.
+
+For any probability sampling design the population mean can be estimated by
+
+\begin{equation}
+\hat{\bar{z}}_{\text{pos}}=
+\sum_{g=1}^{G} w_{g}\frac{\hat{t}_g(z)}{\widehat{N}_{g}} =
+\sum_{g=1}^{G} w_{g}\frac{\sum_{k \in \mathcal{S}_g}\frac{z_{k}}{\pi_k}}
+{\sum_{k \in \mathcal{S}_g}\frac{1}{\pi_k}} \;,
+(\#eq:PostStratifiedEstimator)
+\end{equation}
+
+where $\mathcal{S}_g$ is the sample from group $g$, $w_{g}=N_g/N$ is the relative size of group $g$, $\hat{t}_g(z)$ is the estimated total of the study variable for group $g$, $\widehat{N}_{g}$ is the estimated size of $N_g$, $n_{g}$ is the number of sampling units in group $g$ and $\pi_{k}$ is the inclusion probability of unit $k$. The estimated group means are weighted by their relative sizes $w_{g}$, which are assumed to be known. In spite of this, the group means are estimated by dividing the estimated group totals by their \emph{estimated} size, $\widehat{N}_{g}$, because this ratio estimator is more precise than the group sample mean.
+
+This poststratified estimator is the natural estimator for the one-way ANOVA model\index{One-way ANOVA model}:
+
+\begin{eqnarray}
+Z_k &=& \mu_g  + \epsilon_k \notag \\
+\sigma^2_k &=& \sigma^2_g\;,
+(\#eq:ANOVAmodel)
+\end{eqnarray}
+
+with $\mu_g$ the mean for group (subpopulation) $g=1, \dots , G$, and $\sigma^2_g$ the variance of the study variable of group $g$.
+
+For simple random sampling, the poststratified estimator reduces to
+
+\begin{equation}
+\hat{\bar{z}}_{\text{pos}}=\sum_{g=1}^{G}w_{g}\,\bar{z}_{\mathcal{S}_g} \;,
+(\#eq:PostStratifiedEstimatorSI)
+\end{equation}
+
+where $\bar{z}_{\mathcal{S}_g}$ is the sample mean of group $g$. If for all groups we have at least two sampling units, $n_g \geq 2$, the variance of this poststratified estimator of the mean can be estimated by 
+
+\begin{equation}
+\widehat{V}\!\left(\hat{\bar{z}}_{\text{pos}}|\mathbf{n}_g\right)=
+\sum_{g=1}^{G}w_{g}^{2}\frac{\widehat{S_{g}^{2}}}{n_{g}} \;,
+(\#eq:CondVarPostStratifiedEstimator)
+\end{equation}
+
+where $\widehat{S_{g}^{2}}$ is the estimated spatial variance of $z$ in
+group $g$, which for simple random sampling can be estimated by
+
+\begin{equation}
+\widehat{S_{g}^{2}}=\frac{1}{n_{g}-1}\sum_{k \in \mathcal{S}_g}(z_{k}-\bar{z}_{\mathcal{S}_g})^{2} \;.
+(\#eq:S2g)
+\end{equation}
+
+This is an estimator of the *conditional* sampling variance, i.e. the variance of the poststratified estimator over all simple random samples with group sample sizes, collected in the vector $\mathbf{n}_g$, equal to the group sample sizes in the sample actually selected. The poststratified estimator requires that the sizes (area) of the strata are known. See Section \@ref(TwophaseStratification) for a sampling strategy that does not require known stratum sizes.
+
+The poststratified estimator is illustrated with study area Voorst. We consider the situation that we do not have the map with the five combinations of soil type and land use that served as strata in Chapter \@ref(STSI). The soil type - land use classes (groups) used in the poststratified estimator are only observed at the selected sampling units. Only three poststrata are distinguished: the original strata BA, EA and PA are merged into one stratum SA with function `fct_collapse` of package **forcats** [@forcats].  The sizes of these poststrata must be known. 
+
+```{r poststratification}
+load("data/Voorst.RData")
+library(forcats)
+grdVoorst$poststratum <- 
+  fct_collapse(grdVoorst$stratum, SA=c("BA","EA","PA"))
+print(N_g <- tapply(
+  grdVoorst$z, INDEX=grdVoorst$poststratum, FUN=length))
+```
+
+One hundred points are selected by simple random sampling with replacement. The expected sample sizes per group are proportional to the size of the groups, $E(n_g/n) = N_g/N$), but for a single sample the sample proportions may deviate considerably from the population proportions. 
+
+```{r}
+n <- 100
+N <- nrow(grdVoorst)
+set.seed(314)
+units <- sample.int(N, size=n, replace=TRUE)
+mysample <- grdVoorst[units,]
+n_g <- tapply(mysample$z, INDEX=mysample$poststratum, FUN=length)
+print(n_g)
+```
+
+The population mean is estimated by first computing the sample means per group, followed by computing the weighted average of the sample means, using the relative sizes of the groups as weights. 
+
+```{r}
+mz_g <- tapply(mysample$z, INDEX=mysample$poststratum, FUN=mean)
+w_g <- N_g/N
+print(mean.poststrat <- sum(w_g*mz_g))
+```
+
+```{r, echo=FALSE}
+n_g <- as.numeric(n_g)
+```
+
+The variance of the estimator of the mean is estimated by computing the sample variances per group, dividing these by the sample sizes per group, and computing the weighted average, using as weights the squared relative group sizes. This estimated sampling variance is the variance of the estimator of the mean over all simple random samples with `r n_g[1]` units of group SA, `r n_g[2]` units of group RA and `r n_g[3]` units of XF.
+
+```{r}
+S2z_g <- tapply(mysample$z, INDEX=mysample$poststratum, FUN=var)
+v_mz_g <- S2z_g/as.numeric(n_g)
+print(condse_mz <- sqrt(sum(w_g^2*v_mz_g)))
+```
+
+Note that this variance estimator can only be computed with at least two units per group. For that reason, I recommend to use a limited number of groups, especially for small sample sizes.
+
+Function `postStratify` of package **survey** can be used to compute the poststratified estimator, and its standard error.
+
+```{r}
+mysample$weights <- N/n
+design_si <- svydesign(id=~1, weights=~weights, data=mysample)
+pop <- data.frame(poststratum=c("SA","RA","XF"), Freq=N_g)
+mysample_pst <- postStratify(
+  design_si, strata=~poststratum, population=pop)
+svymean(~z, mysample_pst)
+```
+
+@loh99 warns for data snooping\index{Data snooping}. By defining groups after analyzing the data, arbitrarily small sampling variances of the estimated mean can be obtained.
+
+## Model-assisted estimation using machine learning techniques {#RandomForest}
+
+@Breidt2017 review model-assisted estimators based on machine learning techniques\index{Machine learning technique}. Of special interest is the general approach proposed by @Wu2001 for incorporating non-linear predictions in the model-assisted estimator. They show how non-linear predictions of the study variable, for instance obtained by a regression tree or random forest, can be used in the model-calibration estimator:
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{MC}}= \hat{\bar{z}}_{\pi} + \hat{a}\left(1-\frac{1}{N}\sum_{k \in \mathcal{S}}\frac{1}{\pi_k}\right)+ \hat{b}\left(\frac{1}{N}\sum_{k=1}^N \hat{m}(\mathbf{x}_k) - \frac{1}{N}\sum_{k \in \mathcal{S}} \frac{\hat{m}(\mathbf{x}_k)}{\pi_k} \right)
+\;,
+(\#eq:ModelCalibrationEstimator)
+\end{equation}
+
+with $\hat{b}$ a slope coefficient estimated by
+
+\begin{equation}
+\hat{b} = \frac{\sum_{k \in \mathcal{S}} 1/\pi_k \{\hat{m}(\mathbf{x}_k)-\hat{\bar{m}}_{\pi}\} \{z_k-\hat{\bar{z}}_{\pi}\}}{\sum_{k \in \mathcal{S}} 1/\pi_k \{\hat{m}(\mathbf{x}_k)-\hat{\bar{m}}_{\pi}\}^2}\;,
+(\#eq:SlopeCalibrationEstimator)
+\end{equation}
+
+with $\hat{\bar{z}}_{\pi}$ the $\pi$ estimator of the population mean of the study variable, $\hat{\bar{m}}_{\pi}$ the $\pi$ estimator of the population mean of the predicted values, and $\hat{a}$ an intercept estimated by
+
+\begin{equation}
+\hat{a} = (1-\hat{b})\left(\frac{1}{N}\sum_{k \in \mathcal{S}}\frac{z_k}{\pi_k}\right)\;.
+(\#eq:InterceptCalibrationEstimator)
+\end{equation}
+
+The second term in Equation \@ref(eq:ModelCalibrationEstimator) cancels for all sampling designs for which the sum of the design weights, i.e. the sum of the reciprocal of the inclusion probabilities, equals the population size: $\sum_{k \in \mathcal{S}} 1/\pi_k=N$. Only for some unequal probability sampling designs this may not be the case.
+
+The alternative is to plug the fitted values $\hat{m}(\mathbf{x}_k)$ into the generalised difference estimator, Equation \@ref(eq:GeneralizedDifferenceEstimator). If we drop the second term, the model-calibration estimator\index{Model-calibration estimator} can be rewritten as
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{MC}}=\frac{1}{N}\sum_{k=1}^N\hat{b}\;\hat{m}(\mathbf{x}_k)+\frac{1}{N}\sum_{k \in \mathcal{S}}\frac{z_k-\hat{b}\;\hat{m}(\mathbf{x}_k)}{\pi_k}
+\;.
+(\#eq:ModelCalibrationEstimator2)
+\end{equation}
+
+Comparison with the generalised difference estimator, Equation \@ref(eq:GeneralizedDifferenceEstimator), shows that these two estimators are equivalent when $\hat{b}=1$. For non-linear working models, generally $\hat{b} \neq 1$, so that these two estimators are not the same. @Wu2003 shows that the calibration estimator has a general optimality property.
+
+In case you are confused by all these model-assisted estimators, let me clarify. The most general estimator is the model-calibration estimator. If we take for $\hat{b}$ the value 1, this estimator is equivalent to the generalised difference estimator (Equation \@ref(eq:GeneralizedDifferenceEstimator)). The predictions $\hat{m}(\mathbf{x}_k)$ in these estimators can be computed either by a linear model or a non-linear model. If a linear model is used in the generalised difference estimator, this estimator is equal to the generalised regression estimator. With linear models $\hat{b} = 1$, so that all three estimators are equal. 
+
+For simple random sampling the inclusion probabilities of the units are the same for all points: $\pi_k = n/N$, reducing Equations \@ref(eq:ModelCalibrationEstimator) and \@ref(eq:SlopeCalibrationEstimator) to 
+
+\begin{equation}
+\hat{\bar{z}}_{\mathrm{MC}}= \frac{1}{n}\sum_{k \in \mathcal{S}} z_k + \hat{b}_{\mathrm{SI}}\left(\frac{1}{N}\sum_{k=1}^N \hat{m}(\mathbf{x}_k) - \frac{1}{n}\sum_{j \in \mathcal{S}} \hat{m}(\mathbf{x}_j) \right)\;,
+(\#eq:ModelCalibrationEstimatorSI)
+\end{equation}
+
+with $\hat{b}_{\mathrm{SI}}$ equal to
+
+\begin{equation}
+\hat{b}_{\mathrm{SI}} = \frac{\sum_{k \in \mathcal{S}} \{\hat{m}(\mathbf{x}_k)-\bar{m}(\mathbf{x}_k)\}\{z_k-\bar{z}_{\mathcal{S}}\}}{\sum_{k \in \mathcal{S}} \{\hat{m}(\mathbf{x}_k)-\bar{m}(\mathbf{x}_k)\}^2}\;.
+(\#eq:RegressionCoefficientCalibrationEstimatorSI)
+\end{equation}
+
+The variance of the model-assisted calibration estimator equals
+\begin{equation}
+V(\hat{\bar{z}}_{\mathrm{MC}})=V(\hat{\bar{\epsilon}}_{\pi})\;,
+(\#eq:VarianceCalibrationestimator)
+\end{equation}
+
+with $\hat{\bar{\epsilon}}_{\pi}$ the $\pi$ estimator of the population mean of the residuals $\epsilon$. For sampling designs with fixed sample size these residuals are equal to $\epsilon_k=z_k-b\;m(\mathbf{x}_k)$, with $m(\mathbf{x}_k)$ the fitted values based on all population units, and $b$ the population fit of the (superpopulation) regression coefficient:
+
+\begin{equation}
+b = \frac{\sum_{k=1}^N \hat{m}(\mathbf{x}_k)z_k}{\sum_{k=1}^N \hat{m}(\mathbf{x}_k)^2}\;.
+(\#eq:SlopeCalibrationEstimatorPopulationfit)
+\end{equation}
+
+An estimator of the variance is obtained by replacing the population fits $m(\mathbf{x}_k)$ by their sample estimates $\hat{m}(\mathbf{x}_k)$, and $b$ by its estimator, Equation \@ref(eq:SlopeCalibrationEstimator). For simple random sampling with replacement from finite populations and simple random sampling from infinite populations the variance equals
+
+\begin{equation}
+V(\hat{\bar{z}}_{\mathrm{MC}})=\frac{S^2(\epsilon)}{n}\;,
+(\#eq:VarianceCalibrationestimatorSI)
+\end{equation}
+
+with $S^2(\epsilon)$ the population variance of the residuals $\epsilon$.
+
+The variance of the generalised difference estimator equals
+
+\begin{equation}
+V(\hat{\bar{z}}_{\mathrm{dif}})=V(\hat{\bar{d}}_{\pi})\;,
+(\#eq:VarianceDifferenceestimator)
+\end{equation}
+
+with $\hat{\bar{d}}_{\pi}$ the $\pi$ estimator of the population mean of the differences $d_k=z_k-m(\mathbf{x}_k)$. An estimator is obtained by substituting $\hat{m}(\mathbf{x}_k)$ for $m(\mathbf{x}_k)$ to compute the differences.
+
+The data of Eastern Amazonia are used to illustrate model-assisted estimation of AGB, using five environmental covariates in predicting AGB. First a regression tree\index{Regression tree} is used as a machine learning technique for prediction, after that a random forest\index{Random forest}. For an introduction to regression trees and random forest modelling, see this [blog](https://victorzhou.com/blog/intro-to-random-forests/)^[https://victorzhou.com/blog/intro-to-random-forests/]. In this blog the study variable is a categorical variable, whereas in our example the study variable is quantitative (continuous). This is not essential. The only difference is the measure for quantifying how good a split is. With a quantitative study variable this is quantified by the following sum of squares:
+
+\begin{equation}
+SS=\sum_{k=1}^2\sum_{k=1}^{N_k}(z_{ki}-\bar{z}_k)^2 \;,
+(\#eq:sumofsquaresbinarysplit)
+\end{equation}
+
+with $\bar{z}_k$ the sample mean of group $k$.
+
+### Predicting with a regression tree
+
+A simple random sample without replacement of size 100 is selected.
+
+```{r}
+N <- nrow(gridAmazonia)
+n <- 100
+set.seed(314)
+units <- sample.int(N, size=n, replace=FALSE)
+covs <- c("SWIR2","Terra_PP","Prec_dm","Elevation","Clay")
+mysample <- gridAmazonia[units,c("AGB",covs)]
+```
+
+Package **rpms** [@rpms] is used to build a regression tree for AGB, using all five covariates as predictors. Note that I now use the original untransformed SWIR2 as a predictor. Transformation of predictors so that the relation with the study variable becomes linear is not needed when fitting a non-linear model such as a regression tree.  Using the default value of 0.05 for argument `pval` leads to the following tree.
+
+```{r}
+library(rpms)
+tree <- rpms(
+  AGB~SWIR2+Terra_PP+Prec_dm+Elevation+Clay, data=mysample,
+  pval=0.05)
+print(tree)
+```
+
+The regression tree is used to predict AGB for all population units.
+
+```{r}
+AGBpred <- predict(tree, newdata=gridAmazonia)
+```
+
+The population mean is then estimated by the generalised difference estimator.
+ 
+```{r}
+d <- gridAmazonia$AGB[units]-AGBpred[units]
+mean(AGBpred) + mean(d)
+```
+
+Its standard error is estimated by the square root of the variance of the estimator of the mean differences.
+ 
+```{r}
+S2d <- var(d)
+sqrt((1-n/N)*S2d/n)
+```
+
+This estimation procedure is implemented in function `gregTree` of package **mase** [@mase2018].
+
+```{r}
+library(mase)
+pi <- rep(n/N,n)
+res <- gregTree(
+  mysample$AGB, xsample=mysample[,covs],
+  xpop=gridAmazonia[,covs], pi=pi,
+  var_est=TRUE, var_method="LinHTSRS")
+res$pop_mean
+sqrt(res$pop_mean_var)
+```
+
+The variance of the estimator of the mean can also be estimated by bootstrapping the sample (@loh99, Section 9.3.3).
+ 
+```{r, eval=FALSE}
+res <- gregTree(
+  mysample$AGB, xsample=mysample[,covs],
+  xpop=gridAmazonia[,covs], pi=pi,
+  var_est=TRUE, var_method="bootstrapSRS", B=100)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+save(res,file="results/BootstrapVarianceRegressionTreeAGB_Amazonia.RData")
+```
+
+```{r, echo=FALSE}
+load(file="results/BootstrapVarianceRegressionTreeAGB_Amazonia.RData")
+```
+
+```{r}
+sqrt(res$pop_mean_var)
+```
+
+The standard error obtained by the bootstrap is considerably larger than the previous standard error based on a Taylor linearisation of the estimator of the mean. As we will see hereafter, the Taylor linearisation seriously underestimates the true standard error.
+
+The simple random sampling of 100 units and the model-assisted estimation is repeated 500 times, using a regression tree for prediction. The variance is estimated by Taylor linearisation (`var_method=LinHTSRS`) and by bootstrapping (`var_method=bootstrapSRS`) using 100 bootstrap samples.
+
+```{r, echo=FALSE, eval=FALSE}
+mz_rtree <- v_mz_rtree_linHTSRS <- v_mz_rtree_btstrp <- numeric(length=500)
+set.seed(314)
+for (i in 1:500) {
+  print(i)
+  units <- sample.int(N, size=n)
+  mysample <- gridAmazonia[units,c("AGB","SWIR2","Terra_PP","Prec_dm","Elevation","Clay")]
+  res <- gregTree(mysample$AGB, xsample=mysample[,c("SWIR2","Terra_PP","Prec_dm","Elevation","Clay")],
+                  xpop=gridAmazonia[,c("SWIR2","Terra_PP","Prec_dm","Elevation","Clay")],
+                  pi=pi,
+                  var_est=TRUE,
+                  var_method="LinHTSRS")
+  v_mz_rtree_linHTSRS[i] <- res$pop_mean_var
+
+
+  res <- gregTree(mysample$AGB, xsample=mysample[,c("SWIR2","Terra_PP","Prec_dm","Elevation","Clay")],
+                  xpop=gridAmazonia[,c("SWIR2","Terra_PP","Prec_dm","Elevation","Clay")],
+                  pi=pi,
+                  var_est=TRUE,
+                  var_method="bootstrapSRS",
+                  B=100)
+  mz_rtree[i] <- res$pop_mean
+  v_mz_rtree_btstrp[i] <- res$pop_mean_var
+}
+save(mz_rtree, v_mz_rtree_linHTSRS, v_mz_rtree_btstrp, file="results/RegressionTreeEstimates_Amazonia_100pnts.RData")
+```
+
+```{r, echo=FALSE}
+load(file="results/RegressionTreeEstimates_Amazonia_100pnts.RData")
+```
+
+The variance of the 500 estimated population means of AGB is `r round(var(mz_rtree),1)`. Estimation of the variance through Taylor linearisation strongly underestimates the variance: the average of the 500 estimated variances equals `r round(mean(v_mz_rtree_linHTSRS),1)`. On the contrary, the bootstrap variance estimator overestimates the variance: the average of the 500 estimated variances equals `r round(mean(v_mz_rtree_btstrp),1)`. I prefer to overestimate my uncertainty about the mean instead of being overoptimistic, and so I would recommend to report the bootstrap variance.
+
+### Predicting with a random forest
+
+The package **ranger** [@Wright2017] is used to fit a random forest model for AGB using the five environmental covariates as predictors and the simple random sample of size 100 selected in the previous section. Function `importance` shows how often the covariates are used in a binary splitting. All five covariates are used, SWIR2 by far most often.
+
+```{r}
+library(ranger)
+set.seed(314)
+forest.sample <- ranger(
+  AGB~., data=mysample, num.trees=1000, importance="impurity")
+importance(forest.sample)
+```
+
+Out-of-bag predictions for the selected units are saved in the element `predictions` of the output-object of the function `ranger`. The fitted model is also used to predict AGB at all `r nrow(gridAmazonia)` units (raster cells), using function `predict`.
+
+```{r, eval=FALSE}
+AGBpred_OOB <- forest.sample$predictions 
+res <- predict(
+  forest.sample, data=gridAmazonia, type="response")
+AGBpred <- res$predictions
+```
+
+```{r, echo=FALSE, eval=FALSE}
+save(AGBpred_OOB, AGBpred, file="results/RandomForestSingleSample_Amazonia.RData")
+```
+
+Finally, the model-calibration estimate and the generalised difference estimate are computed. Both estimators and their variances are computed in two ways. They differ in how the study variable AGB is predicted for the sampling units:  
+
+1. Using all trees of the forest (the predictions obtained with function `predict`).  
+2. Using only the trees calibrated on bootstrap samples\index{Bootstrap sample} that do not include the sampling unit used as a prediction unit. These out-of-bag predictions are stored in the element `predictions` of the output object of function `ranger`.  
+
+The next code chunk shows how the model-calibration estimate can be computed with the AGB data of the simple random sample and the random forest predictions of AGB. First use all trees.
+
+```{r, echo=FALSE}
+load(file="results/RandomForestSingleSample_Amazonia.RData")
+```
+
+```{r}
+b <- sum((AGBpred[units]-mean(AGBpred[units]))*
+           (mysample$AGB-mean(mysample$AGB)))/
+        sum((AGBpred[units]-mean(AGBpred[units]))^2)
+mz_MC <- mean(mysample$AGB)+
+  b*(mean(AGBpred)-mean(AGBpred[units]))
+u <- mysample$AGB-AGBpred[units]*b
+v_mz_MC <- (1-n/N)*var(u)/n
+```
+
+Next, use the out-of-bag predictions\index{Out-of-bag predictions}.
+
+```{r}
+b_OOB <- sum((AGBpred_OOB-mean(AGBpred_OOB))*
+                (mysample$AGB-mean(mysample$AGB)))/
+            sum((AGBpred_OOB-mean(AGBpred_OOB))^2)
+mz_MC_OOB <- mean(mysample$AGB)+
+  b_OOB*(mean(AGBpred)-mean(AGBpred_OOB))
+u_OOB <- mysample$AGB-AGBpred_OOB*b_OOB
+v_mz_MC_OOB <- (1-n/N)*var(u_OOB)/n
+```
+
+The two calibration estimates are about equal: `r round(mz_MC,1)` using sample predictions obtained with function `predict`, and `r round(mz_MC_OOB,1)` with the out-of-bag sample predictions. However, their estimated variances are largely different: `r as.character(round(v_mz_MC,2))` and `r as.character(round(v_mz_MC_OOB,2))`, respectively. 
+
+In the next code chunk the generalised difference estimate (Equation \@ref(eq:GeneralizedDifferenceEstimator)) is computed. Similar to the model-calibration estimate, this difference estimate is computed from predictions based on all trees, and from the out-of-bag predictions.
+
+```{r}
+d <- mysample$AGB-AGBpred[units]
+mz_MD <- mean(AGBpred)+mean(d)
+v_mz_MD <- (1-n/N)*var(d)/n
+#using out-of-bag predictions
+d_OOB <- mysample$AGB-AGBpred_OOB
+mz_MD_OOB <- mean(AGBpred)+mean(d_OOB)
+v_mz_MD_OOB <- (1-n/N)*var(d_OOB)/n
+```
+
+For the difference estimator the results are very similar. The two difference estimates are `r round(mz_MD,1)` and `r round(mz_MD_OOB,1)`, and their estimated variances are `r round(v_mz_MD,2)` and `r round(v_mz_MD_OOB,2)`. The model-calibration estimate and the generalised difference estimate are nearly equal.
+
+The sampling and estimation is repeated 1,000 times: 1,000 times a simple random sample of size 100 is selected. Each sample is used to calibrate a random forest, each forest consisting of 1,000 trees. This resulted in 2 $\times$ 1,000 model-calibration estimates and their estimated variances, and 2 $\times$ 1,000 difference estimates and their estimated variances. To limit the computing time a 5 km $\times$ 5 km subgrid is used for selecting the simple random samples and for predicting AGB with the random forest.
+
+```{r, eval=FALSE, echo=FALSE}
+load(file="data/Amazonia_5km.RData")
+set.seed(314)
+mz_MC <- mz_MD <- v_mz_MC <- v_mz_MD <- numeric(length=1000)
+mz_MC_OOB <- mz_MD_OOB <- v_mz_MC_OOB <- v_mz_MD_OOB <- numeric(length=1000)
+for (i in 1:1000) {
+  #select simple random sample
+  units <- sample.int(N, size=n)
+  mysample <- gridAmazonia[units,c("AGB","SWIR2","Terra_PP","Prec_dm","Elevation","Clay")]
+
+  forest.sample <- ranger(
+    AGB ~ .,
+    data=mysample,
+    num.trees=1000
+  )
+  AGBpred_OOB <- forest.sample$predictions
+# predict for all population units
+  res <- predict(forest.sample, data=gridAmazonia, type="response")
+  AGBpred <- res$predictions
+  
+# Calibration estimator
+  
+# estimate population mean using predictions of RF model calibrated on sample, and sample based estimate of regression coefficient 
+  b <- sum((AGBpred[units]-mean(AGBpred[units]))*(mysample$AGB-mean(mysample$AGB)))/sum((AGBpred[units]-mean(AGBpred[units]))^2)
+#  b.star <- sum(AGBpred[units]*mysample$AGB)/sum(AGBpred[units]^2)
+  mz_MC[i] <- mean(mysample$AGB) + b*(mean(AGBpred)-mean(AGBpred[units]))
+  u <- mysample$AGB-AGBpred[units]*b
+  v_mz_MC[i] <- (1-n/N)*var(u)/n
+  
+  b_OOB <- sum((AGBpred_OOB-mean(AGBpred_OOB))*(mysample$AGB-mean(mysample$AGB)))/sum((AGBpred_OOB-mean(AGBpred_OOB))^2)
+#  b.star_OOB <- sum(AGBpred_OOB*mysample$AGB)/sum(AGBpred_OOB^2)
+  mz_MC_OOB[i] <- mean(mysample$AGB) + b_OOB*(mean(AGBpred)-mean(AGBpred_OOB))
+  u_OOB <- mysample$AGB-AGBpred_OOB*b_OOB
+  v_mz_MC_OOB[i] <- (1-n/N)*var(u_OOB)/n
+
+# Difference estimator
+  d <- mysample$AGB-AGBpred[units]
+  mz_MD[i] <- mean(AGBpred) + mean(d)
+  v_mz_MD[i] <- (1-n/N)*var(d)/n
+  
+  d_OOB <- mysample$AGB-AGBpred_OOB
+  mz_MD_OOB[i] <- mean(AGBpred) + mean(d_OOB)
+  v_mz_MD_OOB[i] <- (1-n/N)*var(d_OOB)/n
+}
+
+save(mz_MC,mz_MD,v_mz_MC,v_mz_MD,mz_MC_OOB,mz_MD_OOB,v_mz_MC_OOB,v_mz_MD_OOB,file="results/RandomForestEstimates_Amazonia_250pnts.RData")
+```
+
+For each estimator the 1,000 estimated means are used to compute the relative bias\index{Relative bias}:
+
+\begin{equation}
+bias = \frac{\frac{1}{1000}\sum_{i=1}^{1000}\hat{\bar{z}}_i-\bar{z}}{\bar{z}}\;.
+(\#eq:relativebias)
+\end{equation}
+
+Besides, for each estimator the variance of the 1,000 estimates is computed, which can be compared with the mean of the 1,000 estimated variances. The mean of the estimated variances is used to compute the variance to mean squared error ratio\index{Variance to mean squared error ratio}:
+
+\begin{equation}
+R = \frac{\frac{1}{1000}\sum_{i=1}^{1000}\hat{V}(\hat{\bar{z}}_i)}{MSE}\;,
+(\#eq:VariancetoMSEratio)
+\end{equation}
+
+with
+
+\begin{equation}
+MSE= \frac{1}{1000}\sum_{i=1}^{1000}(\hat{\bar{z}}_i-\bar{z})^2\;.
+(\#eq:MSE)
+\end{equation}
+
+Ideally this ratio equals 1. If it is smaller than 1, the variance estimator underestimates the mean squared error.
+
+Finally, the relative efficiency\index{Relative efficiency} is computed as the ratio of the MSE of the $\pi$ estimator and the MSE of a model-assisted estimator. The $\pi$ estimator is unbiased, so the MSE equals the variance, which can be computed without error by the population variance divided by the sample size. If the relative efficiency is larger than 1, the model-assisted estimator is more accurate than the $\pi$ estimator.
+
+```{r, echo=FALSE}
+load(file="results/RandomForestEstimates_Amazonia_100pnts.RData")
+load(file="data/Amazonia_5km.RData")
+#compute mean across all population units (population mean)
+mz_pop <- mean(gridAmazonia$AGB)
+#compute relative bias
+relbias_MC <- (mean(mz_MC)-mz_pop)/mz_pop
+relbias_MC_OOB <- (mean(mz_MC_OOB)-mz_pop)/mz_pop
+#compute variance of 1000 estimates
+v_mz_MC_sim <- var(mz_MC)
+v_mz_MC_OOB_sim <- var(mz_MC_OOB)
+#compute variance to MSE ratio
+m_v_mz_MC_sim <- mean(v_mz_MC)
+MSE_MC <- mean((mz_MC-mz_pop)^2)
+R_MC <- m_v_mz_MC_sim/MSE_MC
+m_v_mz_MC_sim_OOB <- mean(v_mz_MC_OOB)
+MSE_MC_OOB <- mean((mz_MC_OOB-mz_pop)^2)
+R_MC_OOB <- m_v_mz_MC_sim_OOB/MSE_MC_OOB
+#compute relative efficiency
+MSE_HT <- var(gridAmazonia$AGB)/n
+RE_MC <- MSE_HT/MSE_MC
+RE_MC_OOB <- MSE_HT/MSE_MC_OOB
+```
+
+The variance of the 1,000 model-calibration estimates, using all trees to predict AGB for the sample units, equals `r round(v_mz_MC_sim,4)`. This is `r round(v_mz_MC_sim/m_v_mz_MC_sim,1)` times larger than the average of the 1,000 estimated variances, which equals `r as.character(round(m_v_mz_MC_sim,4))`. When using the out-of-bag sample predictions, the experimental variance is about equal to the average of the 1,000 variance estimates: `r round(v_mz_MC_OOB_sim,4)` versus `r round(m_v_mz_MC_sim_OOB,4)`.
+
+The reason of underestimation of the variance when predicting AGB at sample units with function `predict` is that all 1,000 trees are used in prediction, including the trees calibrated on bootstrap samples that contain the unit in the sample to be predicted. On the contrary, the out-of-bag predicted values are computed as the average of predictions from the trees calibrated on bootstrap samples that do not contain the sample unit to be predicted. The default sample fraction is 0.632, see argument `sample.fraction` of function `ranger`, so with 1,000 trees these predictions are the average of, on average, 368 tree predictions. This explains why the out-of-bag prediction errors are larger than the prediction errors obtained with function `predict`. In other words, the variance of the out-of-bag differences $d$ and of the out-of-bag residuals $u$ are larger than those obtained with predicting using all trees.
+
+Hereafter I report the results obtained with the out-of-bag samples only.
+
+```{r, echo=FALSE}
+load(file="results/RandomForestEstimates_Amazonia_50pnts.RData")
+
+mz_pop <- mean(gridAmazonia$AGB)
+MSE_HT_50 <- var(gridAmazonia$AGB)/50
+
+#calibration estimator
+relbias_MC_50_OOB <- (mean(mz_MC_OOB)-mz_pop)/mz_pop
+
+v_mz_MC_50_OOB <- var(mz_MC_OOB)
+m_v_mz_MC_50_OOB <- mean(v_mz_MC_OOB)
+
+MSE_MC_50_OOB <- mean((mz_MC_OOB-mz_pop)^2)
+R_MC_50_OOB <- m_v_mz_MC_50_OOB/MSE_MC_50_OOB
+
+RE_MC_50_OOB <- MSE_HT_50/MSE_MC_50_OOB
+
+#difference estimator
+relbias_MD_50_OOB <- (mean(mz_MD_OOB)-mz_pop)/mz_pop
+
+v_mz_MD_50_OOB <- var(mz_MD_OOB)
+m_v_mz_MD_50_OOB <- mean(v_mz_MD_OOB)
+
+MSE_MD_50_OOB <- mean((mz_MD_OOB-mz_pop)^2)
+R_MD_50_OOB <- m_v_mz_MD_50_OOB/MSE_MD_50_OOB
+
+RE_MD_50_OOB <- MSE_HT_50/MSE_MD_50_OOB
+
+load(file="results/RandomForestEstimates_Amazonia_100pnts.RData")
+MSE_HT_100 <- var(gridAmazonia$AGB)/100
+
+#calibration estimator
+relbias_MC_100_OOB <- (mean(mz_MC_OOB)-mz_pop)/mz_pop
+
+v_mz_MC_100_OOB <- var(mz_MC_OOB)
+m_v_mz_MC_100_OOB <- mean(v_mz_MC_OOB)
+
+MSE_MC_100_OOB <- mean((mz_MC_OOB-mz_pop)^2)
+R_MC_100_OOB <- m_v_mz_MC_100_OOB/MSE_MC_100_OOB
+
+RE_MC_100_OOB <- MSE_HT_100/MSE_MC_100_OOB
+
+#difference estimator
+relbias_MD_100_OOB <- (mean(mz_MD_OOB)-mz_pop)/mz_pop
+
+v_mz_MD_100_OOB <- var(mz_MD_OOB)
+m_v_mz_MD_100_OOB <- mean(v_mz_MD_OOB)
+
+MSE_MD_100_OOB <- mean((mz_MD_OOB-mz_pop)^2)
+R_MD_100_OOB <- m_v_mz_MD_100_OOB/MSE_MD_100_OOB
+
+RE_MD_100_OOB <- MSE_HT_100/MSE_MD_100_OOB
+
+load(file="results/RandomForestEstimates_Amazonia_250pnts.RData")
+MSE_HT_250 <- var(gridAmazonia$AGB)/250
+
+#calibration estimator
+relbias_MC_250_OOB <- (mean(mz_MC_OOB)-mz_pop)/mz_pop
+
+v_mz_MC_250_OOB <- var(mz_MC_OOB)
+m_v_mz_MC_250_OOB <- mean(v_mz_MC_OOB)
+
+MSE_MC_250_OOB <- mean((mz_MC_OOB-mz_pop)^2)
+R_MC_250_OOB <- m_v_mz_MC_250_OOB/MSE_MC_250_OOB
+
+RE_MC_250_OOB <- MSE_HT_250/MSE_MC_250_OOB
+
+#difference estimator
+relbias_MD_250_OOB <- (mean(mz_MD_OOB)-mz_pop)/mz_pop
+
+v_mz_MD_250_OOB <- var(mz_MD_OOB)
+m_v_mz_MD_250_OOB <- mean(v_mz_MD_OOB)
+
+MSE_MD_250_OOB <- mean((mz_MD_OOB-mz_pop)^2)
+R_MD_250_OOB <- m_v_mz_MD_250_OOB/MSE_MD_250_OOB
+
+RE_MD_250_OOB <- MSE_HT_250/MSE_MD_250_OOB
+```
+
+The relative bias is negligibly small for all sample sizes (Table \@ref(tab:CalibrationEstimatesAmazoniaOOB)). Besides, for $n=100$ and 250 the average of the 1,000 variance estimates is close to the variance of the 1,000 estimates; for $n=50$ the experimental variance is overestimated by the variance estimator. The variance to MSE ratio is smaller than 1 for $n=100$ and 250, but larger than 1 for $n=50$. The model-calibration estimator is much more accurate than the $\pi$ estimator for all three sample sizes. The relative efficiency increases with the sample size.
+
+```{r CalibrationEstimatesAmazoniaOOB, tidy=FALSE, echo=FALSE}
+estimates <- data.frame(c("Relative bias","Experimental variance","Mean variance estimates","Variance to MSE ratio","Relative efficiency"),c(round(relbias_MC_50_OOB,4),round(v_mz_MC_50_OOB,4),round(m_v_mz_MC_50_OOB,4),round(R_MC_50_OOB,4),round(RE_MC_50_OOB,4)),c(round(relbias_MC_100_OOB,4),round(v_mz_MC_100_OOB,4),round(m_v_mz_MC_100_OOB,4),round(R_MC_100_OOB,4),round(RE_MC_100_OOB,4)),c(round(relbias_MC_250_OOB,4),round(v_mz_MC_250_OOB,4),round(m_v_mz_MC_250_OOB,4),round(R_MC_250_OOB,4),round(RE_MC_250_OOB,4)))
+
+knitr::kable(
+  estimates, caption = 'Summary statistics of 1,000 repeated calibration estimates of mean of aboveground biomass in Eastern Amazonia and their variance, using random forest model with five covariates as a working model and out-of-bag sample predictions, for simple random sampling without replacement.',
+  col.names = c("Sample size:","50","100","250"),
+  booktabs = TRUE
+) %>%
+  kable_classic()
+```
+
+The performance statistics of the generalised difference estimator are very similar to those of the model-calibration estimator (Table \@ref(tab:DifferenceEstimatesAmazoniaOOB)).
+
+```{r DifferenceEstimatesAmazoniaOOB, tidy=FALSE, echo=FALSE}
+estimates <- data.frame(c("Relative bias","Experimental variance","Mean variance estimates","Variance to MSE ratio","Relative efficiency"),c(round(relbias_MD_50_OOB,4),round(v_mz_MD_50_OOB,4),round(m_v_mz_MD_50_OOB,4),round(R_MD_50_OOB,4),round(RE_MD_50_OOB,4)),c(round(relbias_MD_100_OOB,4),round(v_mz_MD_100_OOB,4),round(m_v_mz_MD_100_OOB,4),round(R_MD_100_OOB,4),round(RE_MD_100_OOB,4)),c(round(relbias_MD_250_OOB,4),round(v_mz_MD_250_OOB,4),round(m_v_mz_MD_250_OOB,4),round(R_MD_250_OOB,4),round(RE_MD_250_OOB,4)))
+
+knitr::kable(
+  estimates, caption = 'Summary statistics of 1,000 repeated generalised difference estimates of aboveground biomass in Eastern Amazonia and their variance, using random forest model with five covariates as a working model and out-of-bag sample predictions, for simple random sampling without replacement.',
+  col.names = c("Sample size:","50","100","250"),
+  booktabs = TRUE
+) %>%
+  kable_classic()
+```
+## Big data and volunteer data
+
+In the past decades numerous large data sets became available, and this number will further increase in the future, think of data sets collected by the numerous satellites. These data sets may contain valuable information about the study variables, so that they can be used in model-assisted estimation of global (this chapter) or local means and totals (Chapter \@ref(SmallAreaEstimation)).
+
+Another interesting source of information are the geographic data collected by volunteers. These data typically are from non-probability samples\index{Non-probability sampling}. Despite this, there can be valuable information in these data about the global or local means of the study variable.
+
+When the volunteer data\index{Volunteer data} are supplemented by a probability sample with observations on the study variable, the volunteer data can be used at the design stage and/or at the estimation stage. As an example of the first approach, the volunteer data are used to predict the study variable at a fine discretisation grid. These predictions are then used to construct strata for supplemental sampling, for instance by the *cum-root-f* method (Section \@ref(cumrootf)), or using the approach described in Section \@ref(Ospats).
+
+At the estimation stage the volunteer data are used to predict the study variable at points of the supplemental probability sample and at the nodes of a discretisation grid. These predictions are then used in model-assisted estimation, using the generalised difference or regression estimator, as explained in this chapter and in @bru03a.
+
+@Stehman2018 compared this model-assisted estimation approach with a certainty stratum approach\index{Certainty stratum approach} for estimating the area covered by land cover classes and the accuracy of land cover maps. The volunteer data are treated as the data of a stratum of which all units are observed. A probability sample is selected from the remaining units not observed by the volunteers. The total (area of a land cover class) of the certainty stratum is added to the estimated total of the subpopulation not observed by the volunteers. 
+
+The model-assisted approach requires a supplemental sample with observations of the study variable. @Kim2019 described an approach in which the big data\index{Big data} sample is combined with a probability sample with observations of one or more ancillary variables.
+
+@Kim2019 also describe an alternative approach that does not require a probability sample at all. In this approach the big data sample is subsampled to correct the selection bias in the big data sample. The subsample is selected by inverse sampling, using data on an ancillary variable $x$, either from a census or a probability sample. The subsample is selected with conditional inclusion probabilities equal to the subsample size multiplied by an importance weight (Equation 4, @Kim2019).
+
+```{r, echo=FALSE}
+rm(list=ls())
+```

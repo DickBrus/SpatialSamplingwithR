@@ -1,0 +1,496 @@
+# Simple random sampling {#SI}
+
+Simple random sampling\index{Simple random sampling} is the most basic form of probability sampling. There are two subtypes: 
+
+1. Simple random sampling with replacement (SIR).  
+2. Simple random sampling without replacement (SI).
+
+This distinction is irrelevant for infinite populations. In with replacement sampling a population unit may be selected more than once. 
+
+In **R** a simple random sample can be selected with or without replacement by the function `sample.int` from the `base` package. For instance, a simple random sample without replacement of 10 units from a population of 100 units labeled as 1,2, ... ,100, can be selected by
+
+```{r}
+sample.int(100, size=10, replace=FALSE)
+```
+
+The number of units in the sample is referred to as the sample size ($n=10$ in the code chunk above). Use argument `replace = TRUE` to select a simple random sample with replacement.
+
+When the spatial population is continuous and  infinite, as in sampling points from an area, the infinite population is discretised by a very fine grid. Discretisation is not strictly needed (we could also sample points directly), but it is used in this book for reasons explained in Chapter \@ref(GeneralIntro). The nodes of this grid are then listed in a data frame, which serves as the sampling frame (Chapter \@ref(GeneralIntro)). In the next code chunk a simple random sample without replacement of size 40 is selected from Voorst. The infinite population is represented by the nodes of a square grid with a spacing of 25 m. These nodes are listed in the ` data.frame` `grdVoorst`.
+
+```{r}
+load("data/Voorst.RData")
+n <- 40
+N <- nrow(grdVoorst)
+set.seed(314)
+units <- sample.int(N, size=n, replace=FALSE)
+mysample <- grdVoorst[units,]
+head(mysample)
+```
+
+The result of the function `sample.int` is a vector with the selected nodes of the discretisation grid. The order of the elements of the vector is the order in which these are selected. Restricting the sampling points to the nodes of a discretisation grid can be avoided as follows. The columns `s1` and `s2` in the `data.frame grdVoorst` are the spatial coordinates of the centers of grid cells of 25 m by 25 m. Now a simple random sample is selected in two stages. First *n* times a grid cell is selected by simple random sampling *with replacement*. Second, every time a grid cell is selected, one point is selected fully randomly within this grid cell. This selection procedure accounts for the infinite number of points in the population. In the code chunk below the second step of this selection procedure is implemented with function `jitter`. It adds random noise to the spatial coordinates of the centers of the selected grid cells, by drawing from a continuous uniform distribution $unif(-c,c)$, with $c$ half the side length of the square grid cells. With this selection procedure we respect that the population actually is infinite.  
+
+```{r}
+set.seed(314)
+units <- sample.int(N, size=n, replace=TRUE)
+mysample <- grdVoorst[units,]
+cellsize <- 25
+mysample$s1 <- jitter(mysample$s1, amount=cellsize/2)
+mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
+head(mysample)
+```
+
+The variable `stratum` is not used in this chapter. The result is shown in Figure \@ref(fig:SampleSI). Note that before using the function `sample.int` I set a seed for the random number generator. This is to be able to reproduce the result: every time the same seed is used, the same sample of units is selected. Without setting a seed, we do not control the seed (R will choose one), and different samples will be selected.
+
+```{r SampleSI, echo=FALSE, out.width='100%', fig.cap="Simple random sample of size 40 from Voorst."}
+library(ggplot2)
+ggplot() +
+  geom_raster(data=grdVoorst, mapping=aes(x=s1/1000, y=s2/1000), fill="grey")+
+  geom_point(data=mysample, mapping=aes(x=s1/1000,y=s2/1000), size=2) +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()+
+  theme(legend.position="none")
+```
+
+#### Drop outs {-}
+
+What to do with selected units that do not belong to the target population, or cannot be observed for whatever reason (e.g. no permission)\index{Drop outs}? In practice it may happen that inspection in the field shows that a selected sampling unit does not belong to the target population. For instance, in a soil survey the sampling unit may happen to fall on a road or in a built-up area. Shifting this unit to a nearby unit may lead to a biased estimator of the population mean, i.e. a systematic error\index{Systematic error} in the estimated population mean. Besides, knowledge of the inclusion probabilities is lost. This can be avoided by discarding these units and to replace them by sampling units from a back-up list\index{Back-up list of sampling units}, selected in the same way, i.e. by the same type of sampling design. The order of sampling units in this list must be the order in which they are selected. In summary, do not replace a deleted sampling unit by the nearest sampling unit from the back-up list, but by the first unit, not yet selected, from the back-up list.
+
+#### Arbitrary (haphazard) sampling versus probability sampling {-}
+
+In publications it is commonly stated that the sampling units were selected (more or less) at random (within strata), without further specification of how the sampling units were precisely selected. In statistical inference, the sampling units are subsequently treated as if they were selected by (stratified) simple random sampling. With probability sampling all units in the population have a positive probability of being selected, and the inclusion probabilities are known for all units. It is highly questionable whether this also holds for arbitrary\index{Arbitrary sampling} and haphazard sampling\index{Haphazard sampling}. In arbitrary and haphazard sampling the sampling units are not selected by a probability mechanism. So the selection probabilities of the sampling units and of combinations of sampling units are unknown. This makes design-based estimation impossible, as this is based on the inclusion probabilities as determined by the sampling design. The only option for statistical analysis using arbitrarily or haphazardly selected samples is model-based inference, i.e. a model of the spatial variation must be assumed.
+
+## Estimation of population parameters {#HTestimatorSI}
+
+In simple random sampling without replacement of a finite population every possible sample of $n$ units has an equal probability of being selected. There are $\binom{N}{n}$ samples of size $n$, and $\binom{N-1}{n-1}$ samples that contain unit $k$. From this it follows that the probability that unit $k$ is included in the sample is $\binom{N-1}{n-1}/\binom{N}{n}=\frac{n}{N}$ [@loh99]. Substituting this in the general $\pi$-estimator for the total (Equation \@ref(eq:HTTotal)) gives for simple random sampling without replacement (from finite populations)
+
+\begin{equation}
+\hat{t}(z)=\frac{N}{n}\sum_{k \in \mathcal{S}} z_k = N \bar{z}_{\mathcal{S}} \;,
+(\#eq:HTTotalSI)
+\end{equation}
+
+with $\bar{z}_{\mathcal{S}}$ the (unweighted) *sample mean*\index{Sample mean}. So for simple random sampling without replacement the $\pi$ estimator of the population mean is the *unweighted* sample mean:
+
+\begin{equation}
+\hat{\bar{z}} = \bar{z}_{\mathcal{S}} = \frac{1}{n}\sum_{k \in \mathcal{S}} z_k \;.
+(\#eq:HTMeanSI)
+\end{equation}
+
+In simple random sampling with replacement of finite populations a unit may occur multiple times in the sample $\mathcal{S}$. In this case the population total can be estimated by the pwr estimator [@sar92]
+
+\begin{equation}
+\hat{t}(z)= \frac{1}{n} \sum_{k \in \mathcal{S}} \frac{z_{k}}{p_{k}} \;,
+(\#eq:HHTotal)
+\end{equation}
+
+where $n$ is the number of draws, and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \dots , N$. Inserting this in the pwr estimator yields
+
+\begin{equation}
+\hat{t}(z)= \frac{N}{d} \sum_{k \in \mathcal{S}} z_{k} \;.
+(\#eq:HHTotalSIR)
+\end{equation}
+
+Alternatively, the population total can be estimated by the $\pi$ estimator. With simple random sampling with replacement the inclusion probability of each unit $k$ equals $1-\left(1-\frac{1}{N}\right)^n$, which is smaller than  the inclusion probability with simple random sampling without replacement of size $n$ [@sar92]. Inserting these inclusion probabilities in the general $\pi$ estimator of the population total (Equation \@ref(eq:HTTotal)) where the sample $\mathcal{S}$ is reduced to the unique units in the sample, yields the $\pi$ estimator of the total for simple random sampling with replacement. 
+
+With simple random sampling of *infinite* populations the $\pi$ estimator of the population mean equals the sample mean. Multiplying this estimator with the area of the region of interest $A$ yields the $\pi$ estimator of the population total:
+
+\begin{equation}
+\hat{t}(z)= \frac{A}{n}\sum_{k \in \mathcal{S}}z_{k} \;.
+(\#eq:HTTotalSIInfinite)
+\end{equation}
+
+The simple random sample of size 40 selected above is used to estimate the population total of SOM. First the population mean is estimated.
+
+```{r}
+mz <- mean(mysample$z)
+```
+
+The estimated population mean is `r round(mz,2)`. Simply multiplying the estimated population mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is g kg$^{-1}$ m$^2$. To estimate the total of SOM in the soil layer 0-30 cm, first the soil volume in m$^3$ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil in g cm$^{-3}$ and the estimated population mean. This is divided by $10^6$ to obtain the total SOM in megatons ($10^{9}$ kg).
+
+```{r}
+Vol <- N*25^2*0.3
+bd <- 1.5
+tz <- Vol*bd*mz*10^-6
+```
+
+The estimated total is `r round(tz,1)` megaton. Note that that a constant bulk density is used. Ideally, this bulk density is also measured at the sampling points, by collecting soil aliquots of a constant volume. The measured SOM concentration and bulk density can then be used to compute the volumetric SOM content in kg m$^{-3}$ at the sampling points. The estimated population mean of this volumetric SOM content can then be multiplied by the total volume of soil in the study area, to get an estimate of the total mass of SOM in the study area.   
+
+The simulated population is now sampled 10,000 times to see how sampling affects the estimates. For each sample the population mean is estimated by the sample mean. Figure \@ref(fig:SamplingDistributionSI) shows a histogram of the 10,000 estimated population means (sample means).
+
+```{r SamplingDistributionSI, echo=FALSE, fig.asp=0.8, fig.cap="Sampling distribution of the estimator of the population mean of SOM (g/kg) in Voorst with simple random sampling of size 40."}
+n <- 40
+number_of_samples <- 10000
+
+mz <- v_mz <- numeric(length=number_of_samples)
+N <- nrow(grdVoorst)
+
+set.seed(314)
+
+for (i in 1:number_of_samples) {
+  units <- sample.int(N, size=n, replace=TRUE)
+  mz[i] <- mean(grdVoorst$z[units])
+  v_mz[i] <- var(grdVoorst$z[units])/n
+}
+
+ggplot() +
+  geom_histogram(aes(x=mz), binwidth=0.2, fill="black", alpha=0.5, colour="black") +
+  scale_y_continuous(name="Frequency") +
+  scale_x_continuous(name="Estimated mean SOM")
+```
+
+If we would repeat the sampling an infinite number of times and make the width of the bins in the histogram infinitely small, then we obtain, after scaling so that the sum of the area under the curve equals 1, the *sampling distribution*\index{Sampling distribution} of the estimator of the population mean. Important summary statistics of this sampling distribution are:  
+
+1. Expectation (mean).  
+2. Variance, referred to as the *sampling* variance.
+
+When the expectation\index{Expectation of estimator} equals the population mean, there is no systematic error. The estimator is then said to be *design-unbiased*\index{Design-unbiased} or *p-unbiased*\index{p-unbiased}. In Chapter \@ref(Introkriging) another type of unbiasedness is introduced, model-unbiasedness. The difference between design-unbiasedness and model-unbiasedness is explained in Chapter \@ref(Approaches). In following chapters of Part I unbiased means design-unbiased. Actually, it is not the estimator which is unbiased, but the combination of a sampling design and an estimator. For instance, with unequal probability sampling designs, the sample mean is not an unbiased estimator of the population mean, whereas it is in combination with an equal probability sampling design.
+
+The sampling variance\index{Sampling variance} is a measure of the random error\index{Random error}. Ideally this variance is as small as possible, so that there is a large probability that for an individual estimate the estimation error is small. The variance is a measure of the *precision*\index{Precision} of an estimator. An estimator with a small variance but a strong bias is not a good estimator. To assess the quality of estimator we should look at both. The variance and the bias are often combined in the *mean squared error*\index{Mean squared error} (MSE), which is the sum of the variance and the *squared* bias. An estimator with a small MSE is an *accurate* estimator. So contrary to precision, accuracy\index{Accuracy} also accounts for the bias\index{Bias}.
+
+Do not confuse the *population* variance and the *sampling* variance. The population variance\index{Population variance} (spatial variance) is a *population characteristic*, whereas the sampling variance is a *characteristic of a sampling strategy*, index{Sampling strategy} i.e. a combination of a sampling design and an estimator. The sampling variance quantifies our *uncertainty* about the population mean. The sampling variance can be manipulated by changing the sample size $n$, the type of sampling design, and the estimator. This has no effect on the population variance. The average of the 10,000 estimated population means equals `r round(mean(mz),2)`, so the difference with the true population means equals `r round(mean(mz)-mean(grdVoorst$z),3)`. The variance of the 10,000 estimated population means equals `r round(var(mz),2)`. The square root of this variance, referred to as the *standard error*\index{Standard error},  equals `r round(sqrt(var(mz)),2)`. Note that the standard error has the same dimension as the study variable, g/kg, whereas the dimension of the variance is the squared dimension of the study variable. 
+
+### Population proportion {#PopProportion}
+
+In some cases one is interested in the proportion of the population (study area) satisfying a given condition. Think for instance of the proportion of trees in a forest infected by some disease, the proportion of an area (areal fraction) in which a soil pollutant exceeds some critical threshold, or the proportion of an area where habitat conditions are suitable for some endangered species. Recall that a population proportion\index{Population proportion} is defined as the population mean of an 0/1 indicator $y$ with value 1 if the condition is satisfied, and 0 otherwise (Section \ref(PopulationParameters)). For simple random sampling this population proportion can be estimated by the same formula as for the mean (Equation \@ref(eq:HTMeanSI)):
+
+\begin{equation}
+\hat{p} =  \frac{1}{n}\sum_{k \in \mathcal{S}} y_k \;.
+(\#eq:HTProportionSI)
+\end{equation}
+
+### Cumulative distribution function and quantiles {#CDF}
+
+The population CDF is defined in Equation \@ref(eq:CDF). A population CDF can be estimated by repeated application of the indicator technique described in the previous section on estimating a population proportion. A series of threshold values is chosen. Each threshold results in $n$ indicator values having value 1 if the observed study variable $z$ of unit $k$ is smaller than or equal to the threshold, and 0 otherwise. These indicator values are then used to estimate the proportion of the population with a $z$ value smaller than or equal to that threshold. For simple random sampling these proportions can be estimated with Equation \@ref(eq:HTProportionSI). Commonly the unique $z$ values in the sample are used as threshold values, leading to as many estimated population proportions as there are unique values in the sample.
+
+Figure \@ref(fig:CDFSIVoorst) shows the estimated CDF, estimated from the simple random sample of 40 units from Voorst. The steps are at the unique values of SOM in the sample.
+
+```{r CDFSIVoorst, fig.asp=0.7, fig.cap="Cumulative distribution function, estimated from the simple random sample of 40 units from Voorst."}
+ggplot(mysample, mapping=aes(z)) +
+  stat_ecdf(geom="step")
+```
+
+The estimated population proportions can be used to estimate a population quantile\index{Population quantile} for any population proportion  (cumulative frequency, probability), for instance the median, first quartile\index{Quartile} and third quartile, corresponding with a population proportion of 0.5, 0.25 and 0.75, respectively. A simple estimator is the smallest $k$th order statistic\index{\emph{k}th order statistic} with an estimated proportion larger than or equal to the desired cumulative frequency [@Hyndman1996].
+
+The estimated CDF shows jumps of size $1/n$, so that the estimated population proportion  can be larger than the desired proportion. The estimated population proportions therefore are often interpolated, for instance by linear interpolation. Function `quantile` of the **stats** package can be used to estimate a quantile. With argument `type=4` linear interpolation is used to estimate the quantiles. Note that this function `quantile` actually computed *sample quantiles*\index{Sample quantile}, i.e. it assumes that the population units are selected with equal inclusion probabilities (as in simple random sampling), so that the estimators of the population proportions obtained with Equation \@ref(eq:HTProportionSI) are unbiased. With unequal inclusion probabilities these probabilities must be accounted for in estimating the population proportions, see following chapters. 
+
+```{r}
+quantile(mysample$z, probs=c(0.25,0.5,0.75), type=4) %>% 
+  round(.,3)
+```
+
+Package **QuantileNPCI** [@QuantileNPCI] can be used to compute a non-parametric confidence interval estimate of a quantile, using fractional order statistics [@Hutson1999]. Parameter `q` specifies the proportion.
+
+```{r}
+library(QuantileNPCI)
+res <- quantCI(mysample$z, q=0.5, alpha=0.05, method="exact")
+```
+
+The estimated median equals `r round(res$qx,3)`, the lower bound of the 95% confidence interval equals `r round(res$lower.ci,3)`, and the upper bound `r round(res$upper.ci,3)`.
+
+#### Exercises {-}
+
+1. Compare the histogram of the estimated population means with the histogram of the `r nrow(grdVoorst)` simulated values in the population (Figure \@ref(fig:histogramVoorst)). Explain the differences.  
+2. What happens with the spread in the histogram (variance of estimated population means) when the sample size $n$ is increased?  
+3. Suppose we would repeat the sampling $10^{12}$ number of times, what would happen with the difference between the average of the estimated population means and the population mean?
+
+## Sampling variance of estimator of population mean, total and proportion {#VarMeanSI}
+
+For simple random sampling of an infinite population and simple random sampling with replacement of a finite population the sampling variance of the estimator of the population mean equals
+
+\begin{equation}
+V\!\left(\hat{\bar{z}}\right)=\frac{S^{2}(z)}{n} \;,
+(\#eq:VarMean)
+\end{equation}
+
+with $S^{2}(z)$ the *population* variance\index{Population variance}, also referred to as the spatial variance\index{Spatial variance}. For finite populations this population variance is defined as [@loh99]
+
+\begin{equation}
+S^{2}(z)=\frac{1}{N-1}\sum\limits_{k=1}^N\left(z_{k}-\bar{z}\right)^{2} \;,
+(\#eq:PopulationVariance)
+\end{equation}
+
+and for infinite populations as
+
+\begin{equation}
+S^{2}(z) = \frac{1}{A} \int \limits_{\mathbf{s} \in \mathcal{U}} \left(z(\mathbf{s})-\bar{z}\right)^2\text{d}\mathbf{s} \;,
+(\#eq:PopulationVarianceInfinite)
+\end{equation}
+
+with $z(\mathbf{s})$ the value of the study variable $z$ at a point with two-dimensional coordinates $\mathbf{s}=(s_1,s_2)$, $A$ the area of the study area, and $\mathcal{U}$ the universe of interest (study area). In practice we select only one sample, i.e. we do not repeat the sampling many times. Still it is possible to *estimate* the variance of the estimator of the population means if we would repeat the sampling. In other words, we can estimate the sampling variance of the estimator of the population mean from a single sample. We do so by estimating the population variance from the sample, and this estimate can then be used to estimate the *sampling* variance of the estimator of the population mean. For simple random sampling *with replacement* from finite populations the sampling variance of the estimator of the population mean can be estimated by
+
+\begin{equation}
+\widehat{V}\!\left(\hat{\bar{z}}\right)=\frac{\widehat{S^2}(z)}{n}= \frac{1}{n\,(n-1)}\sum\limits_{k \in \mathcal{S}}\left(z_{k}-\bar{z}_{\mathcal{S}}\right)^{2} \;,
+(\#eq:EstVarMeanSIR)
+\end{equation}
+
+with $\widehat{S^2}(z)$ the *estimated* population variance. With simple random sampling the *sample* variance\index{Sample variance}, i.e. the variance of the sample data, is an unbiased estimator of the population variance. This estimator can also be used for *infinite* populations. For simple random sampling *without replacement* from finite populations the sampling variance of the estimator of the population mean can be estimated by
+
+\begin{equation}
+\widehat{V}\!\left(\hat{\bar{z}}\right)=\left(1-\frac{n}{N}\right)\frac{\widehat{S^2}(z)}{n} \;.
+(\#eq:EstVarMeanSI)
+\end{equation}
+
+The term $1-\frac{n}{N}$ is referred to as the finite population correction\index{Finite population correction} (fpc).
+
+In the sampling experiment\index{Sampling experiment} described above, the average of the 10,000 *estimated* sampling variances equals `r round(mean(v_mz),3)`. The true sampling variance equals `r round( (1-n/N) * var(grdVoorst$z)/n,3)`. So the difference is very small, indicating that the estimator of the sampling variance, Equation \@ref(eq:EstVarMeanSI), is design-unbiased.
+
+The sampling variance of an estimated total of a finite population can be estimated by multiplying the estimated variance of the estimator of the population mean by $N^2$. For simple random sampling without replacement this estimator thus equals
+
+\begin{equation}
+\widehat{V}\!\left(\hat{t}(z)\right)=N^2 \left(1-\frac{n}{N}\right)\frac{\widehat{S^{2}}(z)}{n} \;.
+(\#eq:EstVarTotalSI)
+\end{equation}
+
+For simple random sampling of infinite populations the sampling variance of the estimator of the total can be estimated by
+
+\begin{equation}
+\widehat{V}\!\left(\hat{t}(z)\right)=A^2\frac{\widehat{S^{2}}(z)}{n} \;.
+(\#eq:EstVarTotalSIR)
+\end{equation}
+
+The sampling variance of an estimated proportion $\hat{p}$ for simple random sampling without replacement of a finite population can be estimated by
+
+\begin{equation}
+\widehat{V}\!\left(\hat{p}\right)=\left( 1-\frac{n}{N}\right) \frac{\hat{p}(1-\hat{p})}{n-1} \;.
+(\#eq:EstVarProportionSI)
+\end{equation}
+
+The numerator in this estimator is an estimate of the population variance of the indicator. Note that this estimated population variance is divided by $n-1$, and not by $n$ as in the estimator of the mean [@loh99].
+
+Estimation of the standard error of the estimated population mean in **R** is very straightforward. To estimate the standard error of the estimated total in megatons the standard error of the estimated population mean must be multiplied by a constant. 
+
+```{r}
+se_mz <- sqrt(var(mysample$z)/n)
+se_tz <- se_mz*Vol*bd*10^-6
+```
+
+The estimated standard error of the estimated total equals `r round(se_tz,3)`. This standard error does not account for spatial variation of bulk density.
+
+Although there is no advantage in using package **survey** [@Lumley2020] to compute the $\pi$ estimator and its standard error for this simple sampling design, I illustrate how this works. For more complex designs and alternative estimators, estimation of the population mean and its standard error with functions defined in this package is very convenient, as will be shown in the following chapters.
+
+First the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the nodes of discretisation grid are used as sampling units, which is indicated by the formula `id=~1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. The argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. The variable `pi` is a column in the data frame `mysample`, which is indicated with the tilde in `probs=~pi`.
+
+The population mean is then estimated with function `svymean`. The first argument is a formula specifying the study variable. The argument `design` specifies the sampling design. 
+
+```{r}
+library(survey)
+mysample$pi <- n/N
+design_si <- svydesign(id=~1, probs=~pi, data=mysample)
+svymean(~z, design=design_si)
+```
+
+For simple random sampling of finite populations without replacement, argument `fpc` is used to correct the standard error.
+
+```{r}
+mysample$N <- N
+design_si <- svydesign(id=~1, probs=~pi, fpc=~N, data=mysample)
+svymean(~z, design_si)
+```
+
+The estimated standard error is smaller now due to the finite population correction, see Equation \@ref(eq:EstVarMeanSI).
+
+Population totals can be estimated with function `svytotal`, quantiles with function `svyquantile`, and ratios of population totals with `svyratio`, to mention a few functions that will be used in following chapters.
+
+```{r}
+svyquantile(~z, design_si, quantile=c(0.5,0.9))
+```
+
+#### Exercises {-}
+
+4. Is the sampling variance for simple random sampling without replacement larger or smaller than for simple random sampling with replacement, given the sample size $n$? Explain your answer.  
+5. What is the effect of the population size $N$ on this difference?  
+6. In Section \@ref(VarMeanSI) I computed the true sampling variance, i.e. the variance of the estimator of the population means if we would repeat the sampling an infinite number of times. How can this true sampling variance be computed?  
+7. In reality we cannot compute the true sampling variance. Why not?  
+
+## Simple random sampling of circular plots {#SIcircularplots}
+
+In forest inventory, vegetation surveys and agricultural surveys circular sampling plots\index{Circular sampling plot} are quite common. Using circular plots as sampling units is not entirely straightforward because the study area cannot be partitioned into a finite number of circles that fully cover the study area. The use of circular plots as sampling units can be implemented in two ways [@DeVries1986]:  
+
+1. Sampling from a finite set of fixed circles.  
+2. Sampling from an infinite set of floating circles.  
+
+### Sampling from a finite set of fixed circles
+
+Sampling from a finite set of fixed circles is most simple, but as we will see requires an assumption about the distribution of the study variable in the population.  In this implementation the sampling units consist of a finite set of slightly overlapping or non-overlapping fixed circular plots (Figure \@ref(fig:circularplotswithinsquares)). The circles can be constructed as follows. A grid with squares is superimposed on the study area, so that it fully covers the study area. These squares are then substituted by circles with an area equal to the area of the squares, or by non-overlapping tangent circles inscribed in the squares. The radius of the partly overlapping circles equals $\sqrt{a/\pi}$, with $a$ the area of the squares,  the radius of the non-overlapping circles equals $\sqrt{a}/2$. In both implementations the infinite population is replaced by a finite population of circles that does not fully tessellate the study area. When using the partly overlapping circles as sampling units we may avoid overlap by selecting a systematic sample (Chapter \@ref(SY)) of circular plots. The population total can then be estimated by Equation \@ref(eq:EstVarTotalSI), substituting $A/a$ for $N$, and where $z_k$  is the total of the $k$th circle (sum of observations of all population units in $k$th circle). However, no unbiased estimator of the sampling variance of the estimator of the population total or mean is available for this sampling design, see Chapter \@ref(SY). 
+
+With simple random sampling of  non-overlapping circular plots the finite population total can be estimated by Equation \@ref(eq:HTTotalSI), and its sampling variance by Equation \@ref(eq:EstVarTotalSI). However, the circular plots do not cover the full study area, and as a consequence the total of the infinite population is underestimated. A corrected estimate can be obtained by estimating the mean of the finite population and multiplying this estimated population mean by $A/a$ [@DeVries1986]:
+
+\begin{equation}
+\hat{t}(z)= \frac{A}{a} \hat{\bar{z}}\;,
+(\#eq:correctedestimate)
+\end{equation}
+
+with $\hat{\bar{z}}$ the estimated mean of the finite population. The variance can be estimated by the variance of the mean of the finite population multiplied by the square of $A/a$. However, we still need to assume that the mean of the finite population is equal to the mean of the infinite population. This assumption can be avoided by sampling from an infinite set of floating circles.
+
+```{r circularplotswithinsquares, echo=FALSE, out.width='100%', fig.cap="A simple random sample of ten circular plots from a square area discretised by a finite set of partly overlapping or non-overlapping circular plots."}
+s1 <- s2 <- seq(from=5, to=95, by=10)
+circles <- expand.grid(s1, s2)
+names(circles) <- c("s1","s2")
+set.seed(314)
+units <- sample.int(nrow(circles), size=10, replace=FALSE)
+mysample <- circles[units,]
+units <- sample.int(nrow(circles), size=10, replace=FALSE)
+mysample <- circles[units,]
+#overlapping circles
+r <- sqrt(100/pi)
+plt1 <- ggplot() +
+  geom_tile(mapping=aes(x=50,y=50), width=100, height=100, fill="lightgrey") +
+  geom_circle(data=circles, mapping=aes(x0=s1, y0=s2, r=r)) +
+  geom_circle(data=mysample, mapping=aes(x0=s1, y0=s2, r=5), fill="red") +
+  coord_fixed()
+#non-overlapping circles
+plt2 <- ggplot() +
+  geom_tile(mapping=aes(x=50,y=50), width=100, height=100, fill="lightgrey") +
+  geom_circle(data=circles, aes(x0=s1, y0=s2, r=5)) +
+  geom_circle(data=mysample, aes(x0=s1, y0=s2, r=5), fill="red") +
+  coord_fixed()
+grid.arrange(plt1, plt2, nrow=1)
+```
+
+### Sampling from an infinite set of floating circles
+
+Simple random sampling of floating circular plots\index{Floating circular plot} can be done by selecting the centers of the plots by simple random sampling, and then determining the border of the circular plots. The circular plots overlap if two selected points are separated by a distance smaller than the diameter of the circular plots. Besides, when a plot is selected near the border of the study area, a part of the plot is outside the study area. This part is ignored in estimating the population mean or total. To select the centers the study area must be extended by a zone with a width equal to the radius of the circular plots. This is illustrated in Figure \@ref(fig:circularplots), showing a square study area of 100 m x 100 m. To select ten circular plots with a radius of 5 m from this square, ten points are selected by simple random sampling, using function `runif`, with -5 as lower limit and 105 as upper limit of the uniform distribution.
+
+```{r SIcircles}
+set.seed(129)
+s1 <- runif(10, min=-5, max=105)
+s2 <- runif(10, min=-5, max=105)
+```
+
+Two points are selected outside the study area, in the extended zone. For both points a small part of the circular plot is inside the square. To determine the study variable for these two sampling units, only the part of the plot inside the square is observed. In other words, these two observations have a smaller support than the observations on the other eight plots, see Chapter \@ref(GeneralIntro).
+
+In the upper left corner two sampling units are selected that largely overlap. The intersection of the two circular plots is used twice, to determine the study variable of both sampling units.
+
+```{r circularplots, echo=FALSE, out.width='70%', fig.cap="A simple random sample of ten floating circular plots from a square area."}
+library(ggforce)
+circles <- data.frame(s1,s2)
+ggplot() +
+  geom_tile(aes(x=50, y=50), width=108, height=110, fill="grey") +
+  geom_tile(aes(x=50,y=50), width=100, height=100, fill="lightgrey") +
+  geom_point(data=circles, mapping=aes(x=s1, y=s2), size=1) +
+  geom_circle(data=circles, mapping=aes(x0=s1, y0=s2, r=4)) +
+  coord_fixed()
+```
+
+Given the observations for the selected circular plots, the population total can be estimated by [@DeVries1986]
+
+\begin{equation}
+\hat{t}(z)= \frac{A}{a}\frac{1}{n}\sum_{k \in \mathcal{S}} z_k\;,
+(\#eq:EstimatorPopulationTotalCircles)
+\end{equation}
+
+with $a$ the area of the circle and $z_k$ the observed total of sampling unit $k$ (circle). The same estimate of the total is obtained if we divide the observations by $a$ to obtain a mean per sampling unit:
+
+\begin{equation}
+\hat{t}(z)= A\frac{1}{n}\sum_{k \in \mathcal{S}}\frac{z_k}{a}\;.
+(\#eq:EstimatorPopulationTotalCircles2)
+\end{equation}
+
+The sampling variance of the estimator of the total can be estimated by
+
+\begin{equation}
+\widehat{V}(\hat{t}(z)) = \left(\frac{A}{a}\right)^2 \frac{\widehat{S^2}(z_)}{n}\;,
+(\#eq:VarEstimatorPopulationTotalCircles)
+\end{equation}
+
+with $\widehat{S^2}(z_)$ the estimated population variance of the totals per population unit (circle).
+
+## Confidence interval estimates {#ConfidenceInterval}
+
+A second way of expressing our uncertainty about the estimated total, mean or proportion is to present not merely a single number, but an interval. The wider the interval, the more uncertain we are, and vice versa, the narrower the interval, the more confident we are about the estimate. To learn how to compute a confidence interval\index{Confidence interval}, I return to the sampling distribution of the estimator of the mean soil organic matter concentration. Suppose we would like to compute the bounds of an interval $[a,b]$ such that 5\% of the estimated population means is smaller than $a$, and 5\% is larger than $b$. To compute the lower bound $a$ and upper bound $b$ of this 90\%-interval, we must specify the distribution function. When the distribution of the study variable $z$ is normal and we know the variance of $z$ in the population, then the sampling distribution of the estimator of the population mean is also normal, regardless of the sample size. The larger the sample size, the smaller the effect of the distribution of $z$ on the sampling distribution of the estimator of the population mean. For instance, even when the distribution of $z$ is far from symmetric, then still the sampling distribution of the estimator of the population mean is approximately normal if the sample size is large, say $n > 100$. This is the essence of the central limit theorem\index{Central limit theorem}. Above we already noticed that the sampling distribution is much less asymmetric than the histogram of the simulated values, and looks much more like a normal distribution. Assuming a normal distribution, the bounds of the 90\%-interval are given by
+
+\begin{equation}
+\hat{\bar{z}} \pm u_{(0.10/2)}\cdot \sqrt{V\!\left(\hat{\bar{z}}\right)} \;,
+(\#eq:CIBounds)
+\end{equation}
+
+where $u_{(0.10/2)}$ is the $0.95$ quantile of the standard normal distribution\index{Standard normal distribution}, i.e. the value of $u$ having a tail area of 0.05 to its right. Note that in this equation the sampling variance of the estimator of the population mean $V\!\left(\hat{\bar{z}}\right)$ is used. In practice this variance is unknown, because the population variance is unknown, and must be estimated from the sample (Equations \@ref(eq:EstVarMeanSIR) and \@ref(eq:EstVarMeanSI)). To account for the unknown sampling variance, the standard normal distribution is replaced by the Student's $t$ distribution\index{Student's $t$ distribution}, which has thicker tails than the standard normal distribution. This leads to the following bounds of the $100(1-\alpha)\%$ confidence interval estimate of the mean:
+
+\begin{equation}
+\hat{\bar{z}} \pm t^{(n-1)}_{1-\alpha /2}\cdot
+\sqrt{\widehat{V}\!\left(\hat{\bar{z}}\right)} \;,
+(\#eq:CIBoundsStudent)
+\end{equation}
+
+where $t^{(n-1)}_{1-\alpha /2}$ is the $(1-\alpha /2)$ quantile of the Student's $t$ distribution with $(n-1)$ degrees of freedom. The quantity $(1-\alpha)$ is referred to as the confidence level\index{Confidence level}. The larger the number of degrees of freedom\index{Degrees of freedom} $(n-1)$, the closer the Student's $t$ distribution is to the standard normal distribution. The quantity $t^{(n-1)}_{1-\alpha /2}\cdot \sqrt{\widehat{V}\!\left(\hat{\bar{z}}\right)}$ is referred to as the margin of error\index{Margin of error}.
+
+The function `qt` computes a quantile of a Student's $t$ distribution, given the degrees of freedom and the cumulative probability. The bounds of the confidence interval can then be computed as follows. 
+```{r}
+alpha <- 0.05
+margin <- qt(1-alpha/2, n-1, lower.tail=TRUE)*se_mz
+lower <- mz - margin
+upper <- mz + margin
+```
+
+More easily we can use method `confint` of package **survey** to compute the confidence interval.
+
+```{r}
+confint(svymean(~z, design_si), df=degf(design_si), level=0.95)
+```
+The interpretation of a confidence interval is not straightforward. A common misinterpretation is that if the 90\% confidence interval estimate of the mean equals $[a,b]$, then the probability that the population mean is in this interval equals 90\%. In classical sampling theory\index{Classical sampling theory} this cannot be a correct interpretation, because the population mean is not a random variable, and consequently the probability that the population mean is in an interval does not exist. However, the estimated bounds of the confidence interval are random variables, because the estimated population mean and also the estimated sampling variance varies between samples drawn with the sampling design, so it does make sense to attach a probability to this interval. Figure \@ref(fig:coverageconfinterval) shows the 90\% confidence interval estimates of the mean for the first 100 simple random samples drawn above. Note that both the location and the length of the intervals differ between samples. For each sample I determined whether this interval covers the population mean.
+
+```{r coverageconfinterval, echo=FALSE, fig.cap="Estimated confidence intervals of the population mean of SOM (g per kg) in Voorst, estimated from 100 simple random samples of size 40. The vertical red line is at the true population mean."}
+lower <- mz-qt(0.05, n-1, lower.tail=FALSE)*sqrt(v_mz)
+upper <- mz+qt(0.05, n-1, lower.tail=FALSE)*sqrt(v_mz)
+mz_pop <- mean(grdVoorst$z)
+ind <- (mz_pop >lower & mz_pop < upper)
+coverage <- mean(ind)
+x <- c(lower[1:100], upper[1:100])
+y <- rep(seq_along(lower[1:100]), times=2)
+id <- y
+df <- data.frame(id, x, y)
+ggplot(data=df) +
+        geom_path(mapping=aes(x=x, y=y, group=id))+
+        scale_x_continuous(name="90% interval estimate of mean")+
+        scale_y_continuous(name="Sample\n", limits=c(0, 100)) +
+        geom_vline(xintercept=mz_pop, colour="red")
+```
+
+Out of the 10,000 samples, `r number_of_samples - number_of_samples*coverage` samples do not cover the population mean, i.e. close to the specified 10\%. So, a 90\% confidence interval is a random interval that contains in the long rum the population mean 90\% of the time.
+
+### Confidence interval for proportion {#ConfidenceIntervalProportion}
+
+Ideally a confidence interval for a population proportion is based on the binomial distribution\index{Binomial distribution} of the number of sampling units satisfying a condition (the number of successes). The binomial distribution is a discrete distribution. There are various methods for computing coverage probabilities of confidence intervals for a binomial proportion\index{Binomial proportion}, see @Brown2001 for a discussion. A common method for computing the confidence interval of a proportion is the Clopper-Pearson method\index{Clopper-Pearson method}. Function `BinomCI` of package **DescTools** can be used to compute confidence intervals for proportions [@DescTools].
+
+```{r}
+library(DescTools)
+n <- 50
+k <- 5
+print(p.est <- BinomCI(k, n, conf.level=0.95,
+                       method="clopper-pearson"))
+```
+
+The confidence interval is not symmetric around the estimated proportion of 0.1. As can be seen below the upper bound is the proportion at which the probability of 5 or less successes is 0.025,
+
+```{r}
+pbinom(q=k, size=n, prob=p.est[3])
+```
+and the lower bound of the confidence interval is the proportion at which the probability of 5 or more successes is also equal to 0.025. Note that to compute the upper tail probability\index{Upper tail probability} we must assign $k-1 = 4$ to argument `q`, because with argument `lower.tail=FALSE` function `pbinom` computes the probability of $X>x$, not of $X \geq x$.
+
+```{r}
+pbinom(q=k-1, size=n, prob=p.est[2], lower.tail=FALSE)
+```
+
+For large sample sizes and for proportions close to 0.5 the confidence interval can be computed with a normal distribution as an approximation to the binomial distribution, using Equation \@ref(eq:EstVarProportionSI) for the variance estimator of a proportion:
+
+\begin{equation}
+\hat{p} \pm u_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n-1}} \;.
+(\#eq:Waldinterval)
+\end{equation}
+
+This interval is referred to as the Wald interval\index{Wald interval}. It is a fact that unless $n$ is very large, the actual coverage probability of the Wald interval is poor for $p$ near 0 or 1. A rule of thumb is that the Wald interval should be used only when $n \cdot min\{p,(1−p)\}$ is at least 5 or 10. For small $n$ @Brown2001 recommend the Wilson interval, and the Agresti-Coull interval for larger $n$. These intervals can be computed with function `BinomCI` of package **DescTools**.
+
+#### Exercises {-}
+
+8. Write an **R** script to select a simple random sample of size 100 from Voorst (data are in `data/Voorst.RData`).  
+    + Use the selected sample to estimate the population mean of SOM and its standard error (SOM is in the column $z$ of the data frame).  
+    + Compute the lower- and upper bound of the 90\% confidence interval using the Student's $t$ distribution, and check whether the population mean SOM is covered by the interval.  
+    + Compare the length of the 90\% confidence interval with the length of the 95\% interval. Explain the difference in width.  
+    + Use the selected sample to estimate the total mass of soil organic matter in the topsoil (0 - 20 cm) of Voorst. Use as a bulk density 1.4 g/kg. The size of the pixels is 25 m by 25 m.  
+    + Estimate the standard error of the estimated total.  
+    + Do you think this standard error is a realistic estimate of the uncertainty about the estimated total?
+    
+```{r, echo=FALSE}
+rm(list=ls())
+```
+

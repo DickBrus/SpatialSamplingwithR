@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 23 Model-based optimisation of grid spacing | Spatial sampling with R</title>
+  <meta name="description" content="Chapter 23 Model-based optimisation of grid spacing | Spatial sampling with R" />
+  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 23 Model-based optimisation of grid spacing | Spatial sampling with R" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:image" content="/cover.png" />
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 23 Model-based optimisation of grid spacing | Spatial sampling with R" />
+  
+  
+  <meta name="twitter:image" content="/cover.png" />
+
+<meta name="author" content="Dick J. Brus" />
+
+
+<meta name="date" content="2021-08-20" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="Introkriging.html"/>
+<link rel="next" href="MBSamplePattern.html"/>
+<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Spatial sampling with R</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#acknowledgements"><i class="fa fa-check"></i>Acknowledgements</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="GeneralIntro.html"><a href="GeneralIntro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#BasicConcepts"><i class="fa fa-check"></i><b>1.1</b> Basic sampling concepts</a>
+<ul>
+<li class="chapter" data-level="1.1.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#PopulationParameters"><i class="fa fa-check"></i><b>1.1.1</b> Population parameters</a></li>
+<li class="chapter" data-level="1.1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#descriptive-statistics-versus-inference-about-a-population"><i class="fa fa-check"></i><b>1.1.2</b> Descriptive statistics versus inference about a population</a></li>
+<li class="chapter" data-level="1.1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#random-sampling-versus-probability-sampling"><i class="fa fa-check"></i><b>1.1.3</b> Random sampling versus probability sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#DBvsMB"><i class="fa fa-check"></i><b>1.2</b> Design-based versus model-based approach</a></li>
+<li class="chapter" data-level="1.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Datasets"><i class="fa fa-check"></i><b>1.3</b> Populations used in sampling experiments</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Voorst"><i class="fa fa-check"></i><b>1.3.1</b> Soil organic matter in Voorst (Netherlands)</a></li>
+<li class="chapter" data-level="1.3.2" data-path="GeneralIntro.html"><a href="GeneralIntro.html#Poppy"><i class="fa fa-check"></i><b>1.3.2</b> Poppy fields in Kandahar (Afghanistan)</a></li>
+<li class="chapter" data-level="1.3.3" data-path="GeneralIntro.html"><a href="GeneralIntro.html#aboveground-biomass-in-eastern-amazonia"><i class="fa fa-check"></i><b>1.3.3</b> Aboveground biomass in Eastern Amazonia</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>I Probability sampling for estimating (sub)population parameters</b></span></li>
+<li class="chapter" data-level="2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html"><i class="fa fa-check"></i><b>2</b> Introduction to probability sampling</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#HTestimator"><i class="fa fa-check"></i><b>2.1</b> Horvitz-Thompson estimator</a></li>
+<li class="chapter" data-level="2.2" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#hansen-hurwitz-estimator"><i class="fa fa-check"></i><b>2.2</b> Hansen-Hurwitz estimator</a></li>
+<li class="chapter" data-level="2.3" data-path="IntroProbabilitySampling.html"><a href="IntroProbabilitySampling.html#using-models-in-design-based-approach"><i class="fa fa-check"></i><b>2.3</b> Using models in design-based approach</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="SI.html"><a href="SI.html"><i class="fa fa-check"></i><b>3</b> Simple random sampling</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="SI.html"><a href="SI.html#HTestimatorSI"><i class="fa fa-check"></i><b>3.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="SI.html"><a href="SI.html#PopProportion"><i class="fa fa-check"></i><b>3.1.1</b> Population proportion</a></li>
+<li class="chapter" data-level="3.1.2" data-path="SI.html"><a href="SI.html#CDF"><i class="fa fa-check"></i><b>3.1.2</b> Cumulative distribution function and quantiles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="SI.html"><a href="SI.html#VarMeanSI"><i class="fa fa-check"></i><b>3.2</b> Sampling variance of estimator of population mean, total and proportion</a></li>
+<li class="chapter" data-level="3.3" data-path="SI.html"><a href="SI.html#SIcircularplots"><i class="fa fa-check"></i><b>3.3</b> Simple random sampling of circular plots</a>
+<ul>
+<li class="chapter" data-level="3.3.1" data-path="SI.html"><a href="SI.html#sampling-from-a-finite-set-of-fixed-circles"><i class="fa fa-check"></i><b>3.3.1</b> Sampling from a finite set of fixed circles</a></li>
+<li class="chapter" data-level="3.3.2" data-path="SI.html"><a href="SI.html#sampling-from-an-infinite-set-of-floating-circles"><i class="fa fa-check"></i><b>3.3.2</b> Sampling from an infinite set of floating circles</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="SI.html"><a href="SI.html#ConfidenceInterval"><i class="fa fa-check"></i><b>3.4</b> Confidence interval estimates</a>
+<ul>
+<li class="chapter" data-level="3.4.1" data-path="SI.html"><a href="SI.html#ConfidenceIntervalProportion"><i class="fa fa-check"></i><b>3.4.1</b> Confidence interval for proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="STSI.html"><a href="STSI.html"><i class="fa fa-check"></i><b>4</b> Stratified simple random sampling</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="STSI.html"><a href="STSI.html#EstimatorsSTSI"><i class="fa fa-check"></i><b>4.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="4.1.1" data-path="STSI.html"><a href="STSI.html#estimation-of-population-proportion-cumulative-distribution-function-and-quantiles"><i class="fa fa-check"></i><b>4.1.1</b> Estimation of population proportion, cumulative distribution function and quantiles</a></li>
+<li class="chapter" data-level="4.1.2" data-path="STSI.html"><a href="STSI.html#WhyStratify"><i class="fa fa-check"></i><b>4.1.2</b> Why should we stratify?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="STSI.html"><a href="STSI.html#CISTSI"><i class="fa fa-check"></i><b>4.2</b> Confidence interval estimate</a></li>
+<li class="chapter" data-level="4.3" data-path="STSI.html"><a href="STSI.html#STSIallocation"><i class="fa fa-check"></i><b>4.3</b> Allocation of sample size to strata</a></li>
+<li class="chapter" data-level="4.4" data-path="STSI.html"><a href="STSI.html#cumrootf"><i class="fa fa-check"></i><b>4.4</b> <em>Cum-root-f</em> stratification</a></li>
+<li class="chapter" data-level="4.5" data-path="STSI.html"><a href="STSI.html#kmeansstratification"><i class="fa fa-check"></i><b>4.5</b> Stratification with multiple covariates</a></li>
+<li class="chapter" data-level="4.6" data-path="STSI.html"><a href="STSI.html#geostrata"><i class="fa fa-check"></i><b>4.6</b> Geographical stratification</a></li>
+<li class="chapter" data-level="4.7" data-path="STSI.html"><a href="STSI.html#multi-way-stratification"><i class="fa fa-check"></i><b>4.7</b> Multi-way stratification</a></li>
+<li class="chapter" data-level="4.8" data-path="STSI.html"><a href="STSI.html#MultivariateStratification"><i class="fa fa-check"></i><b>4.8</b> Multivariate stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="SY.html"><a href="SY.html"><i class="fa fa-check"></i><b>5</b> Systematic random sampling</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="SY.html"><a href="SY.html#EstVarSY"><i class="fa fa-check"></i><b>5.1</b> Estimation of population parameters</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="SY.html"><a href="SY.html#approximating-the-sampling-variance-of-the-estimator-of-the-mean"><i class="fa fa-check"></i><b>5.1.1</b> Approximating the sampling variance of the estimator of the mean</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="Cl.html"><a href="Cl.html"><i class="fa fa-check"></i><b>6</b> Cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="Cl.html"><a href="Cl.html#clustersamplingestimators"><i class="fa fa-check"></i><b>6.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="6.2" data-path="Cl.html"><a href="Cl.html#clusters-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>6.2</b> Clusters selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="6.3" data-path="Cl.html"><a href="Cl.html#simple-random-sampling-of-clusters"><i class="fa fa-check"></i><b>6.3</b> Simple random sampling of clusters</a></li>
+<li class="chapter" data-level="6.4" data-path="Cl.html"><a href="Cl.html#StratifiedCl"><i class="fa fa-check"></i><b>6.4</b> Stratified cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="Twostage.html"><a href="Twostage.html"><i class="fa fa-check"></i><b>7</b> Two-stage cluster random sampling</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="Twostage.html"><a href="Twostage.html#twostagesamplingestimators"><i class="fa fa-check"></i><b>7.1</b> Estimation of population parameters</a></li>
+<li class="chapter" data-level="7.2" data-path="Twostage.html"><a href="Twostage.html#primary-sampling-units-selected-with-probabilities-proportional-to-size-without-replacement"><i class="fa fa-check"></i><b>7.2</b> Primary sampling units selected with probabilities proportional to size, without replacement</a></li>
+<li class="chapter" data-level="7.3" data-path="Twostage.html"><a href="Twostage.html#simple-random-sampling-of-primary-sampling-units"><i class="fa fa-check"></i><b>7.3</b> Simple random sampling of primary sampling units</a></li>
+<li class="chapter" data-level="7.4" data-path="Twostage.html"><a href="Twostage.html#StratifiedTwostage"><i class="fa fa-check"></i><b>7.4</b> Stratified two-stage cluster random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="pps.html"><a href="pps.html"><i class="fa fa-check"></i><b>8</b> Sampling with probabilities proportional to size</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="pps.html"><a href="pps.html#ppswr"><i class="fa fa-check"></i><b>8.1</b> Probability-proportional-to-size sampling with replacement</a></li>
+<li class="chapter" data-level="8.2" data-path="pps.html"><a href="pps.html#ppswor"><i class="fa fa-check"></i><b>8.2</b> Probability-proportional-to-size sampling without replacement</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="pps.html"><a href="pps.html#Systematicpps"><i class="fa fa-check"></i><b>8.2.1</b> Systematic pps sampling without replacement</a></li>
+<li class="chapter" data-level="8.2.2" data-path="pps.html"><a href="pps.html#pivotalmethod"><i class="fa fa-check"></i><b>8.2.2</b> The pivotal method</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html"><i class="fa fa-check"></i><b>9</b> Balanced and well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Balanced"><i class="fa fa-check"></i><b>9.1</b> Balanced sampling</a>
+<ul>
+<li class="chapter" data-level="9.1.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#balanced-sample-versus-balanced-sampling-design"><i class="fa fa-check"></i><b>9.1.1</b> Balanced sample versus balanced sampling design</a></li>
+<li class="chapter" data-level="9.1.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#unequal-inclusion-probabilities"><i class="fa fa-check"></i><b>9.1.2</b> Unequal inclusion probabilities</a></li>
+<li class="chapter" data-level="9.1.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#StratifiedsamplingasBalancedsampling"><i class="fa fa-check"></i><b>9.1.3</b> Stratified random sampling</a></li>
+<li class="chapter" data-level="9.1.4" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Multiwaystratification"><i class="fa fa-check"></i><b>9.1.4</b> Multi-way stratification</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#Spreaded"><i class="fa fa-check"></i><b>9.2</b> Well-spread sampling</a>
+<ul>
+<li class="chapter" data-level="9.2.1" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#LPM"><i class="fa fa-check"></i><b>9.2.1</b> Local pivotal method</a></li>
+<li class="chapter" data-level="9.2.2" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#GRTS"><i class="fa fa-check"></i><b>9.2.2</b> Generalised random-tessellation stratified sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="BalancedSpreaded.html"><a href="BalancedSpreaded.html#BalancedandSpreaded"><i class="fa fa-check"></i><b>9.3</b> Balanced sampling with spreading</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="Modelassisted.html"><a href="Modelassisted.html"><i class="fa fa-check"></i><b>10</b> Model-assisted estimation</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="Modelassisted.html"><a href="Modelassisted.html#GREG"><i class="fa fa-check"></i><b>10.1</b> Generalized regression estimator</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimator"><i class="fa fa-check"></i><b>10.1.1</b> Simple and multiple regression estimators</a></li>
+<li class="chapter" data-level="10.1.2" data-path="Modelassisted.html"><a href="Modelassisted.html#penalised-least-squares-estimation"><i class="fa fa-check"></i><b>10.1.2</b> Penalised least squares estimation</a></li>
+<li class="chapter" data-level="10.1.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RegressionEstimatorSTSI"><i class="fa fa-check"></i><b>10.1.3</b> Regression estimator with stratified simple random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimator"><i class="fa fa-check"></i><b>10.2</b> Ratio estimator</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="Modelassisted.html"><a href="Modelassisted.html#RatioEstimatorSTSI"><i class="fa fa-check"></i><b>10.2.1</b> Ratio estimators with stratified simple random sampling</a></li>
+<li class="chapter" data-level="10.2.2" data-path="Modelassisted.html"><a href="Modelassisted.html#PoststratifiedEstimator"><i class="fa fa-check"></i><b>10.2.2</b> Poststratified estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="Modelassisted.html"><a href="Modelassisted.html#RandomForest"><i class="fa fa-check"></i><b>10.3</b> Model-assisted estimation using machine learning techniques</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-regression-tree"><i class="fa fa-check"></i><b>10.3.1</b> Predicting with a regression tree</a></li>
+<li class="chapter" data-level="10.3.2" data-path="Modelassisted.html"><a href="Modelassisted.html#predicting-with-a-random-forest"><i class="fa fa-check"></i><b>10.3.2</b> Predicting with a random forest</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="Modelassisted.html"><a href="Modelassisted.html#big-data-and-volunteer-data"><i class="fa fa-check"></i><b>10.4</b> Big data and volunteer data</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="Twophase.html"><a href="Twophase.html"><i class="fa fa-check"></i><b>11</b> Two-phase random sampling</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="Twophase.html"><a href="Twophase.html#TwophaseStratification"><i class="fa fa-check"></i><b>11.1</b> Two-phase random sampling for stratification</a></li>
+<li class="chapter" data-level="11.2" data-path="Twophase.html"><a href="Twophase.html#TwophaseRegression"><i class="fa fa-check"></i><b>11.2</b> Two-phase random sampling for regression</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html"><i class="fa fa-check"></i><b>12</b> Computing the required sample size</a>
+<ul>
+<li class="chapter" data-level="12.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#standard-error-of-estimator"><i class="fa fa-check"></i><b>12.1</b> Standard error of estimator</a></li>
+<li class="chapter" data-level="12.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#ReqSampleSizeLengthCI"><i class="fa fa-check"></i><b>12.2</b> Length of confidence interval</a>
+<ul>
+<li class="chapter" data-level="12.2.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#length-of-confidence-interval-for-a-proportion"><i class="fa fa-check"></i><b>12.2.1</b> Length of confidence interval for a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#statistical-testing-of-hypothesis"><i class="fa fa-check"></i><b>12.3</b> Statistical testing of hypothesis</a>
+<ul>
+<li class="chapter" data-level="12.3.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#sample-size-for-testing-a-proportion"><i class="fa fa-check"></i><b>12.3.1</b> Sample size for testing a proportion</a></li>
+</ul></li>
+<li class="chapter" data-level="12.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#DesignEffect"><i class="fa fa-check"></i><b>12.4</b> Accounting for design effect</a></li>
+<li class="chapter" data-level="12.5" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#BayesianSampleSize"><i class="fa fa-check"></i><b>12.5</b> Bayesian sample size determination</a>
+<ul>
+<li class="chapter" data-level="12.5.1" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#bayesian-criteria-for-sample-size-computation"><i class="fa fa-check"></i><b>12.5.1</b> Bayesian criteria for sample size computation</a></li>
+<li class="chapter" data-level="12.5.2" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#mixed-bayesian-likelihood-approach"><i class="fa fa-check"></i><b>12.5.2</b> Mixed Bayesian-likelihood approach</a></li>
+<li class="chapter" data-level="12.5.3" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-population-mean"><i class="fa fa-check"></i><b>12.5.3</b> Estimation of population mean</a></li>
+<li class="chapter" data-level="12.5.4" data-path="RequiredSampleSize.html"><a href="RequiredSampleSize.html#estimation-of-a-population-proportion"><i class="fa fa-check"></i><b>12.5.4</b> Estimation of a population proportion</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html"><i class="fa fa-check"></i><b>13</b> Model-based optimisation of probability sampling designs</a>
+<ul>
+<li class="chapter" data-level="13.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#model-based-optimisation-of-sampling-design-type-and-sample-size"><i class="fa fa-check"></i><b>13.1</b> Model-based optimisation of sampling design type and sample size</a>
+<ul>
+<li class="chapter" data-level="13.1.1" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#AnalyticalApproach"><i class="fa fa-check"></i><b>13.1.1</b> Analytical approach</a></li>
+<li class="chapter" data-level="13.1.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#GeostatisticalSimulationApproach"><i class="fa fa-check"></i><b>13.1.2</b> Geostatistical simulation approach</a></li>
+<li class="chapter" data-level="13.1.3" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#MBpredSamplingVarBayes"><i class="fa fa-check"></i><b>13.1.3</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="13.2" data-path="MBpredictionofDesignVariance.html"><a href="MBpredictionofDesignVariance.html#Ospats"><i class="fa fa-check"></i><b>13.2</b> Model-based optimisation of spatial strata</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html"><i class="fa fa-check"></i><b>14</b> Sampling for estimating parameters of (small) domains</a>
+<ul>
+<li class="chapter" data-level="14.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#LargeDomainsDirectEstimator"><i class="fa fa-check"></i><b>14.1</b> Direct estimator for large domains</a></li>
+<li class="chapter" data-level="14.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallDomainsModelAssisted"><i class="fa fa-check"></i><b>14.2</b> Model-assisted estimators for small domains</a>
+<ul>
+<li class="chapter" data-level="14.2.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#RegressionestimatorSmallDomain"><i class="fa fa-check"></i><b>14.2.1</b> Regression estimator</a></li>
+<li class="chapter" data-level="14.2.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#synthetic-estimator"><i class="fa fa-check"></i><b>14.2.2</b> Synthetic estimator</a></li>
+</ul></li>
+<li class="chapter" data-level="14.3" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#SmallAreaModelBased"><i class="fa fa-check"></i><b>14.3</b> Model-based prediction</a>
+<ul>
+<li class="chapter" data-level="14.3.1" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#random-intercept-model"><i class="fa fa-check"></i><b>14.3.1</b> Random intercept model</a></li>
+<li class="chapter" data-level="14.3.2" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#geostatistical-model"><i class="fa fa-check"></i><b>14.3.2</b> Geostatistical model</a></li>
+</ul></li>
+<li class="chapter" data-level="14.4" data-path="SmallAreaEstimation.html"><a href="SmallAreaEstimation.html#supplemental-probability-sampling-of-small-domains"><i class="fa fa-check"></i><b>14.4</b> Supplemental probability sampling of small domains</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html"><i class="fa fa-check"></i><b>15</b> Repeated sample surveys for monitoring population parameters</a>
+<ul>
+<li class="chapter" data-level="15.1" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-designs"><i class="fa fa-check"></i><b>15.1</b> Space-time designs</a></li>
+<li class="chapter" data-level="15.2" data-path="RepeatedSurveys.html"><a href="RepeatedSurveys.html#space-time-population-parameters"><i class="fa fa-check"></i><b>15.2</b> Space-time population parameters</a></li>
+</ul></li>
+<li class="part"><span><b>II Sampling for mapping</b></span></li>
+<li class="chapter" data-level="16" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html"><i class="fa fa-check"></i><b>16</b> Introduction to sampling for mapping</a>
+<ul>
+<li class="chapter" data-level="16.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#when-is-probability-sampling-not-required"><i class="fa fa-check"></i><b>16.1</b> When is probability sampling not required?</a></li>
+<li class="chapter" data-level="16.2" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#sampling-for-simultaneously-mapping-and-estimating-means"><i class="fa fa-check"></i><b>16.2</b> Sampling for simultaneously mapping and estimating means</a>
+<ul>
+<li class="chapter" data-level="16.2.1" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#balanced-stratified-random-sampling"><i class="fa fa-check"></i><b>16.2.1</b> Balanced stratified random sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="16.3" data-path="IntroSamplingforMapping.html"><a href="IntroSamplingforMapping.html#broad-overview-of-sampling-designs-for-mapping"><i class="fa fa-check"></i><b>16.3</b> Broad overview of sampling designs for mapping</a></li>
+</ul></li>
+<li class="chapter" data-level="17" data-path="Regulargrid.html"><a href="Regulargrid.html"><i class="fa fa-check"></i><b>17</b> Sampling on a regular grid</a></li>
+<li class="chapter" data-level="18" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html"><i class="fa fa-check"></i><b>18</b> Spatial coverage sampling</a>
+<ul>
+<li class="chapter" data-level="18.1" data-path="SpatialCoverage.html"><a href="SpatialCoverage.html#SpatialInfill"><i class="fa fa-check"></i><b>18.1</b> Spatial infill sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="19" data-path="kmeans.html"><a href="kmeans.html"><i class="fa fa-check"></i><b>19</b> Covariate space coverage sampling</a>
+<ul>
+<li class="chapter" data-level="19.1" data-path="kmeans.html"><a href="kmeans.html#covariate-space-infill-sampling"><i class="fa fa-check"></i><b>19.1</b> Covariate space infill sampling</a></li>
+<li class="chapter" data-level="19.2" data-path="kmeans.html"><a href="kmeans.html#performance-of-covariate-space-coverage-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>19.2</b> Performance of covariate space coverage sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="20" data-path="cLHS.html"><a href="cLHS.html"><i class="fa fa-check"></i><b>20</b> Conditioned Latin hypercube sampling</a>
+<ul>
+<li class="chapter" data-level="20.1" data-path="cLHS.html"><a href="cLHS.html#cLHIS"><i class="fa fa-check"></i><b>20.1</b> Conditioned Latin hypercube infill sampling</a></li>
+<li class="chapter" data-level="20.2" data-path="cLHS.html"><a href="cLHS.html#performance-of-conditioned-latin-hypercube-sampling-in-random-forest-prediction"><i class="fa fa-check"></i><b>20.2</b> Performance of conditioned Latin hypercube sampling in random forest prediction</a></li>
+</ul></li>
+<li class="chapter" data-level="21" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html"><i class="fa fa-check"></i><b>21</b> Spatial response surface sampling</a>
+<ul>
+<li class="chapter" data-level="21.1" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#IncreaseSampleSize"><i class="fa fa-check"></i><b>21.1</b> Increasing the sample size</a></li>
+<li class="chapter" data-level="21.2" data-path="SpatialResponseSurface.html"><a href="SpatialResponseSurface.html#stratified-spatial-response-surface-sampling"><i class="fa fa-check"></i><b>21.2</b> Stratified spatial response surface sampling</a></li>
+</ul></li>
+<li class="chapter" data-level="22" data-path="Introkriging.html"><a href="Introkriging.html"><i class="fa fa-check"></i><b>22</b> Introduction to kriging</a>
+<ul>
+<li class="chapter" data-level="22.1" data-path="Introkriging.html"><a href="Introkriging.html#BlockKriging"><i class="fa fa-check"></i><b>22.1</b> Block-kriging</a></li>
+<li class="chapter" data-level="22.2" data-path="Introkriging.html"><a href="Introkriging.html#IntroKED"><i class="fa fa-check"></i><b>22.2</b> Kriging with an external drift</a></li>
+<li class="chapter" data-level="22.3" data-path="Introkriging.html"><a href="Introkriging.html#VariogramEstimation"><i class="fa fa-check"></i><b>22.3</b> Estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.3.1" data-path="Introkriging.html"><a href="Introkriging.html#MoM"><i class="fa fa-check"></i><b>22.3.1</b> Method-of-moments</a></li>
+<li class="chapter" data-level="22.3.2" data-path="Introkriging.html"><a href="Introkriging.html#MLestimationVariogram"><i class="fa fa-check"></i><b>22.3.2</b> Maximum likelihood</a></li>
+</ul></li>
+<li class="chapter" data-level="22.4" data-path="Introkriging.html"><a href="Introkriging.html#ResidualVariogram"><i class="fa fa-check"></i><b>22.4</b> Estimating the residual semivariogram</a>
+<ul>
+<li class="chapter" data-level="22.4.1" data-path="Introkriging.html"><a href="Introkriging.html#IterativeMoM"><i class="fa fa-check"></i><b>22.4.1</b> Iterative method-of-moments</a></li>
+<li class="chapter" data-level="22.4.2" data-path="Introkriging.html"><a href="Introkriging.html#REML"><i class="fa fa-check"></i><b>22.4.2</b> Restricted maximum likelihood</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="23" data-path="MBgridspacing.html"><a href="MBgridspacing.html"><i class="fa fa-check"></i><b>23</b> Model-based optimisation of grid spacing</a>
+<ul>
+<li class="chapter" data-level="23.1" data-path="MBgridspacing.html"><a href="MBgridspacing.html#GridspacingOK"><i class="fa fa-check"></i><b>23.1</b> Optimal grid spacing for ordinary kriging</a></li>
+<li class="chapter" data-level="23.2" data-path="MBgridspacing.html"><a href="MBgridspacing.html#controlling-the-mean-or-a-quantile-of-the-ordinary-kriging-variance"><i class="fa fa-check"></i><b>23.2</b> Controlling the mean or a quantile of the ordinary kriging variance</a></li>
+<li class="chapter" data-level="23.3" data-path="MBgridspacing.html"><a href="MBgridspacing.html#optimal-grid-spacing-for-block-kriging"><i class="fa fa-check"></i><b>23.3</b> Optimal grid spacing for block-kriging</a></li>
+<li class="chapter" data-level="23.4" data-path="MBgridspacing.html"><a href="MBgridspacing.html#MBgridspacingKED"><i class="fa fa-check"></i><b>23.4</b> Optimal grid spacing for kriging with an external drift</a></li>
+<li class="chapter" data-level="23.5" data-path="MBgridspacing.html"><a href="MBgridspacing.html#BayesianGridSpacing"><i class="fa fa-check"></i><b>23.5</b> Bayesian approach</a></li>
+</ul></li>
+<li class="chapter" data-level="24" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html"><i class="fa fa-check"></i><b>24</b> Model-based optimisation of sampling pattern</a>
+<ul>
+<li class="chapter" data-level="24.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SSA"><i class="fa fa-check"></i><b>24.1</b> Spatial simulated annealing</a></li>
+<li class="chapter" data-level="24.2" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternOK"><i class="fa fa-check"></i><b>24.2</b> Optimising the sample pattern for ordinary kriging</a></li>
+<li class="chapter" data-level="24.3" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#SamplePatternKED"><i class="fa fa-check"></i><b>24.3</b> Optimising the sample pattern for kriging with an external drift</a></li>
+<li class="chapter" data-level="24.4" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling"><i class="fa fa-check"></i><b>24.4</b> Model-based infill sampling</a>
+<ul>
+<li class="chapter" data-level="24.4.1" data-path="MBSamplePattern.html"><a href="MBSamplePattern.html#model-based-infill-sampling-for-kriging-with-an-external-drift"><i class="fa fa-check"></i><b>24.4.1</b> Model-based infill sampling for kriging with an external drift</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="25" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html"><i class="fa fa-check"></i><b>25</b> Sampling for estimating the semivariogram</a>
+<ul>
+<li class="chapter" data-level="25.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#nested-sampling"><i class="fa fa-check"></i><b>25.1</b> Nested sampling</a></li>
+<li class="chapter" data-level="25.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#independent-sampling-of-pairs-of-points"><i class="fa fa-check"></i><b>25.2</b> Independent sampling of pairs of points</a></li>
+<li class="chapter" data-level="25.3" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#samplingforvariogram"><i class="fa fa-check"></i><b>25.3</b> Model-based optimisation of sample pattern for semivariogram estimation</a>
+<ul>
+<li class="chapter" data-level="25.3.1" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#UncertainSemivariogramParameters"><i class="fa fa-check"></i><b>25.3.1</b> Uncertainty about semivariogram parameters</a></li>
+<li class="chapter" data-level="25.3.2" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#uncertainty-about-the-kriging-variance"><i class="fa fa-check"></i><b>25.3.2</b> Uncertainty about the kriging variance</a></li>
+</ul></li>
+<li class="chapter" data-level="25.4" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#SamplingEstimationandPrediction"><i class="fa fa-check"></i><b>25.4</b> Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction</a></li>
+<li class="chapter" data-level="25.5" data-path="SamplingVariogram.html"><a href="SamplingVariogram.html#a-practical-solution"><i class="fa fa-check"></i><b>25.5</b> A practical solution</a></li>
+</ul></li>
+<li class="chapter" data-level="26" data-path="Validation.html"><a href="Validation.html"><i class="fa fa-check"></i><b>26</b> Sampling for validation of maps</a>
+<ul>
+<li class="chapter" data-level="26.1" data-path="Validation.html"><a href="Validation.html#map-quality-indices"><i class="fa fa-check"></i><b>26.1</b> Map quality indices</a>
+<ul>
+<li class="chapter" data-level="26.1.1" data-path="Validation.html"><a href="Validation.html#estimation-of-map-quality-indices"><i class="fa fa-check"></i><b>26.1.1</b> Estimation of map quality indices</a></li>
+</ul></li>
+<li class="chapter" data-level="26.2" data-path="Validation.html"><a href="Validation.html#real-world-case-study"><i class="fa fa-check"></i><b>26.2</b> Real-world case study</a>
+<ul>
+<li class="chapter" data-level="26.2.1" data-path="Validation.html"><a href="Validation.html#estimation-of-the-population-mean-error-and-mean-squared-error"><i class="fa fa-check"></i><b>26.2.1</b> Estimation of the population Mean Error and Mean Squared Error</a></li>
+<li class="chapter" data-level="26.2.2" data-path="Validation.html"><a href="Validation.html#estimation-of-the-standard-error-of-the-estimated-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.2</b> Estimation of the standard error of the estimated population ME and MSE</a></li>
+<li class="chapter" data-level="26.2.3" data-path="Validation.html"><a href="Validation.html#estimation-of-mec"><i class="fa fa-check"></i><b>26.2.3</b> Estimation of MEC</a></li>
+<li class="chapter" data-level="26.2.4" data-path="Validation.html"><a href="Validation.html#statistical-testing-of-hypothesis-about-population-me-and-mse"><i class="fa fa-check"></i><b>26.2.4</b> Statistical testing of hypothesis about population ME and MSE</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="27" data-path="Approaches.html"><a href="Approaches.html"><i class="fa fa-check"></i><b>27</b> Design-based, model-based and model-assisted approach for sampling and inference</a>
+<ul>
+<li class="chapter" data-level="27.1" data-path="Approaches.html"><a href="Approaches.html#two-sources-of-randomness"><i class="fa fa-check"></i><b>27.1</b> Two sources of randomness</a></li>
+<li class="chapter" data-level="27.2" data-path="Approaches.html"><a href="Approaches.html#identically-and-independently-distributed-i.i.d."><i class="fa fa-check"></i><b>27.2</b> “Identically and independently distributed” (i.i.d.)</a></li>
+<li class="chapter" data-level="27.3" data-path="Approaches.html"><a href="Approaches.html#BiasandVariance"><i class="fa fa-check"></i><b>27.3</b> Bias and variance</a></li>
+<li class="chapter" data-level="27.4" data-path="Approaches.html"><a href="Approaches.html#effectivesamplesize"><i class="fa fa-check"></i><b>27.4</b> Effective sample size</a></li>
+<li class="chapter" data-level="27.5" data-path="Approaches.html"><a href="Approaches.html#ExploitSpatialStructure"><i class="fa fa-check"></i><b>27.5</b> Exploiting spatial structure in design-based approach</a></li>
+<li class="chapter" data-level="27.6" data-path="Approaches.html"><a href="Approaches.html#ModelassistedvsModeldependent"><i class="fa fa-check"></i><b>27.6</b> Model-assisted versus model-dependent</a></li>
+</ul></li>
+<li class="appendix"><span><b>Appendices</b></span></li>
+<li class="chapter" data-level="A" data-path="Answers.html"><a href="Answers.html"><i class="fa fa-check"></i><b>A</b> Answers to exercises</a>
+<ul>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#introduction-to-probability-sampling"><i class="fa fa-check"></i>Introduction to probability sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#simple-random-sampling"><i class="fa fa-check"></i>Simple random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#stratified-random-sampling"><i class="fa fa-check"></i>Stratified random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#systematic-random-sampling"><i class="fa fa-check"></i>Systematic random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#cluster-random-sampling"><i class="fa fa-check"></i>Cluster random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-stage-random-sampling"><i class="fa fa-check"></i>Two-stage random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-with-probabilities-proportional-to-size"><i class="fa fa-check"></i>Sampling with probabilities proportional to size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#balanced-and-well-spread-sampling"><i class="fa fa-check"></i>Balanced and well-spread sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#ratio-and-regression-estimator"><i class="fa fa-check"></i>Ratio and regression estimator</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#two-phase-random-sampling"><i class="fa fa-check"></i>Two-phase random sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#required-sample-size"><i class="fa fa-check"></i>Required sample size</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-prediction-of-sampling-variance-of-estimated-mean"><i class="fa fa-check"></i>Model-based prediction of sampling variance of estimated mean</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#regular-grid-sampling"><i class="fa fa-check"></i>Regular grid sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#spatial-coverage-sampling"><i class="fa fa-check"></i>Spatial coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#covariate-space-coverage-sampling"><i class="fa fa-check"></i>Covariate space coverage sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#conditioned-latin-hypercube-sampling"><i class="fa fa-check"></i>Conditioned Latin hypercube sampling</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-the-grid-spacing"><i class="fa fa-check"></i>Model-based optimisation of the grid spacing</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#model-based-optimisation-of-sampling-pattern"><i class="fa fa-check"></i>Model-based optimisation of sampling pattern</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-estimating-the-semivariogram"><i class="fa fa-check"></i>Sampling for estimating the semivariogram</a></li>
+<li class="chapter" data-level="" data-path="Answers.html"><a href="Answers.html#sampling-for-validation"><i class="fa fa-check"></i>Sampling for validation</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Spatial sampling with R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="MBgridspacing" class="section level1" number="23">
+<h1><span class="header-section-number">Chapter 23</span> Model-based optimisation of grid spacing</h1>
+<p>This is the first chapter on model-based sampling<a href="#fn26" class="footnote-ref" id="fnref26"><sup>26</sup></a>. In Chapters <a href="SpatialCoverage.html#SpatialCoverage">18</a> and <a href="kmeans.html#kmeans">19</a> a geometric criterion was minimised, i.e. a criterion defined in terms of distances, either in geographic space (Chapter <a href="SpatialCoverage.html#SpatialCoverage">18</a>), or in covariate space (Chapter <a href="kmeans.html#kmeans">19</a>). In model-based sampling the minimisation criterion is a function of the variance of the prediction errors.</p>
+<p>This first chapter on model-based sampling is about optimisation of the spacing of a regular grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Chapter <a href="Regulargrid.html#Regulargrid">17</a>). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter <a href="Introkriging.html#Introkriging">22</a> for an introduction.</p>
+<div id="GridspacingOK" class="section level2" number="23.1">
+<h2><span class="header-section-number">23.1</span> Optimal grid spacing for ordinary kriging</h2>
+<p>Suppose that we require the mean kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the mean of the study variable is constant throughout the study area, but unknown. With the mean unknown, this implies that ordinary kriging is used for mapping. Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.</p>
+<p>There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean kriging variance for a range of grid spacings, plot the mean kriging variances against the grid spacing, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean ordinary kriging variance.</p>
+<p>In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in the three woredas of Ethiopia. The legacy data used before to design a spatial infill sample (Chapter <a href="SpatialCoverage.html#SpatialCoverage">18</a>) are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package <strong>gstat</strong> <span class="citation">(<a href="#ref-peb04" role="doc-biblioref">Pebesma 2004</a>)</span>. Note that the values for the partial sill, range and nugget in the <code>model</code> argument of the function <code>fit.variogram</code> are guesses from an eyeball examination of the sample semivariogram obtained with the function <code>variogram</code>, see Figure <a href="MBgridspacing.html#fig:variogramSOMEthiopia">23.1</a>.</p>
+<div class="sourceCode" id="cb451"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb451-1"><a href="MBgridspacing.html#cb451-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gstat)</span>
+<span id="cb451-2"><a href="MBgridspacing.html#cb451-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file=</span><span class="st">&quot;data/CovariatesThreeWoredasEthiopia.RData&quot;</span>)</span>
+<span id="cb451-3"><a href="MBgridspacing.html#cb451-3" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file=</span><span class="st">&quot;data/ThreeWoredasEthiopia.RData&quot;</span>)</span>
+<span id="cb451-4"><a href="MBgridspacing.html#cb451-4" aria-hidden="true" tabindex="-1"></a>vg <span class="ot">&lt;-</span> <span class="fu">variogram</span>(SOM<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>priordataEthiopia)</span>
+<span id="cb451-5"><a href="MBgridspacing.html#cb451-5" aria-hidden="true" tabindex="-1"></a>vgmdl <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="fl">0.6</span>, <span class="at">range=</span><span class="dv">40</span>, <span class="at">nugget=</span><span class="fl">0.6</span>)</span>
+<span id="cb451-6"><a href="MBgridspacing.html#cb451-6" aria-hidden="true" tabindex="-1"></a>vgm_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg, <span class="at">model=</span>vgmdl)</span></code></pre></div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:variogramSOMEthiopia"></span>
+<img src="SpatialSampling_files/figure-html/variogramSOMEthiopia-1.png" alt="Sample semivariogram and fitted spherical model of SOM estimated from legacy data in three woredas of Ethiopia." width="80%" />
+<p class="caption">
+Figure 23.1: Sample semivariogram and fitted spherical model of SOM estimated from legacy data in three woredas of Ethiopia.
+</p>
+</div>
+<p>The semivariogram of SOM can also be estimated by maximum likelihood using function <code>likfit</code> of package <strong>geoR</strong> <span class="citation">(<a href="#ref-geoR" role="doc-biblioref">Ribeiro Jr et al. 2020</a>)</span>.</p>
+<div class="sourceCode" id="cb452"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb452-1"><a href="MBgridspacing.html#cb452-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geoR)</span>
+<span id="cb452-2"><a href="MBgridspacing.html#cb452-2" aria-hidden="true" tabindex="-1"></a>priordata <span class="ot">&lt;-</span> <span class="fu">as</span>(priordataEthiopia,<span class="st">&quot;data.frame&quot;</span>)</span>
+<span id="cb452-3"><a href="MBgridspacing.html#cb452-3" aria-hidden="true" tabindex="-1"></a>dGeoR <span class="ot">&lt;-</span> <span class="fu">as.geodata</span>(</span>
+<span id="cb452-4"><a href="MBgridspacing.html#cb452-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">obj=</span>priordata, <span class="at">header=</span><span class="cn">TRUE</span>,</span>
+<span id="cb452-5"><a href="MBgridspacing.html#cb452-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">coords.col=</span><span class="dv">13</span><span class="sc">:</span><span class="dv">14</span>, <span class="at">data.col=</span><span class="dv">1</span>)</span>
+<span id="cb452-6"><a href="MBgridspacing.html#cb452-6" aria-hidden="true" tabindex="-1"></a>vgm_ML <span class="ot">&lt;-</span> <span class="fu">likfit</span>(</span>
+<span id="cb452-7"><a href="MBgridspacing.html#cb452-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">geodata=</span>dGeoR, <span class="at">trend=</span><span class="st">&quot;cte&quot;</span>,</span>
+<span id="cb452-8"><a href="MBgridspacing.html#cb452-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">cov.model=</span><span class="st">&quot;spherical&quot;</span>, <span class="at">ini.cov.pars=</span><span class="fu">c</span>(<span class="fl">0.4</span>,<span class="dv">40</span>),</span>
+<span id="cb452-9"><a href="MBgridspacing.html#cb452-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">nugget=</span><span class="fl">0.6</span>, <span class="at">lik.method=</span><span class="st">&quot;ML&quot;</span>, <span class="at">messages=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<p>Table <a href="MBgridspacing.html#tab:VariogramEstimatesEthiopia">23.1</a> shows the maximum likelihood (ML) estimates of the parameters of the spherical semivariogram, together with the method-of-moments estimates. Either could be used in the following steps.</p>
+<table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:VariogramEstimatesEthiopia">Table 23.1: </span>Method-of-moments and ML estimates of parameters of spherical semivariogram of SOM in Ethiopia.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Parameter
+</th>
+<th style="text-align:right;">
+MoM
+</th>
+<th style="text-align:right;">
+ML
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+nugget
+</td>
+<td style="text-align:right;">
+0.62
+</td>
+<td style="text-align:right;">
+0.56
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+partial sill
+</td>
+<td style="text-align:right;">
+0.56
+</td>
+<td style="text-align:right;">
+0.68
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+range
+</td>
+<td style="text-align:right;">
+45.40
+</td>
+<td style="text-align:right;">
+36.90
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="controlling-the-mean-or-a-quantile-of-the-ordinary-kriging-variance" class="section level2" number="23.2">
+<h2><span class="header-section-number">23.2</span> Controlling the mean or a quantile of the ordinary kriging variance</h2>
+<p>To decide on the grid spacing we may require that the population mean of the kriging variance (MKV) not exceeds a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.</p>
+<p>As a first step a series of spacings of the square grid with observations are specified. Only spacings are considered which would result in expected sample sizes that are reasonable for kriging. With a spacing of 5 km the expected sample size is 434 points, with a spacing of 12 km these are 75 points.</p>
+<div class="sourceCode" id="cb453"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb453-1"><a href="MBgridspacing.html#cb453-1" aria-hidden="true" tabindex="-1"></a>spacing <span class="ot">&lt;-</span> <span class="dv">5</span><span class="sc">:</span><span class="dv">12</span></span></code></pre></div>
+<p>The next step is to select a simple random sample of evaluation points. It is important to select a large sample, so that the precision of the estimated population mean or quantile of the kriging variance will be high. The standard error of the estimated MKV can be estimated, see Chapter <a href="SI.html#SI">3</a>, substituting the kriging variance at the sampling points for the study variable values.</p>
+<div class="sourceCode" id="cb454"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb454-1"><a href="MBgridspacing.html#cb454-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file=</span><span class="st">&quot;data/CovariatesThreeWoredasEthiopia.RData&quot;</span>)</span>
+<span id="cb454-2"><a href="MBgridspacing.html#cb454-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb454-3"><a href="MBgridspacing.html#cb454-3" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(grdEthiopia), <span class="at">size=</span><span class="dv">5000</span>, <span class="at">replace=</span><span class="cn">TRUE</span>)</span>
+<span id="cb454-4"><a href="MBgridspacing.html#cb454-4" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> grdEthiopia[units,]</span>
+<span id="cb454-5"><a href="MBgridspacing.html#cb454-5" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>s1 <span class="ot">&lt;-</span> <span class="fu">jitter</span>(mysample<span class="sc">$</span>s1, <span class="at">amount=</span><span class="fl">0.5</span>)</span>
+<span id="cb454-6"><a href="MBgridspacing.html#cb454-6" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>s2 <span class="ot">&lt;-</span> <span class="fu">jitter</span>(mysample<span class="sc">$</span>s2, <span class="at">amount=</span><span class="fl">0.5</span>)</span></code></pre></div>
+<p>The <strong>R</strong> code below shows the next steps. Given a spacing, a square grid with a fixed starting point is selected with function <code>spsample</code>, using argument <code>offset</code>. A dummy variable is added to the data frame, having value 1 at all grid points. So the predicted value will everywhere be 1, since an unbiased predictor, being a weighted sum (as in OK) of any single value, must be that value. However, we are not interested in the predicted value, but in the kriging variance only, and we have seen in Chapter <a href="Introkriging.html#Introkriging">22</a> that the kriging variance is independent of the observations. The maximum likelihood estimates of the semivariogram are used in function <code>vgm</code> of package <strong>gstat</strong> to define a semivariogram model of class <code>variogramModel</code> that can be handled by function <code>krige</code>. For each grid spacing the population mean, median and P90 of the kriging variance is estimated from the evaluation sample. The median and P90 can be computed with function <code>quantile</code> of the <strong>stats</strong> package.</p>
+<div class="sourceCode" id="cb455"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb455-1"><a href="MBgridspacing.html#cb455-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(mysample) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb455-2"><a href="MBgridspacing.html#cb455-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(grdEthiopia) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb455-3"><a href="MBgridspacing.html#cb455-3" aria-hidden="true" tabindex="-1"></a>MKV_OK <span class="ot">&lt;-</span> P50KV_OK <span class="ot">&lt;-</span> P90KV_OK <span class="ot">&lt;-</span> samplesize <span class="ot">&lt;-</span> </span>
+<span id="cb455-4"><a href="MBgridspacing.html#cb455-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(spacing))</span>
+<span id="cb455-5"><a href="MBgridspacing.html#cb455-5" aria-hidden="true" tabindex="-1"></a>vgm_ML_gstat <span class="ot">&lt;-</span> <span class="fu">vgm</span>(</span>
+<span id="cb455-6"><a href="MBgridspacing.html#cb455-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">nugget=</span>vgm_ML<span class="sc">$</span>nugget, <span class="at">psill=</span>vgm_ML<span class="sc">$</span>sigmasq,</span>
+<span id="cb455-7"><a href="MBgridspacing.html#cb455-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">range=</span>vgm_ML<span class="sc">$</span>phi)</span>
+<span id="cb455-8"><a href="MBgridspacing.html#cb455-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(spacing)) {</span>
+<span id="cb455-9"><a href="MBgridspacing.html#cb455-9" aria-hidden="true" tabindex="-1"></a>  mygridxy <span class="ot">&lt;-</span> <span class="fu">spsample</span>(</span>
+<span id="cb455-10"><a href="MBgridspacing.html#cb455-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x=</span>grdEthiopia, <span class="at">cellsize=</span>spacing[i],</span>
+<span id="cb455-11"><a href="MBgridspacing.html#cb455-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">offset=</span><span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>))</span>
+<span id="cb455-12"><a href="MBgridspacing.html#cb455-12" aria-hidden="true" tabindex="-1"></a>  mygrid<span class="ot">&lt;-</span><span class="fu">data.frame</span>(<span class="at">s1=</span>mygridxy<span class="sc">$</span>x1, <span class="at">s2=</span>mygridxy<span class="sc">$</span>x2, <span class="at">dummy=</span><span class="dv">1</span>)</span>
+<span id="cb455-13"><a href="MBgridspacing.html#cb455-13" aria-hidden="true" tabindex="-1"></a>  samplesize[i] <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mygrid)</span>
+<span id="cb455-14"><a href="MBgridspacing.html#cb455-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coordinates</span>(mygrid) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb455-15"><a href="MBgridspacing.html#cb455-15" aria-hidden="true" tabindex="-1"></a>  predictions  <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
+<span id="cb455-16"><a href="MBgridspacing.html#cb455-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>dummy<span class="sc">~</span><span class="dv">1</span>,</span>
+<span id="cb455-17"><a href="MBgridspacing.html#cb455-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mygrid,</span>
+<span id="cb455-18"><a href="MBgridspacing.html#cb455-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>mysample,</span>
+<span id="cb455-19"><a href="MBgridspacing.html#cb455-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgm_ML_gstat,</span>
+<span id="cb455-20"><a href="MBgridspacing.html#cb455-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">nmax=</span><span class="dv">100</span>,</span>
+<span id="cb455-21"><a href="MBgridspacing.html#cb455-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
+<span id="cb455-22"><a href="MBgridspacing.html#cb455-22" aria-hidden="true" tabindex="-1"></a>  MKV_OK[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>(predictions<span class="sc">$</span>var1.var)</span>
+<span id="cb455-23"><a href="MBgridspacing.html#cb455-23" aria-hidden="true" tabindex="-1"></a>  P50KV_OK[i] <span class="ot">&lt;-</span> <span class="fu">quantile</span>(predictions<span class="sc">$</span>var1.var,<span class="at">probs=</span><span class="fl">0.5</span>)</span>
+<span id="cb455-24"><a href="MBgridspacing.html#cb455-24" aria-hidden="true" tabindex="-1"></a>  P90KV_OK[i] <span class="ot">&lt;-</span> <span class="fu">quantile</span>(predictions<span class="sc">$</span>var1.var,<span class="at">probs=</span><span class="fl">0.9</span>)</span>
+<span id="cb455-25"><a href="MBgridspacing.html#cb455-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb455-26"><a href="MBgridspacing.html#cb455-26" aria-hidden="true" tabindex="-1"></a>dfKV_OK <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb455-27"><a href="MBgridspacing.html#cb455-27" aria-hidden="true" tabindex="-1"></a>  spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)</span></code></pre></div>
+<p>The estimated mean and quantiles of the kriging variance are plotted against the grid spacing.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:MOKVvsSpacingEthiopia"></span>
+<img src="SpatialSampling_files/figure-html/MOKVvsSpacingEthiopia-1.png" alt="Mean, median (P50) and 0.90 quantile (P90) of the ordinary kriging variance of predictions of SOM in three woredas of Ethiopia, as a function of the spacing of a square grid." width="80%" />
+<p class="caption">
+Figure 23.2: Mean, median (P50) and 0.90 quantile (P90) of the ordinary kriging variance of predictions of SOM in three woredas of Ethiopia, as a function of the spacing of a square grid.
+</p>
+</div>
+<p>The tolerable grid spacing for the three quality indices can be computed with function <code>approx</code> of the <strong>base</strong> package, as shown below for the median kriging variance.</p>
+<div class="sourceCode" id="cb456"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb456-1"><a href="MBgridspacing.html#cb456-1" aria-hidden="true" tabindex="-1"></a>spacing_tol_P50 <span class="ot">&lt;-</span> <span class="fu">approx</span>(</span>
+<span id="cb456-2"><a href="MBgridspacing.html#cb456-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x=</span>dfKV_OK<span class="sc">$</span>P50, <span class="at">y=</span>dfKV_OK<span class="sc">$</span>spacing, <span class="at">xout=</span><span class="fl">0.8</span>)<span class="sc">$</span>y</span></code></pre></div>
+<p>For a mean kriging variance of 0.8 the tolerable grid spacing is 8.6 km, for the median kriging variance this is 9.2, which is somewhat larger, leading to a smaller sample size. The smaller grid spacing for the mean can be explained by the right-skewed distribution of the kriging variance, so that the mean is larger than the median. For the 0.90 quantile of the kriging variance the tolerable grid spacing is much smaller: 6.8, leading to a much larger sample size.</p>
+<div id="exercises-25" class="section level4 unnumbered">
+<h4>Exercises</h4>
+<ol style="list-style-type: decimal">
+<li>Write an <strong>R</strong> script to determine the tolerable grid spacing so that the 0.50, 0.80 and 0.95 quantiles of the variance of ordinary kriging predictions of SOM in the three woredas of Ethiopia do not exceed 0.8. Estimate the semivariogram by the method-of-moments.<br />
+</li>
+<li>In practice we are uncertain about the semivariogram. For that reason it can be wise to explore the sensitivity of the tolerable grid spacing for the semivariogram parameters. Increase the nugget parameter of the method-of-moments semivariogram by 5%, and change the partial sill parameter so that the sill (nugget + partial sill) is unchanged. Compute the mean kriging variance for grid spacings of <span class="math inline">\(5, 6, \dots, 12\)</span> km.
+<ul>
+<li>Do the same by reducing the range of the method-of-moments semivariogram by 5%. Reset the nugget and partial sill to their original values.<br />
+</li>
+<li>Plot the mean kriging variance with the original semivariogram, semivariogram with increased nugget and semivariogram with smaller range against the grid spacing. Explain the difference in tolerable grid spacings obtained with the three semivariograms.<br />
+</li>
+<li>Compute the tolerable grid spacings for the three semivariograms for a mean kriging variance of 0.85, and the corresponding expected sample sizes.</li>
+</ul></li>
+</ol>
+</div>
+</div>
+<div id="optimal-grid-spacing-for-block-kriging" class="section level2" number="23.3">
+<h2><span class="header-section-number">23.3</span> Optimal grid spacing for block-kriging</h2>
+<p>In the previous section the tolerable grid spacing is derived from a constraint on the mean, P50 or P90 of the error variances of predictions at points. The alternative is to put a constraint on the mean (P50, P90) of the error variances of the predicted means of blocks. These means can be predicted with block-kriging (Section <a href="Introkriging.html#BlockKriging">22.1</a>). Block-kriging predictions can be obtained with function <code>krige</code> of package <strong>gstat</strong>, using argument <code>block</code>. In the code chunk below the means of 100 m <span class="math inline">\(\times\)</span> 100 m blocks are predicted by ordinary block-kriging.</p>
+<div class="sourceCode" id="cb457"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb457-1"><a href="MBgridspacing.html#cb457-1" aria-hidden="true" tabindex="-1"></a>MKV_OBK <span class="ot">&lt;-</span> P50KV_OBK <span class="ot">&lt;-</span> P90KV_OBK <span class="ot">&lt;-</span></span>
+<span id="cb457-2"><a href="MBgridspacing.html#cb457-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="at">length=</span><span class="fu">length</span>(spacing))</span>
+<span id="cb457-3"><a href="MBgridspacing.html#cb457-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(spacing)) {</span>
+<span id="cb457-4"><a href="MBgridspacing.html#cb457-4" aria-hidden="true" tabindex="-1"></a>  mygridxy <span class="ot">&lt;-</span> <span class="fu">spsample</span>(</span>
+<span id="cb457-5"><a href="MBgridspacing.html#cb457-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x=</span>grdEthiopia, <span class="at">cellsize=</span>spacing[i],</span>
+<span id="cb457-6"><a href="MBgridspacing.html#cb457-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">offset=</span><span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>))</span>
+<span id="cb457-7"><a href="MBgridspacing.html#cb457-7" aria-hidden="true" tabindex="-1"></a>  mygrid<span class="ot">&lt;-</span><span class="fu">data.frame</span>(<span class="at">s1=</span>mygridxy<span class="sc">$</span>x1, <span class="at">s2=</span>mygridxy<span class="sc">$</span>x2, <span class="at">dummy=</span><span class="dv">1</span>)</span>
+<span id="cb457-8"><a href="MBgridspacing.html#cb457-8" aria-hidden="true" tabindex="-1"></a>  samplesize[i] <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mygrid)</span>
+<span id="cb457-9"><a href="MBgridspacing.html#cb457-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coordinates</span>(mygrid) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb457-10"><a href="MBgridspacing.html#cb457-10" aria-hidden="true" tabindex="-1"></a>  predictions  <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
+<span id="cb457-11"><a href="MBgridspacing.html#cb457-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>dummy<span class="sc">~</span><span class="dv">1</span>,</span>
+<span id="cb457-12"><a href="MBgridspacing.html#cb457-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mygrid,</span>
+<span id="cb457-13"><a href="MBgridspacing.html#cb457-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>mysample,</span>
+<span id="cb457-14"><a href="MBgridspacing.html#cb457-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgm_ML_gstat,</span>
+<span id="cb457-15"><a href="MBgridspacing.html#cb457-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">block=</span><span class="fu">c</span>(<span class="fl">0.1</span>,<span class="fl">0.1</span>),</span>
+<span id="cb457-16"><a href="MBgridspacing.html#cb457-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">nmax=</span><span class="dv">100</span>,</span>
+<span id="cb457-17"><a href="MBgridspacing.html#cb457-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
+<span id="cb457-18"><a href="MBgridspacing.html#cb457-18" aria-hidden="true" tabindex="-1"></a>  MKV_OBK[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>(predictions<span class="sc">$</span>var1.var)</span>
+<span id="cb457-19"><a href="MBgridspacing.html#cb457-19" aria-hidden="true" tabindex="-1"></a>  P50KV_OBK[i] <span class="ot">&lt;-</span> <span class="fu">quantile</span>(predictions<span class="sc">$</span>var1.var,<span class="at">probs=</span><span class="fl">0.5</span>)</span>
+<span id="cb457-20"><a href="MBgridspacing.html#cb457-20" aria-hidden="true" tabindex="-1"></a>  P90KV_OBK[i] <span class="ot">&lt;-</span> <span class="fu">quantile</span>(predictions<span class="sc">$</span>var1.var,<span class="at">probs=</span><span class="fl">0.9</span>)</span>
+<span id="cb457-21"><a href="MBgridspacing.html#cb457-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb457-22"><a href="MBgridspacing.html#cb457-22" aria-hidden="true" tabindex="-1"></a>dfKV_OBK <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(spacing, MKV_OBK, P50KV_OBK, P90KV_OBK)</span></code></pre></div>
+<p>Figure <a href="MBgridspacing.html#fig:MOBKVvsSpacingEthiopia">23.3</a> shows that the mean, P50 and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure <a href="MBgridspacing.html#fig:MOKVvsSpacingEthiopia">23.2</a>). This can be explained by the large nugget of the semivariogram (Table <a href="MBgridspacing.html#tab:VariogramEstimatesEthiopia">23.1</a>). The side length of a prediction block (100 m) is much smaller than the range of the variogram (36.9 km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, given a grid spacing the mean point-kriging variance is reduced by an amount about equal to this means semivariance, to yield the mean block-kriging variance for this spacing (Section <a href="Introkriging.html#BlockKriging">22.1</a>). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation <a href="MBpredictionofDesignVariance.html#eq:meansemivariance">(13.3)</a>).</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:MOBKVvsSpacingEthiopia"></span>
+<img src="SpatialSampling_files/figure-html/MOBKVvsSpacingEthiopia-1.png" alt="Mean, median (P50) and 0.90 quantile (P90) of the ordinary block-kriging variance of predictions of the mean SOM of blocks of 100 m by 100 m, in three woredas of Ethiopia, as a function of the spacing of a square grid." width="80%" />
+<p class="caption">
+Figure 23.3: Mean, median (P50) and 0.90 quantile (P90) of the ordinary block-kriging variance of predictions of the mean SOM of blocks of 100 m by 100 m, in three woredas of Ethiopia, as a function of the spacing of a square grid.
+</p>
+</div>
+</div>
+<div id="MBgridspacingKED" class="section level2" number="23.4">
+<h2><span class="header-section-number">23.4</span> Optimal grid spacing for kriging with an external drift</h2>
+<p>In the previous section I assumed a constant mean for the study variable. I now consider the case where covariates that are related to the study variable are available. A model is calibrated that is the sum of a linear combination of the covariates (spatial trend) and a spatially structured residual, see Equation <a href="Introkriging.html#eq:KEDmodel2">(22.14)</a>. Predictions at the nodes of a fine grid are obtained by kriging with an external drift (KED).</p>
+<p>The SOM data of the three woredas of Ethiopia are used to estimate the parameters (regression coefficients and residual semivariogram parameters) of the model by restricted maximum likelihood (REML), see Section <a href="Introkriging.html#REML">22.4.2</a>.</p>
+<div class="sourceCode" id="cb458"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb458-1"><a href="MBgridspacing.html#cb458-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geoR)</span>
+<span id="cb458-2"><a href="MBgridspacing.html#cb458-2" aria-hidden="true" tabindex="-1"></a>dGeoR <span class="ot">&lt;-</span> <span class="fu">as.geodata</span>(</span>
+<span id="cb458-3"><a href="MBgridspacing.html#cb458-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">obj =</span> priordata, <span class="at">header=</span><span class="cn">TRUE</span>,</span>
+<span id="cb458-4"><a href="MBgridspacing.html#cb458-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">coords.col=</span><span class="dv">13</span><span class="sc">:</span><span class="dv">14</span>, <span class="at">data.col=</span><span class="dv">1</span>,</span>
+<span id="cb458-5"><a href="MBgridspacing.html#cb458-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">covar.col=</span><span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">9</span>,<span class="dv">10</span>,<span class="dv">11</span>))</span>
+<span id="cb458-6"><a href="MBgridspacing.html#cb458-6" aria-hidden="true" tabindex="-1"></a>vgm_REML <span class="ot">&lt;-</span> <span class="fu">likfit</span>(</span>
+<span id="cb458-7"><a href="MBgridspacing.html#cb458-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">geodata=</span>dGeoR, <span class="at">trend=</span><span class="sc">~</span>dem<span class="sc">+</span>rfl_NIR<span class="sc">+</span>rfl_red<span class="sc">+</span>lst,</span>
+<span id="cb458-8"><a href="MBgridspacing.html#cb458-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">cov.model=</span><span class="st">&quot;spherical&quot;</span>, <span class="at">ini.cov.pars=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>),</span>
+<span id="cb458-9"><a href="MBgridspacing.html#cb458-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">nugget=</span><span class="fl">0.2</span>, <span class="at">lik.method=</span><span class="st">&quot;REML&quot;</span>, <span class="at">messages=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:VariogramREMLEthiopia">Table 23.2: </span>Maximum likelihood estimates of parameters of spherical semivariogram of SOM, and restricted maximum likelihood estimates of residual semivariogram of SOM in Ethiopia.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Parameter
+</th>
+<th style="text-align:right;">
+ML
+</th>
+<th style="text-align:right;">
+REML
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+nugget
+</td>
+<td style="text-align:right;">
+0.56
+</td>
+<td style="text-align:right;">
+0.36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+partial sill
+</td>
+<td style="text-align:right;">
+0.68
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+range
+</td>
+<td style="text-align:right;">
+36.90
+</td>
+<td style="text-align:right;">
+5.20
+</td>
+</tr>
+</tbody>
+</table>
+<p>The total sill (partial sill + nugget) of the residual semivariogram equals 0.8, which is considerably smaller than that of the ML semivariogram of SOM (Table <a href="MBgridspacing.html#tab:VariogramREMLEthiopia">23.2</a>). A considerable part of the variance of SOM is explained by the covariates. Note the much smaller range of the residual semivariogram. So the spatial structure of SOM is largely captured by the covariates. The residuals of the mean, which is a linear combination of the covariates, do not show much spatial structure anymore.</p>
+<p>The mean kriging variance as obtained with KED is used as the evaluation criterion. With KED the kriging variance is also a function of the values of the covariates at the sampling locations and prediction location (Section <a href="Introkriging.html#IntroKED">22.2</a>). Compared to the procedure above for ordinary kriging, in the code chunk below a slightly different procedure is used. The square grid of a given spacing is randomly placed on the area (option <code>offset</code> in function <code>spsample</code> is not used), and this is repeated several times.</p>
+<div class="sourceCode" id="cb459"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb459-1"><a href="MBgridspacing.html#cb459-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb459-2"><a href="MBgridspacing.html#cb459-2" aria-hidden="true" tabindex="-1"></a>MKV_KED <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow=</span><span class="fu">length</span>(spacing), <span class="at">ncol=</span>r)</span>
+<span id="cb459-3"><a href="MBgridspacing.html#cb459-3" aria-hidden="true" tabindex="-1"></a>vgm_REML_gstat <span class="ot">&lt;-</span> <span class="fu">vgm</span>(</span>
+<span id="cb459-4"><a href="MBgridspacing.html#cb459-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">nugget=</span>vgm_REML<span class="sc">$</span>nugget,</span>
+<span id="cb459-5"><a href="MBgridspacing.html#cb459-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">psill=</span>vgm_REML<span class="sc">$</span>sigmasq, <span class="at">range=</span>vgm_REML<span class="sc">$</span>phi)</span>
+<span id="cb459-6"><a href="MBgridspacing.html#cb459-6" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb459-7"><a href="MBgridspacing.html#cb459-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(spacing)) {</span>
+<span id="cb459-8"><a href="MBgridspacing.html#cb459-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>r) {</span>
+<span id="cb459-9"><a href="MBgridspacing.html#cb459-9" aria-hidden="true" tabindex="-1"></a>    mygridxy <span class="ot">&lt;-</span> <span class="fu">spsample</span>(<span class="at">x=</span>grdEthiopia, <span class="at">cellsize=</span>spacing[i],</span>
+<span id="cb459-10"><a href="MBgridspacing.html#cb459-10" aria-hidden="true" tabindex="-1"></a>                         <span class="at">type=</span><span class="st">&quot;regular&quot;</span>)</span>
+<span id="cb459-11"><a href="MBgridspacing.html#cb459-11" aria-hidden="true" tabindex="-1"></a>    mygrid <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">s1=</span>mygridxy<span class="sc">$</span>x1, <span class="at">s2=</span>mygridxy<span class="sc">$</span>x2, <span class="at">dummy=</span><span class="dv">1</span>)</span>
+<span id="cb459-12"><a href="MBgridspacing.html#cb459-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coordinates</span>(mygrid) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb459-13"><a href="MBgridspacing.html#cb459-13" aria-hidden="true" tabindex="-1"></a>    mygrd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">over</span>(mygrid, grdEthiopia), mygrid)</span>
+<span id="cb459-14"><a href="MBgridspacing.html#cb459-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coordinates</span>(mygrd) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb459-15"><a href="MBgridspacing.html#cb459-15" aria-hidden="true" tabindex="-1"></a>    predictions <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
+<span id="cb459-16"><a href="MBgridspacing.html#cb459-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">formula=</span>dummy<span class="sc">~</span>dem<span class="sc">+</span>rfl_NIR<span class="sc">+</span>rfl_red<span class="sc">+</span>lst,</span>
+<span id="cb459-17"><a href="MBgridspacing.html#cb459-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">locations=</span>mygrd,</span>
+<span id="cb459-18"><a href="MBgridspacing.html#cb459-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">newdata=</span>mysample,</span>
+<span id="cb459-19"><a href="MBgridspacing.html#cb459-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">model=</span>vgm_REML_gstat,</span>
+<span id="cb459-20"><a href="MBgridspacing.html#cb459-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">nmax=</span><span class="dv">100</span>,</span>
+<span id="cb459-21"><a href="MBgridspacing.html#cb459-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">debug.level=</span><span class="dv">0</span>)</span>
+<span id="cb459-22"><a href="MBgridspacing.html#cb459-22" aria-hidden="true" tabindex="-1"></a>    MKV_KED[i,j] <span class="ot">&lt;-</span> <span class="fu">mean</span>(predictions<span class="sc">$</span>var1.var)</span>
+<span id="cb459-23"><a href="MBgridspacing.html#cb459-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb459-24"><a href="MBgridspacing.html#cb459-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb459-25"><a href="MBgridspacing.html#cb459-25" aria-hidden="true" tabindex="-1"></a>dfKV_KED <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(spacing,MKV_KED)</span></code></pre></div>
+<p>Figure <a href="MBgridspacing.html#fig:MKEDVvsSpacingEthiopia">23.4</a> shows the mean kriging variances obtained with kriging with an external drift and with ordinary kriging, as a function of the grid spacing.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:MKEDVvsSpacingEthiopia"></span>
+<img src="SpatialSampling_files/figure-html/MKEDVvsSpacingEthiopia-1.png" alt="Mean kriging variance of SOM predictions with KED and OK, in three woredas of Ethiopia, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown corresponding with ten randomly placed grids." width="80%" />
+<p class="caption">
+Figure 23.4: Mean kriging variance of SOM predictions with KED and OK, in three woredas of Ethiopia, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown corresponding with ten randomly placed grids.
+</p>
+</div>
+<p>Interestingly for grid spacings smaller than about nine km, the mean kriging variance with KED is larger than with OK. So in this case only for larger grid spacings KED outperforms OK in terms of the mean kriging variance, and only for a mean kriging variances larger than about 0.8, we can afford with KED a larger grid spacing (smaller sample size) than with OK.</p>
+<div class="sourceCode" id="cb460"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb460-1"><a href="MBgridspacing.html#cb460-1" aria-hidden="true" tabindex="-1"></a>MMKV_KED <span class="ot">&lt;-</span> <span class="fu">apply</span>(dfKV_KED[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">MARGIN=</span><span class="dv">1</span>, <span class="at">FUN=</span>mean)</span>
+<span id="cb460-2"><a href="MBgridspacing.html#cb460-2" aria-hidden="true" tabindex="-1"></a>spacing_tol_KED <span class="ot">&lt;-</span> <span class="fu">approx</span>(<span class="at">x=</span>MMKV_KED, <span class="at">y=</span>dfKV_KED<span class="sc">$</span>spacing, <span class="at">xout=</span><span class="fl">0.8</span>)<span class="sc">$</span>y</span></code></pre></div>
+<p>The tolerable grid spacing for a mean kriging variance of 0.8, using KED, equals 7.9 km.</p>
+<div id="exercises-26" class="section level4 unnumbered">
+<h4>Exercises</h4>
+<ol start="3" style="list-style-type: decimal">
+<li>Given a grid spacing the mean kriging variance varies among randomly selected grids, especially for large spacings. Explain why.<br />
+</li>
+<li>Write an <strong>R</strong> script to compute the tolerable grid spacing for kriging with an external drift of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate. Use the estimated parameters of an exponential semivariogram of the residuals, as shown in Table <a href="MBSamplePattern.html#tab:TableVariogramsCRF4">24.1</a>. Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv1m values (available in file <code>data/CottonResearchFarm.RData</code>) to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centers of the selected grid cells by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, <span class="math inline">\(\dots\)</span>, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of lnECE150 of 0.1605?</li>
+</ol>
+</div>
+</div>
+<div id="BayesianGridSpacing" class="section level2" number="23.5">
+<h2><span class="header-section-number">23.5</span> Bayesian approach</h2>
+<p>In practice we do not know the semivariogram. In the best case we have prior data that can be used to estimate the semivariogram. However, even in this case we are uncertain about the semivariogram type (spherical, exponential, etc.) and the semivariogram parameters. <span class="citation"><a href="#ref-Lark2017" role="doc-biblioref">Lark et al.</a> (<a href="#ref-Lark2017" role="doc-biblioref">2017</a>)</span> showed how in a Bayesian approach we can account for uncertainty about the semivariogram parameters when we must decide on the grid spacing. In this approach a prior distribution of the semivariogram parameters is updated with the sample data to a posterior distribution <span class="citation">(<a href="#ref-Gelman2013" role="doc-biblioref">Gelman et al. 2013</a>)</span>:</p>
+<p><span class="math display" id="eq:BayesRule">\[\begin{equation}
+f(\boldsymbol{\theta}|\mathbf{z}) = \frac{f(\boldsymbol{\theta}) f(\mathbf{z}|\boldsymbol{\theta})} {f(\mathbf{z})}\;,
+\tag{23.1}
+\end{equation}\]</span></p>
+<p>with <span class="math inline">\(f(\boldsymbol{\theta}|\mathbf{z})\)</span> the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, <span class="math inline">\(f(\boldsymbol{\theta})\)</span> our prior belief in the parameters specified by a probability density function, <span class="math inline">\(f(\mathbf{z}|\boldsymbol{\theta})\)</span> the likelihood of the data, and <span class="math inline">\(f(\mathbf{z})\)</span> the probability density function of the data. This probability density function <span class="math inline">\(f(\mathbf{z})\)</span> is hard to obtain.</p>
+<p>Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution through Markov chain Monte Carlo (MCMC) sampling, see Section <a href="MBpredictionofDesignVariance.html#MBpredSamplingVarBayes">13.1.3</a>.</p>
+<p>In a Bayesian approach we must define the likelihood function of the data, see Section <a href="Introkriging.html#MLestimationVariogram">22.3.2</a>. I assume that the SOM data in the Ethiopia case study have a multivariate normal distribution, and that the spatial covariance of the data can be modelled by a spherical function, see Section <a href="Introkriging.html#MLestimationVariogram">22.3.2</a>. The likelihood function is already defined in Section <a href="MBpredictionofDesignVariance.html#MBpredSamplingVarBayes">13.1.3</a>. The likelihood is a function of the semivariogram parameters. Given a vector of semivariogram parameters, the variance-covariance matrix of the data is computed from the matrix with geographic distances between the sampling points. Function <code>spDists</code> of package <strong>sp</strong> is used to compute this distance matrix.</p>
+<div class="sourceCode" id="cb461"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb461-1"><a href="MBgridspacing.html#cb461-1" aria-hidden="true" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">spDists</span>(priordataEthiopia)</span></code></pre></div>
+<p>Besides the likelihood function, in a Bayesian approach we must define prior distributions for the semivariogram parameters. Here we combine the partial sill and nugget into <em>ratio of spatial dependence</em>, i.e. the proportion of the total sill attributable to the partial sill. This terminology is because the proportion attributable to the nugget has no spatial structure. For the ratio of spatial dependence <span class="math inline">\(\xi\)</span> and the distance parameter <span class="math inline">\(\phi\)</span> I chose uniform distributions as priors, with lower bounds equal to 0 and <span class="math inline">\(10^{-6}\)</span>, respectively, and upper bounds of one for the ratio of spatial dependence and 100 km for the range. A uniform distribution for the sill is not recommended <span class="citation">(<a href="#ref-Gelman2013" role="doc-biblioref">Gelman et al. 2013</a>)</span>. Instead, I assume a uniform distribution for the <em>inverse</em> of the sill, with a lower bound of <span class="math inline">\(10^{-6}\)</span> wt%<span class="math inline">\(^2\)</span>, and an upper bound of 2 wt%<span class="math inline">\(^2\)</span>.</p>
+<p>These priors can be defined by function <code>createUniformPrior</code> of package <strong>BayesianTools</strong> <span class="citation">(<a href="#ref-Hartig2018" role="doc-biblioref">Hartig, Minunno, and Paul 2018</a>)</span>. There are also functions to define a beta density function (commonly used as a prior for proportions) and a truncated normal distribution as a prior. The function <code>createBayesianSetup</code> is then used to define the setup of the MCMC sampling, specifying the likelihood function, the prior, and the vector with best prior estimates of the model parameters, specified with argument <code>best</code>. The maximum likelihood estimates computed in Section <a href="MBgridspacing.html#GridspacingOK">23.1</a> are used as starting values for the inverse of the sill parameter, the ratio of spatial dependence, and the range.</p>
+<div class="sourceCode" id="cb462"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb462-1"><a href="MBgridspacing.html#cb462-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BayesianTools)</span>
+<span id="cb462-2"><a href="MBgridspacing.html#cb462-2" aria-hidden="true" tabindex="-1"></a>priors <span class="ot">&lt;-</span> <span class="fu">createUniformPrior</span>(</span>
+<span id="cb462-3"><a href="MBgridspacing.html#cb462-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">1E-6</span>,<span class="dv">0</span>,<span class="fl">1E-6</span>), <span class="at">upper =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">100</span>))</span>
+<span id="cb462-4"><a href="MBgridspacing.html#cb462-4" aria-hidden="true" tabindex="-1"></a>sill_ML <span class="ot">&lt;-</span> vgm_ML<span class="sc">$</span>psill[<span class="dv">1</span>]<span class="sc">+</span>vgm_ML<span class="sc">$</span>psill[<span class="dv">2</span>]</span>
+<span id="cb462-5"><a href="MBgridspacing.html#cb462-5" aria-hidden="true" tabindex="-1"></a>thetas_ML <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span>sill_ML,vgm_ML<span class="sc">$</span>psill[<span class="dv">2</span>]<span class="sc">/</span>sill_ML,vgm_ML<span class="sc">$</span>range[<span class="dv">2</span>])</span>
+<span id="cb462-6"><a href="MBgridspacing.html#cb462-6" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="st">&quot;Sph&quot;</span></span>
+<span id="cb462-7"><a href="MBgridspacing.html#cb462-7" aria-hidden="true" tabindex="-1"></a>setup <span class="ot">&lt;-</span> <span class="fu">createBayesianSetup</span>(</span>
+<span id="cb462-8"><a href="MBgridspacing.html#cb462-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">likelihood=</span>ll, <span class="at">prior=</span>priors,</span>
+<span id="cb462-9"><a href="MBgridspacing.html#cb462-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">best=</span>thetas_ML, <span class="at">names=</span><span class="fu">c</span>(<span class="st">&quot;lambda&quot;</span>,<span class="st">&quot;xi&quot;</span>,<span class="st">&quot;range&quot;</span>))</span></code></pre></div>
+<p>A sample from the posterior distribution of the semivariogram parameters is then obtained with function <code>runMCMC</code>. Various sampling algorithms are implemented in package <strong>BayesianTools</strong>. The algorithm can be specified with argument <code>sampler</code>. I used the default sampler <code>Dezs</code>, which is based on differential evolution Markov chain <span class="citation">(<a href="#ref-terBraak2008" role="doc-biblioref">ter Braak and Vrugt 2008</a>)</span>. It is common not to use all sampled units, but to discard the units of the burn-in period that are possibly influenced by the initial arbitrary settings, and to thin the series of units after this period. The extraction of the ultimate sample is done with function <code>getSample</code>. Argument <code>start</code> specifies the unit where the extraction starts, and argument <code>numSamples</code> specifies how many units are selected through systematic sampling of the full MCMC sample. The alternative is to use argument <code>thin</code> which defines the thinning interval.</p>
+<div class="sourceCode" id="cb463"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb463-1"><a href="MBgridspacing.html#cb463-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb463-2"><a href="MBgridspacing.html#cb463-2" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">runMCMC</span>(setup, <span class="at">sampler=</span><span class="st">&quot;DEzs&quot;</span>)</span>
+<span id="cb463-3"><a href="MBgridspacing.html#cb463-3" aria-hidden="true" tabindex="-1"></a>mcmcsample <span class="ot">&lt;-</span> <span class="fu">getSample</span>(res, <span class="at">start=</span><span class="dv">1000</span>, <span class="at">numSamples=</span><span class="dv">1000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb463-4"><a href="MBgridspacing.html#cb463-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>(.)</span></code></pre></div>
+<p>Table <a href="MBgridspacing.html#tab:MCMCSampleVariogram">23.3</a> shows the first ten units of the MCMC sample from the posterior distribution of the semivariogram parameters.</p>
+<table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:MCMCSampleVariogram">Table 23.3: </span>First ten units of MCMC sample from posterior distribution of parameters of spherical semivariogram for SOM.
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Inverse of sill
+</th>
+<th style="text-align:right;">
+Ratio of spatial dependence
+</th>
+<th style="text-align:right;">
+Range
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.624
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+55.0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.828
+</td>
+<td style="text-align:right;">
+0.588
+</td>
+<td style="text-align:right;">
+33.3
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.769
+</td>
+<td style="text-align:right;">
+0.480
+</td>
+<td style="text-align:right;">
+51.9
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.624
+</td>
+<td style="text-align:right;">
+0.655
+</td>
+<td style="text-align:right;">
+55.0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.872
+</td>
+<td style="text-align:right;">
+0.538
+</td>
+<td style="text-align:right;">
+47.2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.559
+</td>
+<td style="text-align:right;">
+0.643
+</td>
+<td style="text-align:right;">
+60.6
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.605
+</td>
+<td style="text-align:right;">
+0.690
+</td>
+<td style="text-align:right;">
+66.8
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.764
+</td>
+<td style="text-align:right;">
+0.585
+</td>
+<td style="text-align:right;">
+42.7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.793
+</td>
+<td style="text-align:right;">
+0.608
+</td>
+<td style="text-align:right;">
+44.8
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.480
+</td>
+<td style="text-align:right;">
+0.741
+</td>
+<td style="text-align:right;">
+87.1
+</td>
+</tr>
+</tbody>
+</table>
+<p>The units of the MCMC sample (vectors with semivariogram parameters) are used one-by-one to compute the average of the kriging variances at the simple random sample of evaluation points.</p>
+<p>For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure <a href="MBgridspacing.html#fig:HistogramTolerableSpacing">23.5</a> shows that the grid spacing with the largest number of MCMC samples equals 8 km, which corresponds with the tolerable grid spacing derived above for ordinary kriging. For 165 units in the MCMC sample the tolerable grid spacing exceeds 12 km. However this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:HistogramTolerableSpacing"></span>
+<img src="SpatialSampling_files/figure-html/HistogramTolerableSpacing-1.png" alt="Histogram of tolerable grid spacings for a targeted MKV of 0.8." width="80%" />
+<p class="caption">
+Figure 23.5: Histogram of tolerable grid spacings for a targeted MKV of 0.8.
+</p>
+</div>
+<p>Finally, for each grid spacing, the proportion of MCMC samples with a MKV smaller or equal to the target MKV of 0.8 is computed. Figure <a href="MBgridspacing.html#fig:ProportionMCMCSamples">23.6</a> shows, for instance, that if we require a probability of 80% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is about 6.25 km. With a grid spacing of 8 km as determined before, the probability that the MKV exceeds 0.8 is about 57%.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:ProportionMCMCSamples"></span>
+<img src="SpatialSampling_files/figure-html/ProportionMCMCSamples-1.png" alt="Proportion of MCMC samples with a MKV smaller than or equal to a target MKV of 0.8." width="80%" />
+<p class="caption">
+Figure 23.6: Proportion of MCMC samples with a MKV smaller than or equal to a target MKV of 0.8.
+</p>
+</div>
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Gelman2013" class="csl-entry">
+Gelman, A., J. B. Carlin, H. S. Stern, D. B. Dunson, A. Vehtari, and D. B. Rubin. 2013. <em><span>Bayesian Data Analysis</span></em>. Third. CRC Press.
+</div>
+<div id="ref-Hartig2018" class="csl-entry">
+Hartig, F., F. Minunno, and S. Paul. 2018. <em><span class="nocase">BayesianTools: General-Purpose MCMC and SMC Samplers and Tools for Bayesian Statistics</span></em>. <a href="https://CRAN.R-project.org/package=BayesianTools">https://CRAN.R-project.org/package=BayesianTools</a>.
+</div>
+<div id="ref-Lark2017" class="csl-entry">
+Lark, R. M., E. M. Hamilton, B. Kaninga, K. K. Maseka, M. Mutondo, G. M. Sakala, and M. J. Watts. 2017. <span>“Planning Spatial Sampling of the Soil from an Uncertain Reconnaissance Variogram.”</span> <em>SOIL</em>.
+</div>
+<div id="ref-peb04" class="csl-entry">
+Pebesma, E. J. 2004. <span>“Multivariable Geostatistics in <span>S</span>: The Gstat Package.”</span> <em>Computers &amp; Geosciences</em> 30: 683–91.
+</div>
+<div id="ref-geoR" class="csl-entry">
+Ribeiro Jr, Paulo J., Peter J. Diggle, Martin Schlather, Roger Bivand, and Brian Ripley. 2020. <em><span class="nocase">geoR: Analysis of Geostatistical Data</span></em>. <a href="https://CRAN.R-project.org/package=geoR">https://CRAN.R-project.org/package=geoR</a>.
+</div>
+<div id="ref-terBraak2008" class="csl-entry">
+ter Braak, C. J. F., and J. A. Vrugt. 2008. <span>“Differential Evolution Markov Chain with Snooker Updater and Fewer Chains.”</span> <em>Statistics and Computing</em> 18: 435–46. <a href="https://doi.org/DOI 10.1007/s11222-008-9104-9">https://doi.org/DOI 10.1007/s11222-008-9104-9</a>.
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="26">
+<li id="fn26"><p>Spatial response surface sampling can also be considered as model-based sampling, especially when a model-based criterion is used, see Chapter @ref(SpatialResponseSurface.<a href="MBgridspacing.html#fnref26" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="Introkriging.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="MBSamplePattern.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/28-ModelBasedGridSpacing.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["SpatialSampling.pdf", "SpatialSampling.epub"],
+"search": {
+"engine": "lunr",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
