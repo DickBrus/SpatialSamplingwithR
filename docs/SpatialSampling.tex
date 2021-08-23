@@ -6,14 +6,13 @@
   10pt,
   b5paper,
 ]{book}
+\usepackage{amsmath,amssymb}
 \usepackage{lmodern}
-\usepackage{amsmath}
 \usepackage{ifxetex,ifluatex}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
-  \usepackage{amssymb}
 \else % if luatex or xetex
   \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
@@ -84,7 +83,7 @@
 \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
 \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\usepackage{longtable,booktabs}
+\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -250,7 +249,7 @@
 
 \title{Spatial sampling with R}
 \author{Dick J. Brus}
-\date{2021-08-18}
+\date{2021-08-20}
 
 \begin{document}
 \maketitle
@@ -280,12 +279,12 @@ The target group of this book are practitioners of sample surveys, as well as st
 A gitbook version of this book (html files) is available at \url{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master}. This is also the place where you can report errata and comment on text and/or \textbf{R} code.
 
 \hypertarget{acknowledgements}{%
-\chapter*{Acknowledgements}\label{acknowledgements}}
+\section*{Acknowledgements}\label{acknowledgements}}
 
 
 In 2006 our handbook Sampling for Natural Resource Monitoring (SNRM) was published \citep{gru06}. Soon after this milestone Jaap retired from Wageningen University and Research (WUR). Now I arrived in the aftermath of my career at WUR. Since a couple of years I was thinking of a revision of our handbook, to repair errors and to include new developments in sampling design. Then I realized that to increase the impact of our book, it might be a better idea to write a new book, showing with computer code how the sampling designs can be implemented, and how the sample data can be used in statistical inference.
 
-A nice side effect of the publication of SNRM was that I was asked to give sampling courses at many places in the world: China, Ethiopia, Uzbekistan, Australia and various countries in the European Union. I have very good memories of these courses, they made my life as a scientist very joyful. For these courses I wrote numerous scripts with computer code, using the popular programming language \textbf{R} \citep{R2020}. My naive idea was that all I had to do is to bundle these \textbf{R} scripts in an Rmarkdown document \citep{Xie2020}, and add some text explaining the theory and the \textbf{R} code. As usual, it appeared to be much more work than expected, but I am very happy that I was able to finish the job just before my retirement. My experience as a statistical consultant is that many researchers pay little attention to the method for data collection. Too many researchers start thinking when the data are there. Often I had to conclude that the way the data were collected was suboptimal, or even unsuitable for their aim. I hope that this new book may help researchers, practitioners and students to implement proper sampling designs, tailored at their problems at hand, so that valuable data are collected that can be used to answer the research questions.
+A nice side effect of the publication of SNRM was that I was asked to give sampling courses at many places in the world: China, Ethiopia, Uzbekistan, Australia and various countries in the European Union. I have very good memories of these courses, they made my life as a scientist very joyful. For these courses I wrote numerous scripts with computer code, using the popular programming language \textbf{R} \citep{R2020}. My naive idea was that all I had to do is to bundle these \textbf{R} scripts into an Rmarkdown document \citep{Xie2020}, and add some text explaining the theory and the \textbf{R} code. As usual, it appeared to be much more work than expected, but I am very happy that I was able to finish the job just before my retirement. My experience as a statistical consultant is that many researchers pay little attention to the method for data collection. Too many researchers start thinking when the data are there. Often I had to conclude that the way the data were collected was suboptimal, or even unsuitable for their aim. I hope that this new book may help researchers, practitioners and students to implement proper sampling designs, tailored at their problems at hand, so that valuable data are collected that can be used to answer the research questions.
 
 I could not have written this book without the help of many fellow researchers. First, I am very grateful for the support I received from the authors of various packages used in this book: Thomas Lumley for his support with package \textbf{survey}, Yves Tillé and Alina Gabriela Matei with package \textbf{sampling}, Anton Grafström with package \textbf{Balancedsampling}, Giulio Barcaroli and Marco Ballin with package \textbf{SamplingStrata}, Andreas Hill and Alex Massey with package \textbf{Forestinventory}, and Martins Liberts with package \textbf{surveyplanning}. No need to say that I am responsible for all shortcomings of the \textbf{R} code.
 
@@ -303,8 +302,8 @@ This book is about sampling for spatial \emph{surveys}. A survey\index{Survey} i
 
 If the whole population is observed this is referred to as a \emph{census}\index{Census}. In general we cannot afford such a census. Only some parts of the population are selected and properties of the study variable are observed (measured) on these selected parts only. Such a survey is referred to as a \emph{sample survey}\index{Sample survey}. The observations are subsequently used to derive characteristics of the whole population. For instance, to estimate the wood volume in a forest, we cannot afford to measure the wood volume of every tree in the forest. Instead, some trees are selected, the wood volume of these trees is measured, and based on these measurements the total wood volume in the forest is estimated.
 
-\hypertarget{basic-sampling-concepts}{%
-\section{Basic sampling concepts}\label{basic-sampling-concepts}}
+\hypertarget{BasicConcepts}{%
+\section{Basic sampling concepts}\label{BasicConcepts}}
 
 In this book the populations of interest have a spatial dimension. In selecting parts of such populations for observation we may account for the spatial coordinates of the parts, but this is not strictly needed. Examples of spatial sampling designs are designs selecting sampling units that are spread out throughout the study area, often leading to more precise estimates of the population mean or total.
 
@@ -346,7 +345,59 @@ If the elementary sampling units are points (sample support is a point), the pop
 \caption{Sampling of points from discretised infinite population. The grid cells are randomly selected with replacement. Each time a grid cell is selected a random point is selected random from that grid cell.}\label{fig:SamplingFromInfinitePopulation}
 \end{figure}
 
-The sample data are used to estimate characteristics of the whole population, e.g.~the population mean or total, some percentile (e.g.~the median or 90th percentile), or even the entire cumulative frequency distribution. In surveys of spatial populations the aim can also be to make a map of the population. As we have observed only a (small) part of the population, we are uncertain about the estimates and map. By using statistical methods we can quantify how uncertain we are about these results. In decision making it can be important to take this uncertainty into account. An example is a survey of water quality. In Europe the concentration levels of nutrients are regulated in the European Water Framework Directive. To test whether the mean concentration of a nutrient complies with its standard, it is important to account for the uncertainty in the estimated mean. When the estimated mean is just below the standard, there is still a large probability that the population mean exceeds the standard. This example shows that it is important to distinguish computing descriptive statistics from characterizing the population using the sample data. For instance, we can compute the sample mean (average of the sample data) without error, but if we use this sample mean as an estimate of the population mean, there is certainly an error in this estimate.
+\hypertarget{PopulationParameters}{%
+\subsection{Population parameters}\label{PopulationParameters}}
+
+The sample data are used to estimate characteristics of the whole population\index{Population parameter}, e.g.~the population mean\index{Population mean} or total\index{Population total}, some quantile e.g.~the median or 90th percentile, or even the entire cumulative frequency distribution.
+
+A finite population total is defined as
+
+\begin{equation}
+t(z) = \sum_{k \in \mathcal{U}} z_k = \sum_{k=1}^N z_k \;,
+\label{eq:FinitePopTotal}
+\end{equation}
+
+with \(N\) the number of population units, and \(z_k\) the study variable for population unit \(i\). A finite population mean is defined as a finite population total divided by \(N\). An infinite population total is defined as an integral of the study variable over the study area:
+
+\begin{equation}
+t(z) = \int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s}) \;\mathrm{d}\mathbf{s} \;.
+\label{eq:InfinitePopTotal}
+\end{equation}
+
+An infinite population mean is defined a finite population total divided by the area, \(A\), covered by the population.
+
+A finite population proportion\index{Population proportion} is defined as the population mean of an 0/1 indicator \(y\) with value 1 if the condition is satisfied, and 0 otherwise:
+
+\begin{equation}
+p=\frac{\sum_{k \in \mathcal{U}}y_k}{N} \;.
+\label{eq:PopulationProportion}
+\end{equation}
+
+A cumulative distribution function\index{Cumulative distribution function} (CDF) is defined as
+
+\begin{equation}
+F(z)=\sum_{x\leq z} f(x) \;,
+\label{eq:CDF}
+\end{equation}
+
+with \(f(x)\) the proportion of population units whose value for the study variable \(z\) equals \(x\). A population quantile\index{Population quantile}, for instance the population median or the population 90th percentile is defined as
+
+\begin{equation}
+q_p= F^{-1}(p) \;,
+\label{eq:PopQuantile}
+\end{equation}
+
+where \(p\) is a number between 0 and 1 (e.g 0.5 for the median, 0.9 for the 90th percentile), and \(F^{-1}(p)\) is the smallest value of the study variable \(z\) satisfying \(F(z)\geq p\).
+
+In surveys of spatial populations the aim can also be to make a map of the population.
+
+\hypertarget{descriptive-statistics-versus-inference-about-a-population}{%
+\subsection{Descriptive statistics versus inference about a population}\label{descriptive-statistics-versus-inference-about-a-population}}
+
+As we have observed only a (small) part of the population, we are uncertain about the population parameter estimates and map. By using statistical methods we can quantify how uncertain we are about these results. In decision making it can be important to take this uncertainty into account. An example is a survey of water quality. In Europe the concentration levels of nutrients are regulated in the European Water Framework Directive. To test whether the mean concentration of a nutrient complies with its standard, it is important to account for the uncertainty in the estimated mean. When the estimated mean is just below the standard, there is still a large probability that the population mean exceeds the standard. This example shows that it is important to distinguish computing descriptive statistics from characterizing the population using the sample data. For instance, we can compute the sample mean (average of the sample data) without error, but if we use this sample mean as an \emph{estimate} of the population mean, there is certainly an error in this estimate.
+
+\hypertarget{random-sampling-versus-probability-sampling}{%
+\subsection{Random sampling versus probability sampling}\label{random-sampling-versus-probability-sampling}}
 
 Many sampling methods are available. At the highest level one may distinguish random from non-random sampling methods. In random sampling a subset of population units is randomly selected from the population, using a random number generator. In non-random sampling no such (pseudo) random number generator is used. Examples of non-random sampling are convenience sampling e.g.~along roads, arbitrary sampling i.e.~sampling without a specific purpose in mind, and targeted sampling e.g.~at sites suspected of soil pollution.
 
@@ -558,14 +609,14 @@ For any probability sampling design the population total can be estimated as a w
 \label{eq:HTTotal}
 \end{equation}
 
-with \(\mathcal{S}\) the sample, \(z_k\) the observed study variable for unit \(k\), and \(w_k\) the design weight attached to unit \(k\):
+with \(\mathcal{S}\) the sample, \(z_k\) the observed study variable for unit \(k\), and \(w_k\) the design weight\index{Design weight} attached to unit \(k\):
 
 \begin{equation}
 w_k = \frac{1}{\pi_k}\;,
 \label{eq:designweight}
 \end{equation}
 
-with \(\pi_k\) the inclusion probability of unit \(k\). The estimator\index{Estimator}\footnote{An \emph{estimator} is not the same as an \emph{estimate}. An estimate is a single value obtained from a specific sample, whereas an estimator is a \emph{random variable} that is a function of the sample data, and has a probability distribution.} of Equation \eqref{eq:HTTotal} is referred to as the Horvitz-Thompson estimator\index{Horvitz-Thompson estimator} or \(\pi\) estimator\index{$\pi$ estimator}. The \(z_k/\pi_k\) values are referred to as the \(\pi\)-expanded values\index{$\pi$-expanded value}. The \(z\) value of unit \(k\) in the sample is multiplied by the reciprocal of the inclusion probability of that unit, and the sample sum of these \(\pi\)-expanded values is used as an estimator of the population total\index{Population total}. The inclusion probabilities are determined by the type of sampling design and the sample size.
+with \(\pi_k\) the inclusion probability of unit \(k\). The estimator\index{Estimator}\footnote{An \emph{estimator} is not the same as an \emph{estimate}. An estimate is a single value calculated from the data of a selected sample, whereas an estimator is a \emph{random variable} that is a function of the sample data, and has a probability distribution.} of Equation \eqref{eq:HTTotal} is referred to as the Horvitz-Thompson estimator\index{Horvitz-Thompson estimator|see {$\pi$ estimator}} or \(\pi\) estimator\index{$\pi$ estimator}. The \(z_k/\pi_k\) values are referred to as the \(\pi\)-expanded values\index{$\pi$-expanded value}. The \(z\) value of unit \(k\) in the sample is multiplied by the reciprocal of the inclusion probability of that unit, and the sample sum of these \(\pi\)-expanded values is used as an estimator of the population total\index{Population total}. The inclusion probabilities are determined by the type of sampling design and the sample size.
 
 For infinite populations\index{Population!infinite population}, think of points in a continuous population, the same estimator for the population total can be used, but special attention must then be paid to the inclusion probabilities. Suppose the infinite population is discretised by a fine grid of \(N\) nodes, and a simple random sample of \(n\) nodes is selected. The inclusion probabilities of the grid nodes is then \(n/N\). However, constraining the sampling points to the nodes of the discretisation grid is not needed, and even undesirable. To account for the infinite number of points in the population we may adopt a two-step approach, see Figure \ref{fig:SamplingFromInfinitePopulation}. In the first step \(n\) grid nodes are selected by simple random sampling \emph{with replacement}. In the second step one point is selected fully randomly from the grid cells with the grid nodes selected in the first step at their centers. If a grid cell is selected more than once, more points are selected in that grid cell. With this selection procedure the inclusion probability density\index{Inclusion probability density} is \(n/A\), with \(A\) the area of the study area. This inclusion probability density equals the expected number of sampling points per unit area, e.g.~the expected number of points per ha or per m\(^2\). The inclusion probability density can be interpreted as the sampling intensity\index{Sampling intensity}\footnote{The integral of the inclusion probability density over the study area equals the (expected) sample size \(n\), not one, and for that reason, to avoid confusion with a probability density, I prefer the term sampling intensity.}.
 
@@ -592,7 +643,7 @@ The \(\pi\) estimator can be worked out for the different types of sampling desi
 
 In sampling finite populations, units can be selected with or without replacement. In sampling with replacement after each draw the selected unit is replaced. As a consequence a unit can be selected more than once. Sampling with replacement is less efficient than sampling without replacement\index{Sampling without replacement}. If a population unit is selected in a given draw, there is no additional information in this unit if it is selected again. One reason that sampling with replacement\index{Sampling with replacement} is still used is that it is more easy to implement.
 
-The most common estimator used for sampling with replacement is the Hansen-Hurwitz estimator\index{Hansen-Hurwitz estimator}, referred to as the pwr estimator\index{pwr estimator} by \citet{sar92}. With direct unit sampling, i.e.~sampling of individual population units, the pwr estimator is
+The most common estimator used for sampling with replacement is the Hansen-Hurwitz estimator\index{Hansen-Hurwitz estimator|see {pwr estimator}}, referred to as the pwr estimator\index{pwr estimator} by \citet{sar92}. With direct unit sampling, i.e.~sampling of individual population units, the pwr estimator is
 
 \begin{equation}
 \hat{t}_{\text{pwr}}(z)=\frac{1}{n}\sum_{k \in \mathcal{S} } \frac{z_k}{p_k} \;,
@@ -601,7 +652,7 @@ The most common estimator used for sampling with replacement is the Hansen-Hurwi
 
 with \(p_k\) the \emph{draw-by-draw selection probability}\index{Draw-by-draw selection probability!of a population unit} of population unit \(k\). The acronym pwr stands for \(p\)-expanded with replacement. In the pwr estimator the observations on the selected units are expanded by the draw-by-draw selection probability. For instance, in simple random sampling with replacement the draw-by-draw selection probability \(p\) of each unit is \(1/N\). If we select only one unit \(k\), the population total can be estimated by the observation on that unit divided by \(p\), \(\hat{t}(z) = z_k/p_k = N z_k\). If we repeat this \(n\) times, this results in \(n\) estimated population totals. The pwr estimator is the average of these \(n\) elementary estimates. If a unit occurs multiple times in the sample \(\mathcal{S}\), this unit provides multiple elementary estimates of the population total.
 
-A sample obtained by sampling with replacement is referred to as an \emph{ordered sample}\index{Ordered sample} \citep{sar92}. Selecting the distinct units from this ordered sample results in the \emph{set-sample}\index{Set-sample}. Instead of using the ordered sample in the pwr estimator, we may use the set-sample in the \(\pi\) estimator. This requires computation of the inclusion probabilities for with replacement sampling. For instance, for simple random sampling with replacement the inclusion probability of each unit equals \(1-\left(1-\frac{1}{N}\right)^n\), with \(n\) the number of draws. This probability is smaller than \(n/N\), the inclusion probability for simple random sampling without replacement. There is no general rule which estimator is most accurate \citep{sar92}. In this book I will only use the pwr estimator for sampling with replacement.
+A sample obtained by sampling with replacement is referred to as an \emph{ordered sample}\index{Ordered sample} \citep{sar92}. Selecting the distinct units from this ordered sample results in the \emph{set-sample}\index{Set-sample}. Instead of using the ordered sample in the pwr estimator, we may use the set-sample in the \(\pi\) estimator. This requires computation of the inclusion probabilities for with replacement sampling. For instance, for simple random sampling with replacement the inclusion probability of each unit equals \(1-\left(1-\frac{1}{N}\right)^n\), with \(n\) the number of draws. This probability is smaller than \(n/N\), the inclusion probability for simple random sampling without replacement. There is no general rule which estimator is most accurate \citep{sar92}. In this book I only use the pwr estimator for sampling with replacement.
 
 Sampling with replacement can also be applied at the level of clusters of population units as in cluster random sampling and two-stage cluster random sampling. If the clusters are selected with probabilities proportional to their size and with replacement, estimation of the population mean, proportion or total is rather simple. This is a second reason why sampling with replacement can be attractive. With cluster sampling the pwr estimator is
 
@@ -799,9 +850,9 @@ If we would repeat the sampling an infinite number of times and make the width o
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Expectation (mean)\\
+  Expectation (mean).\\
 \item
-  Variance, referred to as the \emph{sampling} variance
+  Variance, referred to as the \emph{sampling} variance.
 \end{enumerate}
 
 When the expectation\index{Expectation of estimator} equals the population mean, there is no systematic error. The estimator is then said to be \emph{design-unbiased}\index{Design-unbiased} or \emph{p-unbiased}\index{p-unbiased}. In Chapter \ref{Introkriging} another type of unbiasedness is introduced, model-unbiasedness. The difference between design-unbiasedness and model-unbiasedness is explained in Chapter \ref{Approaches}. In following chapters of Part I unbiased means design-unbiased. Actually, it is not the estimator which is unbiased, but the combination of a sampling design and an estimator. For instance, with unequal probability sampling designs, the sample mean is not an unbiased estimator of the population mean, whereas it is in combination with an equal probability sampling design.
@@ -813,7 +864,7 @@ Do not confuse the \emph{population} variance and the \emph{sampling} variance. 
 \hypertarget{PopProportion}{%
 \subsection{Population proportion}\label{PopProportion}}
 
-In some cases one is interested in the proportion of the population (study area) satisfying a given condition. Think for instance of the proportion of trees in a forest infected by some disease, the proportion of an area (areal fraction) in which a soil pollutant exceeds some critical threshold, or the proportion of an area where habitat conditions are suitable for some endangered species. A proportion is defined as the population mean of an 0/1 indicator \(y\) with value 1 if the condition is satisfied, and 0 otherwise. For simple random sampling this population proportion\index{Population proportion} can be estimated by the same formula as for the mean (Equation \eqref{eq:HTMeanSI}):
+In some cases one is interested in the proportion of the population (study area) satisfying a given condition. Think for instance of the proportion of trees in a forest infected by some disease, the proportion of an area (areal fraction) in which a soil pollutant exceeds some critical threshold, or the proportion of an area where habitat conditions are suitable for some endangered species. Recall that a population proportion\index{Population proportion} is defined as the population mean of an 0/1 indicator \(y\) with value 1 if the condition is satisfied, and 0 otherwise (Section \ref(PopulationParameters)). For simple random sampling this population proportion can be estimated by the same formula as for the mean (Equation \eqref{eq:HTMeanSI}):
 
 \begin{equation}
 \hat{p} =  \frac{1}{n}\sum_{k \in \mathcal{S}} y_k \;.
@@ -823,16 +874,7 @@ In some cases one is interested in the proportion of the population (study area)
 \hypertarget{CDF}{%
 \subsection{Cumulative distribution function and quantiles}\label{CDF}}
 
-The (empirical) cumulative distribution function\index{Cumulative distribution function} (CDF) of a random variable \(Z\) is defined as
-
-\begin{equation}
-F_Z(z) = P(Z \leq z)\;,
-\label{eq:CDF}
-\end{equation}
-
-for all \(z \in \mathbb{R}\), where \(\mathbb{R}\) is the set of real numbers. In our case the random variable \(Z\) is the study variable of a randomly selected population unit (all units selected with equal probability).
-
-The CDF can be estimated by repeated application of the indicator technique described in the previous section on estimating a population proportion. A series of threshold values is chosen. Each threshold results in \(n\) indicator values having value 1 if the observed study variable \(z\) of unit \(k\) is smaller than or equal to the threshold, and 0 otherwise. These indicator values are then used to estimate the proportion of the population with a \(z\) value smaller than or equal to that threshold. For simple random sampling these proportions can be estimated with Equation \eqref{eq:HTProportionSI}. Commonly the unique \(z\) values in the sample are used as threshold values, leading to as many estimated population proportions as there are unique values in the sample.
+The population CDF is defined in Equation \eqref{eq:CDF}. A population CDF can be estimated by repeated application of the indicator technique described in the previous section on estimating a population proportion. A series of threshold values is chosen. Each threshold results in \(n\) indicator values having value 1 if the observed study variable \(z\) of unit \(k\) is smaller than or equal to the threshold, and 0 otherwise. These indicator values are then used to estimate the proportion of the population with a \(z\) value smaller than or equal to that threshold. For simple random sampling these proportions can be estimated with Equation \eqref{eq:HTProportionSI}. Commonly the unique \(z\) values in the sample are used as threshold values, leading to as many estimated population proportions as there are unique values in the sample.
 
 Figure \ref{fig:CDFSIVoorst} shows the estimated CDF, estimated from the simple random sample of 40 units from Voorst. The steps are at the unique values of SOM in the sample.
 
@@ -1884,7 +1926,7 @@ Stratum breaks are threshold values of the stratification variable elevation; th
 
 If we have multiple variables that are possibly related to the study variable, we may want to use them all or a subset of them as stratification variables. Using the quantitative variables one-by-one in \emph{cum-root-f} stratification, followed by overlaying the maps with univariate strata, may lead to numerous cross-classification strata.
 
-A simple solution is to construct homogeneous groups, referred to as clusters, of population units (raster cells). The units within a cluster are more similar to each other than to the units in other clusters. Various clustering techniques are available. Here I will use hard \(k\)-means.
+A simple solution is to construct homogeneous groups, referred to as clusters, of population units (raster cells). The units within a cluster are more similar to each other than to the units in other clusters. Various clustering techniques are available. Here I use hard \(k\)-means.
 
 This is illustrated again with the Xuancheng case study. Five quantitative covariates are used for constructing the strata. Besides elevation which was used as a single stratification variable in the previous section, now also temperature, slope, topographic wetness index (twi) and profile curvature are used to construct clusters that are used as strata in stratified simple random sampling. To speed up the computations a subgrid with a spacing of 400 m is selected, using function \texttt{spsample} of package \textbf{sp}, see Chapter \ref{SY} \citep{Bivand2013}.
 
@@ -4171,7 +4213,7 @@ with \(p\) the number of balancing variables, \(c_k\) a weight for unit \(k\) (s
 \label{eq:residualsBalanced}
 \end{equation}
 
-with \(\mathbf{x}_k\) a vector of length \(p\) with the balancing variables for unit \(k\), and \(\hat{\mathbf{b}}\) the estimated population regression coefficients\index{Population regression coefficients}, given by
+with \(\mathbf{x}_k\) a vector of length \(p\) with the balancing variables for unit \(k\), and \(\hat{\mathbf{b}}\) the estimated population regression coefficients\index{Population regression coefficient}, given by
 
 \begin{equation}
 \hat{\mathbf{b}} = \left(\sum_{k \in \mathcal{S}} c_k \frac{\mathbf{x}_k}{\pi_k} \frac{\mathbf{x}_k}{\pi_k}^{\text{T}} \right)^{-1} \sum_{k \in \mathcal{S}} c_k \frac{\mathbf{x}_k}{\pi_k} \frac{z_k}{\pi_k} \;.
@@ -7040,7 +7082,7 @@ The average coverage criterion (ACC) ensures that the average coverage of HPD in
 \hypertarget{worst-outcome-criterion}{%
 \subsubsection{Worst outcome criterion}\label{worst-outcome-criterion}}
 
-Neither ALC nor ACC guarantee that for a particular data set \(\mathbf{z}\) the criterion is met, as these two criteria are defined as averages over all possible data sets in \(\mathcal{Z}\). A more conservative sample size can be computed by requiring that for all data sets \(\mathcal{Z}\) both criteria are met. \citet{Joseph1997} modified this criterion by restricting the data sets to a subset \(\mathcal{W}\) of most likely data sets. The criterion thus obtained is referred to as the modified worst outcome criterion, but I will refer to it shortly as the worst outcome criterion (WOC). So the criterion is
+Neither ALC nor ACC guarantee that for a particular data set \(\mathbf{z}\) the criterion is met, as these two criteria are defined as averages over all possible data sets in \(\mathcal{Z}\). A more conservative sample size can be computed by requiring that for all data sets \(\mathcal{Z}\) both criteria are met. \citet{Joseph1997} modified this criterion by restricting the data sets to a subset \(\mathcal{W}\) of most likely data sets. The criterion thus obtained is referred to as the modified worst outcome criterion, but I refer to it shortly as the worst outcome criterion (WOC). So the criterion is
 
 \begin{equation}
 \mathrm{inf}_{\mathbf{z} \in \mathcal{W}} \left\{\int_v^{v+l(\mathbf{z},n)}f(\theta|\mathbf{z},n)\mathrm{d}\theta\right\} \geq 1- \alpha \;.
@@ -8218,7 +8260,7 @@ No covariates are used in the ratio estimator. If we wish to exploit covariates,
 
 When the domains are not well represented in the sample, the direct estimators from the previous section lead to large standard errors. In this situation we may try to increase the precision by also using observations from outside the domain. If we have covariates related to the study variable, we may exploit this ancillary information by fitting a regression model relating the study variable to the covariates, and using the fitted model to predict the study variable for all population units (nodes of discretisation grid), see Chapter \ref{Modelassisted}\index{Model-assisted approach}. However, for small domains\index{Small domain} we may have too few sampled units in that domain to fit a separate regression model. The alternative then is to use the entire sample to estimate the regression coefficients and to use this global regression model to estimate the means of the domains. This introduces a systematic error, a design-bias, in the estimator. However, this extra error is potentially outweighed by the reduction of the random error due to the use of the globally estimated regression coefficients. If one or more units are selected from a domain, the observations of the study variable on these units can be used to correct for the bias. This leads to the regression estimator for small domains\index{Regression estimator!for small domains}. In the absence of such data, the mean of the domain can still be estimated by the so-called synthetic estimator\index{Synthetic estimator}.
 
-There are quite a few packages for model-assisted estimation of means of small areas, the \textbf{maSAE} package \citep{maSAE}, the \textbf{JoSAE} package \citep{JoSAE}, the \textbf{rsae} package \citep{rsae}, and the \textbf{forestinventory} package \citep{Hill2021}. I will use package \textbf{forestinventory} for model-assisted estimation, and package \textbf{JoSAE} for model-based prediction of the means of small areas.
+There are quite a few packages for model-assisted estimation of means of small areas, the \textbf{maSAE} package \citep{maSAE}, the \textbf{JoSAE} package \citep{JoSAE}, the \textbf{rsae} package \citep{rsae}, and the \textbf{forestinventory} package \citep{Hill2021}. I use package \textbf{forestinventory} for model-assisted estimation, and package \textbf{JoSAE} for model-based prediction of the means of small areas.
 
 \hypertarget{RegressionestimatorSmallDomain}{%
 \subsection{Regression estimator}\label{RegressionestimatorSmallDomain}}
@@ -8275,7 +8317,7 @@ With simple random sampling the sampling variances and covariances of the estima
 
 Note that these sampling variances and covariances are not equal to the model variances and covariances of the estimated regression coefficients as obtained with multiple linear regression, using functions \texttt{lm} and \texttt{vcov}, see Chapter \ref{Approaches}.
 
-Function \texttt{twophase} of package \textbf{forestinventory} \citep{Hill2021} can be used to compute the regression estimator for small domains and its standard error. The name `twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \ref{Twophase}. This is not the case here. However, \citet{Hill2021} considers infinite populations, and they treat the grid that discretises this infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I will ignore this sampling error, it will be very small anyway, because the number of grid cells is very large. This can be done by assigning the domain means of the covariates to argument \texttt{exhaustive} of function \texttt{twophase}. Function \texttt{twophase} assumes simple random sampling (unless optional argument \texttt{cluster} is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package \texttt{survey} also a function \texttt{twophase} is defined, for that reason the name of the package is made explicit by \texttt{forestinventory::twophase}. With arguments \texttt{psmall=TRUE} and element \texttt{unbiased=TRUE} in the list \texttt{small\_area} the regression estimate is computed.
+Function \texttt{twophase} of package \textbf{forestinventory} \citep{Hill2021} can be used to compute the regression estimator for small domains and its standard error. The name `twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \ref{Twophase}. This is not the case here. However, \citet{Hill2021} considers infinite populations, and they treat the grid that discretises this infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large. This can be done by assigning the domain means of the covariates to argument \texttt{exhaustive} of function \texttt{twophase}. Function \texttt{twophase} assumes simple random sampling (unless optional argument \texttt{cluster} is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package \texttt{survey} also a function \texttt{twophase} is defined, for that reason the name of the package is made explicit by \texttt{forestinventory::twophase}. With arguments \texttt{psmall=TRUE} and element \texttt{unbiased=TRUE} in the list \texttt{small\_area} the regression estimate is computed.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -8934,6 +8976,55 @@ For all three small domains the average of the 10,000 estimated means is about e
 
 This simple approach is feasible because at the domain level the two merged samples are a simple random sample. This approach is also applicable when at the first sample is a stratified simple random sample from the entire population and the supplemental sample is a stratified simple random sample from a small domain, using as strata the intersections of the strata used in the first phase and that domain.
 
+\hypertarget{RepeatedSurveys}{%
+\chapter{Repeated sample surveys for monitoring population parameters}\label{RepeatedSurveys}}
+
+The previous chapters are all about sampling to estimate population parameters \emph{at a given time}. The survey is done in a relatively short period of time, so that we can safely assume that the study variable did not change during that period. This chapter is about repeating the sample survey two or more times, to estimate a temporal change in a population parameter\index{Repeated surveys for monitoring}. Sampling locations are selected by probability sampling, by any design type. Sampling times are not selected randomly, but purposively. For instance, to monitor the carbon stock in the soil of a country, we may decide to repeat the survey after five years, in the same season of the year as the first sampling round.
+
+\hypertarget{space-time-designs}{%
+\section{Space-time designs}\label{space-time-designs}}
+
+\citet{gru06} present an overview of space-time designs\index{Space-time design}. Four of these designs are schematically shown in Figure \ref{fig:SpaceTimeDesigns}. With repeated sampling in two-dimensional space there are three dimensions: two spatial and one time dimension. In Figure \ref{fig:SpaceTimeDesigns} the sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. Twenty sampling locations are selected by simple random sampling.
+
+In the static-synchronous design\index{Space-time design!static-synchronous design}, also referred to as a pure panel\index{Pure panel}, all sampling locations selected in the first survey are revisited in the subsequent surveys. On the contrary, in an independent synchronous design\index{Space-time design!independent-synchronous design}, in each survey a probability sample is selected independent from the samples selected in the previous surveys. The serially alternating design\index{Space-time design!serially alternating design} is a compromise between a static-synchronous and an independent synchronous design. The sample selected in the first survey is revisited in the third survey. The sample of the second survey is selected independently from the sample of the first survey, and these locations are revisited in the fourth survey. In this case the period of revisits is two, i.e.~two sampling intervals between successive surveys, but this can also be increased. For instance with a period of three, three samples are selected independently from each other for the first three surveys . The sample of the first survey is revisited in the fourth survey, et cetera. Another compromise design is a supplemented panel\index{Space-time design!supplemented panel design}. In this space-time design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. The samples of the subsequent surveys are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \ref{fig:SpaceTimeDesigns}, one-half of the sampling locations (ten locations) are fixed, i.e.~revisited in all surveys, but the proportion of fixed sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even optimised.
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{SpatialSampling_files/figure-latex/SpaceTimeDesigns-1} 
+
+}
+
+\caption{Space-time designs for monitoring population parameters. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemeneted panel design.}\label{fig:SpaceTimeDesigns}
+\end{figure}
+
+In Figure \ref{fig:SpaceTimeDesigns} the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the static-synchronous design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the independent synchronous design there are as many panels as there ar surveys. In the serially alternating design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS and SA) all sampling locations of a given survey are in the same panel. This is not the case in the supplemented panel design. In each survey two panels are observed, one panel of fixed sampling locations (pure panel part of sample), and another panel of swarming sampling locations. The concept of panels is needed hereafter in estimating space-time population parameters.
+
+\hypertarget{space-time-population-parameters}{%
+\section{Space-time population parameters}\label{space-time-population-parameters}}
+
+The data of repeated surveys can be used to estimate various parameters. In this chapter I show how to estimate the current population parameter, i.e.~the population parameter in the latest survey, the change of the population parameter between two surveys, and the temporal trend of the population parameter. The current population parameter need not be defined here as only one survey (one sampling time) is involved in this parameter, so that the definitions in Section \ref{PopulationParameters} are also relevant here. The change of the population parameter is defined as the population parameter at a given survey minus this parameter at an earlier survey. For instance, the change of an infinite population mean\index{Change of population mean (total)} is defined as
+
+\begin{equation}
+\bar{d}_{2,1}=\frac{1}{A}\left(\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_2) \;\mathrm{d}\mathbf{s}-\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_1) \;\mathrm{d}\mathbf{s}\right)\;,
+\label{eq:ChangePopMean}
+\end{equation}
+
+With more than two surveys an interesting population parameter is the \emph{average change} per time unit of the population parameter, referred to as the temporal trend\index{Temporal trend}. It is defined as a linear combination of the population parameters at the sampling times. For instance, the temporal trend of the population mean\index{Temporal trend !of population mean (total)} is defined as \citep{Breidt99}
+
+\begin{equation}
+b=\sum_{j=1}^r w_j \bar{z}_j \;,
+\label{eq:TrendofMean}
+\end{equation}
+
+with \(r\) the number of sampling times and \(\bar{z}_j\) the population mean at time \(t_j\), and weights \(w_j\) equal to
+
+\begin{equation}
+w_j = \frac{t_j-\bar{t}}{\sum_{j=1}^r(t_j-\bar{t})^2} \;,
+\label{eq:weightsTrendofMean}
+\end{equation}
+
+with \(\bar{t}\) the mean of the sampling times. Note that the temporal trend is defined as a parameter of a space-time population, not as a parameter of a time-series model.
+
 \hypertarget{part-sampling-for-mapping}{%
 \part{Sampling for mapping}\label{part-sampling-for-mapping}}
 
@@ -8967,7 +9058,7 @@ The optimised sample for mapping with a simple linear regression model contains 
 
 \begin{table}
 
-\caption{\label{tab:sebetas}Standard errors and determinant of variance-covariance matrix of estimated regression coefficients for simple random sample and optimised sample.}
+\caption{\label{tab:sebetas}Standard errors and determinant of variance-covariance matrix of estimated regression coefficients for simple random sample (SI) and optimised sample.}
 \centering
 \begin{tabular}[t]{lrrr}
 \toprule
@@ -9969,7 +10060,7 @@ The initial value of the geometric criterion is -5.185. The initial value for th
 The initial value of the model-based criterion is 0.118.
 
 The objective function defining the minimisation criterion is minimised with simulated annealing\index{Simulated annealing} (\citet{Kirkpatrick1983}, \citet{Aarts1987}). One sampling point is randomly selected, and replaced by another candidate sampling point from the same cluster. If the criterion of the new sample is smaller than that of the current sample, the new sample is accepted, if it is larger it is accepted with a probability that is a function of the change in the criterion (the larger the increase, the smaller the acceptance probability) and of an annealing parameter named the temperature (the higher the temperature, the larger the probability of accepting a new, poorer sample, given an increase of the criterion). See Section \ref{SSA} for a more detailed introduction to simulated annealing. The annealing functions for spatial response surface sampling are defined in \textbf{R} script
-\href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R}{AnnealingFunctions4SpatialResponseSurfaceSampling.R}\footnote{\url{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R}}.
+\href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R}{AnnealingFunctions4SpatialResponseSurfaceSampling.R}\footnote{\url{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R}}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -10110,11 +10201,11 @@ The candidate sampling units are selected in a double for-loop. The outer loop i
 
 \begin{figure}
 
-{\centering \includegraphics[width=0.8\linewidth]{SpatialSampling_files/figure-latex/unnamed-chunk-372-1} 
+{\centering \includegraphics[width=0.8\linewidth]{SpatialSampling_files/figure-latex/unnamed-chunk-373-1} 
 
 }
 
-\caption{Candidate sampling points for stratified CCRSD sampling, plotted on first principal component (PC1)}\label{fig:unnamed-chunk-372}
+\caption{Candidate sampling points for stratified CCRSD sampling, plotted on first principal component (PC1)}\label{fig:unnamed-chunk-373}
 \end{figure}
 
 As before, \texttt{dpnt} is used as a stratum identifier to subsample the candidate sampling units. Finally, the number of rows in the \texttt{data.frame} \texttt{ccd\_df} with the design points is doubled.
@@ -10157,7 +10248,7 @@ In the following chapters a geostatistical model\index{Geostatistical model}, i.
 
 In Chapter \ref{MBpredictionofDesignVariance} we have already seen how a geostatistical model can be used to optimise probability sampling designs for estimating the population mean or total. In the following chapters the focus is on mapping. A map of the study variable is obtained by predicting the study variable at the nodes of a fine discretisation grid. Spatial prediction using a geostatistical model is referred to as kriging \citep{webster2007}.
 
-With this prediction method besides a map of the kriging predictions, a map of the variance of the prediction error is obtained. I will show hereafter that this prediction error variance is not influenced by the values of the study variable at the sampling units. For that reason it is possible to search, before the start of the survey, for the sampling locations that lead to the minimum prediction error variance averaged over all nodes of a fine prediction grid, provided that the semivariogram is known.
+With this prediction method besides a map of the kriging predictions, a map of the variance of the prediction error is obtained. I show hereafter that this prediction error variance is not influenced by the values of the study variable at the sampling units. For that reason it is possible to search, before the start of the survey, for the sampling locations that lead to the minimum prediction error variance averaged over all nodes of a fine prediction grid, provided that the semivariogram is known.
 
 The kriging predictions and prediction error variances are derived from a statistical model of the spatial variation of the study variable. There are several versions of kriging, building on different models of the spatial variation. In \emph{ordinary kriging}\index{Kriging!ordinary kriging} (OK) it is assumed that the mean of the study variable is constant, i.e.~the same everywhere \citep{webster2007}:
 
@@ -10353,7 +10444,7 @@ c_0+c_1\; \mathrm{exp}(-h/\phi) &\,\,\,\text{if}\,\,\, h > 0 \\
 
 In an exponential semivariogram the semivariance goes asymptotically to a maximum; it never reaches it. In an exponential semivariogram the range parameter is replaced by the distance parameter. In an exponential semivariogram without nugget the semivariance at three times the distance parameter is at 95\% of the sill. Three times the distance parameter is referred to as the \emph{effective} or \emph{practical} range.
 
-In following chapters I will also use a correlogram\index{Correlogram}, which is a scaled covariance function, such that the sill of the correlogram equals one:
+In following chapters I also use a correlogram\index{Correlogram}, which is a scaled covariance function, such that the sill of the correlogram equals one:
 
 \begin{equation}
 \rho(\mathbf{h}) = \frac{C(\mathbf{h})}{\sigma^2} \;.
@@ -10619,9 +10710,9 @@ Kriging requires a semivariogram or covariance function as input for computing t
 \hypertarget{MoM}{%
 \subsection{Method-of-moments}\label{MoM}}
 
-With the method-of-moments approach the semivariogram is estimated in two steps. In the first step a sample semivariogram\index{Sample semivariogram}, also referred to as an experimental semivariogram\index{Experimental semivariogram}, is estimated. This is done by choosing a series of distance intervals (bins)\footnote{If a semivariogram in different directions is required we must also choose direction intervals}. For each distance interval all pairs of points with a separation distance\index{Separation distance} in that interval are identified. For each pair half the squared difference of the study variable is computed, and the average of these squared differences over all point pairs of that interval is computed. This average is the estimated semivariance of that distance interval. The estimated semivariances for all distance intervals are plotted against the average separation distances per distance interval. In the second step a permissible model is fitted to the sample semivariogram, using some form of weighted least squares. For details, see \citet{webster2007}.
+With the method-of-moments approach the semivariogram is estimated in two steps. In the first step a sample semivariogram\index{Sample semivariogram}, also referred to as an experimental semivariogram\index{Experimental semivariogram}, is estimated. This is done by choosing a series of distance intervals (bins)\footnote{If a semivariogram in different directions is required we must also choose direction intervals}. For each distance interval all pairs of points with a separation distance\index{Separation distance} in that interval are identified. For each pair half the squared difference of the study variable is computed, and the average of these squared differences over all point-pairs of that interval is computed. This average is the estimated semivariance of that distance interval. The estimated semivariances for all distance intervals are plotted against the average separation distances per distance interval. In the second step a permissible model is fitted to the sample semivariogram, using some form of weighted least squares. For details, see \citet{webster2007}.
 
-The next code chunk shows how this can be done in \textbf{R}. A simple random sample of 150 points is selected from the first simulated field shown in Figure \ref{fig:Twokrigingsimulations}. Function \texttt{variogram} of package \textbf{gstat} is then used to compute the sample semivariogram. Note that no distance intervals need be specified to function \texttt{variogram}. This can be done with argument \texttt{width} or argument \texttt{boundaries}. In their absence, the default value for the argument \texttt{width} is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with the argument \texttt{cutoff}. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point pairs, average separation distance and estimated semivariance in the first three columns.
+The next code chunk shows how this can be done in \textbf{R}. A simple random sample of 150 points is selected from the first simulated field shown in Figure \ref{fig:Twokrigingsimulations}. Function \texttt{variogram} of package \textbf{gstat} is then used to compute the sample semivariogram. Note that no distance intervals need be specified to function \texttt{variogram}. This can be done with argument \texttt{width} or argument \texttt{boundaries}. In their absence, the default value for the argument \texttt{width} is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with the argument \texttt{cutoff}. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point-pairs, average separation distance and estimated semivariance in the first three columns.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -11893,7 +11984,7 @@ Random sampling of the points is not strictly needed because a model-based appro
 \hypertarget{independent-sampling-of-pairs-of-points}{%
 \section{Independent sampling of pairs of points}\label{independent-sampling-of-pairs-of-points}}
 
-With the nested design the estimated semivariances for the different separation distances are not independent. Independent estimated semivariances can be obtained by independent random selection of pairs of points (IPP sampling)\index{Independent sampling of point-pairs}. Independence hear means design-independence, see Section @ref(i.i.d.). Similar to a regression model, a semivariogram can be defined as a superpopulation model or as a population model. In this section a semivariogram is defined at the population level. Such a semivariogram is referred to as a non-ergodic semivariogram\index{Non-ergodic semivariogram} or local semivariogram\index{Local semivariogram} \citep{bru94b}. For simple random sampling of point pairs\index{Simple random sampling of point-pairs} this method is very straightforward. For each separation distance a point pair is selected by first selecting fully randomly one point from the study area. Then the second point is randomly selected from the circle with the first point at its center and a radius equal to the chosen separation distance. If this second point is outside the study area, both points are ignored. This is repeated until we have the required point pairs for this separation distance.
+With the nested design the estimated semivariances for the different separation distances are not independent. Independent estimated semivariances can be obtained by independent random selection of pairs of points (IPP sampling)\index{Independent sampling of point-pairs}. Independence hear means design-independence, see Section @ref(i.i.d.). Similar to a regression model, a semivariogram can be defined as a superpopulation model or as a population model. In this section a semivariogram is defined at the population level. Such a semivariogram is referred to as a non-ergodic semivariogram\index{Non-ergodic semivariogram} or local semivariogram\index{Local semivariogram} \citep{bru94b}. For simple random sampling of pont-pairs\index{Simple random sampling of point-pairs|(} this method is very straightforward. For each separation distance a pont-pair is selected by first selecting fully randomly one point from the study area. Then the second point is randomly selected from the circle with the first point at its center and a radius equal to the chosen separation distance. If this second point is outside the study area, both points are ignored. This is repeated until we have the required pont-pairs for this separation distance.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -11926,7 +12017,7 @@ With the nested design the estimated semivariances for the different separation 
 \end{Highlighting}
 \end{Shaded}
 
-IPP sampling is illustrated below with the compound topographic index (cti) data of the Hunter Valley. Five separation distances are chosen, collected in numeric \texttt{h}, and for each distance \(n=100\) point pairs are selected by simple random sampling.
+IPP sampling is illustrated below with the compound topographic index (cti) data of the Hunter Valley. Five separation distances are chosen, collected in numeric \texttt{h}, and for each distance \(n=100\) pont-pairs are selected by simple random sampling.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -12005,7 +12096,7 @@ Figure \ref{fig:variogramCTI} shows the sample semivariogram and the fitted mode
 \caption{Sample semivariogram obtained by independent sampling of pairs of points, and fitted spherical model of cti in Hunter Valley.}\label{fig:variogramCTI}
 \end{figure}
 
-The covariances of the estimated semivariances at different separation distances are 0, as the point pairs are selected independently. This keeps estimation of the variances and covariances of the estimated semivariogram parameters simple. In the next code chunk this is done by bootstrapping\index{Bootstrap sample}. In bootstrapping for each separation distance a simple random sample \emph{with replacement} of point pairs is drawn. The number of draws is equal to the total number of pairs per separation distance. So a pair can be selected more than once. Every run of the bootstrap results in as many bootstrap samples as there are separation distances. These bootstrap samples are used to fit a semivariogram model. This whole procedure is repeated a large number of times, say \(R\) times, resulting in \(R\) vectors with model parameters, from which we can estimate the variances and covariances of the semivariogram parameters.
+The covariances of the estimated semivariances at different separation distances are 0, as the pont-pairs are selected independently. This keeps estimation of the variances and covariances of the estimated semivariogram parameters simple. In the next code chunk this is done by bootstrapping\index{Bootstrap sample}. In bootstrapping for each separation distance a simple random sample \emph{with replacement} of pont-pairs is drawn. The number of draws is equal to the total number of pairs per separation distance. So a pair can be selected more than once. Every run of the bootstrap results in as many bootstrap samples as there are separation distances. These bootstrap samples are used to fit a semivariogram model. This whole procedure is repeated a large number of times, say \(R\) times, resulting in \(R\) vectors with model parameters, from which we can estimate the variances and covariances of the semivariogram parameters.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -12042,7 +12133,7 @@ range  -44.600 66700.0 172.000
 nugget  -0.803   172.0   1.070
 \end{verbatim}
 
-Note the large variance for the range parameter (standard deviation is 215 m), and the negative covariance of the nugget and partial sill parameter (Pearson correlation coefficient is -0.62). Histograms of the three estimated semivariogram parameters are shown in Figure \ref{fig:histogramsvariogramparameters}.
+Note the large variance for the range parameter (standard deviation is 215 m), and the negative covariance of the nugget and partial sill parameter (Pearson correlation coefficient is -0.62). Histograms of the three estimated semivariogram parameters are shown in Figure \ref{fig:histogramsvariogramparameters}\index{Simple random sampling of point-pairs|}.
 
 \begin{figure}
 
@@ -12053,7 +12144,7 @@ Note the large variance for the range parameter (standard deviation is 215 m), a
 \caption{Sampling distribution of the estimators of the parameters of a spherical semivariogram with nugget of cti in Hunter Valley.}\label{fig:histogramsvariogramparameters}
 \end{figure}
 
-\citet{Marcelli2019} show how a probability sample of \emph{points} (instead of pairs of points) can be used in design-based estimation of the semivariogram. From the \(n\) randomly selected points \(n (n-1)/2\) point pairs are constructed, and the \emph{second-order inclusion probabilities} of these point pairs are used in estimating the mean semivariance for separation distance classes. This sampling strategy makes better use of the data, and therefore is potentially more efficient than IPP sampling.
+\citet{Marcelli2019} show how a probability sample of \emph{points} (instead of pairs of points) can be used in design-based estimation of the semivariogram. From the \(n\) randomly selected points \(n (n-1)/2\) pont-pairs are constructed, and the \emph{second-order inclusion probabilities} of these pont-pairs are used in estimating the mean semivariance for separation distance classes. This sampling strategy makes better use of the data, and therefore is potentially more efficient than IPP sampling.
 
 \hypertarget{exercises-30}{%
 \subsubsection*{Exercises}\label{exercises-30}}
@@ -12171,7 +12262,7 @@ Finally the Fisher information matrix is computed, using Equation \eqref{eq:Fish
 
 Note the large variance of the distance parameter, equal to 10958. The standard error of the ratio of spatial dependence parameter \(\xi\) equals 0.36 (the square root of the value in the first column and first row of the inverse Fisher information matrix), and for the distance parameter \(\phi\) it is 105 m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters as quantified by the logarithm of the determinant of the matrix equals 6.286. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation.
 
-Function \texttt{optimUSER} of package \textbf{spsann} can be used to search for the locations with the minimum value of logdet. This function has been used before in Section \ref{SamplePatternOK}. This package cannot deal with the 22124 candidate grid nodes of Hunter Valley, these are too many. I therefore selected a subgrid of 50 m \(\times\) 50 m. Note that the argument \texttt{cellsize} is also set to this number. The objective function \texttt{logdet} is defined in \textbf{R} script \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}{ObjectiveFunctions4MBSamplingVariogram.R}\footnote{\url{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}}. Argument \texttt{points} specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample by function \texttt{optimUSER}. Argument \texttt{model} specifies the model \emph{type}, using the characters of \textbf{gstat}. Argument \texttt{thetas} specifies the preliminary semivariogram parameter values. \texttt{Argument} perturbation specifies how much the variogram parameters are changed to compute the perturbed correlation matrices (\texttt{pA}) and the partial derivatives of the correlation matrix (\texttt{dA}).
+Function \texttt{optimUSER} of package \textbf{spsann} can be used to search for the locations with the minimum value of logdet. This function has been used before in Section \ref{SamplePatternOK}. This package cannot deal with the 22124 candidate grid nodes of Hunter Valley, these are too many. I therefore selected a subgrid of 50 m \(\times\) 50 m. Note that the argument \texttt{cellsize} is also set to this number. The objective function \texttt{logdet} is defined in \textbf{R} script \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}{ObjectiveFunctions4MBSamplingVariogram.R}\footnote{\url{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}}. Argument \texttt{points} specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample by function \texttt{optimUSER}. Argument \texttt{model} specifies the model \emph{type}, using the characters of \textbf{gstat}. Argument \texttt{thetas} specifies the preliminary semivariogram parameter values. \texttt{Argument} perturbation specifies how much the variogram parameters are changed to compute the perturbed correlation matrices (\texttt{pA}) and the partial derivatives of the correlation matrix (\texttt{dA}).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -12308,7 +12399,7 @@ Finally the partial derivatives of the kriging variance are used to approximate 
 
 For the simple random sample of 100 points the square root of the estimation variance of the kriging variance at the evaluation point equals 0.166. The mean kriging variance at these points equals 0.768, so the uncertainty about the kriging variance is substantial. Hereafter we will see how much this estimation variance can be reduced by optimising the sample with spatial simulated annealing.
 
-As for logdet the sample with minimum value for MVKV can be searched for using \textbf{spsann} function \texttt{optimUSER}. The objective function \texttt{varkrigvar} is defined in \textbf{R} script \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}{ObjectiveFunctions4MBSamplingVariogram.R}\footnote{\url{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}}. Argument \texttt{points} specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample. The argument \texttt{psample} is used to specify the sample used for prediction at the evaluation points (after the second round of sampling). The argument \texttt{esample} is to specify the sample with evaluation points, used to estimate the population mean of VKV.
+As for logdet the sample with minimum value for MVKV can be searched for using \textbf{spsann} function \texttt{optimUSER}. The objective function \texttt{varkrigvar} is defined in \textbf{R} script \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}{ObjectiveFunctions4MBSamplingVariogram.R}\footnote{\url{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}}. Argument \texttt{points} specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample. The argument \texttt{psample} is used to specify the sample used for prediction at the evaluation points (after the second round of sampling). The argument \texttt{esample} is to specify the sample with evaluation points, used to estimate the population mean of VKV.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -12378,7 +12469,7 @@ with \(V_\mathrm{OK}(\mathbf{s}_0)\) the ordinary kriging variance, see Equation
 \label{eq:tausq}
 \end{equation}
 
-with \(\frac{\partial \lambda} {\partial \theta_j}\) the vector of partial derivatives of the kriging weights with respect to the \(j\)th semivariogram parameter. As before in Chapter \ref{MBSamplePattern} I will use the mean of the AKV over the nodes of a prediction grid (evaluation grid) as a minimisation criterion (MAKV). The same criterion can also be used in situations where we have maps of covariates that we want to use in prediction. In that case the aim is to design a single sample that is used both for estimating the \emph{residual} semivariogram and for prediction by kriging with an external drift. The ordinary kriging variance \(V_\mathrm{OK}(\mathbf{s}_0)\) in Equation \eqref{eq:augmentedvar} is then replaced by the prediction error variance with kriging with an external drift \(V_\mathrm{KED}(\mathbf{s}_0)\), see Equation \eqref{eq:KEDvariance}.
+with \(\frac{\partial \lambda} {\partial \theta_j}\) the vector of partial derivatives of the kriging weights with respect to the \(j\)th semivariogram parameter. As before in Chapter \ref{MBSamplePattern} I use the mean of the AKV over the nodes of a prediction grid (evaluation grid) as a minimisation criterion (MAKV). The same criterion can also be used in situations where we have maps of covariates that we want to use in prediction. In that case the aim is to design a single sample that is used both for estimating the \emph{residual} semivariogram and for prediction by kriging with an external drift. The ordinary kriging variance \(V_\mathrm{OK}(\mathbf{s}_0)\) in Equation \eqref{eq:augmentedvar} is then replaced by the prediction error variance with kriging with an external drift \(V_\mathrm{KED}(\mathbf{s}_0)\), see Equation \eqref{eq:KEDvariance}.
 
 \citet{zhu06} proposed as a minimisation criterion a linear combination of the augmented kriging variance (Equation \eqref{eq:augmentedvar} and the estimation variance of the kriging variance (Equation \eqref{eq:varkrigingvar}, the \emph{estimation adjusted criterion}\index{Estimation adjusted criterion} (EAC):
 
@@ -12488,7 +12579,7 @@ The AKVs are computed by adding the kriging variances and the extra variances du
 
 For the spatial coverage sample of 90 points supplemented by a simple random sample of ten points MAKV equals 0.846, MEAC equals 0.896.
 
-The sample can be optimised with \textbf{spsann} function \texttt{optimUSER}. The argument \texttt{points} is a list containing a data frame (or matrix) with the coordinates of the fixed points (specified with sub-argument \texttt{fixed}), and an integer of the number of supplemental points of which the locations are optimised (specified with sub-argument \texttt{free}). Recall that an important difference with Section \ref{samplingforvariogram} is that the free and fixed sample are merged, and are used together, both for estimating the semivariogram and for prediction. The objective functions \texttt{augvar} and \texttt{EAC} are defined in \textbf{R} script \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}{ObjectiveFunctions4MBSamplingVariogram.R}\footnote{\url{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}}.
+The sample can be optimised with \textbf{spsann} function \texttt{optimUSER}. The argument \texttt{points} is a list containing a data frame (or matrix) with the coordinates of the fixed points (specified with sub-argument \texttt{fixed}), and an integer of the number of supplemental points of which the locations are optimised (specified with sub-argument \texttt{free}). Recall that an important difference with Section \ref{samplingforvariogram} is that the free and fixed sample are merged, and are used together, both for estimating the semivariogram and for prediction. The objective functions \texttt{augvar} and \texttt{EAC} are defined in \textbf{R} script \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}{ObjectiveFunctions4MBSamplingVariogram.R}\footnote{\url{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R}}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -13284,7 +13375,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \hypertarget{Answers}{%
 \chapter{Answers to exercises}\label{Answers}}
 
-\textbf{R} scripts of the answers to the exerxcises are available at the Exercises folder of the github repository of this book.
+\textbf{R} scripts of the answers to the exercises are available at the Exercises folder of the github repository of this book.
 
 \hypertarget{introduction-to-probability-sampling}{%
 \section*{Introduction to probability sampling}\label{introduction-to-probability-sampling}}
@@ -13321,7 +13412,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \item
   This is because in reality we do not know the values of \(z\) for all units in the population, so that we do not know the population variance \(S^2(z)\).\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/SI.R}{SI.R}. The 90\% confidence interval is less wide than the 95\% interval because a larger proportion of samples is allowed not to cover the population mean. The estimated standard error of the estimated total underestimates the true standard error because a constant bulk density is used. In reality this bulk density also varies.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SI.R}{SI.R}. The 90\% confidence interval is less wide than the 95\% interval because a larger proportion of samples is allowed not to cover the population mean. The estimated standard error of the estimated total underestimates the true standard error because a constant bulk density is used. In reality this bulk density also varies.
 \end{enumerate}
 
 \hypertarget{stratified-random-sampling}{%
@@ -13338,7 +13429,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \item
   The proof is as follows: \(\sum_N\pi_i=\sum_H \sum_{N_h}\pi_{hi}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n\).\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/STSIcumrootf.R}{STSIcumrootf.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R}{STSIcumrootf.R}.\\
 \item
   With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum.\\
 \item
@@ -13346,7 +13437,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \item
   With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: \(\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{sh} = \bar{z}_{\mathcal{S}}\) with \(\bar{z}_{\mathcal{S}h}\) the average of the sample from stratum \(h\) and \(\bar{z}_{s}\) the average of all sampling points.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/STSIgeostrata.R}{STSIgeostrata.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIgeostrata.R}{STSIgeostrata.R}.\\
 \end{enumerate}
 
 \begin{itemize}
@@ -13385,7 +13476,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/SY.R}{SY.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SY.R}{SY.R}.\\
 \item
   As can be seen on the plot, the spatial coverage of the study area by the two systematic random samples can be quite poor. So I expect that the variance of the estimator of the mean using the data of two systematic random samples of half the expected size, is larger than the variance of the estimator of the mean based on the data of a single systematic random sample.
 \end{enumerate}
@@ -13398,7 +13489,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/Cluster.R}{Cluster.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/Cluster.R}{Cluster.R}.\\
 \item
   I expect that the sampling variance is larger, as the sampling points are more spatially clustered.\\
 \item
@@ -13413,15 +13504,15 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
 \item
   With ten psu draws and four ssu's per psu draw (10 \(\times\) 4) the expected standard error of the estimated population is smaller than with 4 \(\times\) 10 because spatial clustering of the sampling points is less strong.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R}{TwoStage.R}.\\
 \item
   For the first variance component:
   \begin{eqnarray}
@@ -13449,7 +13540,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/pps.R}{pps.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/pps.R}{pps.R}.\\
 \item
   No this field should not be included in the poppy area of that sampling unit because this field is outside the target area.\\
 \item
@@ -13477,7 +13568,7 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/RegressionEstimator.R}{RegressionEstimator.R}. In reality we do not have a population fit of the regression coefficients, but these coefficients must be estimated from a sample. The estimated coefficients vary among the samples, which explains that the experimental variance, i.e.~the variance of the 10,000 regression estimates obtained by estimating the coefficients from the sample (Sample in plot) is larger than the variance as computed with the population fit of the regression coefficients (Exhaust in plot).
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator.R}{RegressionEstimator.R}. In reality we do not have a population fit of the regression coefficients, but these coefficients must be estimated from a sample. The estimated coefficients vary among the samples, which explains that the experimental variance, i.e.~the variance of the 10,000 regression estimates obtained by estimating the coefficients from the sample (Sample in Figure \ref{fig:RegressionEstimatorsAmazonia}) is larger than the variance as computed with the population fit of the regression coefficients (Exhaust in Figure \ref{fig:RegressionEstimatorsAmazonia}).
 \end{enumerate}
 
 The difference between the variance obtained with the population fit and the experimental variance (variance of regression estimator with sample fit of coefficients), as a proportion of the experimental variance, decreases with the sample size. The same holds for the difference between the approximated variance and the experimental variance. Both findings can be explained by the smaller contribution of the variance of the estimated regression coefficients to the variance of the regression estimator with the large sample size. The approximated variance does not account for the uncertainty about the regression coefficients, so that for all three sample sixes this approximated variance is about equal to the variance of the regression estimator as computed with the population fit of the regression coefficients.
@@ -13496,7 +13587,7 @@ The difference between the variance obtained with the population fit and the exp
 \setcounter{enumi}{1}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/RatioEstimator.R}{RatioEstimator.R}. The population fit of the slope coefficient of the homoscedastic model differs from the ratio of the population total of poppy area and population total of agricultural area. For the heteroscedastic model these are equal.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RatioEstimator.R}{RatioEstimator.R}. The population fit of the slope coefficient of the homoscedastic model differs from the ratio of the population total of poppy area and population total of agricultural area. For the heteroscedastic model these are equal.
 \end{enumerate}
 
 \hypertarget{two-phase-random-sampling}{%
@@ -13507,7 +13598,7 @@ The difference between the variance obtained with the population fit and the exp
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/RegressionEstimator_Twophase.R}{RegressionEstimator\_Twophase.R}. The variance of the regression estimator for two-phase sampling is considerably larger than the variance of the usual regression estimator (Figure \ref{fig:RegressionEstimatorsAmazonia}). The usual regression estimator exploits our knowledge of the population mean of the covariate SWIR2, whereas in two-phase sampling this population mean must be estimated from the first phase sample, introducing additional uncertainty.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator_Twophase.R}{RegressionEstimator\_Twophase.R}. The variance of the regression estimator for two-phase sampling is considerably larger than the variance of the usual regression estimator (Figure \ref{fig:RegressionEstimatorsAmazoniaTwoPhase}). The usual regression estimator exploits our knowledge of the population mean of the covariate SWIR2, whereas in two-phase sampling this population mean must be estimated from the first phase sample, introducing additional uncertainty.
 \end{enumerate}
 
 \begin{figure}
@@ -13529,7 +13620,7 @@ The average of the 10,000 approximated variances equals 40.5, which is considera
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/RequiredSampleSize_CIprop.R}{RequiredSampleSize\_CIprop.R}. The plots show that the required sample size decreases sharply with the length of the confidence interval, and increases with the anticipated proportion.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RequiredSampleSize_CIprop.R}{RequiredSampleSize\_CIprop.R}. The plots show that the required sample size decreases sharply with the length of the confidence interval, and increases with the anticipated proportion.
 \end{enumerate}
 
 A prior for the proportion is needed because the standard error of the estimated proportion is a function of the estimated proportion \(\hat{p}\) itself: \(se(\hat{p})=\frac{\sqrt{\hat{p}(1-\hat{p})}}{\sqrt{n}}\), so that the width of the confidence interval, computed with the normal approximation, is also a function of \(\hat{p}\), see Equation \eqref{eq:nreqwidthCIprop}.
@@ -13541,7 +13632,7 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \setcounter{enumi}{1}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/RequiredSampleSize_CIprop.R}{RequiredSampleSize\_CIprop.R}. There is no need to compute the required sample size for prior proportions \(> 0.5\), as this required sample size is symmetric. For instance, the required sample size for \(p^*=0.7\) is equal to the required sample size for \(p^*=0.3\).
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RequiredSampleSize_CIprop.R}{RequiredSampleSize\_CIprop.R}. There is no need to compute the required sample size for prior proportions \(> 0.5\), as this required sample size is symmetric. For instance, the required sample size for \(p^*=0.7\) is equal to the required sample size for \(p^*=0.3\).
 \end{enumerate}
 
 \hypertarget{model-based-prediction-of-sampling-variance-of-estimated-mean}{%
@@ -13552,11 +13643,11 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBSamplingVarSI_VariogramwithNugget.R}{MBSamplingVarSI\_VariogramwithNugget.R}. The predicted sampling variance is slightly larger compared to the predicted sampling variance obtained with the semivariogram without nugget (and the same sill and range), because 50\% of the spatial variation is not spatially structured, so that in sampling we can profit less from spatial correlation.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSamplingVarSI_VariogramwithNugget.R}{MBSamplingVarSI\_VariogramwithNugget.R}. The predicted sampling variance is slightly larger compared to the predicted sampling variance obtained with the semivariogram without nugget (and the same sill and range), because 50\% of the spatial variation is not spatially structured, so that in sampling we can profit less from spatial correlation.\\
 \item
-  See first part of \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBRequiredSampleSize_SIandSY.R}{MBRequiredSampleSize\_SIandSY.R}.\\
+  See first part of \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBRequiredSampleSize_SIandSY.R}{MBRequiredSampleSize\_SIandSY.R}.\\
 \item
-  See second part of \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBRequiredSampleSize_SIandSY.R}{MBRequiredSampleSize\_SIandSY.R}. The model-based prediction of the required sample size for simple random sampling is 34, and for systematic random sampling 13. The design effect at a sample size of 34 equals 0.185. The design effect decreases with the sample size, i.e.~the ratio of the variance with systematic random sampling to the variance with simple random sampling becomes smaller. This is because the larger the sample size, the more we profit from the spatial correlation.
+  See second part of \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBRequiredSampleSize_SIandSY.R}{MBRequiredSampleSize\_SIandSY.R}. The model-based prediction of the required sample size for simple random sampling is 34, and for systematic random sampling 13. The design effect at a sample size of 34 equals 0.185. The design effect decreases with the sample size, i.e.~the ratio of the variance with systematic random sampling to the variance with simple random sampling becomes smaller. This is because the larger the sample size, the more we profit from the spatial correlation.
 \end{enumerate}
 
 \hypertarget{regular-grid-sampling}{%
@@ -13567,7 +13658,7 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/SquareGrid.R}{SquareGrid.R}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SquareGrid.R}{SquareGrid.R}.
 \end{enumerate}
 
 \hypertarget{spatial-coverage-sampling}{%
@@ -13582,7 +13673,7 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \item
   If we are also interested in the accuracy of the estimated plot mean, the sampling units should be selected randomly from the subsquares (strata). Preferably at least two points should then be selected from the strata, see Section \ref{geostrata}.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/SpatialCoverageCircularPlot.R}{SpatialCoverageCircularPlot.R}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SpatialCoverageCircularPlot.R}{SpatialCoverageCircularPlot.R}.
 \end{enumerate}
 
 \begin{figure}
@@ -13591,7 +13682,7 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 
 }
 
-\caption{Spatial coverage samples of five and six points in a circular plot used as sampling unit in vegetation sampling.}\label{fig:SCScircularplot}
+\caption{Spatial coverage samples of five and six points in a circular plot used as sampling unit.}\label{fig:SCScircularplot}
 \end{figure}
 
 \begin{enumerate}
@@ -13601,7 +13692,7 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \item
   Bias can be avoided by constructing strata of equal size. Note that in this case we cannot use function \texttt{spsample} to select the centers of these geostrata. These centers must be computed by hand.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/SpatialInfill.R}{SpatialInfill.R}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SpatialInfill.R}{SpatialInfill.R}.
 \end{enumerate}
 
 \hypertarget{covariate-space-coverage-sampling}{%
@@ -13612,9 +13703,9 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/CovariateSpaceCoverage.R}{CovariateSpaceCoverageSample.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/CovariateSpaceCoverage.R}{CovariateSpaceCoverageSample.R}.\\
 \item
-  See second part of \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/CovariateSpaceCoverage.R}{CovariateSpaceCoverageSample.R}.
+  See second part of \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/CovariateSpaceCoverage.R}{CovariateSpaceCoverageSample.R}.
 \end{enumerate}
 
 \begin{figure}
@@ -13626,7 +13717,7 @@ For a prior proportion \(p^*\) of 0.5 the standard deviation \(\sqrt{p^*(1-p^*)}
 \caption{Covariate space coverage samples, plotted in a scatter diagram of cti against ndvi. Two samples are selected, one using cti and ndvi as covariates in clustering, and one using cti, ndvi and elevation as clustering variables.}\label{fig:CSCsamplingHunterValley}
 \end{figure}
 
-When using only two covariates, in a two-dimensional scatter diagram the sampling points are at the center of clearly visible clusters. Plotting the clusters in a two-dimensional scatter diagram yields pure clusters: a cluster does not contain any unit of a different cluster. However when more than two covariates are used in \(k\)-means clustering, in a two-dimensional scatter diagram the clusters are less clear because the multidimensional clusters are projected on a two-dimensional plane. In the case of the three covariates cti, ndvi, and elevation-m actually there is a third axis perpendicular to plane spanned by the covariates cti and ndvi. This also explains that with more than two covariates a sampling location (cluster center) can be quite close to another sampling location, after projection on a two-dimensional plane.
+When using only two covariates (cti and ndvi), in a two-dimensional scatter diagram the sampling points are at the center of clearly visible clusters (Figure \ref{fig:CSCsamplingHunterValley}). Plotting the clusters in a two-dimensional scatter diagram yields pure clusters: a cluster does not contain any unit of a different cluster. However when more than two covariates are used in \(k\)-means clustering, in a two-dimensional scatter diagram the clusters are less clear because the multidimensional clusters are projected on a two-dimensional plane. In the case of the three covariates cti, ndvi, and elevation-m actually there is a third axis perpendicular to plane spanned by the covariates cti and ndvi. This also explains that with more than two covariates a sampling location (cluster center) can be quite close to another sampling location, after projection on a two-dimensional plane.
 
 \hypertarget{conditioned-latin-hypercube-sampling}{%
 \section*{Conditioned Latin hypercube sampling}\label{conditioned-latin-hypercube-sampling}}
@@ -13636,7 +13727,7 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/cLHS.R}{cLHS.R}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R}{cLHS.R}.
 \end{enumerate}
 
 \begin{itemize}
@@ -13657,7 +13748,7 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBGridspacing_QOKV.Rmd}{MBGridspacing\_QOKV.Rmd}. For P95 the tolerable grid spacing is \(<\) 6 km, for P80 about 8.5 km and for P95 about 9 km.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_QOKV.Rmd}{MBGridspacing\_QOKV.Rmd}. For P95 the tolerable grid spacing is \(<\) 6 km, for P80 about 8.5 km and for P95 about 9 km (Figure \ref{fig:QuantilesOKVarGridspacing}).
 \end{enumerate}
 
 \begin{figure}
@@ -13674,7 +13765,7 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \setcounter{enumi}{1}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBGridspacing_MaxOKV.Rmd}{MBGridspacing\_Sensitivity.Rmd}. Increasing the nugget by 5\% and decreasing the range by 5\% yields a tolerable grid spacing that is smaller than with the original semivariogram (Figure \ref{fig:SensitivityMKV}). The tolerable grid spacings for a mean kriging variance of 0.85 are 10.6, 8.9 and 7.4 km for the original semivariogram, the semivariogram with increased nugget, and the semivariogram with the smaller range, respectively, leading to a required expected sample size of
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_MaxOKV.Rmd}{MBGridspacing\_Sensitivity.Rmd}. Increasing the nugget by 5\% and decreasing the range by 5\% yields a tolerable grid spacing that is smaller than with the original semivariogram (Figure \ref{fig:SensitivityMKV}). The tolerable grid spacings for a mean kriging variance of 0.85 are 10.6, 8.9 and 7.4 km for the original semivariogram, the semivariogram with increased nugget, and the semivariogram with the smaller range, respectively, leading to a required expected sample size of
   97, 137 and 200 points.
 \end{enumerate}
 
@@ -13694,7 +13785,7 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \item
   This variation can be explained by the random sample size (for a given spacing the number of points of a randomly selected grid inside the study area is not fixed but varies), and partly because the covariate values at the grid points vary, so that also the variance of the estimator of the mean differs among grid samples.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBGridspacing_MKEDV.Rmd}{MBGridspacing\_MKEDV.Rmd}. The tolerable grid spacing for a mean kriging variance is 82 m.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_MKEDV.Rmd}{MBGridspacing\_MKEDV.Rmd}. The tolerable grid spacing for a mean kriging variance is 82 m.
 \end{enumerate}
 
 \hypertarget{model-based-optimisation-of-sampling-pattern}{%
@@ -13705,7 +13796,7 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBSampleSquare_OK.Rmd}{MBSampleSquare\_OK.Rmd}. The optimised sample (Figure \ref{fig:SixteenPntsInSquare}) is most likely not the global optimum. The spatial pattern is somewhat irregular. I expect the optimal sampling locations to be close to the centers of the subsquares.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleSquare_OK.Rmd}{MBSampleSquare\_OK.Rmd}. The optimised sample (Figure \ref{fig:SixteenPntsInSquare}) is most likely not the global optimum. The spatial pattern is somewhat irregular. I expect the optimal sampling locations to be close to the centers of the subsquares.
 \end{enumerate}
 
 \begin{figure}
@@ -13722,7 +13813,7 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \setcounter{enumi}{1}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBSampleQOKV.Rmd}{MBSample\_QOKV.Rmd}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleQOKV.Rmd}{MBSample\_QOKV.Rmd}.
 \end{enumerate}
 
 \begin{figure}
@@ -13734,20 +13825,20 @@ When using only two covariates, in a two-dimensional scatter diagram the samplin
 \caption{Optimized sample pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECE as a minimisation criterion.}\label{fig:MBsampleP90OKVCRF}
 \end{figure}
 
-Compared with the optimised sample pattern using the mean ordinary kriging variance as a minimisation criterion (Figure \ref{fig:ModelBasedSampleOK}), the sampling locations are pushed more to the border of the study area. This is because with, for instance, a spatial coverage sample, near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced.
+Figure \ref{fig:MBsampleP90OKVCRF} shows the optimised sample pattern. Compared with the optimised sample pattern using the \emph{mean} ordinary kriging variance as a minimisation criterion (Figure \ref{fig:ModelBasedSampleOK}), the sampling locations are pushed more to the border of the study area. This is because with, for instance, a spatial coverage sample, near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \setcounter{enumi}{2}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBSampleSquare_KED.Rmd}{MBSampleSquare\_KED.Rmd}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleSquare_KED.Rmd}{MBSampleSquare\_KED.Rmd}. Figure \ref{fig:EffectNuggetOptimalSamplePattern} shows the optimised sample patterns with the three semivariograms.\\
 \end{enumerate}
 
 \begin{itemize}
 \tightlist
 \item
-  With zero nugget and a (partial) sill of 2 the sampling points are well spread throughout the area, see Figure below.\\
+  With zero nugget and a (partial) sill of 2 the sampling points are well spread throughout the area.\\
 \item
   With a nugget of 1.5 and a partial sill of 0.5 the sampling points are pushed toward the left and right side of the square. With this residual semivariogram the contribution of the variance of the predictor of the mean (as a proportion) to the total kriging variance is larger than with the previous semivariogram. By shifting the sampling points towards the left and right side of the square this contribution becomes smaller. At the same time the variance of the interpolation error increases as the spatial coverage becomes worse. The optimised sample is the right balance of these two variance components.\\
 \item
@@ -13771,11 +13862,11 @@ Compared with the optimised sample pattern using the mean ordinary kriging varia
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/NestedSampling_v1.R}{NestedSampling\_v1.R}.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/NestedSampling_v1.R}{NestedSampling\_v1.R}.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/SI_PointPairs.R}{SI\_PointPairs.R}. With the seed I used (314) the variance of the estimator of the range parameter is much smaller compared to that obtained with the larger separation distances.\\
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SI_PointPairs.R}{SI\_PointPairs.R}. With the seed I used (314) the variance of the estimator of the range parameter is much smaller compared to that obtained with the larger separation distances.\\
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBSample_SSA_logdet.R}{MBSample\_SSA\_logdet.R}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R}{MBSample\_SSA\_logdet.R}. Figure \ref{fig:MBSampleLogdetHV} shows the optimised sample pattern.
 \end{enumerate}
 
 \begin{figure}
@@ -13792,7 +13883,7 @@ Compared with the optimised sample pattern using the mean ordinary kriging varia
 \setcounter{enumi}{3}
 \tightlist
 \item
-  See \href{https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master/Exercises/MBSample_SSA_varkrigvar.R}{MBSample\_SSA\_varkrigvar.R}.
+  See \href{https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_varkrigvar.R}{MBSample\_SSA\_varkrigvar.R}. Figure \ref{fig:MBSampleVarkrigvarHV} shows the optimised sample pattern.
 \end{enumerate}
 
 \begin{figure}
@@ -13801,7 +13892,7 @@ Compared with the optimised sample pattern using the mean ordinary kriging varia
 
 }
 
-\caption{Model-based sample for estimating the semivariogram, using logdet as a minimisation criterion. The prior semivariogram used in optimising the sample pattern is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5.}\label{fig:MBSampleVarkrigvarHV}
+\caption{Model-based sample for estimating the semivariogram, using the variance of the kriging variance (VKV) as a minimisation criterion. The prior semivariogram used in optimising the sample pattern is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5.}\label{fig:MBSampleVarkrigvarHV}
 \end{figure}
 
 \hypertarget{sampling-for-validation}{%
