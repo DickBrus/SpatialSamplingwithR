@@ -4,13 +4,13 @@ The previous chapters are all about sampling to estimate population parameters *
 
 ## Space-time designs
 
-@gru06 present an overview of space-time designs\index{Space-time design}. Five of these designs are schematically shown in Figure \@ref(fig:SpaceTimeDesigns). With repeated sampling in two-dimensional space there are three dimensions: two spatial and one time dimension. In Figure  \@ref(fig:SpaceTimeDesigns) the sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. In Figure \@ref(fig:SpaceTimeDesigns) in each space-time design twenty sampling locations are selected by simple random sampling.
+@sch93 and @gru06 present an overview of space-time designs\index{Space-time design}. Five of these designs are schematically shown in Figure \@ref(fig:SpaceTimeDesigns). With repeated sampling in two-dimensional space there are three dimensions: two spatial and one time dimension. In Figure  \@ref(fig:SpaceTimeDesigns) the sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. In Figure \@ref(fig:SpaceTimeDesigns) in each space-time design twenty sampling locations are selected by simple random sampling.
 
-In the static-synchronous design\index{Space-time design!static-synchronous design}, also referred to as a pure panel\index{Pure panel}, all sampling locations selected in the first survey are revisited in the subsequent surveys. On the contrary, in an independent synchronous design\index{Space-time design!independent-synchronous design}, in each survey a probability sample is selected independent from the samples selected in the previous surveys. The serially alternating design\index{Space-time design!serially alternating design} is a compromise between a static-synchronous and an independent synchronous design. The sample selected in the first survey is revisited in the third survey. The sample of the second survey is selected independently from the sample of the first survey, and these locations are revisited in the fourth survey. In this case the period of revisits is two, i.e. two sampling intervals between successive surveys, but this can also be increased. For instance with a period of three, three samples are selected independently from each other for the first three surveys. The sample of the first survey is revisited in the fourth survey, et cetera.
+In the static-synchronous design\index{Space-time design!static-synchronous design}, referred to as a pure panel\index{Pure panel} by @ful99, all sampling locations selected in the first survey are revisited in the subsequent surveys. On the contrary, in an independent synchronous design\index{Space-time design!independent-synchronous design}, in each survey a probability sample is selected independent from the samples selected in the previous surveys. The serially alternating design\index{Space-time design!serially alternating design} is a compromise between a static-synchronous and an independent synchronous design. The sample selected in the first survey is revisited in the third survey. The sample of the second survey is selected independently from the sample of the first survey, and these locations are revisited in the fourth survey. In this case the period of revisits is two, i.e. two sampling intervals between successive surveys, but this can also be increased. For instance with a period of three, three samples are selected independently from each other for the first three surveys, and these samples are revisited in subsequent surveys.
 
-Two other compromise designs are a supplemented panel design\index{Space-time design!supplemented panel design} and a rotating panel design\index{Space-time design!rotating panel design}. In a supplemented panel design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. These are the permanent sampling locations observed in all subsequent surveys. These permanent sampling locations are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \@ref(fig:SpaceTimeDesigns), one-half of the sampling locations (ten locations) is permanent, i.e. revisited in all surveys, but the proportion of permanent sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even optimised. Also in a rotating panel design sampling units of the previous survey are partially replaced by new units. The difference with a supplemented panel design is that there are no permanent sampling units, observed in all surveys. All sampling units are sequentially rotated out and in again at the consecutive sampling times.
+Two other compromise designs are a supplemented panel design\index{Space-time design!supplemented panel design} and a rotating panel design\index{Space-time design!rotating panel design}. In a supplemented panel design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. These are the permanent sampling locations observed in all subsequent surveys. These permanent sampling locations are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \@ref(fig:SpaceTimeDesigns), one-half of the sampling locations (ten locations) is permanent, i.e. revisited in all surveys, but the proportion of permanent sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even can be optimised for estimating the current mean. Also in a rotating panel design sampling units of the previous survey are partially replaced by new units. The difference with a supplemented panel design is that there are no permanent sampling units, observed in all surveys. All sampling units are sequentially rotated out and in again at the subsequent sampling times.
 
-```{r SpaceTimeDesigns, echo=FALSE, out.width="100%", fig.cap="Space-time designs for monitoring population parameters. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemeneted panel design; RP: rotating panel design."}
+```{r SpaceTimeDesigns, echo=FALSE, out.width="100%", fig.asp=1, fig.cap="Space-time designs for monitoring population parameters. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemeneted panel design; RP: rotating panel design."}
 
 #pure panel
 set.seed(314)
@@ -18,7 +18,7 @@ Space <- sample.int(n=1000, size=20, replace=FALSE)
 mysampleSS <- data.frame(
     Space=rep(x=Space, times=4),
     Time=rep(x=c(1, 2, 3, 4), each=length(Space)),
-    Panel=rep("a", 4*length(Space)) #unselect this line for figure withpanelsaslegend
+    Panel=rep("a", 4*length(Space)) 
 )
 mysampleSS$design<-"SS"
 
@@ -103,20 +103,31 @@ ggplot(data=mysample) +
             scale_colour_viridis_d(name="panel")+
             facet_wrap(~design, nrow=3, ncol=2)
 ```
-In Figure \@ref(fig:SpaceTimeDesigns) the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the static-synchronous design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the independent synchronous design there are as many panels as there ar surveys. In the serially alternating design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS and SA) all sampling locations of a given survey are in the same panel. This is not the case in the supplemented panel design and rotating panel design. In Figure \@ref(fig:SpaceTimeDesigns) in each survey two panels are observed. In the supplemented panel there is one panel of permanent sampling locations (pure panel part of sample), and another panel of swarming sampling locations. In a rotating panel we may have more than two panels per survey. For instance, with three panels the locations of a panel are observed in three subsequent surveys, referred to as a 'in-for-three' rotational sample @McLaren2001. Also, in an independent synchronous, supplemented panel and rotating panel design we may decide after several surveys to stop selecting new sampling locations and to revisit existing locations. The concept of panels is needed hereafter in estimating space-time population parameters.  
+In Figure \@ref(fig:SpaceTimeDesigns) the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the static-synchronous design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the independent synchronous design there are as many panels as there ar surveys. In the serially alternating design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS and SA) all sampling locations of a given survey are in the same panel. This is not the case in the supplemented panel design and rotating panel design. In Figure \@ref(fig:SpaceTimeDesigns) in each survey two panels are observed. In the supplemented panel there is one panel of permanent sampling locations (pure panel part of sample), and another panel of swarming sampling locations. In Figure \@ref(fig:SpaceTimeDesigns) the sampling locations are observed in two consecutive surveys, however this number can be increased. This can be increased  a rotating panel we may observe  the sampling locations in more than two consecutive surveys. For instance, in an 'in-for-three' rotational sample [@McLaren2001] the sampling locations stay in the sample for three consecutive surveys. The number of panels per sampling time is then three. Also, similar to a serially alternating design, in an independent synchronous, supplemented panel and rotating panel design we may decide after several surveys to stop selecting new sampling locations and to revisit existing locations. The concept of panels is needed hereafter in estimating space-time population parameters.  
 
 ## Space-time population parameters
 
 The data of repeated surveys can be used to estimate various parameters of the space-time universe. I will focus on the mean as a parameter, but estimation of a total, think for instance of the total amount of greenhouse gas emissions from the soil in a given study area during some period,  or proportion is straightforward. In this chapter I show how to estimate the current mean, i.e. the population mean (spatial mean) in the last survey, the change of the mean between two surveys, the temporal trend of the mean and the space-time mean. The current mean need not be defined here as only one survey (one sampling time) is involved in this parameter, so that the definition in Section \@ref(PopulationParameters) is also relevant here.
 
-The change of the mean is defined as the spatial mean at a given survey minus this mean at an earlier survey\index{Change of spatial mean (total)}:
+The change of the mean is defined as the spatial mean at a given survey minus this mean at an earlier survey\index{Change of spatial mean (total)}. For infinite populations the definition is
 
 \begin{equation}
-\bar{d}_{2,1}=\frac{1}{A}\left(\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_2) \;\mathrm{d}\mathbf{s}-\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_1) \;\mathrm{d}\mathbf{s}\right)\;.
+\bar{d}_{ab}=\frac{1}{A}\left(\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_b) \;\mathrm{d}\mathbf{s}-\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_a) \;\mathrm{d}\mathbf{s}\right)=\frac{1}{A}\int_{\mathbf{s} \in \mathcal{U}}d_{ab}(\mathbf{s})\;,
 (\#eq:ChangePopMean)
 \end{equation}
 
-With more than two surveys an interesting population parameter is the *average change* per time unit of the mean, referred to as the temporal trend of the spatial mean\index{Temporal trend of spatial mean}. It is defined as a linear combination of the spatial means at the sampling times [@Breidt99]:
+with $d_{ab}(\mathbf{s})$ the change of the study variable in the period between time $t_a$ and $t_b$ at location $\mathbf{s}$.
+
+For finite populations the integrals are replaced by finite sums over all population units:
+
+\begin{equation}
+\bar{d}_{ab}=\frac{1}{N}\left(\sum_{k=1}^N z_k(t_b) -\sum_{k=1}^N z_k(t_a) \right)=\frac{1}{N}\sum_{k=1}^N d_{abk}\;,
+(\#eq:ChangePopMean)
+\end{equation}
+
+with $d_{a,b,k}$ the change of the study variable in the period between time $t_a$ and $t_b$ for unit $k$.
+
+With more than two surveys an interesting population parameter is the *average change per time unit* of the mean, referred to as the temporal trend of the spatial mean\index{Temporal trend of spatial mean}. It is defined as a linear combination of the spatial means at the sampling times [@Breidt99]:
 
 \begin{equation}
 b=\sum_{j=1}^r w_j \bar{z}_j \;,
@@ -133,16 +144,18 @@ w_j = \frac{t_j-\bar{t}}{\sum_{j=1}^r(t_j-\bar{t})^2} \;,
 with $\bar{t}$ the mean of the sampling times. Note that the temporal trend is defined as a parameter of a space-time population, not as a parameter of a time-series model.
 
 A space-time mean can be defined as the average of the spatial means at the sampling times. In this definition the temporal universe is discrete and restricted to the sampling times. The target universe consists of a finite set of spatial populations:
-$$
+
+\begin{equation}
 \bar{\bar{z}}_\mathcal{U}=\frac{1}{r} \sum_{j=1}^r \bar{z_j}
 (\#eq:SpacetimeMeanDiscrete)
-$$
+\end{equation}
+
 Alternatively, a space-time mean for a continuous temporal universe is defined as
 
-$$
+\begin{equation}
 \bar{\bar{z}}_\mathcal{U} = \frac{1}{T}\int_{t \in \mathcal{T}}\bar{z}_t\;,
 (\#eq:SpacetimeMeanContinuous)
-$$
+\end{equation}
 
 with $\mathcal{T}$ and $\mathcal{A}$ the temporal and spatial universe, respectively, $T$ the length of the monitoring period, $A$ the area of the study region, $z_{\mathbf{s},t}$ the study variable at location $\mathbf{s}$ and time $t$, and $\bar{z}_t$ the spatial mean at time $t$.
 
@@ -161,7 +174,7 @@ The essence of the estimation method described in this section is to estimate th
 
 with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_r)$ at the $r$ sampling times, $\mathbf{X}$ the ($P \times r$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\boldsymbol{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\boldsymbol{\epsilon}$ is a vector with zeroes.  
 
-With an independent synchronous, static synchronous and serially alternating design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. For the supplemented panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix $\mathbf{X}$ is
+With an independent synchronous, static-synchronous and serially alternating design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. For the supplemented panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix $\mathbf{X}$ is
 
 \begin{eqnarray}
 \left[
@@ -177,7 +190,7 @@ With an independent synchronous, static synchronous and serially alternating des
 \end{array} \right]\nonumber
 \end{eqnarray}
 
-The first four rows of this matrix are associated with the elementary estimates from panel a (the panel with permanent sampling locations), the remaining rows with the elementary estimates from the other for panels (independent synchronous subsamples). For the rotating panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix equals
+The first four rows of this matrix are associated with the elementary estimates from panel a (the panel with permanent sampling locations), the remaining rows with the elementary estimates from the other four panels (independent synchronous subsamples). For the rotating panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix equals
 
 \begin{eqnarray}
 \left[
@@ -203,7 +216,6 @@ The first two rows correspond with the two elementary estimates at time $t_1$ fr
 To define matrix $\mathbf{C}$ for the supplemented panel design in Figure \@ref(fig:SpaceTimeDesigns), let $\hat{\bar{z}}_{jp}$ denote the estimated mean at time $t_j, j = 1,2,3,4$ in subsample $p, p \in (\mathrm{SS},\mathrm{IS})$, with $\mathrm{SS}$ the static-synchronous subsample and $\mathrm{IS}$ the independent synchronous subsample. If the eight elementary estimates in $\hat{\mathbf{z}}$ are ordered as ($\hat{\bar{z}}_{1a},\hat{\bar{z}}_{2a},\hat{\bar{z}}_{3a},\hat{\bar{z}}_{4a},\hat{\bar{z}}_{1b},\hat{\bar{z}}_{2c},\hat{\bar{z}}_{3d},\hat{\bar{z}}_{4e}$), the sampling variance-covariance matrix $\mathbf{C}$ equals
 
 \begin{eqnarray}
-$$
 \left[
 \begin{array}{cccccccc}
 V_{1a} &C_{1,2} &C_{1,3} &C_{1,4} &0 &0 &0 &0 \\
@@ -216,14 +228,12 @@ C_{4,1} &C_{4,2} &C_{4,3} &V_{4a} &0 &0 &0 &0 \\
 0 &0 &0 &0 &0 &0 &0 &V_{4e}
 \end{array}
 \right]\nonumber
-$$
 \end{eqnarray}
 
-The sampling covariances of the elementary estimates of the independent synchronous subsamples are 0 because these are estimated from independently selected samples (off-diagonal elements in lower-right ($4 \times 4$) submatrix). Also the covariances of the elementary estimates from the static-synchronous subsample and independent synchronous subsamples are 0 for the same reason (upper-right submatrix and lower-left submatrix). The covariances of the four elementary estimates from the static synchronous subsample are not zero because these are estimated from the same set of sampling locations.
+The sampling covariances of the elementary estimates of the independent synchronous subsamples are 0 because these are estimated from independently selected samples (off-diagonal elements in lower-right ($4 \times 4$) submatrix). Also the covariances of the elementary estimates from the static-synchronous subsample and independent synchronous subsamples are 0 for the same reason (upper-right submatrix and lower-left submatrix). The covariances of the four elementary estimates from the static-synchronous subsample are not zero because these are estimated from the same set of sampling locations.
 
 Ordering the elementary estimates of a the rotating panel sample by the sampling times, the variance-covariance matrix equals
 \begin{eqnarray}
-$$
 \left[
 \begin{array}{cccccccc}
 V_{1a} &0 &0 &0 &0 &0 &0 &0 \\
@@ -236,7 +246,6 @@ V_{1a} &0 &0 &0 &0 &0 &0 &0 \\
 0 &0 &0 &0 &0 &0 &0 &V_{4e}
 \end{array}
 \right]\nonumber
-$$
 \end{eqnarray}
 
 Only the elementary estimates estimated from the same panel are correlated, for instance the elementary estimates of the spatial means at times $t_1$ and $t_2), estimated from panel b.
@@ -244,7 +253,6 @@ Only the elementary estimates estimated from the same panel are correlated, for 
 For the serially alternating design of Figure \@ref(fig:SpaceTimeDesigns) the sampling variance-covariance matrix of the elementary estimates equals (there is only one elementary estimate per time)
 
 \begin{eqnarray}
-$$
 \left[
 \begin{array}{cccc}
 V_{1} &0 &C_{1,3} &0  \\
@@ -253,43 +261,43 @@ C_{3,1} &0 &V_{3} &0  \\
 0 &C_{4,2} &0 &V_{4}  
 \end{array}
 \right]\nonumber
-$$
 \end{eqnarray}
 
-In practice matrix $\mathbf{C}$ in Equations \@ref(eq:DBGLS and \@ref(eq:CovGLS) is unknown, and is replaced by a matrix with design-based estimates of the sampling variances and covariances of the elementary estimators. With simple random sampling (with replacement) in space the sampling variance of an elementary estimator of the spatial mean at a given time can be estimated by Equation \@ref(eq:EstVarMeanSIR). The sampling covariance of the elementary estimators of the spatial means at two sampling times, using the data of the same panel, can be estimated by
+In practice matrix $\mathbf{C}$ in Equations \@ref(eq:DBGLS and \@ref(eq:CovGLS) is unknown, and is replaced by a matrix with design-based estimates of the sampling variances and covariances of the elementary estimators. With simple random sampling with replacement from finite populations and simple random sampling of infinite populations the sampling variance of an elementary estimator of the spatial mean at a given time can be estimated by Equation \@ref(eq:EstVarMeanSIR). The sampling covariance of the elementary estimators of the spatial means at two sampling times, using the data of the same panel, can be estimated by
 
-$$
-\widehat{C}_{jk} =  \frac{\widehat{S^2}_{jk}}{m} \;,
+\begin{equation}
+\widehat{C}_{ab} =  \frac{\widehat{S^2}_{ab}}{m} \;,
 (\#eq:covartwoelementaryestimates)
-$$
+\end{equation}
 
-with $m$ the number of sampling locations in the panel, and $\frac{\widehat{S^2}_{jk}}$ the estimated covariance of the study variable at times $t_j$ and $t_k$, estimated by
 
-$$
-\widehat{S^2}_{jk} = \frac{1}{m-1}\sum_{u=1}^m (z_{jup}-\hat{\bar{z}}_{jp})(z_{kup}-\hat{\bar{z}}_{kp}) 
+with $m$ the number of sampling locations in the panel, and $\frac{\widehat{S^2}_{ab}}$ the estimated covariance of the study variable at times $t_a$ and $t_b$, estimated by
+
+\begin{equation}
+\widehat{S^2}_{ab} = \frac{1}{m-1}\sum_{k=1}^m (z_{apk}-\hat{\bar{z}}_{ap})(z_{bpk}-\hat{\bar{z}}_{bp}) 
 (\#eq:)
-$$
+\end{equation}
 
-with $z_{jup}$ the study variable of unit $u$ in panel $p$ at time $t_j$, and \hat{\bar{z}}_{jp}$ the spatial mean at time $t_j$ as estimated from panel $p$. 
+with $z_{apk}$ the study variable of unit $k$ in panel $p$ at time $t_a$, and \hat{\bar{z}}_{ap}$ the spatial mean at time $t_a$ as estimated from panel $p$.
 
-The sampling variances and covariances of the estimated spatial means at the $r$ sampling times can be estimated by
+The sampling variances and covariances of the GLS estimated spatial means at the $r$ sampling times can be estimated by
 
 \begin{equation}
 \mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}}) = (\mathbf{X}^{\text{T}}\widehat{\mathbf{C}}^{-1}\mathbf{X})^{-1}
 (\#eq:CovGLS) \;.
 \end{equation}
 
-Given the design-based GLS estimates of the spatial means at the different times it is an easy job to compute the change of the mean between two surveys, the temporal trend of the mean and the space-time mean. 
+Given the design-based GLS estimates of the spatial means at the different times it is an easy job to compute the estimated change of the mean between two surveys, the estimated temporal trend of the mean and the estimated space-time mean. 
 
 ### Current mean
 
-As explained above, with an independent synchronous, static synchronous and serially alternating design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. From this it follows that for these space-time designs $\hat{\mathbf{z}}_{\mathrm{GLS}}=\hat{\mathbf{z}}$, see Equation. (\@ref(eq:DBGLS)), and $\mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}})=\mbox{Cov}(\hat{\mathbf{z}})=\mathbf{C}$. In words, the GLS estimator equals the elementary estimator, and the variance-covariance matrix of the GLS estimator equals the variance-covariance matrix of the elementary estimators.
+As explained above, with an independent synchronous, static-synchronous and serially alternating design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. From this it follows that for these space-time designs $\hat{\mathbf{z}}_{\mathrm{GLS}}=\hat{\mathbf{z}}$, see Equation. (\@ref(eq:DBGLS)), and $\mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}})=\mbox{Cov}(\hat{\mathbf{z}})=\mathbf{C}$. In words, the GLS estimator of the spatial mean at a given time equals the elementary estimator (the usual design-based estimator) of the mean at that time, and the variance-covariance matrix of the GLS estimators of the spatial means equals the variance-covariance matrix of the elementary estimators.
 
-With supplemented panel and a rotating panel sampling in space-time there is partial overlap between the samples at the different times, and so the samples at the previous times can be used to increase the precision of the estimated mean at the last time (current mean). The current mean is simply the last element in $\hat{\mathbf{z}}_{\mathrm{GLS}}$. The estimated sampling variance of the estimated current mean is the element in the final row and final column of sampling variance-covariance matrix  of the estimated spatial means (Equation \@ref(eq:CovGLS)).
+With supplemented panel and a rotating panel sampling in space-time there is partial overlap between the samples at the different times, and so the samples at the previous times can be used to increase the precision of the estimated mean at the last time (current mean). The estimated current mean is simply the last element in $\hat{\mathbf{z}}_{\mathrm{GLS}}$. The estimated sampling variance of the estimated current mean is the element in the final row and final column of the sampling variance-covariance matrix of the estimated spatial means (Equation \@ref(eq:CovGLS)). These two space-time designs with partial replacement of sampling locations may yield a more precise estimate of the current mean than the other three space-time designs. @coc77 presents a formula for the optimal matching proportion, but this formula is not for the GLS estimator of the current mean and for two sampling times, see also equation (15.15) in @gru06.
 
 ### Change of the spatial mean
 
-The change of the spatial mean between two sampling times can simply be estimated by subtracting the (GLS) estimated spatial means at these two times. The variance of the estimated change can be estimated by the sum of the estimated variances of the spatial means at the two sampling times, minus two times the estimated covariance of the two estimated spatial means. The covariance is maximal when all sampling locations are revisited, leading to the most precise estimate of the change of the spatial mean. In a supplemented panel and rotating panel design the covariance of the two estimated spatial means is smaller (Equation \@ref(eq:covartwoelementaryestimates)), and so the variance of the estimated change is larger.  
+The change of the spatial mean between two sampling times can simply be estimated by subtracting the estimated spatial means at these two times. with an independent synchronous, static-synchronous and serially alternating design these means are estimated by the usual design-based estimators. With a supplemented panel and rotating panel design the two spatial means are estimated by the GLS estimators. The variance of the estimator of the change can be estimated by the sum of the estimated variances of the spatial means at the two sampling times, minus two times the estimated covariance of the two estimated spatial means. The covariance is maximal when all sampling locations are revisited, leading to the most precise estimate of the change of the spatial mean. In a supplemented panel and rotating panel design the covariance of the two estimated spatial means is smaller (Equation \@ref(eq:covartwoelementaryestimates)), and so the variance of the estimated change is larger.  
 
 ### Trend of the spatial mean
 
@@ -307,14 +315,250 @@ The sampling variance of the estimated trend can be estimated by
 (\#eq:VarEstimatorTrendofMean) \;.
 \end{equation}
 
+@Brus2011 compared the space-time designs for estimating the temporal trend of the spatial means, under a first order autoregressive time-series model of the spatial means. The static-synchronous design performed best when the correlation is strong, $> 0.8$. What is the best design depends amongst others on the strength of the correlation and the number of sampling times. A safe choice is a serially alternating design. With strong positive correlation, say $>0.9$ the static-synchronous design can be a good choice, but remarkably for weak positive correlation this design performed relatively poor.
+
+For an application of a supplemented panel design to estimate the trend of the areal fractions of several vegetation types, see @Brus2014c. Sampling locations are selected by a design that spreads the locations evenly over the study area (systematic unaligned sampling, which is a modified version of systematic sampling). 
+
 ### Space-time mean
 
-The space-time mean as defined in Equation \@ref(eq:SpacetimeMeanDiscrete) can be estimated by the average of the (GLS) estimated spatial means at the $r$ sampling times. The variance of this estimator can be estimated by Equation \@ref(eq:VarEstimatorTrendofMean) using constant weights, equal to $1/r$, for the $r$ estimators of the mean. 
+The space-time mean as defined in Equation \@ref(eq:SpacetimeMeanDiscrete) can be estimated by the average of the (GLS) estimated spatial means at the $r$ sampling times. The variance of this estimator can be estimated by Equation \@ref(eq:VarEstimatorTrendofMean) using constant weights, equal to $1/r$, for the $r$ estimators of the mean. An independent synchronous design yields the most precise estimate of the space-time mean compared to the other space-time designs when the correlation of collocated measurements of the study variable is positive [@coc77]. With the other space-time designs there is some redundant information due to the revisits, 
 
+For design-based estimation of the space-time mean of a continuous temporal universe as defined in Equation \@ref(eq:SpacetimeMeanContinuous) both the sampling locations and the sampling times must be selected by probability sampling. Figure \@ref(fig:SpaceTimeDesignProb) shows a static-synchronous sample and an independent synchronous sample of twenty locations and six times, both selected by simple random sampling.
 
+```{r SpaceTimeDesignProb, echo=FALSE, out.width="100%", fig.asp= 0.5, fig.cap="Space-time designs for estimating the space-time mean of a continuous temporal universe. Both locations and times are selected by probability sampling. SS: static-synchronous design; IS: independent synchronous design."}
 
+#pure panel
+set.seed(314)
+Space <- sample.int(n=1000, size=20, replace=FALSE)
+Time <- sample.int(n=365, size=6, replace=FALSE)
+mysampleSS <- data.frame(
+    Space=rep(x=Space, times=length(Time)),
+    Time=rep(Time, each=length(Space)),
+    Panel=rep("a", length(Time)*length(Space))
+)
 
-```{r, echo=FALSE}
-rm(list=ls())
+mysampleSS$design<-"SS"
+
+#independent synchronous
+Space <- sample.int(n=1000, size=length(Space)*length(Time), replace=FALSE)
+mysampleIS <- data.frame(
+    Space,
+    Time=rep(Time, each=length(Space)/length(Time))
+)
+mysampleIS$Panel <- rep(x=c("a","b","c","d","e","f"), each=length(Space)/length(Time))
+mysampleIS$design <- "IS"
+
+mysample<-rbind(mysampleSS,mysampleIS)
+mysample$design<-factor(x=mysample$design,levels=c("SS","IS"), ordered=TRUE)
+
+# create plot
+ggplot(data=mysample) +
+            geom_point(mapping=aes(x=Space, y=Time, shape=factor(Panel), colour=factor(Panel)), size=2) +
+            scale_x_continuous(limits=c(0, 1000)) +
+            scale_y_continuous(limits=c(0, 365)) +
+            scale_shape(name="panel", solid=FALSE) +
+            scale_colour_viridis_d(name="panel") +
+            facet_wrap(~design, nrow=3, ncol=2)
+```
+
+An independent synchronous sample can be considered as a two-stage cluster random sample from a space-time universe. The primary units are the spatial sections of that universe (horizontal lines in Figure \@ref(SpaceTimeDesignProb)), the secondary units are the sampling locations. The space-time mean can therefore be estimated by Equation \@ref(eq:EstMeanTwostage), and its sampling variance by Equation \@ref(eq:VarEstMeanTwostage). For simple random sampling both in space and in time and a linear cost model $C = c_0 + c_1n + c_2n\;m$ Equations \@ref(eq::nopt) and \@ref(eq:mopt) can be used to optimise the number of sampling times (primary units, $n$) and number of sampling locations (secondary units, $m$) per time. The pooled within-unit variance $S^2_w$ is in this case the time-averaged spatial variance of the study variable at a given time, and the between-unit variance is the variance of the spatial means over time.
+
+Estimation of the space-time mean from a static-synchronous sample is as for an independent synchronous sample. However, estimation of the sampling variance of the space-time mean estimator is more complicated. @gru06 translated the formula  of @Koop1990 for the static-synchronous design to estimate the space-time mean (equation (15.8) in @gru06). Due to the two-fold alignment of the sampling units no unbiased estimator of the sampling variance is available. The variance estimator of two-stage cluster sampling can be used to approximate the variance, but this variance estimator does not account for a possible temporal correlation of the estimated spatial means, resulting in an underestimation of the variance.
+
+For an application of an independent synchronous design, to estimate the space-time mean of nutrients (nitrogen and phosphorous) in surface waters, see @bru08b and @Knotters2010d. In both applications sampling times are selected by stratified simple random sampling, with periods of 2 months as strata. In @bru08b sampling locations are selected by stratified simple random sampling as well.
+
+## Case study: mean annual temperature in Spain
+
+```{r SimulatedSpaceTimeField, echo=FALSE, fig.cap="Simulated space-time field."}
+# set random seed (for reproduction of results)
+set.seed(314)
+
+# discretize space-time field
+x <- y <- seq(from=0.5, to=99.5, by=1)
+t <- 1:4
+stgrd <- expand.grid(
+    x = x,
+    y = y,
+    t = t
+)
+
+vgm.1 = vgm(psill=50, "Exp", range=10E6, anis = c(0,90,0,1E-6,1E-6)) #spatial variogram
+vgm.2 = vgm(psill=20, "Exp", range=1E6, anis = c(0,0,0,1,1E-6), add.to = vgm.1) #temporal variogram
+vgm.3 = vgm(psill=50, "Exp", range=10, anis = c(0,0,0,1,1/10), add.to = vgm.2) #space-time variogram
+
+stgrd$dummy <- 1
+
+# unconditional Gaussian simulation by means of simple kriging
+gridded(stgrd) <- ~ x + y + t
+nsim<-10
+zsim  <- krige(
+    formula = dummy ~ 1,
+    locations = stgrd,
+    newdata = stgrd,
+    model = vgm.3,
+    nmax = 20,
+    nsim = nsim,
+    beta = 0, #beta is model mean
+    dummy = TRUE #this is to enforce unconditional simulation
+)
+
+stgrd = as.data.frame(stgrd)
+
+#select one simulated space-time field
+stgrd$z <- zsim[[2]]
+
+#rearrange simulated values in matrix with as many columns as there are sampling times
+zt <-matrix(nrow=length(x)*length(y), ncol=length(t))
+for (j in 1:length(t)) {
+  units <- which(stgrd$t==j)
+  zt[,j]<-stgrd$z[units]
+}
+
+xy <- expand.grid(
+  x = x,
+  y = y
+)
+
+zsim <- as.data.frame(cbind(xy$x, xy$y, zt))
+names(zsim)<-c("x","y","z1","z2","z3","z4")
+
+#add trend
+trend <- 5
+zsim$z2 <- zsim$z2+trend
+zsim$z3 <- zsim$z3+trend*2
+zsim$z4 <- zsim$z4+trend*3
+
+gridded(zsim) <- ~x+y
+print(spplot(zsim))
+zsim <- as(zsim,"data.frame")
+```
+
+The space-time designs are illustrated with a simulated space-time field (Figure \@ref(fig:SimulatedSpaceTimeField)). Four spatial fields (maps) are simulated using a sum-metric space-time semivariogram. The spatial sampling design is simple random sampling. The sample size is 40 locations per time, so in total we have 160 observations. In the next sections I show how a space-time sample with a given space-time design can be selected and how the population parameters described above can be estimated.
+
+### Static-synchronous design
+
+```{r}
+set.seed(314)
+n <- 40
+units <- sample.int(nrow(xy), size=n, replace=TRUE)
+mysample_SS <- zsim[units,c("z1","z2","z3","z4")]
+mz <- apply(mysample_SS, MARGIN=2, FUN=mean)
+S2z <- apply(mysample_SS, MARGIN=2, FUN=var)
+C <- var(mysample_SS)/n
+
+#current mean
+mz_cur <- mz[4]
+se_mz_cur <- sqrt(S2z[4]/n)
+
+#change of mean from time 1 to time 4
+d_mz <- mz[4] - mz[1]
+se_d_mz <- S2z[4]/n + S2z[1]/n - 2*C[1,4] %>% sqrt(.)
+
+#trend of mean
+t <- 1:4
+w <- (t-mean(t))/sum((t-mean(t))^2)
+mz_trend <- t(w)%*%mz
+se_mz_trend <- t(w)%*%C%*%w %>% sqrt(.)
+
+#space-time mean
+mz_st <- mean(mz)
+w <- rep(1/4,4)
+se_mz_st <- t(w)%*%C%*%w %>% sqrt(.)
+```
+
+### Serially alternating design
+
+```{r}
+set.seed(314)
+units <- sample.int(nrow(xy), size=n*2, replace=TRUE)
+mysample_SA <- zsim[units,c("z1","z2","z3","z4")]
+mysample_SA$panel <- rep(c("a","b"), each=n)
+panel_a <- filter(mysample_SA, panel=="a")[,c(1,3)]
+panel_b <- filter(mysample_SA, panel=="b")[,c(2,4)]
+panel_ab <- cbind(panel_a[1],panel_b[1],panel_a[2],panel_b[2])
+mz <- apply(panel_ab, MARGIN=2, FUN=mean)
+C <- var(panel_ab)
+submat <- matrix(c(1,2,1,4,2,1,2,3,3,2,3,4,4,1,4,3),8,2,
+                 byrow=TRUE)
+C[submat] <- 0
+
+#current mean
+mz_cur <- mz[4]
+se_mz_cur <- sqrt(C[4,4]/n)
+
+#change of mean from time 1 to time 4
+w <- c(-1,0,0,1)
+d_mz <- t(w)%*%mz
+se_d_mz <- t(w)%*%C%*%w %>% sqrt(.)
+#change of mean from time 2 to time 4
+w <- c(0,-1,0,1)
+d_mz <- t(w)%*%mz
+se_d_mz <- t(w)%*%C%*%w %>% sqrt(.)
+
+#trend of mean
+t <- 1:4
+w <- (t-mean(t))/sum((t-mean(t))^2)
+mz_trend <- t(w)%*%mz
+se_mz_trend <- t(w)%*%C%*%w %>% sqrt(.)
+
+#space-time mean
+mz_st <- mean(mz)
+w <- rep(1/4,4)
+se_mz_st <- t(w)%*%C%*%w %>% sqrt(.)
+```
+
+### Supplemented panel design
+
+```{r}
+units <- sample.int(nrow(xy), size=n*5, replace=TRUE)
+mysample_SP <- zsim[units,c("z1","z2","z3","z4")]
+mysample_SP$panel <- rep(c("a","b","c","d","e"), each=n)
+#compute eight elementary estimates
+mz_1 <- tapply(mysample_SP$z1, INDEX=mysample_SP$panel,
+               FUN=mean)[c(1,2)]
+mz_2 <- tapply(mysample_SP$z2, INDEX=mysample_SP$panel,
+               FUN=mean)[c(1,3)]
+mz_3 <- tapply(mysample_SP$z3, INDEX=mysample_SP$panel,
+               FUN=mean)[c(1,4)]
+mz_4 <- tapply(mysample_SP$z4, INDEX=mysample_SP$panel,
+               FUN=mean)[c(1,5)]
+#collect elementary estimates in vector; estimates from pure panel first
+mz_el <- c(mz_1["a"],mz_2["a"],mz_3["a"],mz_4["a"],
+           mz_1["b"],mz_2["c"],mz_3["d"],mz_4["e"])
+X <- rbind(diag(4),diag(4))
+#estimate covariances of elementary estimates of pure panel subsample
+mysubsample_SS <- mysample_SP[mysample_SP$panel=="a",]
+C_SS <- var(mysubsample_SS[,1:4])/(n/2)
+#estimate variances of elementary estimates of independent synchronous subsample
+mysubsample_IS <- mysample_SP[mysample_SP$panel!="a",]
+C_IS <- var(mysubsample_IS[,1:4])/(n/2)
+C_IS[row(C_IS) != col(C_IS)] <- 0
+zeroes <- matrix(0,4,4)
+C <- rbind(cbind(C_SS,zeroes),cbind(zeroes,C_IS))
+Cinv <- chol2inv(chol(C))
+XC <- crossprod(X, Cinv)
+XCz <- XC%*%mz_el
+XCX <- XC%*%X
+mz_GLS <- solve(XCX, XCz)
+C_GLS <- solve(XCX)
+
+#current mean
+mz_cur <- mz_GLS[4]
+se_mz_cur <- C_GLS[4,4] %>% sqrt(.)
+
+#change of mean
+w <- c(-1,0,0,1)
+d_mz <- t(w)%*%mz_GLS
+se_d_mz <- t(w)%*%C_GLS%*%w %>% sqrt(.)
+
+#trend of mean
+w <- (t-mean(t))/sum((t-mean(t))^2)
+mz_trend <- t(w)%*%mz_GLS
+(se_mz_trend <- t(w)%*%C_GLS%*%w %>% sqrt(.))
+
+#space-time mean
+w <- rep(1/4,4)
+mz_st <- t(w)%*%mz_GLS
+se_mz_st <- t(w)%*%C_GLS%*%w %>% sqrt(.)
 ```
 
