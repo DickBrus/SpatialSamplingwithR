@@ -211,12 +211,12 @@ The population mean can be estimated by the sample mean.
 mz_sample <- mean(mysample$AGB)
 ```
 
-To estimate the variance a function is defined for estimating the population regression coefficients.
+To estimate the variance a function is defined for estimating the population regression coefficients. 
 
 ```{r}
 estimate_b <- function(z,X,c) {
-  cXX <- matrix(nrow=ncol(X),ncol=ncol(X),data=0)
-  cXz <- matrix(nrow=1,ncol=ncol(X),data=0)
+  cXX <- matrix(nrow=ncol(X), ncol=ncol(X), data=0)
+  cXz <- matrix(nrow=1, ncol=ncol(X), data=0)
   for (i in 1:length(z)) {
     x <- X[i,]
     cXX_i <- c[i]*(x %*% t(x))
@@ -224,7 +224,7 @@ estimate_b <- function(z,X,c) {
     cXz_i <- c[i]*t(x)*z[i]
     cXz <- cXz+cXz_i
   }
-  b <- solve(cXX,t(cXz))
+  b <- solve(cXX) %*% t(cXz)
   b
 }
 ```
@@ -325,7 +325,7 @@ In the previous section a continuous variable was used to balance the sample. Ho
 
 The first four rows refer to the four leftmost bottom row population units in Figure \@ref(fig:BalancedSampleCategorical). These units belong to class A, which explains that the first column for these units contain non-zeroes. These non-zeroes are the inclusion probabilities of the units in stratum A. The other three columns for these rows contain all zeroes. The fifth and sixth unit belong to stratum B, so that the second column for these rows contain the inclusion probabilities for stratum B, and so on. The final row is the upper-right sampling unit in stratum D, so the first three columns contain zeroes, and the fourth column is filled with the inclusion probability of this stratum. The sum of the inclusion probabilities in the first column is the sample size of stratum A. Or reversely, if, for instance, we want to select $n_h$ units from stratum $h$ with equal probability for all units in this stratum, then the inclusion probabilities should equal $n_h/N_h$, with $N_h$ the total number of units in this stratum.
 
-```{r BalancedSampleCategorical, out.width="70%", echo=FALSE, fig.cap="Sample balanced on a categorical variable with four classes."}
+```{r BalancedSampleCategorical, echo=FALSE, fig.cap="Sample balanced on a categorical variable with four classes."}
 s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
@@ -374,8 +374,7 @@ The columns in the design matrix with dummy variables are multiplied by the vect
 X <- model.matrix(~ stratum-1, data=mypop)
 X <- sweep(X, MARGIN= 1, mypop$pi, `*`)
 set.seed(314)
-sample_ind <- samplecube(
-  X=X, pik=mypop$pi, comment=FALSE, method=1)
+sample_ind <- samplecube(X=X, pik=mypop$pi, comment=FALSE, method=1)
 mysample <- mypop[sample_ind>(1-eps),]
 ```
 
@@ -456,8 +455,7 @@ This reduced design matrix is not strictly needed for selecting a multi-way stra
 Finally, the two-way stratified random sample is selected with function `samplecube` of package **sampling** [@Tille2016]. 
 
 ```{r}
-sample_ind <- samplecube(
-  X=X, pik=mypop$pih, method=1, comment=FALSE)
+sample_ind <- samplecube(X=X, pik=mypop$pih, method=1, comment=FALSE)
 eps <- 1e-6
 units <- which(sample_ind>(1-eps))
 mysample <- mypop[units,]
@@ -502,8 +500,7 @@ The variance is estimated as before (Equation \@ref(eq:approxvarianceBalanced)).
 
 ```{r}
 c <- (1-mysample$pih)
-b <- estimate_b(
-  z=mysample$z/mysample$pih, X=X[units,]/mysample$pih, c=c)
+b <- estimate_b(z=mysample$z/mysample$pih, X=X[units,]/mysample$pih, c=c)
 zpred <- X%*%b
 e <- mysample$z-zpred[units]
 n <- nrow(mysample)
@@ -718,8 +715,7 @@ pi <- inclusionprobabilities(grdKandahar$agri, n)
 N <- nrow(grdKandahar)
 samplingframe <- data.frame(
   x=grdKandahar$x, y=grdKandahar$y, mdcaty=pi, ids=1:N)
-design <- list(
-  None=list(panel=c(PanelOne=n), seltype="Continuous"))
+design <- list(None=list(panel=c(PanelOne=n), seltype="Continuous"))
 set.seed(314)
 res <- grts(
   design, type.frame="finite", src.frame="att.frame",
@@ -794,8 +790,7 @@ c <- (1-pi)
 b <- estimate_b(z=mysample$AGB/pi, X=Xbal[units,]/pi, c=c)
 zpred <- Xbal%*%b
 e <- mysample$AGB-zpred[units]
-weights <- localmean.weight(
-  x=mysample$x1, y=mysample$x2, prb=rep(pi,n), nbh=3)
+weights <- localmean.weight(x=mysample$x1, y=mysample$x2, prb=rep(pi,n), nbh=3)
 v_mz <- localmean.var(z=e/pi, weight.lst=weights)/N^2
 ```
 

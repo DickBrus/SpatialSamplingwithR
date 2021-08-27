@@ -113,8 +113,7 @@ The next step is to select for each design point several candidate sampling unit
 EM_CRF$unit <- 1:nrow(EM_CRF)
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
-    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+
-                     (EM_CRF$PC2-ccd_df$x2[i])^2)
+    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
     q <- quantile(d2dpnt, p=0.005)
     units_close <- which(d2dpnt < q)
     candi <- EM_CRF[units_close,c("unit","x1","x2","PC1","PC2")]
@@ -154,8 +153,7 @@ As a first step an initial subsample from the candidate sampling units is select
 ```{r}
 library(sampling)
 set.seed(314)
-units_stsi <- sampling::strata(
-  candi_all, stratanames="dpnt", size=rep(1,9))
+units_stsi <- sampling::strata(candi_all, stratanames="dpnt", size=rep(1,9))
 mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ```
@@ -170,8 +168,7 @@ A function is defined for computing the minimisation criterion.  Given a chosen 
 
 ```{r}
 getCriterion <- function(mysample, dpnt, weight=0, phi=NULL){
-  D2dpnt <- sqrt((mysample$PC1-dpnt$x1)^2+
-                   (mysample$PC2-dpnt$x2)^2)
+  D2dpnt <- sqrt((mysample$PC1-dpnt$x1)^2+(mysample$PC2-dpnt$x2)^2)
   D <- as.matrix(dist(mysample[,c("x1","x2")]))
   if (!is.null(phi)) {
     vgmodel <- vgm(model="Exp", psill=1, range=phi)
@@ -195,8 +192,7 @@ The initial value of the geometric criterion  is `r round(criterion_geo,3)`. The
 
 ```{r}
 phi <- 50
-criterion_mb <- getCriterion(
-  mysample=mysample0, dpnt=ccd_df, phi=phi)
+criterion_mb <- getCriterion(mysample=mysample0, dpnt=ccd_df, phi=phi)
 ```
 
 The initial value of the model-based criterion is `r round(criterion_mb,3)`.
@@ -207,11 +203,9 @@ The objective function defining the minimisation criterion is minimised with sim
 ```{r, eval=FALSE}
 source('Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R')
 set.seed(314)
-mySRSsample <- anneal(
-  mysample=mysample0, candidates=candi_all, dpnt=ccd_df,
-  phi=50, T_ini=1, coolingRate=0.9,
-  maxPermuted=25*nrow(mysample0), maxNoChange=20,
-  verbose=TRUE)
+mySRSsample <- anneal(mysample=mysample0, candidates=candi_all, dpnt=ccd_df,
+  phi=50, T_ini=1, coolingRate=0.9, maxPermuted=25*nrow(mysample0),
+  maxNoChange=20, verbose=TRUE)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -263,8 +257,7 @@ Nine points are rather few for fitting a polynomial regression model, especially
 ```{r}
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
-    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+
-                     (EM_CRF$PC2-ccd_df$x2[i])^2)
+    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
     q <- quantile(d2dpnt, p=0.01)
     units_close <- which(d2dpnt < q)
     candi <- EM_CRF[units_close,c("unit","x1","x2","PC1","PC2")]
@@ -277,8 +270,7 @@ A stratified random subsample of two points per stratum is selected, which serve
 
 ```{r}
 set.seed(314)
-units_stsi <- sampling::strata(
-  candi_all, stratanames="dpnt", size=rep(2,9))
+units_stsi <- sampling::strata(candi_all, stratanames="dpnt", size=rep(2,9))
 mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ```
@@ -359,11 +351,10 @@ for (h in c(1,2)) {
   candi_stratum <- NULL
   for (i in 1:nrow(ccd_df)) {
       d2dpnt <- sqrt((data_stratum$PC1-ccd_df$x1[i])^2+
-                       (data_stratum$PC2-ccd_df$x2[i])^2)
+                     (data_stratum$PC2-ccd_df$x2[i])^2)
       q <- quantile(d2dpnt,p=p[h])
       units_close <- which(d2dpnt < q)
-      candi <- data_stratum[units_close,
-                            c("unit","x1","x2","PC1","PC2")]
+      candi <- data_stratum[units_close, c("unit","x1","x2","PC1","PC2")]
       candi$dpnt <- i + (h-1)*nrow(ccd_df)
       candi_stratum <- rbind(candi_stratum, candi)
   }
@@ -388,8 +379,7 @@ As before, `dpnt` is used as a stratum identifier to subsample the candidate sam
 
 ```{r}
 set.seed(314)
-units_stsi <- sampling::strata(
-  candi_all, stratanames="dpnt", size=rep(1,18))
+units_stsi <- sampling::strata(candi_all, stratanames="dpnt", size=rep(1,18))
 mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ccd_df2 <- rbind(ccd_df,ccd_df)

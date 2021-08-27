@@ -42,14 +42,13 @@ Factor 1 has four levels, as the modulus of the s1-coordinates and a spacing of 
 s1local <- grdVoorst$s1-min(grdVoorst$s1)
 s2local <- grdVoorst$s2-min(grdVoorst$s2)
 spacing <- 100 
-mods1 <- s1local%%spacing
+mods1 <- s1local %% spacing
 #construct clusters (E-W oriented transects within zones)
 grdVoorst$cluster <- interaction(
   as.factor(mods1),
   as.factor(s2local),
   as.factor(grdVoorst$zone)) %>%  as.character(.)
-M_cl <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
+M_cl <- tapply(grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
 grdVoorst$unit <- 1:nrow(grdVoorst)
 ```
 
@@ -93,10 +92,8 @@ As our population actually is infinite, the selected sampling points (nodes of t
 ```{r}
 for (i in 1:n) {
   units <- which(mysample$cldraw==i)
-  mysample$s1[units] <- mysample$s1[units] + 
-    runif(1,min=-12.5,max=12.5)
-  mysample$s2[units] <- mysample$s2[units] + 
-    runif(1,min=-12.5,max=12.5)
+  mysample$s1[units] <- mysample$s1[units] + runif(1, min=-12.5, max=12.5)
+  mysample$s2[units] <- mysample$s2[units] + runif(1, min=-12.5, max=12.5)
 }
 ```
 
@@ -197,8 +194,7 @@ The same estimates are obtained with functions `svydesign` and `svymean` of pack
 library(survey)
 M <- nrow(grdVoorst)
 mysample$weights <- M/(M_cl[mysample$cluster]*n)
-design_cluster <- svydesign(
-  id=~cldraw, weights=~weights, data=mysample)
+design_cluster <- svydesign(id=~cldraw, weights=~weights, data=mysample)
 svymean(~z, design_cluster, deff="replace")
 ```
 
@@ -207,8 +203,7 @@ The design effect\index{Design effect} as estimated from the selected cluster sa
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of cluster draws minus 1.
 
 ```{r}
-confint(svymean(
-  ~z, design_cluster, df=degf(design_cluster), level=0.95))
+confint(svymean(~z, design_cluster, df=degf(design_cluster), level=0.95))
 ```
 
 Figure \@ref(fig:SamplingDistributionCl) shows the sampling distributions of the pwr estimator of the mean with cluster random sampling and of the $\pi$ estimator with simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
@@ -297,8 +292,7 @@ The population mean can be estimated with function `svymean` of package **survey
 
 ```{r}
 mysample$pi <- n*M_cl[mysample$cluster]/M
-design_clppswor <- svydesign(
-  id=~cluster, data=mysample, pps="brewer", fpc=~pi)
+design_clppswor <- svydesign(id=~cluster, data=mysample, pps="brewer", fpc=~pi)
 svymean(~z,design_clppswor)
 ```
 
@@ -306,8 +300,7 @@ Another variance estimator implemented in function `svydesign`  is the Hartley-R
 
 ```{r}
 p2sum<-sum((n*M_cl[mysample$cluster]/M)^2)/n
-design_hr <- svydesign(
-  id=~cluster,  data=mysample, pps=HR(p2sum), fpc=~pi)
+design_hr <- svydesign(id=~cluster,  data=mysample, pps=HR(p2sum), fpc=~pi)
 svymean(~z, design_hr)
 ```
 
@@ -418,8 +411,7 @@ with $\widehat{S^2}_e$ the estimated variance of the residuals.
 ```{r}
 m_M_cl <- mean(M_cl[unique(mysample$cluster)])
 b <- mean(tz_cluster)/m_M_cl
-e_cl <- tz_cluster - 
-  b*M_cl[sort(unique(mysample$cluster))]
+e_cl <- tz_cluster - b*M_cl[sort(unique(mysample$cluster))]
 S2e <- var(e_cl)
 print(se_mz_ratio <- sqrt(fpc*1/m_M_cl^2*S2e/n))
 ```
@@ -427,8 +419,7 @@ print(se_mz_ratio <- sqrt(fpc*1/m_M_cl^2*S2e/n))
 The ratio estimate can also be computed with function `svymean` of package **survey**, which also provides an estimate of the standard error of the estimated mean.
 
 ```{r}
-design_SIC <- svydesign(
-  id=~cluster, probs=~pi, fpc=~pi, data=mysample)
+design_SIC <- svydesign(id=~cluster, probs=~pi, fpc=~pi, data=mysample)
 svymean(~z, design_SIC)
 ```
 
@@ -471,13 +462,11 @@ mz_h <- v_mz_h <- numeric(length=3)
 for (i in 1:3) {
   units <- which(mysample$zonestratum==letters[i])
   mysample_h <- mysample[units,]
-  mz_cl <- tapply(mysample_h$z,
-                  INDEX=mysample_h$cldraw, FUN=mean)
+  mz_cl <- tapply(mysample_h$z, INDEX=mysample_h$cldraw, FUN=mean)
   mz_h[i] <- mean(mz_cl)
   v_mz_h[i] <- var(mz_cl)/n_h[i]
 }
-M_h <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
+M_h <- tapply(grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
 w_h <- M_h/M
 mz <- sum(w_h*mz_h)
 se_mz <- sqrt(sum(w_h^2*v_mz_h))
@@ -488,9 +477,8 @@ The estimated mean equals `r round(mz,3)`, and the estimated standard error equa
 ```{r}
 mysample$weights <- M_h[mysample$zonestratum]/
   (M_cl[mysample$cluster]*n_h[mysample$zonestratum])
-design_strcluster <- svydesign(
-  id=~cldraw, strata=~zonestratum, weights=~weights,
-  data=mysample, nest=TRUE)
+design_strcluster <- svydesign(id=~cldraw, strata=~zonestratum, 
+  weights=~weights, data=mysample, nest=TRUE)
 svymean(~z,design_strcluster)
 ```
 

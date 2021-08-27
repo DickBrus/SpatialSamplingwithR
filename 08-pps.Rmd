@@ -153,8 +153,7 @@ rho <- 0.8
 mu1 <- 10; sd1 <- 2
 mu2 <- 15; sd2 <- 4
 mu <- c(mu1, mu2)
-sigma <- matrix(data=c(sd1^2, sd1*sd2*rho, sd1*sd2*rho, sd2^2),
-                nrow=2, ncol=2)
+sigma <- matrix(data=c(sd1^2, sd1*sd2*rho, sd1*sd2*rho, sd2^2), nrow=2, ncol=2)
 N <- 1000
 set.seed(314)
 dat <- as.data.frame(mvrnorm(N, mu=mu, Sigma=sigma))
@@ -249,16 +248,14 @@ pi <- inclusionprobabilities(size, n)
 set.seed(314)
 eps <- 1e-6
 sampleind <- UPrandompivotal(pik=pi, eps=eps)
-mysample <- data.frame(
-  grdKandahar[sampleind==1,], pi=pi[sampleind==1])
+mysample <- data.frame(grdKandahar[sampleind==1,], pi=pi[sampleind==1])
 nrow(mysample)
 ```
 
 As can be seen not 40 but only 39 units are selected. If we replace `sampleind==1` by `sampleind>1-eps`, 40 units are selected. 
 
 ```{r}
-mysample <- data.frame(grdKandahar[sampleind>1-eps,],
-                       pi=pi[sampleind>1-eps])
+mysample <- data.frame(grdKandahar[sampleind>1-eps,], pi=pi[sampleind>1-eps])
 nrow(mysample)
 ```
 
@@ -266,8 +263,7 @@ The total poppy area can be estimated from the ppswor sample by
 
 ```{r}
 tz_HT <- sum(mysample$poppy/mysample$pi)
-tz_Hajek <- N*sum(mysample$poppy/mysample$pi)/
-  sum(1/mysample$pi)
+tz_Hajek <- N*sum(mysample$poppy/mysample$pi)/sum(1/mysample$pi)
 ```
 
 The total poppy area as estimated with the $\pi$ estimator equals `r as.character(round(tz_HT,0))` ha. The Hajek estimator results in a much smaller estimated total: `r as.character(round(tz_Hajek,0))` ha.
@@ -276,15 +272,13 @@ The $\pi$ estimate can also be computed with function `svytotal` of package **su
 
 ```{r}
 library(survey)
-design_ppsworbrewer <- svydesign(
-  id=~1, data=mysample, pps="brewer", fpc=~pi)
+design_ppsworbrewer <- svydesign(id=~1, data=mysample, pps="brewer", fpc=~pi)
 svytotal(~poppy, design_ppsworbrewer)
 ```
 
 ```{r}
 p2sum<-sum(mysample$pi^2)/n 
-design_ppsworhr <- svydesign(
-  id=~1, data=mysample, pps=HR(p2sum), fpc=~pi)
+design_ppsworhr <- svydesign(id=~1, data=mysample, pps=HR(p2sum), fpc=~pi)
 svytotal(~poppy, design_ppsworhr)
 ```
 
@@ -292,13 +286,10 @@ In package **samplingVarEst** [@samplingVarEst] also various functions are avail
 
 ```{r HajekRosenVarianceEstimator}
 library(samplingVarEst)
-se_tz_Hajek <- sqrt(VE.Hajek.Total.NHT(
-  mysample$poppy, mysample$pi))
+se_tz_Hajek <- sqrt(VE.Hajek.Total.NHT(mysample$poppy, mysample$pi))
 pikl <- Pkl.Hajek.s(mysample$pi)
-se_tz_HT <- sqrt(VE.HT.Total.NHT(
-  mysample$poppy, mysample$pi, pikl))
-se_tz_SYG <- sqrt(VE.SYG.Total.NHT(
-  mysample$poppy, mysample$pi, pikl))
+se_tz_HT <- sqrt(VE.HT.Total.NHT(mysample$poppy, mysample$pi, pikl))
+se_tz_SYG <- sqrt(VE.SYG.Total.NHT(mysample$poppy, mysample$pi, pikl))
 ```
 
 The three standard errors equal `r as.character(round(se_tz_Hajek,0))`, `r as.character(round(se_tz_HT,0))`, and `r as.character(round(se_tz_SYG,0))`. The differences in the approximated standard errors are small when related to the estimated total.

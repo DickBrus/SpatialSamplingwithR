@@ -147,8 +147,8 @@ library(pwr)
 sd <- 4; delta <- 1; alpha <- 0.05; beta <- 0.2
 n_norm <- (sd/delta)^2*(qnorm(1-alpha)+qnorm(1-beta))^2
 n_t <- pwr.t.test(
-  d=delta/sd, sig.level=alpha, power=(1-beta), type="one.sample",
-  alternative="greater")
+  d=delta/sd, sig.level=alpha, power=(1-beta),
+  type="one.sample", alternative="greater")
 ```
 
 In this example the required sample size computed with the $t$ distribution is two units larger than that obtained with the standard normal distribution: `r ceiling(n_t$n)` versus `r (ceiling(n_norm))`. Package **pwr** has various functions for computing the power of a test given the sample size, or reversely, the sample size for a given power, such as for the two independent samples $t$ test, binomial test (for one proportion), test for two proportions, etc. 
@@ -163,8 +163,7 @@ n <- 1:150
 power <- k_min <- numeric(length=length(n))
 for (i in 1:length(n)) {
   k_min[i] <- qbinom(p=1-alpha, size=n[i], prob=p_test)
-  power[i] <- pbinom(
-    q=k_min[i], size=n[i], prob=p_test+delta, lower.tail=FALSE)
+  power[i] <- pbinom(q=k_min[i], size=n[i], prob=p_test+delta, lower.tail=FALSE)
 }
 ```
 
@@ -443,20 +442,14 @@ Required sample sizes for the average length criterion (ALC), the average covera
 
 ```{r}
 library(SampleSizeBinomial)
-n_alc <- prop.alc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_alcmbl <- prop.mblalc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_acc <- prop.acc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_accmbl <- prop.mblacc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_alc <- prop.alc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_alcmbl <- prop.mblalc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_acc <- prop.acc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_accmbl <- prop.mblacc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
 n_woc <- prop.modwoc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE,
-  worst.level=0.80)$n
+  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE, worst.level=0.80)$n
 n_wocmbl <- prop.mblmodwoc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE,
-  worst.level=0.80)$n
+  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE, worst.level=0.80)$n
 library(binomSamSize)
 n_freq <- ciss.wald(p0=c/(c+d), d=0.1, alpha=0.05)
 ```

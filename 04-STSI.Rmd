@@ -7,8 +7,7 @@ Stratified simple random sampling is illustrated with Voorst (Figure \@ref(fig:S
 ```{r stsi}
 library(sampling)
 load("data/Voorst.RData")
-N_h <- tapply(grdVoorst$stratum, INDEX=grdVoorst$stratum,
-             FUN=length)
+N_h <- tapply(grdVoorst$stratum, INDEX=grdVoorst$stratum, FUN=length)
 w_h <- N_h/sum(N_h)
 n <- 40
 print(n_h <- round(n * w_h))
@@ -153,8 +152,7 @@ library(survey)
 labels <- sort(unique(mysample$stratum))
 lut <- data.frame(stratum=labels, weight=N_h/n_h)
 mysample <- merge(x=mysample, y=lut)
-design_stsi <- svydesign(
-  id=~1, strata=~stratum, weight=~weight, data=mysample)
+design_stsi <- svydesign(id=~1, strata=~stratum, weight=~weight, data=mysample)
 svymean(~z, design_stsi)
 ```
 
@@ -296,8 +294,7 @@ SE(res)^2/v_mz_SI
 The same value is obtained with argument `deff` of function `svymean`. 
 
 ```{r designeffectSTSI}
-design_stsi <- svydesign(
-  id=~1, strata=~stratum, weight=~weight, data=mysample)
+design_stsi <- svydesign(id=~1, strata=~stratum, weight=~weight, data=mysample)
 svymean(~z, design_stsi, deff="replace")
 ```
 
@@ -526,8 +523,7 @@ This is illustrated again with the Xuancheng case study. Five quantitative covar
 ```{r}
 library(sp)
 gridded(grd) <- c("x1","x2")
-subgrd <- spsample(
-  grd, type="regular", cellsize=0.4, offset=c(0.5,0.5))
+subgrd <- spsample(grd, type="regular", cellsize=0.4, offset=c(0.5,0.5))
 subgrd <- data.frame(coordinates(subgrd), over(subgrd,grd))
 ```
 
@@ -540,8 +536,7 @@ Five clusters are computed with $k$-means using as clustering variables elevatio
 ```{r}
 x <- c("dem","temperature","slope","profile.curvature","twi")
 set.seed(314)
-myClusters <- kmeans(
-  scale(subgrd[,x]), centers=5, iter.max=1000, nstart=100)
+myClusters <- kmeans(scale(subgrd[,x]), centers=5, iter.max=1000, nstart=100)
 subgrd$cluster <- myClusters$cluster
 ```
 
@@ -590,8 +585,7 @@ library(spcosa)
 library(sp)
 set.seed(314)
 gridded(subgrd) <- ~x1+x2
-mygeostrata <- stratify(
-  object=subgrd, nStrata=50, nTry=1, equalArea=TRUE)
+mygeostrata <- stratify(object=subgrd, nStrata=50, nTry=1, equalArea=TRUE)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -639,12 +633,9 @@ library(spcosa)
 load(file="results/geostrata_Xuancheng.RData")
 mysample <- spcosa::spsample(mygeostrata, n=2)
 mydata <- data.frame(z=rnorm(100, mean=10, sd=2))
-mean <- estimate(
-  "spatial mean", mygeostrata, mysample, data=mydata)
-se <- estimate(
-  "standard error", mygeostrata, mysample, data=mydata)
-cdf <- estimate(
-  "scdf", mygeostrata, mysample, data=mydata)
+mean <- estimate("spatial mean", mygeostrata, mysample, data=mydata)
+se <- estimate("standard error", mygeostrata, mysample, data=mydata)
+cdf <- estimate("scdf", mygeostrata, mysample, data=mydata)
 ```
 
 The estimated population mean equals `r round(mean, 2)`, with an estimated standard error of `r round(se, 3)`.
@@ -756,8 +747,7 @@ frame <- buildFrameDF(
 Next, a data frame with the precision requirements for the estimated means is created. The precision requirement is given as a coefficient of variation, i.e. the standard error of the estimated population mean, divided by the estimated mean. The study variables as specified in `Y` are used to compute estimated means and the standard errors for a given stratification and allocation.
  
 ```{r}
-cv <- as.data.frame(
-  list(DOM="DOM1", CV1=0.02, CV2=0.02, domainvalue=1))
+cv <- as.data.frame(list(DOM="DOM1", CV1=0.02, CV2=0.02, domainvalue=1))
 ```
 
 Finally, the multivariate stratification is optimised, by optimising the stratum bounds, using a genetic algorithm [@ger99].
@@ -780,8 +770,7 @@ load(file="results/multivariatestrata_Meuse.RData")
 A summary of the strata can be obtained with function `summaryStrata`.
 
 ```{r}
-smrstrata <- summaryStrata(
-  res$framenew, res$aggr_strata, progress=FALSE)
+smrstrata <- summaryStrata(res$framenew, res$aggr_strata, progress=FALSE)
 ```
 
 ```{r, echo=FALSE}
@@ -795,9 +784,8 @@ The column `Population` is the size of the strata (number of pixels). The total 
 Figure \@ref(fig:2dplotbivariatestrata) shows a 2D-plot of the bivariate strata. The strata can be plotted as a series of nested rectangles. All population units in the smallest rectangle belong to stratum 1; all units in the one-but-smallest rectangle that are not in the smallest rectangle belong to stratum 2, etc. If we have more than two stratification variables the strata form a series of nested hyperrectangles or boxes. The strata are obtained as the Cartesian product of orthogonal intervals.  
 
 ```{r 2dplotbivariatestrata, fig.cap="Optimised bivariate strata for study area Meuse."}
-plt <- plotStrata2d(
-  res$framenew, res$aggr_strata, domain=1, 
-  vars=c("X1","X2"), labels=c("Cd","Zn"))
+plt <- plotStrata2d(res$framenew, res$aggr_strata,
+  domain=1, vars=c("X1","X2"), labels=c("Cd","Zn"))
 ```
 
 It may happen that during the optimisation of the stratum bounds in some resulting strata no units are contained. If the solution with a smaller number of strata requires fewer sampling units, then this is retained as the optimal stratification (personal communication Giulio Barcaroli).

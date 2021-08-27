@@ -112,12 +112,9 @@ ggplot(data=df) +
 
 ```{r}
 library(gstat)
-res <- nls(
-  semivar~nugget+psill*(1-exp(-h/range)),
-  start=list(nugget=0.1, psill=0.4, range=200),
-  weights=somnp)
-vgm_lnECe <- vgm(
-  model="Exp", nugget=coef(res)[1],
+res <- nls(semivar~nugget+psill*(1-exp(-h/range)),
+  start=list(nugget=0.1, psill=0.4, range=200), weights=somnp)
+vgm_lnECe <- vgm(model="Exp", nugget=coef(res)[1],
   psill=coef(res)[2], range=coef(res)[3])
 ```
 
@@ -261,11 +258,9 @@ library(geoR)
 clbdat$lnEM100 <- log(clbdat$EMv1m)
 clbdat$x <- jitter(clbdat$x, amount=0.001)
 clbdat$y <- jitter(clbdat$y, amount=0.001)
-dGeoR <- as.geodata(
-  obj=clbdat, header=TRUE,
+dGeoR <- as.geodata(obj=clbdat, header=TRUE,
   coords.col=17:18, data.col=16, covar.col=19)
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~lnEM100,
+vgm_REML <- likfit(geodata=dGeoR, trend=~lnEM100,
   cov.model="exponential", ini.cov.pars=c(0.1,200),
   nugget=0.1, lik.method="REML", messages=FALSE)
 ```
@@ -382,13 +377,9 @@ library(geoR)
 load(file="data/CovariatesThreeWoredasEthiopia.RData")
 load(file="data/ThreeWoredasEthiopia.RData")
 priordata <- as(priordataEthiopia, "data.frame")
-dGeoR <- as.geodata(
-   obj=priordata, header=TRUE, 
-   coords.col=13:14, data.col=1)
-vgm_ML <- likfit(
-  geodata=dGeoR, trend="cte", cov.model="spherical",
-  ini.cov.pars=c(0.4,40), nugget=0.6,
-  lik.method="ML", messages=FALSE)
+dGeoR <- as.geodata(obj=priordata, header=TRUE,  coords.col=13:14, data.col=1)
+vgm_ML <- likfit(geodata=dGeoR, trend="cte", cov.model="spherical",
+  ini.cov.pars=c(0.4,40), nugget=0.6, lik.method="ML", messages=FALSE)
 ```
 
 In the next code chunk a list is created, containing a data frame (or matrix) with the coordinates of the fixed points (specified with sub-argument `fixed`), and an integer of the number of additional points to be selected (specified with sub-argument `free`). The list is assigned to argument `points` of function `optimMKV`. For kriging I slightly reduced the number of legacy points by keeping one point only per grid cell of  1 km $\times$ 1 km. This is done with function `remove.duplicates` of package **sp**.
@@ -396,8 +387,7 @@ In the next code chunk a list is created, containing a data frame (or matrix) wi
 ```{r}
 library(sp)
 load(file="data/ThreeWoredasEthiopia.RData")
-legacy <- remove.duplicates(
-  priordataEthiopia, zero=1, remove.second=TRUE)
+legacy <- remove.duplicates(priordataEthiopia, zero=1, remove.second=TRUE)
 pnts <- list(fixed=coordinates(legacy), free=100)
 candi <- grdEthiopia[,c(1,2)]
 names(candi) <- c("x","y")
@@ -415,8 +405,7 @@ With numerous legacy points computing time can be reduced with argument `nmax`, 
 
 ```{r, eval=FALSE}
 set.seed(314)
-vgm_ML_gstat <- vgm(
-  model="Sph", psill=vgm_ML$sigmasq,
+vgm_ML_gstat <- vgm(model="Sph", psill=vgm_ML$sigmasq,
   range=vgm_ML$phi, nugget=vgm_ML$nugget)
 rslt <- optimMKV(
   points=pnts, candi=candi,
@@ -449,12 +438,9 @@ For the study area in Ethiopia maps of covariates are available that can be used
 
 ```{r}
 library(geoR)
-dGeoR <- as.geodata(
-   obj=priordata, header=TRUE, 
-   coords.col=13:14, data.col=1, covar.col=c(3,9,10,11)
- )
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
+dGeoR <- as.geodata(obj=priordata, header=TRUE, 
+   coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
+vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
   cov.model="spherical", ini.cov.pars=c(1,5), nugget=0.2,
   lik.method="REML", messages=FALSE)
 ```
@@ -472,8 +458,7 @@ schedule <- scheduleSPSANN(
 
 ```{r, eval=FALSE}
 covars <- grdEthiopia[,c("dem","rfl_NIR","rfl_red","lst")]
-vgm_REML_gstat <- vgm(
-  model="Sph", psill=vgm_REML$sigmasq, 
+vgm_REML_gstat <- vgm(model="Sph", psill=vgm_REML$sigmasq, 
   range=vgm_REML$phi, nugget=vgm_REML$nugget)
 set.seed(314)
 rslt <- optimMKV(

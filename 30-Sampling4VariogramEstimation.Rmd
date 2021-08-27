@@ -56,7 +56,7 @@ library(sp)
 load(file="data/HunterValley.RData")
 grd <- grdHunterValley
 names(grd)[c(1,2)] <- c("s1","s2")
-#make a copy of grd (class of grd is changed)
+#make a copy of grd
 grid <- grd
 gridded(grd) <- ~s1+s2
 lags <- c(2000,1000,500,250)
@@ -73,8 +73,7 @@ mynestedsample <- rbind(mainstation, newpnt)
 for (j in 2:length(lags)) {
   newpnts <- NULL
   for (i in 1:nrow(mynestedsample)) {
-    pnts <- SelectPoint(
-      start=mynestedsample[i,], h=lags[j], area=grd)
+    pnts <- SelectPoint(start=mynestedsample[i,], h=lags[j], area=grd)
     newpnts <- rbind(newpnts, pnts)
   }
   mynestedsample <- rbind(mynestedsample, newpnts)
@@ -190,8 +189,7 @@ The **R** code below shows how the variance components and semivariances can be 
 
 ```{r EstimateVarianceComponents, eval=FALSE}
 library(nlme)
-lmodel <- lme(fixed=z~1, data=mynestedsample,
-              random=~1|factor1/factor2/factor3)
+lmodel <- lme(fixed=z~1, data=mynestedsample, random=~1|factor1/factor2/factor3)
 res <- as.matrix(VarCorr(lmodel))
 sigmas <- as.numeric(res[c(2,4,6,7),1])
 sigma <- rev(sigmas)
@@ -294,10 +292,8 @@ SphNug <- function(h, range, psill, nugget) {
   h <- h/range
   nugget+psill*ifelse(h<1, (1.5*h-0.5*h^3), 1)
 }
-fit.var <- nls(
-  gammah~SphNug(h, range, psill, nugget),
-  data=samplevariogram,
-  start=list(psill=4, range=200, nugget=1),
+fit.var <- nls(gammah~SphNug(h, range, psill, nugget),
+  data=samplevariogram, start=list(psill=4, range=200, nugget=1),
   weights=1/vgammah, algorithm="port", lower=c(0,0,0))
 print(pars <- signif(coef(fit.var),3))
 ```
@@ -333,10 +329,8 @@ for (j in 1:R) {
     vgammah[i] <- var((mybtps$z1-mybtps$z2)^2, na.rm=TRUE)/(n*4)
   }
   samplevariogram <- data.frame(h, gammah, vgammah)
-  tryCatch({fittedvariogram <- nls(
-    gammah~SphNug(h, range, psill, nugget), 
-    data=samplevariogram, 
-    start=list(psill=4, range=200, nugget=1), 
+  tryCatch({fittedvariogram <- nls(gammah~SphNug(h, range, psill, nugget), 
+    data=samplevariogram, start=list(psill=4, range=200, nugget=1), 
     weights=1/vgammah, algorithm="port", lower=c(0,0,0))
   pars <- coef(fittedvariogram)
   allpars <- rbind(allpars,pars)}, error=function(e){})
@@ -407,8 +401,7 @@ coordinates(mysample0) <- ~Easting+Northing
 D <- spDists(mysample0)
 xi <- 0.8; phi <- 200
 thetas <- c(xi,phi)
-vgmodel <- vgm(
-  model="Exp", psill=thetas[1],
+vgmodel <- vgm(model="Exp", psill=thetas[1],
   range=thetas[2], nugget=1-thetas[1])
 A <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
 ```
@@ -421,11 +414,9 @@ pA <- dA <- list()
 for (i in 1:length(thetas)) {
   thetas_pert <- thetas
   thetas_pert[i] <- (1+perturbation)*thetas[i]
-  vgmodel_pert <- vgm(
-    model="Exp", psill=thetas_pert[1], 
+  vgmodel_pert <- vgm(model="Exp", psill=thetas_pert[1], 
     range=thetas_pert[2], nugget=1-thetas_pert[1])
-  pA[[i]] <- variogramLine(
-    vgmodel_pert, dist_vector=D, covariance=TRUE)
+  pA[[i]] <- variogramLine(vgmodel_pert, dist_vector=D, covariance=TRUE)
   dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
 }
 ```
@@ -434,15 +425,14 @@ Finally the Fisher information matrix is computed, using Equation \@ref(eq:Fishe
 
 ```{r}
 library(matrixcalc)
-invA <- chol2inv(chol(A))
+invA <- solve(A)
 I <- matrix(0, length(thetas), length(thetas))
 for (i in 1:length(thetas)){
   for (j in i:length(thetas)){
-    I[i,j] <- I[j,i] <- 
-      0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+    I[i,j] <- I[j,i] <- 0.5*matrix.trace(invA %*% dA[[i]] %*% invA %*% dA[[j]])
   }
 }
-(invI <- chol2inv(chol(I)))
+(invI <- solve(I))
 logdet0 <- determinant(invI, logarithm=TRUE)$modulus
 ```
 
@@ -493,7 +483,7 @@ VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \f
 (\#eq:varkrigingvar)
 \end{equation}
 
-with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\boldsymbol{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
+with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\bm{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
 
 The first step is to select a sample for the second sampling round in which data are collected for mapping. For this a spatial coverage sample is selected, using function `stratify` of package **spcosa**, see Chapter \@ref(SpatialCoverage). The observations on this sample are used for prediction by kriging. The population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred square grid of 101 points, the evaluation sample. (In the code chunk below `n=100` is used in function `spsample`, but actually 101 locations are selected.) 
 
@@ -506,8 +496,7 @@ n <- 100
 set.seed(314)
 myStrata <- stratify(grd, nStrata=n, equalArea=FALSE, nTry=10)
 mySCsample <- as(spsample(myStrata), "SpatialPoints")
-myevalsample <- spsample(
-  x=grd, n=100, type="regular", offset=c(0.5,0.5))
+myevalsample <- spsample(x=grd, n=100, type="regular", offset=c(0.5,0.5))
 ```
 
 The following code chunks show how the estimation variance of the kriging variance at the evaluation point is computed. First the correlation matrix of the spatial coverage sample (`A`), and the correlation matrix of the spatial coverage sample and the evaluation points (`A0`) is computed. Correlation matrix `A` is extended with a column and row with ones, see Equation \@ref(eq:krigingeqsmatrix).
@@ -515,7 +504,7 @@ The following code chunks show how the estimation variance of the kriging varian
 ```{r}
 D <- spDists(mySCsample)
 vgmodel <- vgm(model="Exp", psill=thetas[1], range=thetas[2],
-               nugget=1-thetas[1])
+  nugget=1-thetas[1])
 A <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
 nobs <- length(mySCsample)
 B <- matrix(data=0, nrow=nobs+1, ncol=nobs+1)
@@ -533,13 +522,10 @@ pA  <- pA0 <- list()
 for (i in 1:length(thetas)) {
   thetas_pert <- thetas
   thetas_pert[i] <- (1+perturbation)*thetas[i]
-  vgmodel_pert <- vgm(
-    model="Exp", psill=thetas_pert[1], 
+  vgmodel_pert <- vgm(model="Exp", psill=thetas_pert[1], 
     range=thetas_pert[2], nugget=1-thetas_pert[1]) 
-  pA[[i]] <- variogramLine(
-    vgmodel_pert, dist_vector=D, covariance=TRUE)
-  pA0[[i]] <- variogramLine(
-    vgmodel_pert, dist_vector=D0, covariance=TRUE)
+  pA[[i]] <- variogramLine(vgmodel_pert, dist_vector=D, covariance=TRUE)
+  pA0[[i]] <- variogramLine(vgmodel_pert, dist_vector=D0, covariance=TRUE)
 }
 pB <- pb <- list()
 for (i in 1:length(thetas)) {
@@ -558,10 +544,10 @@ for (i in 1:length(myevalsample)) {
   b <- c(A0[i,],1)
   #compute kriging weights and Lagrange multiplier
   l <- solve(B,b) 
-  var[i] <- 1-l[1:nobs]%*%A0[i,]-l[nobs+1]
+  var[i] <- 1-l[1:nobs] %*% A0[i,]-l[nobs+1]
   for (j in 1:length(thetas)){
     pl <- solve(pB[[j]], pb[[j]][i,])
-    pvar[i,j] <- 1-pl[1:nobs]%*%pA0[[j]][i,]-pl[nobs+1]
+    pvar[i,j] <- 1-pl[1:nobs] %*% pA0[[j]][i,]-pl[nobs+1]
   }
 }
 dvar <- list()
@@ -633,7 +619,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 
-Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\boldsymbol{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\boldsymbol{\theta}}$, leads to a locally optimal design at $\hat{\boldsymbol{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
+Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\bm{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\bm{\theta}}$, leads to a locally optimal design at $\hat{\bm{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
 
 Both methods for sample optimisation rely on, amongst others, the assumption that the mean and variance are constant throughout the area. Under this assumption it is no problem that the sampling units are spatially clustered. So we assume that the semivariogram estimated from the data collected in a small portion of the study area is representative for the whole study area. If we do not feel comfortable with this assumption, spreading out the sampling units by the sampling methods described in the next two sections can be a good option.   
 
@@ -694,8 +680,7 @@ mySCsample <- as(spsample(myStrata), "SpatialPoints")
 nsup <- 10
 units <- sample.int(nrow(grd), nsup)
 mysupsample0 <- as(grd[units,], "SpatialPoints")
-myevalsample <- spsample(
-  x=grd, n=100, type="regular", offset=c(0.5,0.5))
+myevalsample <- spsample(x=grd, n=100, type="regular", offset=c(0.5,0.5))
 ```
 
 The next step is to compute the inverse of the Fisher information matrix, given a preliminary semivariogram model, which is used as the variance-covariance matrix of the estimated semivariogram parameters. Contrary to Section \@ref(samplingforvariogram) now *all* sampling locations are used to compute this matrix. The locations of the spatial coverage sample and the supplemental sample are merged into one `SpatialPoints` object.  
@@ -715,21 +700,21 @@ for (i in 1:length(thetas)) {
   thetas_pert <- thetas
   thetas_pert[i] <- (1+perturbation)*thetas[i]
   vgmdl <- vgm(model="Exp", psill=thetas_pert[1],
-               range=thetas_pert[2], nugget=1-thetas_pert[1]) 
+    range=thetas_pert[2], nugget=1-thetas_pert[1]) 
   pA[[i]] <- variogramLine(vgmdl, dist_vector=D, covariance=TRUE)
   dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
 }
 
-invA <- chol2inv(chol(A))
+invA <- solve(A)
 
 I <- matrix(0, length(thetas), length(thetas))
 for (i in 1:length(thetas)){
   for (j in i:length(thetas)){
-    I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+    I[i,j]=I[j,i]=0.5*matrix.trace(invA %*% dA[[i]] %*% invA %*% dA[[j]])
   }
 }
     
-invI <- chol2inv(chol(I))
+invI <- solve(I)
 
 nobs <- length(mysample)
 nrowB <- nobs + 1
@@ -769,11 +754,11 @@ for (i in 1:length(myevalsample)) {
   b <- c(A0[i,],1)
   l <- solve(B,b)
   L[i,] <- l[1:nobs]
-  var[i] <- 1-l[1:nobs]%*%A0[i,]-l[-(1:nobs)]
+  var[i] <- 1-l[1:nobs] %*% A0[i,]-l[-(1:nobs)]
   for (j in 1:length(thetas)){
     pl <- solve(pB[[j]], pb[[j]][i,])
     pL[i,,j] <- pl[1:nobs]
-    pvar[i,j] <- 1-pl[1:nobs]%*%pA0[[j]][i,]-pl[-(1:nobs)]
+    pvar[i,j] <- 1-pl[1:nobs] %*% pA0[[j]][i,]-pl[-(1:nobs)]
   }
 }
 dL <- dvar <- list()
@@ -791,7 +776,7 @@ tausqk <- 0
 for (k in 1:length(myevalsample)) {
   for (i in 1:length(dL)){
     for (j in 1:length(dL)){
-      tausqijk <- invI[i,j]*t(dL[[i]][k,])%*%A%*%dL[[j]][k,] 
+      tausqijk <- invI[i,j]*t(dL[[i]][k,]) %*% A %*% dL[[j]][k,] 
       tausqk <- tausqk+tausqijk
     }
   }
@@ -974,16 +959,16 @@ for (i in 1:length(thetas)) {
   dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
 }
   
-invA <- chol2inv(chol(A))
+invA <-solve(A)
 
 I <- matrix(data=0, nrow=length(thetas), ncol=length(thetas))
 for (i in 1:length(thetas)){
   for (j in i:length(thetas)){
-    I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+    I[i,j]=I[j,i]=0.5*matrix.trace(invA %*% dA[[i]] %*% invA%*%dA[[j]])
   }
 }
     
-invI <- chol2inv(chol(I))
+invI <- solve(I)
 
 nobs <- length(mysample)
 nrowB <- nobs + 1
@@ -1033,7 +1018,7 @@ tausqk <- 0
 for (k in 1:length(myevalsample)) {
   for (i in 1:length(dL)){
     for (j in 1:length(dL)){
-      tausqijk <- invI[i,j]*t(dL[[i]][k,])%*%A%*%dL[[j]][k,] 
+      tausqijk <- invI[i,j]*t(dL[[i]][k,]) %*% A %*% dL[[j]][k,] 
       tausqk <- tausqk+tausqijk
     }
   }

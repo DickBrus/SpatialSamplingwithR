@@ -35,8 +35,7 @@ twostage <- function(sframe, psu, n, m) {
   mypsusample <- sframe[units,psu]
   ssunits <- NULL
   for (psunit in mypsusample) {
-    ssunit <- sample(
-      x = which(sframe[,psu]==psunit), size=m, replace=TRUE)
+    ssunit <- sample(x = which(sframe[,psu]==psunit), size=m, replace=TRUE)
     ssunits <- c(ssunits, ssunit)
   }
   psudraw <- rep(c(1:n), each=m)
@@ -182,8 +181,7 @@ The same estimate is obtained with functions `svydesign` and `svymean` of packag
 library(survey)
 M <- nrow(grdVoorst)
 mysample$weights <- M/(n*m)
-design_2stage <- svydesign(
-  id=~psudraw+ssunits, weight=~weights, data=mysample)
+design_2stage <- svydesign(id=~psudraw+ssunits, weight=~weights, data=mysample)
 svymean(~z, design_2stage, deff="replace")
 ```
 
@@ -192,8 +190,7 @@ Similar to (one-stage) cluster random sampling the estimated design effect\index
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of psu draws minus one.
 
 ```{r}
-confint(svymean(
-  ~z, design_2stage, df=degf(design_2stage), level=0.95))
+confint(svymean(~z, design_2stage, df=degf(design_2stage), level=0.95))
 ```
 
 Figure \@ref(fig:SamplingDistributionTwostage) shows the sampling distributions of the pwr estimator of the population mean with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
@@ -271,8 +268,7 @@ sampleind <- UPpivotal(pik=pi, eps=1e-6)
 psus <- sort(unique(grdVoorst$psu))
 sampledpsus <- psus[sampleind==1]
 mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus,]
-units <- sampling::strata(
-  mysample_stage1, stratanames="psu",
+units <- sampling::strata(mysample_stage1, stratanames="psu",
   size=rep(m,n), method="srswor")
 mysample <- getdata(mysample_stage1, units)
 mysample$ssunits <- units$ID_unit
@@ -285,8 +281,8 @@ The population mean can be estimated with function `svymean` of package **survey
 ```{r}
 mysample$fpc1 <- n*M_psu[mysample$psu]/M
 mysample$fpc2 <- m/M_psu[mysample$psu]
-design_2stageppswor <- svydesign(
-  id=~psu+ssunits, data=mysample, pps="brewer", fpc=~fpc1+fpc2)
+design_2stageppswor <- svydesign(id=~psu+ssunits, data=mysample,
+  pps="brewer", fpc=~fpc1+fpc2)
 svymean(~z,design_2stageppswor)
 ```
 
@@ -311,8 +307,7 @@ psus <- sort(unique(grdVoorst$psu))
 ids_psu <- sample.int(length(psus), size=n, replace=FALSE) 
 sampledpsus <- psus[ids_psu]
 mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus,]
-units <- sampling::strata(
-  mysample_stage1, stratanames="psu",
+units <- sampling::strata(mysample_stage1, stratanames="psu",
   size=rep(m,n), method="srswor")
 mysample <- getdata(mysample_stage1, units)
 mysample$ssunits <- units$ID_unit
@@ -361,8 +356,7 @@ The ratio estimator of the population mean and its standard error can be compute
 ```{r}
 mysample$fpc1 <- N
 mysample$fpc2 <- M_psu[mysample$psu]
-design_2stage <- svydesign(
-  id=~psu+ssunits, fpc=~fpc1+fpc2, data=mysample)
+design_2stage <- svydesign(id=~psu+ssunits, fpc=~fpc1+fpc2, data=mysample)
 svymean(~z, design_2stage)
 ```
 The estimated standard error of the ratio estimator is slightly smaller than the standard error of the $\pi$ estimator.
@@ -410,15 +404,12 @@ ggplot(grdVoorst) +
 The population mean can be estimated in much in the same way as with stratified cluster random sampling. With function `svymean` this is an easy task.  
 
 ```{r}
-N_h <- tapply(
-  grdVoorst$psu, INDEX=grdVoorst$zonestratum,
+N_h <- tapply(grdVoorst$psu, INDEX=grdVoorst$zonestratum,
   FUN=function(x) {length(unique(x))})
-M_h <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
+M_h <- tapply(grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
 mysample$w1 <- N_h[mysample$zonestratum]
 mysample$w2 <- M_h[mysample$zonestratum]
-design_str2stage <- svydesign(
-  id=~psudraw+ssunits, strata=~zonestratum,
+design_str2stage <- svydesign(id=~psudraw+ssunits, strata=~zonestratum,
   weights=~w1+w2, data=mysample, nest=TRUE)
 svymean(~z, design_str2stage)
 ```

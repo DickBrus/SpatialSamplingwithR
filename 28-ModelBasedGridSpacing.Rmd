@@ -35,11 +35,8 @@ The semivariogram of SOM can also be estimated by maximum likelihood using funct
 ```{r}
 library(geoR)
 priordata <- as(priordataEthiopia,"data.frame")
-dGeoR <- as.geodata(
-  obj=priordata, header=TRUE,
-  coords.col=13:14, data.col=1)
-vgm_ML <- likfit(
-  geodata=dGeoR, trend="cte",
+dGeoR <- as.geodata(obj=priordata, header=TRUE, coords.col=13:14, data.col=1)
+vgm_ML <- likfit(geodata=dGeoR, trend="cte",
   cov.model="spherical", ini.cov.pars=c(0.4,40),
   nugget=0.6, lik.method="ML", messages=FALSE)
 ```
@@ -82,14 +79,11 @@ The **R** code below shows the next steps. Given a spacing, a square grid with a
 ```{r}
 coordinates(mysample) <- ~s1+s2
 gridded(grdEthiopia) <- ~s1+s2
-MKV_OK <- P50KV_OK <- P90KV_OK <- samplesize <- 
-  numeric(length=length(spacing))
-vgm_ML_gstat <- vgm(
-  model="Sph", nugget=vgm_ML$nugget, psill=vgm_ML$sigmasq,
-  range=vgm_ML$phi)
+MKV_OK <- P50KV_OK <- P90KV_OK <- samplesize <- numeric(length=length(spacing))
+vgm_ML_gstat <- vgm(model="Sph", nugget=vgm_ML$nugget,
+  psill=vgm_ML$sigmasq, range=vgm_ML$phi)
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(
-    x=grdEthiopia, cellsize=spacing[i],
+  mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
     type="regular", offset=c(0.5,0.5))
   mygrid<-data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
   samplesize[i] <- nrow(mygrid)
@@ -105,8 +99,7 @@ for (i in 1:length(spacing)) {
   P50KV_OK[i] <- quantile(predictions$var1.var,probs=0.5)
   P90KV_OK[i] <- quantile(predictions$var1.var,probs=0.9)
 }
-dfKV_OK <- data.frame(
-  spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
+dfKV_OK <- data.frame(spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
 ```
 
 The estimated mean and quantiles of the kriging variance are plotted against the grid spacing.
@@ -125,8 +118,7 @@ ggplot(df) +
 The tolerable grid spacing for the three quality indices can be computed with function `approx` of the **base** package, as shown below for the median kriging variance\index{Median kriging variance}.
 
 ```{r}
-spacing_tol_P50 <- approx(
-  x=dfKV_OK$P50, y=dfKV_OK$spacing, xout=0.8)$y
+spacing_tol_P50 <- approx(x=dfKV_OK$P50, y=dfKV_OK$spacing, xout=0.8)$y
 ```
 
 ```{r, echo=FALSE}
@@ -149,11 +141,9 @@ For a mean kriging variance of 0.8 the tolerable grid spacing is `r round(spacin
 In the previous section the tolerable grid spacing is derived from a constraint on the mean, P50 or P90 of the error variances of predictions at points. The alternative is to put a constraint on the mean (P50, P90) of the error variances of the predicted means of blocks. These means can be predicted with block-kriging\index{Kriging!block-kriging} (Section \@ref(BlockKriging)). Block-kriging predictions can be obtained with function `krige` of package **gstat**, using argument `block`. In the code chunk below the means of 100 m $\times$ 100 m blocks are predicted by ordinary block-kriging. 
 
 ```{r}
-MKV_OBK <- P50KV_OBK <- P90KV_OBK <-
-  numeric(length=length(spacing))
+MKV_OBK <- P50KV_OBK <- P90KV_OBK <- numeric(length=length(spacing))
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(
-    x=grdEthiopia, cellsize=spacing[i],
+  mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
     type="regular", offset=c(0.5,0.5))
   mygrid<-data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
   samplesize[i] <- nrow(mygrid)
@@ -194,15 +184,13 @@ The SOM data of the three woredas of Ethiopia are used to estimate the parameter
 
 ```{r}
 library(geoR)
-dGeoR <- as.geodata(
-  obj = priordata, header=TRUE,
-  coords.col=13:14, data.col=1,
-  covar.col=c(3,9,10,11))
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
+dGeoR <- as.geodata(obj = priordata, header=TRUE,
+  coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
+vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
   cov.model="spherical", ini.cov.pars=c(1,5),
   nugget=0.2, lik.method="REML", messages=FALSE)
 ```
+
 ```{r VariogramREMLEthiopia, echo=FALSE}
 tbl <- data.frame(Parameter=c("nugget","partial sill", "range"),ML=c(round(vgm_ML_gstat$psill,2),round(vgm_ML_gstat$range[2],1)),REML=c(round(vgm_REML$nugget,2),round(vgm_REML$sigmasq,2),round(vgm_REML$phi,1)))
 
@@ -220,14 +208,12 @@ The mean kriging variance as obtained with KED is used as the evaluation criteri
 ```{r, eval=FALSE}
 r <- 10
 MKV_KED <- matrix(nrow=length(spacing), ncol=r)
-vgm_REML_gstat <- vgm(
-  model="Sph", nugget=vgm_REML$nugget,
+vgm_REML_gstat <- vgm(model="Sph", nugget=vgm_REML$nugget,
   psill=vgm_REML$sigmasq, range=vgm_REML$phi)
 set.seed(314)
 for (i in 1:length(spacing)) {
   for (j in 1:r) {
-    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
-                         type="regular")
+    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i], type="regular")
     mygrid <- data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
     coordinates(mygrid) <- ~s1+s2
     mygrd <- data.frame(over(mygrid, grdEthiopia), mygrid)
@@ -285,11 +271,11 @@ The tolerable grid spacing for a mean kriging variance of 0.8, using KED, equals
 In practice we do not know the semivariogram. In the best case we have prior data that can be used to estimate the semivariogram. However, even in this case we are uncertain about the semivariogram type (spherical, exponential, etc.) and the semivariogram parameters. @Lark2017 showed how in a Bayesian approach\index{Bayesian approach!to grid spacing determination} we can account for uncertainty about the semivariogram parameters when we must decide on the grid spacing. In this approach a prior distribution of the semivariogram parameters is updated with the sample data to a posterior distribution [@Gelman2013]:
 
 \begin{equation}
-f(\boldsymbol{\theta}|\mathbf{z}) = \frac{f(\boldsymbol{\theta}) f(\mathbf{z}|\boldsymbol{\theta})} {f(\mathbf{z})}\;,
+f(\bm{\theta}|\mathbf{z}) = \frac{f(\bm{\theta}) f(\mathbf{z}|\bm{\theta})} {f(\mathbf{z})}\;,
 (\#eq:BayesRule)
 \end{equation}
 
-with $f(\boldsymbol{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\boldsymbol{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\boldsymbol{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
+with $f(\bm{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\bm{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\bm{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
 
 Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution  through Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling}, see Section \@ref(MBpredSamplingVarBayes). 
 
@@ -305,12 +291,11 @@ ll <-function(thetas) {
     model=model, psill=psill, range=thetas[3],
     nugget=nugget)
   C <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
-  Cinv <- chol2inv(chol(C))
-  XC <- crossprod(X, Cinv)
-  XCz <- XC%*%z
-  XCX <- XC%*%X
-  betahat <- solve(XCX, XCz)
-  mu <- as.numeric(X%*%betahat)
+  Cinv <- solve(C)
+  XCXinv <- solve(crossprod(X, Cinv) %*% X)
+  XCz <- crossprod(X, Cinv) %*% z
+  betahat <- XCXinv %*% XCz
+  mu <- as.numeric(X %*% betahat)
   logLik <- dmvnorm(x=z, mean=mu, sigma=C, log=TRUE)
   logLik
 }
@@ -331,8 +316,7 @@ priors <- createUniformPrior(
 sill_ML <- vgm_ML$psill[1]+vgm_ML$psill[2]
 thetas_ML <- c(1/sill_ML,vgm_ML$psill[2]/sill_ML,vgm_ML$range[2])
 model <- "Sph"
-setup <- createBayesianSetup(
-  likelihood=ll, prior=priors,
+setup <- createBayesianSetup(likelihood=ll, prior=priors,
   best=thetas_ML, names=c("lambda","xi","range"))
 ```
 

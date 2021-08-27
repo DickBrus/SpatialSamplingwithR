@@ -19,7 +19,7 @@ logdet<-function(points, model, thetas, perturbation)  {
   if (is.character(cholA)){
     return(1E20)} else {
       # inverse of the correlation matrix
-      invA <- chol2inv(chol(A))
+      invA <- solve(A)
       # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
       I <- matrix(0,length(thetas),length(thetas))
       for (i in 1:length(thetas)){
@@ -33,7 +33,7 @@ logdet<-function(points, model, thetas, perturbation)  {
         return(1E20)} else {
           
           # inverse of the Fisher information matrix
-          invI <- chol2inv(chol(I))
+          invI <- solve(I)
           
           logdet <- determinant(invI,logarithm=TRUE)$modulus
           logdet} 
@@ -60,7 +60,7 @@ varkrigvar<-function(points, psample, esample, model, thetas, perturbation)  {
   if (is.character(cholA)){
     return(1E20)} else {
       # inverse of the correlation matrix
-      invA <- chol2inv(chol(A))
+      invA <- solve(A)
       # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
       I <- matrix(0,length(thetas),length(thetas))
       for (i in 1:length(thetas)){
@@ -72,7 +72,7 @@ varkrigvar<-function(points, psample, esample, model, thetas, perturbation)  {
       if (is.character(cholI)){
         return(1E20)} else {
           # inverse of the Fisher information matrix
-          invI <- chol2inv(chol(I))
+          invI <- solve(I)
           #compute distance matrix and correlation matrix of sampling points used for prediction
           D <- spDists(psample)
           A <- variogramLine(vgm(model=model,psill=thetas[1],range=thetas[2],nugget=1-thetas[1]),
@@ -159,7 +159,7 @@ augvar<-function(points, esample, model, thetas, perturbation)  {
   if (is.character(cholA)){
     return(1E20)} else {
       # inverse of the covariance matrix
-      invA <- chol2inv(chol(A))
+      invA <- solve(A)
       # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
       I <- matrix(0,length(thetas),length(thetas))
       for (i in 1:length(thetas)){
@@ -173,7 +173,7 @@ augvar<-function(points, esample, model, thetas, perturbation)  {
         return(1E20)} else {
           
           # inverse of the Fisher information matrix
-          invI <- chol2inv(chol(I))
+          invI <- solve(I)
           
           nrowB <- nobs + 1
           B <- matrix(data=0,nrow=nrowB,ncol=nrowB)
@@ -260,7 +260,7 @@ EAC<-function(points, esample, model, thetas, perturbation)  {
   if (is.character(cholA)){
     return(1E20)} else {
       # inverse of the covariance matrix
-      invA <- chol2inv(chol(A))
+      invA <- solve(A)
       # compute Fisher information matrix, see Eq. 7 Geoderma paper Lark, 2002
       I <- matrix(0,length(thetas),length(thetas))
       for (i in 1:length(thetas)){
@@ -274,7 +274,7 @@ EAC<-function(points, esample, model, thetas, perturbation)  {
         return(1E20)} else {
           
           # inverse of the Fisher information matrix
-          invI <- chol2inv(chol(I))
+          invI <- solve(I)
           
           nrowB <- nobs + 1
           B <- matrix(data=0,nrow=nrowB,ncol=nrowB)

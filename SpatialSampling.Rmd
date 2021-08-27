@@ -997,8 +997,7 @@ Ideally a confidence interval for a population proportion is based on the binomi
 library(DescTools)
 n <- 50
 k <- 5
-print(p.est <- BinomCI(k, n, conf.level=0.95,
-                       method="clopper-pearson"))
+print(p.est <- BinomCI(k, n, conf.level=0.95, method="clopper-pearson"))
 ```
 
 The confidence interval is not symmetric around the estimated proportion of 0.1. As can be seen below the upper bound is the proportion at which the probability of 5 or less successes is 0.025,
@@ -1047,8 +1046,7 @@ Stratified simple random sampling is illustrated with Voorst (Figure \@ref(fig:S
 ```{r stsi}
 library(sampling)
 load("data/Voorst.RData")
-N_h <- tapply(grdVoorst$stratum, INDEX=grdVoorst$stratum,
-             FUN=length)
+N_h <- tapply(grdVoorst$stratum, INDEX=grdVoorst$stratum, FUN=length)
 w_h <- N_h/sum(N_h)
 n <- 40
 print(n_h <- round(n * w_h))
@@ -1193,8 +1191,7 @@ library(survey)
 labels <- sort(unique(mysample$stratum))
 lut <- data.frame(stratum=labels, weight=N_h/n_h)
 mysample <- merge(x=mysample, y=lut)
-design_stsi <- svydesign(
-  id=~1, strata=~stratum, weight=~weight, data=mysample)
+design_stsi <- svydesign(id=~1, strata=~stratum, weight=~weight, data=mysample)
 svymean(~z, design_stsi)
 ```
 
@@ -1336,8 +1333,7 @@ SE(res)^2/v_mz_SI
 The same value is obtained with argument `deff` of function `svymean`. 
 
 ```{r designeffectSTSI}
-design_stsi <- svydesign(
-  id=~1, strata=~stratum, weight=~weight, data=mysample)
+design_stsi <- svydesign(id=~1, strata=~stratum, weight=~weight, data=mysample)
 svymean(~z, design_stsi, deff="replace")
 ```
 
@@ -1566,8 +1562,7 @@ This is illustrated again with the Xuancheng case study. Five quantitative covar
 ```{r}
 library(sp)
 gridded(grd) <- c("x1","x2")
-subgrd <- spsample(
-  grd, type="regular", cellsize=0.4, offset=c(0.5,0.5))
+subgrd <- spsample(grd, type="regular", cellsize=0.4, offset=c(0.5,0.5))
 subgrd <- data.frame(coordinates(subgrd), over(subgrd,grd))
 ```
 
@@ -1580,8 +1575,7 @@ Five clusters are computed with $k$-means using as clustering variables elevatio
 ```{r}
 x <- c("dem","temperature","slope","profile.curvature","twi")
 set.seed(314)
-myClusters <- kmeans(
-  scale(subgrd[,x]), centers=5, iter.max=1000, nstart=100)
+myClusters <- kmeans(scale(subgrd[,x]), centers=5, iter.max=1000, nstart=100)
 subgrd$cluster <- myClusters$cluster
 ```
 
@@ -1630,8 +1624,7 @@ library(spcosa)
 library(sp)
 set.seed(314)
 gridded(subgrd) <- ~x1+x2
-mygeostrata <- stratify(
-  object=subgrd, nStrata=50, nTry=1, equalArea=TRUE)
+mygeostrata <- stratify(object=subgrd, nStrata=50, nTry=1, equalArea=TRUE)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -1679,12 +1672,9 @@ library(spcosa)
 load(file="results/geostrata_Xuancheng.RData")
 mysample <- spcosa::spsample(mygeostrata, n=2)
 mydata <- data.frame(z=rnorm(100, mean=10, sd=2))
-mean <- estimate(
-  "spatial mean", mygeostrata, mysample, data=mydata)
-se <- estimate(
-  "standard error", mygeostrata, mysample, data=mydata)
-cdf <- estimate(
-  "scdf", mygeostrata, mysample, data=mydata)
+mean <- estimate("spatial mean", mygeostrata, mysample, data=mydata)
+se <- estimate("standard error", mygeostrata, mysample, data=mydata)
+cdf <- estimate("scdf", mygeostrata, mysample, data=mydata)
 ```
 
 The estimated population mean equals `r round(mean, 2)`, with an estimated standard error of `r round(se, 3)`.
@@ -1796,8 +1786,7 @@ frame <- buildFrameDF(
 Next, a data frame with the precision requirements for the estimated means is created. The precision requirement is given as a coefficient of variation, i.e. the standard error of the estimated population mean, divided by the estimated mean. The study variables as specified in `Y` are used to compute estimated means and the standard errors for a given stratification and allocation.
  
 ```{r}
-cv <- as.data.frame(
-  list(DOM="DOM1", CV1=0.02, CV2=0.02, domainvalue=1))
+cv <- as.data.frame(list(DOM="DOM1", CV1=0.02, CV2=0.02, domainvalue=1))
 ```
 
 Finally, the multivariate stratification is optimised, by optimising the stratum bounds, using a genetic algorithm [@ger99].
@@ -1820,8 +1809,7 @@ load(file="results/multivariatestrata_Meuse.RData")
 A summary of the strata can be obtained with function `summaryStrata`.
 
 ```{r}
-smrstrata <- summaryStrata(
-  res$framenew, res$aggr_strata, progress=FALSE)
+smrstrata <- summaryStrata(res$framenew, res$aggr_strata, progress=FALSE)
 ```
 
 ```{r, echo=FALSE}
@@ -1835,9 +1823,8 @@ The column `Population` is the size of the strata (number of pixels). The total 
 Figure \@ref(fig:2dplotbivariatestrata) shows a 2D-plot of the bivariate strata. The strata can be plotted as a series of nested rectangles. All population units in the smallest rectangle belong to stratum 1; all units in the one-but-smallest rectangle that are not in the smallest rectangle belong to stratum 2, etc. If we have more than two stratification variables the strata form a series of nested hyperrectangles or boxes. The strata are obtained as the Cartesian product of orthogonal intervals.  
 
 ```{r 2dplotbivariatestrata, fig.cap="Optimised bivariate strata for study area Meuse."}
-plt <- plotStrata2d(
-  res$framenew, res$aggr_strata, domain=1, 
-  vars=c("X1","X2"), labels=c("Cd","Zn"))
+plt <- plotStrata2d(res$framenew, res$aggr_strata,
+  domain=1, vars=c("X1","X2"), labels=c("Cd","Zn"))
 ```
 
 It may happen that during the optimisation of the stratum bounds in some resulting strata no units are contained. If the solution with a smaller number of strata requires fewer sampling units, then this is retained as the optimal stratification (personal communication Giulio Barcaroli).
@@ -2032,8 +2019,7 @@ A large variation in sample size, if the sampling with the sampling design under
 ```{r}
 dy <- 1000/3
 dx <- A/(n*dy)
-mySYsample_rect <- spsample(
-  x=grdVoorst, cellsize=c(dx,dy), type="regular")
+mySYsample_rect <- spsample(x=grdVoorst, cellsize=c(dx,dy), type="regular")
 ```
 
 The East-West spacing is somewhat larger than the North-South spacing: `r dx` m. The variation in sample size with the random rectangular grid is much smaller than that of the square grid.
@@ -2258,8 +2244,7 @@ kmeans_equal_size <- function(s1, s2, k, ntry) {
 }
 n <- nrow(mySYsample); k <- floor(n/2)
 set.seed(314)
-res <- kmeans_equal_size(
-  s1=mySYsample$x1/1000, s2=mySYsample$x2/1000,
+res <- kmeans_equal_size(s1=mySYsample$x1/1000, s2=mySYsample$x2/1000,
   k=k, ntry=100)
 mySYsample$cluster <- res$clusters
 ```
@@ -2325,8 +2310,7 @@ Before using this function the data frame with the sample data must be extended 
 
 ```{r}
 mySYsample <- mySYsample %>%
-  mutate(i=round((x1-min(x1))/spacing), 
-         j=round((x2-min(x2))/spacing))
+  mutate(i=round((x1-min(x1))/spacing), j=round((x2-min(x2))/spacing))
 matern(mySYsample)
 ```
  
@@ -2451,14 +2435,13 @@ Factor 1 has four levels, as the modulus of the s1-coordinates and a spacing of 
 s1local <- grdVoorst$s1-min(grdVoorst$s1)
 s2local <- grdVoorst$s2-min(grdVoorst$s2)
 spacing <- 100 
-mods1 <- s1local%%spacing
+mods1 <- s1local %% spacing
 #construct clusters (E-W oriented transects within zones)
 grdVoorst$cluster <- interaction(
   as.factor(mods1),
   as.factor(s2local),
   as.factor(grdVoorst$zone)) %>%  as.character(.)
-M_cl <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
+M_cl <- tapply(grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
 grdVoorst$unit <- 1:nrow(grdVoorst)
 ```
 
@@ -2502,10 +2485,8 @@ As our population actually is infinite, the selected sampling points (nodes of t
 ```{r}
 for (i in 1:n) {
   units <- which(mysample$cldraw==i)
-  mysample$s1[units] <- mysample$s1[units] + 
-    runif(1,min=-12.5,max=12.5)
-  mysample$s2[units] <- mysample$s2[units] + 
-    runif(1,min=-12.5,max=12.5)
+  mysample$s1[units] <- mysample$s1[units] + runif(1, min=-12.5, max=12.5)
+  mysample$s2[units] <- mysample$s2[units] + runif(1, min=-12.5, max=12.5)
 }
 ```
 
@@ -2606,8 +2587,7 @@ The same estimates are obtained with functions `svydesign` and `svymean` of pack
 library(survey)
 M <- nrow(grdVoorst)
 mysample$weights <- M/(M_cl[mysample$cluster]*n)
-design_cluster <- svydesign(
-  id=~cldraw, weights=~weights, data=mysample)
+design_cluster <- svydesign(id=~cldraw, weights=~weights, data=mysample)
 svymean(~z, design_cluster, deff="replace")
 ```
 
@@ -2616,8 +2596,7 @@ The design effect\index{Design effect} as estimated from the selected cluster sa
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of cluster draws minus 1.
 
 ```{r}
-confint(svymean(
-  ~z, design_cluster, df=degf(design_cluster), level=0.95))
+confint(svymean(~z, design_cluster, df=degf(design_cluster), level=0.95))
 ```
 
 Figure \@ref(fig:SamplingDistributionCl) shows the sampling distributions of the pwr estimator of the mean with cluster random sampling and of the $\pi$ estimator with simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
@@ -2706,8 +2685,7 @@ The population mean can be estimated with function `svymean` of package **survey
 
 ```{r}
 mysample$pi <- n*M_cl[mysample$cluster]/M
-design_clppswor <- svydesign(
-  id=~cluster, data=mysample, pps="brewer", fpc=~pi)
+design_clppswor <- svydesign(id=~cluster, data=mysample, pps="brewer", fpc=~pi)
 svymean(~z,design_clppswor)
 ```
 
@@ -2715,8 +2693,7 @@ Another variance estimator implemented in function `svydesign`  is the Hartley-R
 
 ```{r}
 p2sum<-sum((n*M_cl[mysample$cluster]/M)^2)/n
-design_hr <- svydesign(
-  id=~cluster,  data=mysample, pps=HR(p2sum), fpc=~pi)
+design_hr <- svydesign(id=~cluster,  data=mysample, pps=HR(p2sum), fpc=~pi)
 svymean(~z, design_hr)
 ```
 
@@ -2827,8 +2804,7 @@ with $\widehat{S^2}_e$ the estimated variance of the residuals.
 ```{r}
 m_M_cl <- mean(M_cl[unique(mysample$cluster)])
 b <- mean(tz_cluster)/m_M_cl
-e_cl <- tz_cluster - 
-  b*M_cl[sort(unique(mysample$cluster))]
+e_cl <- tz_cluster - b*M_cl[sort(unique(mysample$cluster))]
 S2e <- var(e_cl)
 print(se_mz_ratio <- sqrt(fpc*1/m_M_cl^2*S2e/n))
 ```
@@ -2836,8 +2812,7 @@ print(se_mz_ratio <- sqrt(fpc*1/m_M_cl^2*S2e/n))
 The ratio estimate can also be computed with function `svymean` of package **survey**, which also provides an estimate of the standard error of the estimated mean.
 
 ```{r}
-design_SIC <- svydesign(
-  id=~cluster, probs=~pi, fpc=~pi, data=mysample)
+design_SIC <- svydesign(id=~cluster, probs=~pi, fpc=~pi, data=mysample)
 svymean(~z, design_SIC)
 ```
 
@@ -2880,13 +2855,11 @@ mz_h <- v_mz_h <- numeric(length=3)
 for (i in 1:3) {
   units <- which(mysample$zonestratum==letters[i])
   mysample_h <- mysample[units,]
-  mz_cl <- tapply(mysample_h$z,
-                  INDEX=mysample_h$cldraw, FUN=mean)
+  mz_cl <- tapply(mysample_h$z, INDEX=mysample_h$cldraw, FUN=mean)
   mz_h[i] <- mean(mz_cl)
   v_mz_h[i] <- var(mz_cl)/n_h[i]
 }
-M_h <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
+M_h <- tapply(grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
 w_h <- M_h/M
 mz <- sum(w_h*mz_h)
 se_mz <- sqrt(sum(w_h^2*v_mz_h))
@@ -2897,9 +2870,8 @@ The estimated mean equals `r round(mz,3)`, and the estimated standard error equa
 ```{r}
 mysample$weights <- M_h[mysample$zonestratum]/
   (M_cl[mysample$cluster]*n_h[mysample$zonestratum])
-design_strcluster <- svydesign(
-  id=~cldraw, strata=~zonestratum, weights=~weights,
-  data=mysample, nest=TRUE)
+design_strcluster <- svydesign(id=~cldraw, strata=~zonestratum, 
+  weights=~weights, data=mysample, nest=TRUE)
 svymean(~z,design_strcluster)
 ```
 
@@ -2950,8 +2922,7 @@ twostage <- function(sframe, psu, n, m) {
   mypsusample <- sframe[units,psu]
   ssunits <- NULL
   for (psunit in mypsusample) {
-    ssunit <- sample(
-      x = which(sframe[,psu]==psunit), size=m, replace=TRUE)
+    ssunit <- sample(x = which(sframe[,psu]==psunit), size=m, replace=TRUE)
     ssunits <- c(ssunits, ssunit)
   }
   psudraw <- rep(c(1:n), each=m)
@@ -3097,8 +3068,7 @@ The same estimate is obtained with functions `svydesign` and `svymean` of packag
 library(survey)
 M <- nrow(grdVoorst)
 mysample$weights <- M/(n*m)
-design_2stage <- svydesign(
-  id=~psudraw+ssunits, weight=~weights, data=mysample)
+design_2stage <- svydesign(id=~psudraw+ssunits, weight=~weights, data=mysample)
 svymean(~z, design_2stage, deff="replace")
 ```
 
@@ -3107,8 +3077,7 @@ Similar to (one-stage) cluster random sampling the estimated design effect\index
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of psu draws minus one.
 
 ```{r}
-confint(svymean(
-  ~z, design_2stage, df=degf(design_2stage), level=0.95))
+confint(svymean(~z, design_2stage, df=degf(design_2stage), level=0.95))
 ```
 
 Figure \@ref(fig:SamplingDistributionTwostage) shows the sampling distributions of the pwr estimator of the population mean with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
@@ -3186,8 +3155,7 @@ sampleind <- UPpivotal(pik=pi, eps=1e-6)
 psus <- sort(unique(grdVoorst$psu))
 sampledpsus <- psus[sampleind==1]
 mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus,]
-units <- sampling::strata(
-  mysample_stage1, stratanames="psu",
+units <- sampling::strata(mysample_stage1, stratanames="psu",
   size=rep(m,n), method="srswor")
 mysample <- getdata(mysample_stage1, units)
 mysample$ssunits <- units$ID_unit
@@ -3200,8 +3168,8 @@ The population mean can be estimated with function `svymean` of package **survey
 ```{r}
 mysample$fpc1 <- n*M_psu[mysample$psu]/M
 mysample$fpc2 <- m/M_psu[mysample$psu]
-design_2stageppswor <- svydesign(
-  id=~psu+ssunits, data=mysample, pps="brewer", fpc=~fpc1+fpc2)
+design_2stageppswor <- svydesign(id=~psu+ssunits, data=mysample,
+  pps="brewer", fpc=~fpc1+fpc2)
 svymean(~z,design_2stageppswor)
 ```
 
@@ -3226,8 +3194,7 @@ psus <- sort(unique(grdVoorst$psu))
 ids_psu <- sample.int(length(psus), size=n, replace=FALSE) 
 sampledpsus <- psus[ids_psu]
 mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus,]
-units <- sampling::strata(
-  mysample_stage1, stratanames="psu",
+units <- sampling::strata(mysample_stage1, stratanames="psu",
   size=rep(m,n), method="srswor")
 mysample <- getdata(mysample_stage1, units)
 mysample$ssunits <- units$ID_unit
@@ -3276,8 +3243,7 @@ The ratio estimator of the population mean and its standard error can be compute
 ```{r}
 mysample$fpc1 <- N
 mysample$fpc2 <- M_psu[mysample$psu]
-design_2stage <- svydesign(
-  id=~psu+ssunits, fpc=~fpc1+fpc2, data=mysample)
+design_2stage <- svydesign(id=~psu+ssunits, fpc=~fpc1+fpc2, data=mysample)
 svymean(~z, design_2stage)
 ```
 The estimated standard error of the ratio estimator is slightly smaller than the standard error of the $\pi$ estimator.
@@ -3325,15 +3291,12 @@ ggplot(grdVoorst) +
 The population mean can be estimated in much in the same way as with stratified cluster random sampling. With function `svymean` this is an easy task.  
 
 ```{r}
-N_h <- tapply(
-  grdVoorst$psu, INDEX=grdVoorst$zonestratum,
+N_h <- tapply(grdVoorst$psu, INDEX=grdVoorst$zonestratum,
   FUN=function(x) {length(unique(x))})
-M_h <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
+M_h <- tapply(grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
 mysample$w1 <- N_h[mysample$zonestratum]
 mysample$w2 <- M_h[mysample$zonestratum]
-design_str2stage <- svydesign(
-  id=~psudraw+ssunits, strata=~zonestratum,
+design_str2stage <- svydesign(id=~psudraw+ssunits, strata=~zonestratum,
   weights=~w1+w2, data=mysample, nest=TRUE)
 svymean(~z, design_str2stage)
 ```
@@ -3500,8 +3463,7 @@ rho <- 0.8
 mu1 <- 10; sd1 <- 2
 mu2 <- 15; sd2 <- 4
 mu <- c(mu1, mu2)
-sigma <- matrix(data=c(sd1^2, sd1*sd2*rho, sd1*sd2*rho, sd2^2),
-                nrow=2, ncol=2)
+sigma <- matrix(data=c(sd1^2, sd1*sd2*rho, sd1*sd2*rho, sd2^2), nrow=2, ncol=2)
 N <- 1000
 set.seed(314)
 dat <- as.data.frame(mvrnorm(N, mu=mu, Sigma=sigma))
@@ -3596,16 +3558,14 @@ pi <- inclusionprobabilities(size, n)
 set.seed(314)
 eps <- 1e-6
 sampleind <- UPrandompivotal(pik=pi, eps=eps)
-mysample <- data.frame(
-  grdKandahar[sampleind==1,], pi=pi[sampleind==1])
+mysample <- data.frame(grdKandahar[sampleind==1,], pi=pi[sampleind==1])
 nrow(mysample)
 ```
 
 As can be seen not 40 but only 39 units are selected. If we replace `sampleind==1` by `sampleind>1-eps`, 40 units are selected. 
 
 ```{r}
-mysample <- data.frame(grdKandahar[sampleind>1-eps,],
-                       pi=pi[sampleind>1-eps])
+mysample <- data.frame(grdKandahar[sampleind>1-eps,], pi=pi[sampleind>1-eps])
 nrow(mysample)
 ```
 
@@ -3613,8 +3573,7 @@ The total poppy area can be estimated from the ppswor sample by
 
 ```{r}
 tz_HT <- sum(mysample$poppy/mysample$pi)
-tz_Hajek <- N*sum(mysample$poppy/mysample$pi)/
-  sum(1/mysample$pi)
+tz_Hajek <- N*sum(mysample$poppy/mysample$pi)/sum(1/mysample$pi)
 ```
 
 The total poppy area as estimated with the $\pi$ estimator equals `r as.character(round(tz_HT,0))` ha. The Hajek estimator results in a much smaller estimated total: `r as.character(round(tz_Hajek,0))` ha.
@@ -3623,15 +3582,13 @@ The $\pi$ estimate can also be computed with function `svytotal` of package **su
 
 ```{r}
 library(survey)
-design_ppsworbrewer <- svydesign(
-  id=~1, data=mysample, pps="brewer", fpc=~pi)
+design_ppsworbrewer <- svydesign(id=~1, data=mysample, pps="brewer", fpc=~pi)
 svytotal(~poppy, design_ppsworbrewer)
 ```
 
 ```{r}
 p2sum<-sum(mysample$pi^2)/n 
-design_ppsworhr <- svydesign(
-  id=~1, data=mysample, pps=HR(p2sum), fpc=~pi)
+design_ppsworhr <- svydesign(id=~1, data=mysample, pps=HR(p2sum), fpc=~pi)
 svytotal(~poppy, design_ppsworhr)
 ```
 
@@ -3639,13 +3596,10 @@ In package **samplingVarEst** [@samplingVarEst] also various functions are avail
 
 ```{r HajekRosenVarianceEstimator}
 library(samplingVarEst)
-se_tz_Hajek <- sqrt(VE.Hajek.Total.NHT(
-  mysample$poppy, mysample$pi))
+se_tz_Hajek <- sqrt(VE.Hajek.Total.NHT(mysample$poppy, mysample$pi))
 pikl <- Pkl.Hajek.s(mysample$pi)
-se_tz_HT <- sqrt(VE.HT.Total.NHT(
-  mysample$poppy, mysample$pi, pikl))
-se_tz_SYG <- sqrt(VE.SYG.Total.NHT(
-  mysample$poppy, mysample$pi, pikl))
+se_tz_HT <- sqrt(VE.HT.Total.NHT(mysample$poppy, mysample$pi, pikl))
+se_tz_SYG <- sqrt(VE.SYG.Total.NHT(mysample$poppy, mysample$pi, pikl))
 ```
 
 The three standard errors equal `r as.character(round(se_tz_Hajek,0))`, `r as.character(round(se_tz_HT,0))`, and `r as.character(round(se_tz_SYG,0))`. The differences in the approximated standard errors are small when related to the estimated total.
@@ -3936,12 +3890,12 @@ The population mean can be estimated by the sample mean.
 mz_sample <- mean(mysample$AGB)
 ```
 
-To estimate the variance a function is defined for estimating the population regression coefficients.
+To estimate the variance a function is defined for estimating the population regression coefficients. 
 
 ```{r}
 estimate_b <- function(z,X,c) {
-  cXX <- matrix(nrow=ncol(X),ncol=ncol(X),data=0)
-  cXz <- matrix(nrow=1,ncol=ncol(X),data=0)
+  cXX <- matrix(nrow=ncol(X), ncol=ncol(X), data=0)
+  cXz <- matrix(nrow=1, ncol=ncol(X), data=0)
   for (i in 1:length(z)) {
     x <- X[i,]
     cXX_i <- c[i]*(x %*% t(x))
@@ -3949,7 +3903,7 @@ estimate_b <- function(z,X,c) {
     cXz_i <- c[i]*t(x)*z[i]
     cXz <- cXz+cXz_i
   }
-  b <- solve(cXX,t(cXz))
+  b <- solve(cXX) %*% t(cXz)
   b
 }
 ```
@@ -4050,7 +4004,7 @@ In the previous section a continuous variable was used to balance the sample. Ho
 
 The first four rows refer to the four leftmost bottom row population units in Figure \@ref(fig:BalancedSampleCategorical). These units belong to class A, which explains that the first column for these units contain non-zeroes. These non-zeroes are the inclusion probabilities of the units in stratum A. The other three columns for these rows contain all zeroes. The fifth and sixth unit belong to stratum B, so that the second column for these rows contain the inclusion probabilities for stratum B, and so on. The final row is the upper-right sampling unit in stratum D, so the first three columns contain zeroes, and the fourth column is filled with the inclusion probability of this stratum. The sum of the inclusion probabilities in the first column is the sample size of stratum A. Or reversely, if, for instance, we want to select $n_h$ units from stratum $h$ with equal probability for all units in this stratum, then the inclusion probabilities should equal $n_h/N_h$, with $N_h$ the total number of units in this stratum.
 
-```{r BalancedSampleCategorical, out.width="70%", echo=FALSE, fig.cap="Sample balanced on a categorical variable with four classes."}
+```{r BalancedSampleCategorical, echo=FALSE, fig.cap="Sample balanced on a categorical variable with four classes."}
 s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
@@ -4099,8 +4053,7 @@ The columns in the design matrix with dummy variables are multiplied by the vect
 X <- model.matrix(~ stratum-1, data=mypop)
 X <- sweep(X, MARGIN= 1, mypop$pi, `*`)
 set.seed(314)
-sample_ind <- samplecube(
-  X=X, pik=mypop$pi, comment=FALSE, method=1)
+sample_ind <- samplecube(X=X, pik=mypop$pi, comment=FALSE, method=1)
 mysample <- mypop[sample_ind>(1-eps),]
 ```
 
@@ -4181,8 +4134,7 @@ This reduced design matrix is not strictly needed for selecting a multi-way stra
 Finally, the two-way stratified random sample is selected with function `samplecube` of package **sampling** [@Tille2016]. 
 
 ```{r}
-sample_ind <- samplecube(
-  X=X, pik=mypop$pih, method=1, comment=FALSE)
+sample_ind <- samplecube(X=X, pik=mypop$pih, method=1, comment=FALSE)
 eps <- 1e-6
 units <- which(sample_ind>(1-eps))
 mysample <- mypop[units,]
@@ -4227,8 +4179,7 @@ The variance is estimated as before (Equation \@ref(eq:approxvarianceBalanced)).
 
 ```{r}
 c <- (1-mysample$pih)
-b <- estimate_b(
-  z=mysample$z/mysample$pih, X=X[units,]/mysample$pih, c=c)
+b <- estimate_b(z=mysample$z/mysample$pih, X=X[units,]/mysample$pih, c=c)
 zpred <- X%*%b
 e <- mysample$z-zpred[units]
 n <- nrow(mysample)
@@ -4443,8 +4394,7 @@ pi <- inclusionprobabilities(grdKandahar$agri, n)
 N <- nrow(grdKandahar)
 samplingframe <- data.frame(
   x=grdKandahar$x, y=grdKandahar$y, mdcaty=pi, ids=1:N)
-design <- list(
-  None=list(panel=c(PanelOne=n), seltype="Continuous"))
+design <- list(None=list(panel=c(PanelOne=n), seltype="Continuous"))
 set.seed(314)
 res <- grts(
   design, type.frame="finite", src.frame="att.frame",
@@ -4519,8 +4469,7 @@ c <- (1-pi)
 b <- estimate_b(z=mysample$AGB/pi, X=Xbal[units,]/pi, c=c)
 zpred <- Xbal%*%b
 e <- mysample$AGB-zpred[units]
-weights <- localmean.weight(
-  x=mysample$x1, y=mysample$x2, prb=rep(pi,n), nbh=3)
+weights <- localmean.weight(x=mysample$x1, y=mysample$x2, prb=rep(pi,n), nbh=3)
 v_mz <- localmean.var(z=e/pi, weight.lst=weights)/N^2
 ```
 
@@ -4545,7 +4494,7 @@ z_k = \mu(\mathbf{x}_k)+\epsilon_k\;,
 (\#eq:workingmodel)
 \end{equation}
 
-with $\mu(\mathbf{x}_k)$ the model mean\index{Model mean} for population unit $k$ which is a function of the covariate values of that unit collected in vector $\mathbf{x}_k = (1, x_{1,k}, \dots , x_{J,k})^\mathrm{T}$, and $\epsilon_k$ a random variable with zero mean. The model mean $\mu(\mathbf{x}_k)$ can be a linear or a non-linear combination of the covariates. If the study variable and the covariate values were observed for all population units, all these data can be used to compute a so-called hypothetical population fit\index{Population fit of model parameters} of the model parameters. These model parameters can then be used to compute *estimates* of the model means $\mu(\mathbf{x}_k)$, denoted by $m(\mathbf{x}_k)$, for all population units. For instance, with a multiple regression model $m(\mathbf{x}_k)=\mathbf{x}_k^T \mathbf{b}$, with $\mathbf{b}$ the vector with regression coefficients estimated from observations of the study variable $z$ and the covariates on *all* population units. In practice we have a sample only, which is used to estimate $m(\mathbf{x}_k)$ by $\hat{m}(\mathbf{x}_k)$. For the multiple regression model $\hat{m}(\mathbf{x}_k)= \mathbf{x}_k^T \mathbf{\hat{b}}$, with $\mathbf{\hat{b}}$ the vector with regression coefficients estimated from the sample data. This leads to the generalised difference estimator\index{Generalised difference estimator} [@Wu2001]:
+with $\mu(\mathbf{x}_k)$ the model mean\index{Model mean} for population unit $k$ which is a function of the covariate values of that unit collected in vector $\mathbf{x}_k = (1, x_{1,k}, \dots , x_{J,k})^{\mathrm{T}}$, and $\epsilon_k$ a random variable with zero mean. The model mean $\mu(\mathbf{x}_k)$ can be a linear or a non-linear combination of the covariates. If the study variable and the covariate values were observed for all population units, all these data can be used to compute a so-called hypothetical population fit\index{Population fit of model parameters} of the model parameters. These model parameters can then be used to compute *estimates* of the model means $\mu(\mathbf{x}_k)$, denoted by $m(\mathbf{x}_k)$, for all population units. For instance, with a multiple regression model $m(\mathbf{x}_k)=\mathbf{x}_k^T \mathbf{b}$, with $\mathbf{b}$ the vector with regression coefficients estimated from observations of the study variable $z$ and the covariates on *all* population units. In practice we have a sample only, which is used to estimate $m(\mathbf{x}_k)$ by $\hat{m}(\mathbf{x}_k)$. For the multiple regression model $\hat{m}(\mathbf{x}_k)= \mathbf{x}_k^T \mathbf{\hat{b}}$, with $\mathbf{\hat{b}}$ the vector with regression coefficients estimated from the sample data. This leads to the generalised difference estimator\index{Generalised difference estimator} [@Wu2001]:
 
 \begin{equation}
 \hat{\bar{z}}_{\mathrm{dif}}=\frac{1}{N} \sum_{k=1}^N \hat{m}(\mathbf{x}_k) + \frac{1}{N} \sum_{k \in \mathcal{S}} \frac{z_k-\hat{m}(\mathbf{x}_k)}{\pi_k}\;,
@@ -4561,18 +4510,18 @@ A wide variety of model-assisted estimators have been developed and tested in th
 The working model of the generalised regression estimator is the heteroscedastic multiple linear regression model\index{Heteroscedastic multiple linear regression model}:
 
 \begin{equation}
-Z_k = \mathbf{x}^\mathrm{T}_k \boldsymbol{\beta}+\epsilon_k \;,
+Z_k = \mathbf{x}^{\mathrm{T}}_k \bm{\beta}+\epsilon_k \;,
 (\#eq:GREGmodel)
 \end{equation}
 
-with $\epsilon_k$ uncorrelated residuals, with zero mean and variance $\sigma^2(\epsilon_k)$. Note that I use uppercase $Z$ to distinguish the random variable $Z_k$ of unit $k$ from one realization of this random variable for unit $k$ in the population of interest, $z_k$. Further note that the variance of the residuals $\sigma^2(\epsilon_k)$ need not be constant but may differ among the population units. If $\{z_k,x_{1,k}, \dots , x_{J,k}\}$ were observed for all units $k= 1, \dots , N$ in the population, the regression coefficients $\boldsymbol{\beta}$ would be estimated by
+with $\epsilon_k$ uncorrelated residuals, with zero mean and variance $\sigma^2(\epsilon_k)$. Note that I use uppercase $Z$ to distinguish the random variable $Z_k$ of unit $k$ from one realization of this random variable for unit $k$ in the population of interest, $z_k$. Further note that the variance of the residuals $\sigma^2(\epsilon_k)$ need not be constant but may differ among the population units. If $\{z_k,x_{1,k}, \dots , x_{J,k}\}$ were observed for all units $k= 1, \dots , N$ in the population, the regression coefficients $\bm{\beta}$ would be estimated by
 
 \begin{equation}
 \mathbf{b} = \left(\sum_{k=1}^N \frac{\mathbf{x}_k\mathbf{x}_k^{\mathrm{T}}}{\sigma^2(\epsilon_k)}  \right)^{-1} \sum_{k=1}^N \frac{\mathbf{x}_k z_k}{\sigma^2(\epsilon_k)}\;,
 (\#eq:populationfitGREG)
 \end{equation}
 
-with $\mathbf{x}_k$ the vector $(1, x_{1,k}, \dots , x_{J,k})^\mathrm{T}$, and $\sigma^2(\epsilon_k)$ the variance of the residual of unit $k$. So, similar to the distinction between model mean and population mean (see Chapter \@ref(Approaches)), here the model regression coefficients\index{Model regression coefficient} $\boldsymbol{\beta}$ are distinguished from the population regression coefficients\index{Population regression coefficient} $\mathbf{b}$. The means $m(\mathbf{x}_k)$ would then be computed by
+with $\mathbf{x}_k$ the vector $(1, x_{1,k}, \dots , x_{J,k})^{\mathrm{T}}$, and $\sigma^2(\epsilon_k)$ the variance of the residual of unit $k$. So, similar to the distinction between model mean and population mean (see Chapter \@ref(Approaches)), here the model regression coefficients\index{Model regression coefficient} $\bm{\beta}$ are distinguished from the population regression coefficients\index{Population regression coefficient} $\mathbf{b}$. The means $m(\mathbf{x}_k)$ would then be computed by
 
 \begin{equation}
 m(\mathbf{x}_k) = \mathbf{x}_k^{\mathrm{T}} \mathbf{b}\;.
@@ -4598,7 +4547,7 @@ The mean values $m(\mathbf{x}_k)$ are now estimated by
 Plugging Equation \@ref(eq:estmxi) into the generalised difference estimator, Equation \@ref(eq:GeneralizedDifferenceEstimator), leads to the generalised regression estimator\index{Regression estimator!generalised regression estimator} for the population mean:
 
 \begin{equation}
-\hat{\bar{z}}_{\mathrm{regr}} = \frac{1}{N} \sum_{k=1}^N \mathbf{x}_k^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{N} \sum_{k \in \mathcal{S}} \frac{z_k-\mathbf{x}^\mathrm{T}_k\hat{\mathbf{b}}} {\pi_k}
+\hat{\bar{z}}_{\mathrm{regr}} = \frac{1}{N} \sum_{k=1}^N \mathbf{x}_k^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{N} \sum_{k \in \mathcal{S}} \frac{z_k-\mathbf{x}^{\mathrm{T}}_k\hat{\mathbf{b}}} {\pi_k}
   \;.
 (\#eq:GREG)
 \end{equation}
@@ -4680,7 +4629,7 @@ ab <- coef(lm_pop)
 r <- cor(gridAmazonia$AGB, gridAmazonia$lnSWIR2)
 ```
 
-The correlation coefficient equals `r as.character(round(r,3))`. The slope of the fitted line equals `r as.character(round(ab[2],1))`. Now a simple random sample without replacement of 100 units is selected, and the two population regression coefficients are estimated with Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). 
+The correlation coefficient equals `r as.character(round(r,3))`. The slope of the fitted line equals `r as.character(round(ab[2],1))`. Now a simple random sample without replacement of 100 units is selected, and the two population regression coefficients are estimated with Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). `t(X)` computes the transpose of a matrix, function `solve` computes the inverse of a matrix, and the operator `%*%` is for multiplying two matrices. 
 
 ```{r}
 N <- nrow(gridAmazonia) 
@@ -4688,12 +4637,11 @@ n <- 100
 set.seed(321)
 units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
 mysample <- gridAmazonia[units,c("AGB","lnSWIR2")]
-X <- matrix(nrow=n,ncol=2,data=1)
+X <- matrix(nrow=n, ncol=2, data=1)
 X[,2] <- mysample$lnSWIR2
-XX <- t(X) %*% X
-XX_inv <- chol2inv(chol(XX))
+XXinv <- solve(t(X) %*% X)
 Xz <- t(X) %*% mysample$AGB
-print(ab <- t(XX_inv %*% Xz))
+print(ab <- t(XXinv %*% Xz))
 ```
 
 The same estimates are obtained by ordinary least squares (OLS) fitting of the model with function `lm`. 
@@ -4721,8 +4669,7 @@ The simple random sample is used to estimate the population mean of the study va
 mx_pop <- mean(gridAmazonia$lnSWIR2) 
 mx_sam <- mean(mysample$lnSWIR2) 
 mz_sam <- mean(mysample$AGB)
-mz_regr <- mz_sam+ab[2]*
-  (mx_pop-mx_sam)
+mz_regr <- mz_sam+ab[2]*(mx_pop-mx_sam)
 e <- residuals(lm_sample)
 S2e <- var(e)
 N <- nrow(gridAmazonia)
@@ -4783,9 +4730,8 @@ library(survey)
 mysample$fpc <- N
 design_si <- svydesign(id=~1, data=mysample,  fpc=~fpc)
 populationtotals <- c(N,sum(gridAmazonia$lnSWIR2))
-mysample_cal <- calibrate(
-  design_si, formula=~lnSWIR2, population=populationtotals,
-  calfun="linear")
+mysample_cal <- calibrate(design_si, formula=~lnSWIR2,
+  population=populationtotals, calfun="linear")
 ```
 
 The calibrated weights\index{Calibrated weights} can be extracted with function `weights`. These weights are divided by the inclusion probabilities $\pi=n/N$, so that the sample sum of the weights equals $N$, and not the sample size $n$ (as in the code chunk above), 
@@ -4854,8 +4800,7 @@ library(leaps)
 n <- 100
 set.seed(321)
 units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
-covars <- c("AGB","lnSWIR2","Terra_PP","Prec_dm",
-            "Elevation","Clay")
+covars <- c("AGB","lnSWIR2","Terra_PP","Prec_dm","Elevation","Clay")
 mysample <- gridAmazonia[units,covars]
 models <- regsubsets(AGB~., data=mysample, nvmax=4)
 res.sum <- summary(models)
@@ -4873,12 +4818,9 @@ The standard error of the estimated mean of AGB is somewhat reduced by adding th
 ```{r}
 mysample$fpc <- nrow(gridAmazonia)
 design_si <- svydesign(id=~1, data=mysample, fpc=~fpc)
-totals <- c(nrow(gridAmazonia),
-            sum(gridAmazonia$lnSWIR2),
-            sum(gridAmazonia$Terra_PP),
-            sum(gridAmazonia$Elevation))
-mysample_cal <- calibrate(
-  design_si, formula=~lnSWIR2+Terra_PP+Elevation,
+totals <- c(nrow(gridAmazonia),sum(gridAmazonia$lnSWIR2),
+  sum(gridAmazonia$Terra_PP),sum(gridAmazonia$Elevation))
+mysample_cal <- calibrate(design_si, formula=~lnSWIR2+Terra_PP+Elevation,
   population=totals, calfun="linear")
 svymean(~AGB, mysample_cal)
 ```
@@ -4888,8 +4830,7 @@ Another interesting package for model-assisted estimation is package **mase** [@
 ```{r}
 library(mase)
 covars <- c("lnSWIR2","Terra_PP","Elevation")
-res <- greg(
-  y=mysample$AGB, xsample=mysample[covars],
+res <- greg(y=mysample$AGB, xsample=mysample[covars],
   xpop=gridAmazonia[covars], pi=rep(n/N,n),
   var_est=TRUE, var_method="LinHTSRS", model="linear")
 res$pop_mean
@@ -4980,21 +4921,17 @@ ord <- unique(gridAmazonia$Biome)
 N_h <-  table(gridAmazonia$Biome)
 n_h <- c(5,5,5,85)
 set.seed(314)
-units <- sampling::strata(
-  gridAmazonia, stratanames="Biome", size=n_h[ord],
-  method="srswor")
+units <- sampling::strata(gridAmazonia, stratanames="Biome",
+  size=n_h[ord], method="srswor")
 mysample <- getdata(gridAmazonia,units)
 ```
 
 As a first step in estimation, for each stratum the mean of the covariate over all units in a stratum (population mean per stratum) and the sample means of the study variable and covariate are computed.
 
 ```{r}
-mx_h_pop <- tapply(
-  gridAmazonia$lnSWIR2, INDEX=gridAmazonia$Biome, FUN=mean)
-mzh_sam <- tapply(
-  mysample$AGB, INDEX=mysample$Biome, FUN=mean)
-mx_h_sam <- tapply(
-  mysample$lnSWIR2, INDEX=mysample$Biome, FUN=mean)
+mx_h_pop <- tapply(gridAmazonia$lnSWIR2, INDEX=gridAmazonia$Biome, FUN=mean)
+mzh_sam <- tapply(mysample$AGB, INDEX=mysample$Biome, FUN=mean)
+mx_h_sam <- tapply(mysample$lnSWIR2, INDEX=mysample$Biome, FUN=mean)
 ```
 
 The next step is to estimate the regression coefficients per stratum. This is done in a for-loop. The estimated slope coefficient is used to compute the regression estimator per stratum. The residuals are extracted to approximate the variance of the regression estimator per stratum.
@@ -5002,12 +4939,10 @@ The next step is to estimate the regression coefficients per stratum. This is do
 ```{r}
 b_h <- mz_h_regr <- v_mz_h_regr <- numeric(length=4)
 for (i in 1:4) {
-  subsam <- subset(
-    mysample, mysample$Biome==levels(gridAmazonia$Biome)[i])
+  subsam <- subset(mysample, mysample$Biome==levels(gridAmazonia$Biome)[i])
   lm_sample <- lm(AGB~lnSWIR2, data=subsam)
   b_h[i] <- coef(lm_sample)[2]
-  mz_h_regr[i] <- mzh_sam[i]+b_h[i]*
-    (mx_h_pop[i]-mx_h_sam[i])
+  mz_h_regr[i] <- mzh_sam[i]+b_h[i]*(mx_h_pop[i]-mx_h_sam[i])
   e <- residuals(lm_sample)
   S2e_h <- var(e)
   v_mz_h_regr[i] <- (1-n_h[i]/N_h[i])*S2e_h/n_h[i]
@@ -5052,15 +4987,14 @@ With this model formulation the first population total is the total number of po
 N_h <- as.numeric(N_h)
 lut <- data.frame(Biome=biomes,N_h)
 mysample <- merge(x=mysample, y=lut)
-design_stsi <- svydesign(id=~1, strata=~factor(Biome),
-                         data=mysample, fpc=~N_h)
+design_stsi <- svydesign(id=~1, strata=~factor(Biome), data=mysample, fpc=~N_h)
 tx_pop <- sum(gridAmazonia$lnSWIR2)
 tx_h_pop <- N_h*mx_h_pop
 totals <- c(sum(N_h),N_h[c(2,3,4)],tx_pop,tx_h_pop[c(2,3,4)])
 names(totals) <- names(coef(ancova))
 mysample_cal <- calibrate(
-  design_stsi, formula=~Biome*lnSWIR2, population=totals,
-  calfun="linear")
+  design_stsi, formula=~Biome*lnSWIR2,
+  population=totals, calfun="linear")
 svymean(~AGB, mysample_cal)
 ```
 
@@ -5120,14 +5054,12 @@ mx_HT <- sum(w_h*mx_h_HT)
 The next step is to estimate the population regression coefficients, using Equation \@ref(eq:EstimatorGREGCoefficients) in which the variances $\sigma^2(\epsilon_k)$ can be dropped, as these are assumed constant. The inclusion probabilities are in the column `Prob` of `mysample`.  
 
 ```{r}
-W <- diag(x=1/mysample$Prob,nrow=n,ncol=n)
-X <- matrix(nrow=n,ncol=2,data=1)
+W <- diag(x=1/mysample$Prob, nrow=n, ncol=n)
+X <- matrix(nrow=n, ncol=2, data=1)
 X[,2] <- mysample$lnSWIR2
-XW <- crossprod(X, W)
-XWX <- XW %*% X
-XWX_inv <- chol2inv(chol(XWX))
-XWz <- XW %*% mysample$AGB
-print(ab <- t(XWX_inv %*% XWz))
+XWXinv <- solve(t(X) %*% W %*% X)
+XWz <- t(X) %*% W %*% mysample$AGB
+print(ab <- t(XWXinv %*% XWz))
 ```
 
 Note that the same estimates are obtained by model-based estimation, using weighted least squares\index{Weighted least squares}, based on the assumption of that the variances $\sigma^2(\epsilon_k)$ are proportional to the inclusion probabilities (which is a weird assumption).
@@ -5151,8 +5083,7 @@ To approximate the variance of the combined regression estimator first the resid
 mysample$e <- mysample$AGB-(ab[1]+ab[2]*mysample$lnSWIR2)
 v_me_h <- numeric(length=4)
 for (i in 1:4) {
-  subsam <- subset(
-    mysample, mysample$Biome==levels(gridAmazonia$Biome)[i])
+  subsam <- subset(mysample, mysample$Biome==levels(gridAmazonia$Biome)[i])
   S2e_h <- var(subsam$e)
   v_me_h[i] <- (1-n_h[i]/N_h[i])*S2e_h/n_h[i]
 }
@@ -5162,8 +5093,7 @@ print(sqrt(sum(w_h^2*v_me_h)))
 Computing the combined regression estimator with package **survey** goes as follows.
 
 ```{r}
-design_stsi <- svydesign(
-  id=~1, strata=~factor(Biome), data=mysample, fpc=~N_h)
+design_stsi <- svydesign(id=~1, strata=~factor(Biome), data=mysample, fpc=~N_h)
 totals <- c(nrow(gridAmazonia),sum(gridAmazonia$lnSWIR2))
 mysample_cal <- calibrate(
   design_stsi, formula=~lnSWIR2, population=totals,
@@ -5176,8 +5106,7 @@ Function `calibrate` computes the regression estimate and its standard error wit
 ```{r}
 lut <- data.frame(Biome=biomes,pi=n_h/N_h)
 mysample <- merge(x=mysample, y=lut)
-S2x <- sum(((mysample$lnSWIR2-mx_HT)^2)/mysample$pi)/
-  sum(mysample$pi^-1)
+S2x <- sum(((mysample$lnSWIR2-mx_HT)^2)/mysample$pi)/sum(mysample$pi^-1)
 g <- 1+(mx_pop-mx_HT)*(mysample$lnSWIR2-mx_HT)/S2x
 lm_sample <- lm(AGB~lnSWIR2, weights=1/Prob, data=mysample)
 e <- residuals(lm_sample)
@@ -5336,8 +5265,8 @@ grdKandahar$stratum <- findInterval(grdKandahar$agri,breaks)+1
 N_h <-  table(grdKandahar$stratum)
 n_h <- round(n*N_h/sum(N_h))
 set.seed(314)
-units <- sampling::strata(
-  grdKandahar, stratanames="stratum", size=n_h, method="srswor")
+units <- sampling::strata(grdKandahar, stratanames="stratum",
+  size=n_h, method="srswor")
 mysample <- getdata(grdKandahar,units)
 ```
 
@@ -5346,8 +5275,7 @@ The stratum sizes `N_h` are added to `mysample`, the function `svydesign` is to 
 ```{r}
 lut <- data.frame(stratum=c(1,2),N_h)
 mysample <- merge(x=mysample, y=lut)
-design_stsi <- svydesign(
-  id=~1,strata=~stratum, data=mysample, fpc=~Freq)
+design_stsi <- svydesign(id=~1,strata=~stratum, data=mysample, fpc=~Freq)
 common <- svyratio(~poppy, ~agri, design_stsi, separate=FALSE)
 predict(common, total=sum(grdKandahar$agri))
 ```
@@ -5355,8 +5283,7 @@ predict(common, total=sum(grdKandahar$agri))
 The same estimate is obtained with function `calibrate`.
 
 ```{r}
-mysample_cal <- calibrate(
-  design_stsi, ~agri-1, population=tx_pop, variance=1)
+mysample_cal <- calibrate(design_stsi, ~agri-1, population=tx_pop, variance=1)
 svytotal(~poppy, mysample_cal)
 ```
 
@@ -5364,8 +5291,7 @@ Computing the separate ratio estimator goes along the same lines. The output obj
 
 ```{r}
 separate <- svyratio(~poppy, ~agri, design_stsi, separate=TRUE)
-tx_h_pop <- tapply(
-  grdKandahar$agri, INDEX=grdKandahar$stratum, FUN=sum)
+tx_h_pop <- tapply(grdKandahar$agri, INDEX=grdKandahar$stratum, FUN=sum)
 predict(separate, total=tx_h_pop)
 ```
 
@@ -5427,10 +5353,8 @@ The poststratified estimator is illustrated with study area Voorst. We consider 
 ```{r poststratification}
 load("data/Voorst.RData")
 library(forcats)
-grdVoorst$poststratum <- 
-  fct_collapse(grdVoorst$stratum, SA=c("BA","EA","PA"))
-print(N_g <- tapply(
-  grdVoorst$z, INDEX=grdVoorst$poststratum, FUN=length))
+grdVoorst$poststratum <- fct_collapse(grdVoorst$stratum, SA=c("BA","EA","PA"))
+print(N_g <- tapply(grdVoorst$z, INDEX=grdVoorst$poststratum, FUN=length))
 ```
 
 One hundred points are selected by simple random sampling with replacement. The expected sample sizes per group are proportional to the size of the groups, $E(n_g/n) = N_g/N$), but for a single sample the sample proportions may deviate considerably from the population proportions. 
@@ -5473,8 +5397,7 @@ Function `postStratify` of package **survey** can be used to compute the poststr
 mysample$weights <- N/n
 design_si <- svydesign(id=~1, weights=~weights, data=mysample)
 pop <- data.frame(poststratum=c("SA","RA","XF"), Freq=N_g)
-mysample_pst <- postStratify(
-  design_si, strata=~poststratum, population=pop)
+mysample_pst <- postStratify(design_si, strata=~poststratum, population=pop)
 svymean(~z, mysample_pst)
 ```
 
@@ -5590,8 +5513,8 @@ Package **rpms** [@rpms] is used to build a regression tree for AGB, using all f
 ```{r}
 library(rpms)
 tree <- rpms(
-  AGB~SWIR2+Terra_PP+Prec_dm+Elevation+Clay, data=mysample,
-  pval=0.05)
+  AGB~SWIR2+Terra_PP+Prec_dm+Elevation+Clay,
+  data=mysample, pval=0.05)
 print(tree)
 ```
 
@@ -5702,8 +5625,7 @@ Out-of-bag predictions for the selected units are saved in the element `predicti
 
 ```{r, eval=FALSE}
 AGBpred_OOB <- forest.sample$predictions 
-res <- predict(
-  forest.sample, data=gridAmazonia, type="response")
+res <- predict(forest.sample, data=gridAmazonia, type="response")
 AGBpred <- res$predictions
 ```
 
@@ -5723,11 +5645,11 @@ load(file="results/RandomForestSingleSample_Amazonia.RData")
 ```
 
 ```{r}
-b <- sum((AGBpred[units]-mean(AGBpred[units]))*
-           (mysample$AGB-mean(mysample$AGB)))/
-        sum((AGBpred[units]-mean(AGBpred[units]))^2)
-mz_MC <- mean(mysample$AGB)+
-  b*(mean(AGBpred)-mean(AGBpred[units]))
+numer <- sum((AGBpred[units]-mean(AGBpred[units]))*
+             (mysample$AGB-mean(mysample$AGB))) 
+denom <- sum((AGBpred[units]-mean(AGBpred[units]))^2)
+b <- numer/denom
+mz_MC <- mean(mysample$AGB)+b*(mean(AGBpred)-mean(AGBpred[units]))
 u <- mysample$AGB-AGBpred[units]*b
 v_mz_MC <- (1-n/N)*var(u)/n
 ```
@@ -5735,11 +5657,11 @@ v_mz_MC <- (1-n/N)*var(u)/n
 Next, use the out-of-bag predictions\index{Out-of-bag predictions}.
 
 ```{r}
-b_OOB <- sum((AGBpred_OOB-mean(AGBpred_OOB))*
-                (mysample$AGB-mean(mysample$AGB)))/
-            sum((AGBpred_OOB-mean(AGBpred_OOB))^2)
-mz_MC_OOB <- mean(mysample$AGB)+
-  b_OOB*(mean(AGBpred)-mean(AGBpred_OOB))
+numer <- sum((AGBpred_OOB-mean(AGBpred_OOB))*
+             (mysample$AGB-mean(mysample$AGB)))
+denom <- sum((AGBpred_OOB-mean(AGBpred_OOB))^2)
+b_OOB <- numer/denom
+mz_MC_OOB <- mean(mysample$AGB)+b_OOB*(mean(AGBpred)-mean(AGBpred_OOB))
 u_OOB <- mysample$AGB-AGBpred_OOB*b_OOB
 v_mz_MC_OOB <- (1-n/N)*var(u_OOB)/n
 ```
@@ -5969,6 +5891,7 @@ knitr::kable(
 ) %>%
   kable_classic()
 ```
+
 ## Big data and volunteer data
 
 In the past decades numerous large data sets became available, and this number will further increase in the future, think of data sets collected by the numerous satellites. These data sets may contain valuable information about the study variables, so that they can be used in model-assisted estimation of global (this chapter) or local means and totals (Chapter \@ref(SmallAreaEstimation)).
@@ -6051,7 +5974,7 @@ n1_h <- tapply(mysample$z, INDEX=mysample$stratum, FUN=length)
 n2_h <- round(n1_h/n1*n2, 0)
 n2_h_ord <- n2_h[unique(mysample$stratum)]
 units <- sampling::strata(mysample, stratanames="stratum",
-                          size=n2_h_ord, method="srswor")
+  size=n2_h_ord, method="srswor")
 mysubsample <- getdata(mysample, units)
 table(mysubsample$stratum)
 ```
@@ -6079,8 +6002,7 @@ With simple random sampling in the first phase and stratified simple random samp
 where $H_{\mathcal{S}_1}$ is the number of strata used for stratification of the first-phase sample, $n_{1h}$ is the number of units in the first-phase sample that form stratum $h$ in the second phase, $n_{1}$ is the total number of units of the first phase sample and $\bar{z}_{\mathcal{S}_{2h}}$ is the mean of the subsample from stratum $h$.
 
 ```{r}
-mz_h_subsam <- tapply(
-  mysubsample$z, INDEX=mysubsample$stratum, FUN=mean)
+mz_h_subsam <- tapply(mysubsample$z, INDEX=mysubsample$stratum, FUN=mean)
 mz <- sum(n1_h/n1*mz_h_subsam, na.rm=TRUE)
 ```
 
@@ -6095,8 +6017,7 @@ The estimated population mean equals `r round(mz,2)`. The sampling variance over
 \end{eqnarray}
 
 ```{r}
-S2z_h_subsam <- tapply(
-  mysubsample$z, INDEX=mysubsample$stratum, FUN=var)
+S2z_h_subsam <- tapply(mysubsample$z, INDEX=mysubsample$stratum, FUN=var)
 w1_h <- n1_h/n1
 v_mz_1 <- sum(w1_h^2*S2z_h_subsam/n2_h)
 v_mz_2 <- 1/n1*sum(w1_h*(mz_h_subsam-mz)^2)
@@ -6384,8 +6305,8 @@ library(pwr)
 sd <- 4; delta <- 1; alpha <- 0.05; beta <- 0.2
 n_norm <- (sd/delta)^2*(qnorm(1-alpha)+qnorm(1-beta))^2
 n_t <- pwr.t.test(
-  d=delta/sd, sig.level=alpha, power=(1-beta), type="one.sample",
-  alternative="greater")
+  d=delta/sd, sig.level=alpha, power=(1-beta),
+  type="one.sample", alternative="greater")
 ```
 
 In this example the required sample size computed with the $t$ distribution is two units larger than that obtained with the standard normal distribution: `r ceiling(n_t$n)` versus `r (ceiling(n_norm))`. Package **pwr** has various functions for computing the power of a test given the sample size, or reversely, the sample size for a given power, such as for the two independent samples $t$ test, binomial test (for one proportion), test for two proportions, etc. 
@@ -6400,8 +6321,7 @@ n <- 1:150
 power <- k_min <- numeric(length=length(n))
 for (i in 1:length(n)) {
   k_min[i] <- qbinom(p=1-alpha, size=n[i], prob=p_test)
-  power[i] <- pbinom(
-    q=k_min[i], size=n[i], prob=p_test+delta, lower.tail=FALSE)
+  power[i] <- pbinom(q=k_min[i], size=n[i], prob=p_test+delta, lower.tail=FALSE)
 }
 ```
 
@@ -6680,20 +6600,14 @@ Required sample sizes for the average length criterion (ALC), the average covera
 
 ```{r}
 library(SampleSizeBinomial)
-n_alc <- prop.alc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_alcmbl <- prop.mblalc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_acc <- prop.acc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_accmbl <- prop.mblacc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_alc <- prop.alc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_alcmbl <- prop.mblalc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_acc <- prop.acc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_accmbl <- prop.mblacc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
 n_woc <- prop.modwoc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE,
-  worst.level=0.80)$n
+  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE, worst.level=0.80)$n
 n_wocmbl <- prop.mblmodwoc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE,
-  worst.level=0.80)$n
+  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE, worst.level=0.80)$n
 library(binomSamSize)
 n_freq <- ciss.wald(p0=c/(c+d), d=0.1, alpha=0.05)
 ```
@@ -6752,11 +6666,11 @@ In the analytical approach the sampling variance of the estimator of the mean is
 The sampling variance of a design-based estimator of the population mean can be predicted by (@dom94, @gru06)
 
 \begin{equation}
-E_{\xi}\{V_p(\hat{\bar{z}})\}=\bar{\gamma}-E_p(\boldsymbol{\lambda}^{\prime}\boldsymbol{\Gamma}_{\mathcal{S}}\boldsymbol{\lambda}) \;,
+E_{\xi}\{V_p(\hat{\bar{z}})\}=\bar{\gamma}-E_p(\bm{\lambda}^{\prime}\bm{\Gamma}_{\mathcal{S}}\bm{\lambda}) \;,
 (\#eq:MBdesignvarAnydesign)
 \end{equation}
 
-where $E_{\xi}(\cdot)$ is the statistical expectation over realisations from the model $\xi$, $E_{p}(\cdot)$ is the statistical expectation over repeated sampling with sampling design $p$, $V_{p}(\hat{\bar{z}})$ is the variance of the estimator of the mean over repeated sampling with sampling design $p$, $\bar{\gamma}$ is the mean semivariance of the random variable at two randomly selected points in the area, $\boldsymbol{\lambda}$ is the vector of design-based weights of the units of a sample selected with design $p$, and $\boldsymbol{\Gamma}_{\mathcal{S}}$ is the matrix of semivariances between the units of a sample $\mathcal{S}$ selected with design $p$.
+where $E_{\xi}(\cdot)$ is the statistical expectation over realisations from the model $\xi$, $E_{p}(\cdot)$ is the statistical expectation over repeated sampling with sampling design $p$, $V_{p}(\hat{\bar{z}})$ is the variance of the estimator of the mean over repeated sampling with sampling design $p$, $\bar{\gamma}$ is the mean semivariance of the random variable at two randomly selected points in the area, $\bm{\lambda}$ is the vector of design-based weights of the units of a sample selected with design $p$, and $\bm{\Gamma}_{\mathcal{S}}$ is the matrix of semivariances between the units of a sample $\mathcal{S}$ selected with design $p$.
 
 The mean semivariance $\bar{\gamma}$ is a model-based prediction of the population variance (spatial variance):
 
@@ -6765,9 +6679,9 @@ The mean semivariance $\bar{\gamma}$ is a model-based prediction of the populati
 (\#eq:meansemivariance)
 \end{equation}
 
-The mean semivariance $\bar{\gamma}$ can be calculated by discretising the area by a fine square grid, and computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\boldsymbol{\lambda}^{\prime}\boldsymbol{\Gamma}_{\mathcal{S}}\boldsymbol{\lambda})$ can be evaluated by Monte-Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\boldsymbol{\lambda}^{\prime}\boldsymbol{\Gamma}_{\mathcal{S}}\boldsymbol{\lambda}$, and averaging.
+The mean semivariance $\bar{\gamma}$ can be calculated by discretising the area by a fine square grid, and computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\bm{\lambda}^{\prime}\bm{\Gamma}_{\mathcal{S}}\bm{\lambda})$ can be evaluated by Monte-Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\bm{\lambda}^{\prime}\bm{\Gamma}_{\mathcal{S}}\bm{\lambda}$, and averaging.
 
-The semivariance at zero distance (same point) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, these zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\boldsymbol{\Gamma}_{\mathcal{S}}$.  
+The semivariance at zero distance (same point) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, these zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\bm{\Gamma}_{\mathcal{S}}$.  
 
 This generic procedure is still computationally demanding, but it is the only option for complex spatial sampling designs. For basic sampling designs the general formula can be worked out. For simple random sampling, the sampling variance can be predicted by
 
@@ -6799,8 +6713,7 @@ library(gstat)
 mydata <- read.csv("data/Leest05.csv")
 coordinates(mydata) <- ~Easting+Northing
 vg <- variogram(N~1, data=mydata)
-vgm_MoM <- fit.variogram(
-  vg, model=vgm(model="Sph", psill=2000, range=20))
+vgm_MoM <- fit.variogram(vg, model=vgm(model="Sph", psill=2000, range=20))
 plot(vg, vgm_MoM, plot.numbers=TRUE)
 ```
 
@@ -6812,8 +6725,7 @@ For simple random sampling we must compute the mean semivariance within the fiel
 library(rgdal)
 shpField <- readOGR(dsn="data", layer="Leest5", verbose=FALSE)
 proj4string(shpField) <- NA_character_
-mygrid <- spsample(
-  shpField, type="regular", n=2000, offset=c(0.5, 0.5)) %>%
+mygrid <- spsample(shpField, type="regular", n=2000, offset=c(0.5, 0.5)) %>%
   as(., "data.frame")
 H <- as.matrix(dist(mygrid))
 G <- variogramLine(vgm_MoM, dist_vector=H)
@@ -6829,8 +6741,7 @@ The strata of the stratified simple random sampling design are compact geographi
 ```{r ExiVarSTSILeest}
 library(spcosa)
 gridded(mygrid) <- ~x1+x2
-mygeostrata <- stratify(
-  mygrid, nStrata=n, equalArea=TRUE, nTry=10) %>%
+mygeostrata <- stratify(mygrid, nStrata=n, equalArea=TRUE, nTry=10) %>%
   as(., "data.frame")
 m_semivar_geostrata <- numeric(length=n)
 for (i in 1:n) {
@@ -6892,11 +6803,9 @@ This approach is illustrated with the three administrative regions (woredas) in 
 library(geoR)
 load(file="data/ThreeWoredasEthiopia.RData")
 priordata <- as(priordataEthiopia, "data.frame")
-dGeoR <- as.geodata(
-  obj=priordata, header=TRUE,
+dGeoR <- as.geodata(obj=priordata, header=TRUE,
   coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
-vgm_REML <- likfit(
-  geodata=dGeoR, 
+vgm_REML <- likfit(geodata=dGeoR, 
   trend=~dem+rfl_NIR+rfl_red+lst, 
   cov.model="spherical", ini.cov.pars=c(1,5),nugget=0.2,
   lik.method="REML", messages=FALSE)
@@ -6907,11 +6816,8 @@ The estimated parameters of the residual semivariogram of SOM are shown in Table
 Package **gstat** [@peb04] is used for geostatistical simulation, and therefore first the REML estimates of the semivariogram parameters are assigned to the arguments `nugget`, `psill` and `range` of the function `vgm` of this package. 
 
 ```{r}
-vgm_REML_gstat <- vgm(
-  model="Sph",
-  nugget=vgm_REML$tausq,
-  psill=vgm_REML$sigmasq,
-  range=vgm_REML$phi)
+vgm_REML_gstat <- vgm(model="Sph", nugget=vgm_REML$tausq,
+  psill=vgm_REML$sigmasq, range=vgm_REML$phi)
 ```
 
 The fitted model of the spatial variation of SOM is used to compare systematic random sampling and two-stage cluster random sampling at equal variances of the estimated mean. First the sampling variance with systematic random sampling is predicted. One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grd` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim = 1` of package **gstat**. The argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}. The alternative is conditional simulation\index{Geostatistical simulation!conditional}, using the data of the convenience sample as a conditioning data. Conditional simulation is only recommended if the quality of these legacy data is sufficient, and we may trust that the study variable at the legacy points is not changed since these legacy data are collected.
@@ -6973,8 +6879,7 @@ For the three woredas in Ethiopia 100 compact geostrata (see Section \@ref(geost
 load(file="data/CovariatesThreeWoredasEthiopia.RData")
 grd <- grdEthiopia
 set.seed(314)
-res <- kmeans(
-  grd[,c("s1","s2")], iter.max=1000, centers=100, nstart=100)
+res <- kmeans(grd[,c("s1","s2")], iter.max=1000, centers=100, nstart=100)
 mypsus <- res$cluster
 psusize <- as.numeric(table(mypsus))
 summary(psusize)
@@ -6997,15 +6902,14 @@ zsim <- krige(
   locations=grd, newdata=grd, 
   model=vgm_REML_gstat, beta=vgm_REML$beta, 
   nmax=20, nsim=1000, 
-  dummy=TRUE,
-  debug.level=0) %>% as(.,"data.frame")
+  dummy=TRUE, debug.level=0) %>% as(.,"data.frame")
 zsim <- zsim[,-c(1,2)]
 ```
 
 For each simulated field the means of the psu's and the variances within the psu's are computed using function `tapply` in function `apply`.
 
 ```{r}
-m_zsim_psu <- apply(zsim, MARGIN=2, FUN=function(x) 
+m_zsim_psu <- apply(zsim, MARGIN=2, FUN=function(x)
   tapply(x, INDEX=grd$psu, FUN=mean))
 v_zsim_psu <- apply(zsim, MARGIN=2, FUN=function(x)
   tapply(x, INDEX=grd$psu, FUN=var))
@@ -7039,7 +6943,7 @@ The model-based prediction of the variance of the design-based estimate of the p
 
 The Bayesian approach is illustrated with a case study on predicting the sampling variance of NO3-N in an agricultural field in Belgium [@HofmanBrus2021]. Data of NO3-N are available at 30 points, forming approximately a square grid with a spacing of about 4.5 m. As a first step, I check whether we can safely assume that the data come from a normal distribution.
 
-```{r qqplotMelle, fig.asp=0.7, out.width="70%", fig.cap="Q-Q plot of Nitrate-N of field Melle."}
+```{r qqplotMelle, fig.asp=0.7, fig.cap="Q-Q plot of Nitrate-N of field Melle."}
 mydata <- read.csv("data/Melle17.csv", header=TRUE)
 ggplot(mydata, aes(sample=N)) +
   geom_qq() +
@@ -7062,7 +6966,7 @@ mydata$Northing <- mydata$Northing - min_Northing
 
 As a first step the semivariogram of lnN is estimated by maximum likelihood\index{Maximum likelihood estimation} (Section \@ref(MLestimationVariogram)). An exponential semivariogram model is assumed. Note that the parameters that are estimated are the reciprocal of the sill $\lambda$, the ratio of spatial dependence\index{Ratio of spatial dependence} $\xi$, defined as the partial sill divided by the sill, and the distance parameter $\phi$. This parameterisation of the semivariogram is chosen because hereafter in the Bayesian approach prior distributions are chosen for these parameters.
 
-The likelihood function is defined, using a somewhat unusual parameterisation, tailored at the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated by using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, chapter 11]. In MCMC sampling the probability of accepting a proposed sampling unit $\boldsymbol{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\boldsymbol{\theta}^*|\mathbf{z})/f(\boldsymbol{\theta}_{t-1}|\mathbf{z})$, so that the normalizing constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels. For a nice introduction to MCMC I refer to these [lecture notes](http://nitro.biosci.arizona.edu/courses/EEB596/handouts/Gibbs.pdf).
+The likelihood function is defined, using a somewhat unusual parameterisation, tailored at the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated by using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, chapter 11]. In MCMC sampling the probability of accepting a proposed sampling unit $\bm{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\bm{\theta}^*|\mathbf{z})/f(\bm{\theta}_{t-1}|\mathbf{z})$, so that the normalizing constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels. For a nice introduction to MCMC I refer to these [lecture notes](http://nitro.biosci.arizona.edu/courses/EEB596/handouts/Gibbs.pdf). `crossprod(X, Cinv)` is the same as `t(X) %*% Cinv`.
 
 ```{r}
 library(mvtnorm)
@@ -7070,14 +6974,12 @@ ll <-function(thetas) {
   sill <- 1/thetas[1]
   psill <- thetas[2]*sill
   nugget <- sill-psill
-  vgmodel <- vgm(
-    model=model, psill=psill, range=thetas[3], nugget=nugget)
+  vgmodel <- vgm(model=model, psill=psill, range=thetas[3], nugget=nugget)
   C <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
-  Cinv <- chol2inv(chol(C))
-  XC <- crossprod(X, Cinv)
-  XCz <- XC%*%z
-  XCX <- XC%*%X
-  beta <- solve(XCX, XCz)
+  Cinv <- solve(C)
+  XCXinv <- solve(crossprod(X, Cinv) %*% X)
+  XCz <- crossprod(X, Cinv) %*% z
+  beta <- XCXinv %*% XCz
   mu <- as.numeric(X%*%beta)
   logLik <- dmvnorm(x=z, mean=mu, sigma=C, log=TRUE)
   logLik
@@ -7095,10 +6997,8 @@ D <- as.matrix(dist(mydata[,c(1,2)]))
 X <- matrix(1, nrow(mydata), 1)
 z <- mydata$lnN
 model <- "Exp"
-vgML <- optim(
-  pars, ll, control=list(fnscale = -1),
-  lower=c(1e-6,0,1e-6), upper=c(1000,1,150),
-  method="L-BFGS-B")
+vgML <- optim(pars, ll, control=list(fnscale = -1),
+  lower=c(1e-6,0,1e-6), upper=c(1000,1,150), method="L-BFGS-B")
 ```
 
 The maximum likelihood (ML) estimates of the semivariogram parameters are used as initial values in MCMC sampling. In the Bayesian approach, I use a uniform prior for the inverse of the sill parameter, $\lambda=1/\sigma^2$, with a lower bound of $10^{-6}$ and an upper bound of 1. For the distance parameter $\phi$ of the exponential semivariogram a uniform prior is assumed, with a lower bound of $10^{-6}$ m. and an upper bound of 150 m. For the relative nugget, $\tau^2/\sigma^2$, a uniform prior is assumed with a lower bound of 0 and an upper bound of 1.
@@ -7110,13 +7010,11 @@ library(BayesianTools)
 priors <- createUniformPrior(lower=c(1e-6, 0, 1e-6),
                              upper=c(1000,1,150))
 bestML <- c(vgML$par[1], vgML$par[2], vgML$par[3])
-setup <- createBayesianSetup(
-  likelihood=ll, prior=priors,
+setup <- createBayesianSetup(likelihood=ll, prior=priors,
   best=bestML, names=c("lambda","xi","phi"))
 set.seed(314)
 res <- runMCMC(setup, sampler="DEzs")
-MCMCsample <- getSample(
-  res, start=1000, numSamples=1000) %>% data.frame(.)
+MCMCsample <- getSample(res, start=1000, numSamples=1000) %>% data.frame(.)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -7126,7 +7024,7 @@ write.csv(file="results/MCMC_Melle17_logN.csv", MCMCsample, row.names=FALSE)
 Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled by MCMC from the posterior distribution of the estimated semivariogram parameters.
 
 ```{r, echo=FALSE}
-MCMCsample <- read.csv(file="results/MCMC_Melle17_logN.csv",header=TRUE)
+MCMCsample <- read.csv(file="results/MCMC_Melle17_logN.csv", header=TRUE)
 ```
 
 ```{r MCMCsampleVariogramlnN, echo=FALSE, fig.asp=0.7, fig.cap="Semivariograms of lnN, obtained by MCMC sampling from posterior distribution of the estimated semivariogram parameters for field Melle." }
@@ -7277,15 +7175,14 @@ P90_V_STSI <- quantile(V, 0.9)
 
 As a model-based prediction of the sampling variance we can take the average or the median of the sampling variances over all $100 \times 100$ simulated maps, which are equal to `r round(Exi_V_STSI,3)` and `r round(P50_V_STSI,3)`, respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r round(P90_V_STSI,3)`
 
-Above I used the 30 data as conditioning data in geostatistical simulation, Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data were observed. For NO3-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model mean $\mu$ to the argument `beta` of function `krige`. The estimated model mean depends on the semivariogram parameters. The next code chunk shows how this model mean can be estimated(see also function `ll` above).
+Above I used the 30 data as conditioning data in geostatistical simulation, Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data were observed. For NO3-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model mean $\mu$ to the argument `beta` of function `krige`. The estimated model mean depends on the semivariogram parameters. The next code chunk shows how this model mean can be estimated (see also function `ll` above).
 
 ```{r, eval=FALSE}
 C <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
-Cinv <- chol2inv(chol(C))
-XC <- crossprod(X, Cinv)
-XCz <- XC%*%z
-XCX <- XC%*%X
-beta <- solve(XCX, XCz)
+Cinv <- solve(C)
+XCXinv <- solve(crossprod(X, Cinv) %*% X)
+XCz <- crossprod(X, Cinv) %*% z
+beta <- XCXinv %*% XCz
 ```
 
 ## Model-based optimisation of spatial strata {#Ospats}
@@ -7368,8 +7265,7 @@ Optimal spatial stratification with package **SamplingStrata** is illustrated wi
 sample_grid <- read.csv("data/Xuancheng_gridsample.csv")
 sample_iPSM <- read.csv("data/Xuancheng_iPSMsample.csv")
 sample_test <- read.csv("data/Xuancheng_Stratifiedrandomsample.csv")
-mysample <- rbind(sample_grid, sample_iPSM, 
-                  sample_test[,-c(13,14,15)])
+mysample <- rbind(sample_grid, sample_iPSM, sample_test[,-c(13,14,15)])
 lm_SOM <- lm(SOM_A_hori~dem, data=mysample)
 ```
 
@@ -7449,17 +7345,12 @@ This exponential semivariogram has three parameters, the nugget\index{Nugget} va
 ```{r, echo=FALSE}
 library(geoR)
 mysample <- as(mysample,"data.frame")
-dGeoR <- as.geodata(
-   obj=mysample, 
-   header=TRUE, 
-   coords.col=4:5, 
-   data.col=13,
-   covar.col=12
+dGeoR <- as.geodata(obj=mysample, header=TRUE, 
+   coords.col=4:5, data.col=13, covar.col=12
  )
 vgm_REML <- likfit(
   geodata=dGeoR, trend=~dem, cov.model="exponential",
-  ini.cov.pars=c(0.05,3),
-  nugget=0.1, lik.method="REML", messages=FALSE)
+  ini.cov.pars=c(0.05,3), nugget=0.1, lik.method="REML", messages=FALSE)
 ```
 
 ```{r TableModelXuancheng, echo=FALSE}
@@ -7524,27 +7415,16 @@ Finally, as a preparatory step we must specify how precise the estimated mean sh
 library(SamplingStrata)
 subgrd$id <- c(1:nrow(subgrd))
 subgrd$dom <- rep(1,nrow(subgrd))
-frame <-buildFrameSpatial(
-  df=subgrd, id="id",
-  X=c("lnSOMpred"), Y=c("lnSOMpred"),
-  variance=c("varpred"),
-  lon="x1", lat="x2",
-  domainvalue="dom")
+frame <-buildFrameSpatial(df=subgrd, id="id",X=c("lnSOMpred"), Y=c("lnSOMpred"),
+  variance=c("varpred"), lon="x1", lat="x2", domainvalue="dom")
 cv <- as.data.frame(list(DOM="DOM1",CV1=0.005,domainvalue=1))
 ```
 
 The optimal spatial stratification can be computed with function `optimStrata`, with argument `method="spatial"`. The $R^2$ value of the linear regression model, used in the minimisation criterion (Equation \@ref(eq:minicritospatsDeGruijter)), can be assigned to argument `fitting`. I used an $R^2$ value of one, because I believe the smoothing effect is already accounted for by the variance and covariance of the prediction errors (Equation \@ref(eq:Exid2ij)). Arguments `range` and `kappa` are parameters of an exponential semivariogram, needed for computing the covariance of the prediction errors. Function `optimiStrata` uses an extra parameter in the exponential semivariogram (Equation \@ref(eq:ExponVariogram)), $c_0+c_1\; \mathrm{exp}(-\kappa h/\phi)$, so for the usual exponential semivariogram `kappa` equals 1.
 
 ```{r, eval=FALSE}
-res <- optimStrata(
-  framesamp=frame,
-  method="spatial",
-  errors=cv,
-  nStrata=5,
-  fitting=1,
-  range=c(vgm_REML$phi),
-  kappa=1,
-  showPlot=FALSE)
+res <- optimStrata(framesamp=frame, method="spatial", errors=cv, nStrata=5,
+  fitting=1, range=c(vgm_REML$phi), kappa=1, showPlot=FALSE)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -7777,21 +7657,21 @@ There are quite a few packages for model-assisted estimation of means of small a
 In the regression estimator the potential bias due to the globally estimated regression coefficients, can be eliminated by adding the $\pi$ estimator of the mean of the regression residuals to the mean of the predictions in the domain(compare with Equation \@ref(eq:GREG)) (@Mandallaz2007, @Mandallaz2013):
 
 \begin{equation}
-\hat{\bar{z}}_{\text{regr},d} = \frac{1}{N_d} \sum_{k=1}^{N_d} \mathbf{x}^\mathrm{T}_{dk} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} = \bar{\mathbf{x}}_d^\mathrm{T} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} \;,
+\hat{\bar{z}}_{\text{regr},d} = \frac{1}{N_d} \sum_{k=1}^{N_d} \mathbf{x}^{\mathrm{T}}_{dk} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} \;,
 (\#eq:regressionestimatorsmalldomain)
 \end{equation}
 
 with $\mathbf{x}_{dk}$ the vector with covariate values for unit $k$ in domain $d$, $\hat{\mathbf{b}}$ the vector with globally estimated regression coefficients, $\epsilon_{dk}$ the residual for unit $k$ in domain $d$, $\pi_{dk}$ the inclusion probability of that unit, and $\bar{\mathbf{x}}_d$ the mean of the covariates in domain $d$. Alternatively the mean of the residuals in a domain is estimated by the ratio estimator:
 
 \begin{equation}
-\hat{\bar{z}}_{\text{regr},d} =  \bar{\mathbf{x}}_d^\mathrm{T} \hat{\mathbf{b}} + \frac{1}{\widehat{N}_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} \;,
+\hat{\bar{z}}_{\text{regr},d} =  \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{\widehat{N}_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} \;,
 (\#eq:regressionestimatorsmalldomainratio)
 \end{equation}
 
 with $\widehat{N}_d$ the estimated size of domain $d$, see Equation \@ref(eq:generalratiodomain). The regression coefficients can be estimated by Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). With simple random sampling the second term in this estimator is equal to the sample mean of the residuals, so that the estimator reduces to 
 
 \begin{equation}
-\hat{\bar{z}}_{\text{regr},d}=\bar{\mathbf{x}}_d^\mathrm{T} \hat{\mathbf{b}} + \bar{\epsilon}_{\mathcal{S}_d}\;,
+\hat{\bar{z}}_{\text{regr},d}=\bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \bar{\epsilon}_{\mathcal{S}_d}\;,
 (\#eq:regressionestimatorsmalldomainSI)
 \end{equation}
 
@@ -7800,7 +7680,7 @@ with $\bar{\epsilon}_{\mathcal{S}_d}$ the sample mean of the residuals in domain
 A regression estimate can only be computed if we have at least one observation of the study variable in the domain $d$. The variance of the regression estimator of the mean for a small domain can be estimated by [@Hill2021]
 
 \begin{equation}
-\widehat{V}\!\left(\hat{\bar{z}}_{\text{regr},d}\right) = \bar{\mathbf{x}}_d^\mathrm{T} \widehat{\mathbf{C}}(\hat{\mathbf{b}}) \bar{\mathbf{x}}_d + \widehat{V}\!\left(\hat{\bar{e}}_d \right)\;,
+\widehat{V}\!\left(\hat{\bar{z}}_{\text{regr},d}\right) = \bar{\mathbf{x}}_d^{\mathrm{T}} \widehat{\mathbf{C}}(\hat{\mathbf{b}}) \bar{\mathbf{x}}_d + \widehat{V}\!\left(\hat{\bar{e}}_d \right)\;,
 (\#eq:Varregressionestimatorsmalldomain)
 \end{equation}
 
@@ -7820,7 +7700,7 @@ where $\hat{a}_{d}$ is the estimated relative size of domain $d$:
 With simple random sampling the sampling variances and covariances of the estimated regression coefficients can be estimated by (see Equation 2 in @Hill2021)
 
 \begin{equation}
-\widehat{\mathbf{C}}(\hat{\mathbf{b}}) = \frac{1}{n} \left( \sum_{k \in \mathcal{S}} \mathbf{x}_k \mathbf{x}^\mathrm{T}_k \right) ^{-1} \left( \frac{1}{n^2} \sum_{k \in \mathcal{S}} \epsilon_k^2  \mathbf{x}_k \mathbf{x}^\mathrm{T}_k \right) \frac{1}{n}\left(\sum_{k \in \mathcal{S}}^n \mathbf{x}_k \mathbf{x}^\mathrm{T}_k \right)^{-1} \;.
+\widehat{\mathbf{C}}(\hat{\mathbf{b}}) = \frac{1}{n} \left( \sum_{k \in \mathcal{S}} \mathbf{x}_k \mathbf{x}^{\mathrm{T}}_k \right) ^{-1} \left( \frac{1}{n^2} \sum_{k \in \mathcal{S}} \epsilon_k^2  \mathbf{x}_k \mathbf{x}^{\mathrm{T}}_k \right) \frac{1}{n}\left(\sum_{k \in \mathcal{S}}^n \mathbf{x}_k \mathbf{x}^{\mathrm{T}}_k \right)^{-1} \;.
 (\#eq:samplingVarregressioncoefficients)
 \end{equation}
 
@@ -7846,18 +7726,10 @@ mx_eco_pop <- tapply(
 mX_eco_pop <- data.frame(
   Intercept=rep(1,length(mx_eco_pop)), lnSWIR2=mx_eco_pop)
 ecos_in_sam <- unique(mysample$Ecoregion)
-res <- forestinventory::twophase(
-  AGB~lnSWIR2,
-  data=gridAmazonia,
-  phase_id=list(
-    phase.col="ind",
-    terrgrid.id=1),
-  small_area=list(
-    sa.col="Ecoregion",
-    areas=sort(ecos_in_sam),
-    unbiased=TRUE),
-  psmall=TRUE,
-  exhaustive=mX_eco_pop)
+res <- forestinventory::twophase(AGB~lnSWIR2, data=gridAmazonia,
+  phase_id=list(phase.col="ind", terrgrid.id=1),
+  small_area=list(sa.col="Ecoregion", areas=sort(ecos_in_sam), unbiased=TRUE),
+  psmall=TRUE, exhaustive=mX_eco_pop)
 regr <- res$estimation
 ```
 
@@ -7878,7 +7750,7 @@ For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:Tabl
 
 Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates. The variation of the regression estimates is smaller than those of the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
 
-```{r RatioversusRegrEcoregions, echo=FALSE, out.width="70%", fig.cap="Scatterplot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
+```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatterplot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
 mysample$N <- nrow(gridAmazonia)
 design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
@@ -7919,14 +7791,14 @@ knitr::kable(
 For small domains from which no units are selected, the mean can still be estimated by the synthetic estimator\index{Synthetic estimator}, also referred to as the synthetic regression estimator:
 
 \begin{equation}
-\hat{\bar{z}}_{\text{syn},d}=\bar{\mathbf{x}}_d^\mathrm{T} \hat{\mathbf{b}}\;.
+\hat{\bar{z}}_{\text{syn},d}=\bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}}\;.
 (\#eq:syntheticestimatorsmalldomain)
 \end{equation}
 
 So the second term in Equation \@ref(eq:regressionestimatorsmalldomain) is dropped. The variance can be estimated by
 
 \begin{equation}
-\widehat{V}\!\left(\hat{\bar{z}}_{\text{syn},d}\right) = \bar{\mathbf{x}}_d^\mathrm{T} \widehat{\mathbf{C}}(\hat{\mathbf{b}}) \bar{\mathbf{x}}_d \;.
+\widehat{V}\!\left(\hat{\bar{z}}_{\text{syn},d}\right) = \bar{\mathbf{x}}_d^{\mathrm{T}} \widehat{\mathbf{C}}(\hat{\mathbf{b}}) \bar{\mathbf{x}}_d \;.
 (\#eq:Varsyntheticestimatorsmalldomain)
 \end{equation}
 
@@ -7934,18 +7806,10 @@ This is equal to the first variance component of Equation \@ref(eq:Varregression
 The synthetic estimate can be computed with function `twophase`, with arguments `psmall=FALSE` and element `unbiased=FALSE` in the list `small_area` .
 
 ```{r}
-res <- forestinventory::twophase(
-  AGB~lnSWIR2,
-  data=gridAmazonia,
-  phase_id=list(
-    phase.col="ind",
-    terrgrid.id=1),
-  small_area=list(
-    sa.col="Ecoregion",
-    areas=ecoregions,
-    unbiased=FALSE),
-  psmall=FALSE,
-  exhaustive=mX_eco_pop)
+res <- forestinventory::twophase(AGB~lnSWIR2, data=gridAmazonia,
+  phase_id=list(phase.col="ind", terrgrid.id=1),
+  small_area=list(sa.col="Ecoregion", areas=ecoregions, unbiased=FALSE),
+  psmall=FALSE, exhaustive=mX_eco_pop)
 synt <- res$estimation
 ```
 
@@ -8006,7 +7870,7 @@ The alternative for design-based and model-assisted estimation of the means or t
 A basic linear mixed model for model-based prediction of means of small domains is the random intercept model\index{Random intercept model}:
 
 \begin{eqnarray}
-Z_{dk} &=& \mathbf{x}_{dk}^{\text{T}} \boldsymbol{\beta} + v_d + \epsilon_{dk} \notag \\
+Z_{dk} &=& \mathbf{x}_{dk}^{\text{T}} \bm{\beta} + v_d + \epsilon_{dk} \notag \\
 v_d &\sim& \mathcal{N}(0,\sigma^2_v) \\
 \epsilon_{dk} &\sim& \mathcal{N}(0,\sigma^2_{\epsilon}) \notag \;.
 (\#eq:RandomInterceptModel)
@@ -8015,14 +7879,14 @@ v_d &\sim& \mathcal{N}(0,\sigma^2_v) \\
 Two random variables are now involved, both with a normal distribution with mean zero: $v_d$ a random intercept at the domain level with variance $\sigma^2_v$, and the residuals $\epsilon_{dk}$ at the unit level with variance $\sigma^2_{\epsilon}$. The variance $\sigma^2_v$ can be interpreted as a measure of the heterogeneity among the domains after accounting for the fixed effect [@Breidenbach2012]. With this model the mean of a domain can be predicted by
 
 \begin{equation}
-\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^\mathrm{T} \hat{\mathbf{b}} + \hat{v}_d \;,
+\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \hat{v}_d \;,
 (\#eq:mbpredictordomainmeanrandomintercept)
 \end{equation}
 
-with $\hat{\boldsymbol{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
+with $\hat{\bm{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
 
 \begin{equation}
-\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^\mathrm{T} \hat{\mathbf{b}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
+\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
 (\#eq:mbpredictordomainmeanrandomintercept2)
 \end{equation}
 
@@ -8081,14 +7945,10 @@ coef(lmm_AGB)
 The fitted model can now be used to predict the means of the ecoregions as follows. As a first step a data frame must be defined with the sizes of the domains and the population means of the covariate lnSWIR2 per domain. This data frame is assigned to argument `domain.data` of function `eblup.mse.f.wrap`. This function computes the model-based prediction as well as the regression estimator (Equation \@ref(eq:regressionestimatorsmalldomain)) and the synthetic estimator (Equation \@ref(eq:syntheticestimatorsmalldomain)) and their variances. The model-based predictor is the variable `EBLUP` in the output data frame. For the model-based predictor two standard errors are computed, see @Breidenbach2012 for details.
 
 ```{r}
-N_eco <- tapply(gridAmazonia$AGB, INDEX=gridAmazonia$Ecoregion,
-                FUN=length)
-df_eco <- data.frame(Ecoregion=ecoregions, N=N_eco, 
-                        lnSWIR2=mx_eco_pop)
-res <- eblup.mse.f.wrap(
-  domain.data=df_eco, lme.obj=lmm_AGB)
-df <- data.frame(
-  Ecoregion=res$domain.ID, mb=res$EBLUP,
+N_eco <- tapply(gridAmazonia$AGB, INDEX=gridAmazonia$Ecoregion, FUN=length)
+df_eco <- data.frame(Ecoregion=ecoregions, N=N_eco, lnSWIR2=mx_eco_pop)
+res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
+df <- data.frame(Ecoregion=res$domain.ID, mb=res$EBLUP,
   se.1=res$EBLUP.se.1, se.2=res$EBLUP.se.2)
 ```
 
@@ -8127,28 +7987,22 @@ The semivariogram parameters and the regression coefficients can best be estimat
 ```{r}
 library(geoR)
 mysample <- as(mysample,"data.frame")
-dGeoR <- as.geodata(
-  mysample, header=TRUE,
+dGeoR <- as.geodata(mysample, header=TRUE,
   coords.col=1:2, data.col=3, covar.col=4)
 ```
 
 The model parameters can then be estimated with function `likfit`.
 
 ```{r}
-vgm_REML <- likfit(
-  geodata=dGeoR,
-  trend=~lnSWIR2,
-  cov.model="spherical",
-  ini.cov.pars=c(1000,300), nugget=1500,
-  lik.method="REML", messages=FALSE)
+vgm_REML <- likfit(geodata=dGeoR, trend=~lnSWIR2, cov.model="spherical",
+  ini.cov.pars=c(1000,300), nugget=1500, lik.method="REML", messages=FALSE)
 ```
 
 The estimated semivariogram parameters are `r round(vgm_REML$nugget,0)` for the nugget (intercept of the semivariogram), `r round(vgm_REML$sigmasq,0)` for the partial sill (maximum semivariance minus the nugget), and `r round(vgm_REML$phi,1)` for the range (distance at which the semivariance reaches its maximum). The estimated regression coefficients and parameters of the semivariogram can then be used to predict AGB for all units in the population.
 
 ```{r, eval=FALSE}
 coordinates(mysample) <- ~x1+x2
-vgm_REML_gstat <- vgm(
-  nugget=vgm_REML$nugget, psill=vgm_REML$sigmasq,
+vgm_REML_gstat <- vgm(nugget=vgm_REML$nugget, psill=vgm_REML$sigmasq,
   range=vgm_REML$phi, model="Sph")
 coordinates(mysample) <- ~x1+x2
 coordinates(gridAmazonia) <- ~x1+x2
@@ -8157,8 +8011,7 @@ predictions  <- krige(
   locations=mysample, 
   newdata=gridAmazonia, 
   model=vgm_REML_gstat,
-  debug.level=0) %>%
-as(.,"data.frame")
+  debug.level=0) %>% as(.,"data.frame")
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -8193,13 +8046,12 @@ simulations  <- krige(
   newdata=gridAmazonia, 
   model=vgm_REML_gstat,
   nmax=100, nsim=nsim,
-  debug.level=0) %>%
-as(.,"data.frame")
+  debug.level=0) %>% as(.,"data.frame")
 gridAmazonia <- as(gridAmazonia,"data.frame")
 AGBsim_eco <- matrix(nrow=length(ecoregions), ncol=nsim)
 for (i in 1:nsim) {
-  AGBsim_eco[,i] <- tapply(
-    simulations[,i+2], INDEX=gridAmazonia$Ecoregion, FUN=mean)
+  AGBsim_eco[,i] <- tapply(simulations[,i+2],
+  INDEX=gridAmazonia$Ecoregion, FUN=mean)
 }
 ```
 
@@ -8225,7 +8077,7 @@ knitr::kable(
 
 Similar to the synthetic estimator, for all ecoregions an estimate of the mean AGB is obtained, also for the unsampled ecoregions (Table \@ref(tab:TableGeostatisticqalModelEstimates)). The model-based prediction is strongly correlated with the synthetic estimate (Figure \@ref(fig:MBvsSynt)).
 
-```{r MBvsSynt, echo=FALSE, out.width="70%", fig.cap="Scatterplot of model-based prediction and synthetic estimate of the mean AGB of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
+```{r MBvsSynt, echo=FALSE, fig.cap="Scatterplot of model-based prediction and synthetic estimate of the mean AGB of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
 df <- data.frame(ecoregions, mb=mz_eco_mb, se.mb=se_mz_eco_mb, synt=synt$estimate, se.synt=sqrt(synt$g_variance)) 
 ggplot(data=df) +
         geom_point(mapping=aes(x=synt, y=mb), size=2) +
@@ -8239,7 +8091,7 @@ The most striking difference is the standard error. The standard errors of the s
 
 It makes more sense to compare the two model-based predictions, the random intercept model predictions and the geostatistical predictions, and their standard errors. Figure \@ref(fig:MBvsMB) shows that the two model-based predictions are very similar. 
 
-```{r MBvsMB, echo=FALSE,  out.width="70%", fig.cap="Scatterplot of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
+```{r MBvsMB, echo=FALSE, fig.cap="Scatterplot of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
 res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
 TF <- (ecoregions %in% ecos_in_sam)
 n_eco <- tapply(mysample$AGB, INDEX=mysample$Ecoregion, FUN=length)
@@ -8254,7 +8106,7 @@ ggplot(data=df) +
 
 For four ecoregions the standard errors of the geostatistical model predictions are much smaller than those of the random intercept model predictions (Figure \@ref(fig:MBvsMBse)). These are ecoregions with small sample sizes.
 
-```{r MBvsMBse, echo=FALSE,  out.width="70%", fig.cap="Scatterplot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
+```{r MBvsMBse, echo=FALSE,  fig.cap="Scatterplot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
 ggplot(data=df) +
         geom_point(mapping=aes(x=semb.rint, y=semb.geo), size=2) +
         geom_text(mapping=aes(x=semb.rint, y=semb.geo, label=n_eco), hjust=1, vjust=1)+
@@ -8293,13 +8145,11 @@ The selected units are removed from the sampling frame. For each of the three sm
 
 ```{r}
 units_notselected <- gridAmazonia[-units_1,]
-Biomes_NFM <- 
-  units_notselected[units_notselected$Biome!="Forest.moist",]
+Biomes_NFM <- units_notselected[units_notselected$Biome!="Forest.moist",]
 n_biome <- 40
 n2_biome <- rep(n_biome,3) - n1_biome[-4]
 ord <- unique(Biomes_NFM$Biome)
-units_2 <- sampling::strata(
-  Biomes_NFM, stratanames="Biome",
+units_2 <- sampling::strata(Biomes_NFM, stratanames="Biome",
   size=n2_biome[ord], method="srswor")
 mysample_2 <- getdata(Biomes_NFM, units_2)
 mysample_2 <- mysample_2[c("AGB","Biome")]
@@ -8309,8 +8159,7 @@ The two samples are merged, and the means of the domains are estimated by the sa
 
 ```{r}
 mysample <- rbind(mysample_1, mysample_2)
-print(mz_biome <- tapply(
-  mysample$AGB, INDEX=mysample$Biome, FUN=mean))
+print(mz_biome <- tapply(mysample$AGB, INDEX=mysample$Biome, FUN=mean))
 ```
 
 Finally, the standard error is estimated, accounting for sampling without replacement from a finite population (Equation \@ref(eq:EstVarMeanSI)).
@@ -8568,14 +8417,14 @@ with $\bar{t}$ the mean of the sampling times. Note that the temporal trend is d
 A space-time mean can be defined as the average of the spatial means at the sampling times. In this definition the temporal universe is discrete and restricted to the sampling times. The target universe consists of a finite set of spatial populations:
 
 \begin{equation}
-\bar{\bar{z}}_\mathcal{U}=\frac{1}{r} \sum_{j=1}^r \bar{z_j}
+\bar{\bar{z}}_{\mathcal{U}}=\frac{1}{r} \sum_{j=1}^r \bar{z_j}
 (\#eq:SpacetimeMeanDiscrete)
 \end{equation}
 
 Alternatively, a space-time mean for a continuous temporal universe is defined as
 
 \begin{equation}
-\bar{\bar{z}}_\mathcal{U} = \frac{1}{T}\int_{t \in \mathcal{T}}\bar{z}_t\;,
+\bar{\bar{z}}_{\mathcal{U}} = \frac{1}{T}\int_{t \in \mathcal{T}}\bar{z}_t\;,
 (\#eq:SpacetimeMeanContinuous)
 \end{equation}
 
@@ -8590,11 +8439,11 @@ In overlapping samples such as a supplemented panel or rotating panel sample we 
 The essence of the estimation method described in this section is to estimate the spatial mean at a given time point as a weighted average of the elementary estimates *of all time points*, with the weights determined by the sampling variances and covariances of the elementary estimates. Collecting all elementary estimates of the spatial means of the different sampling times in vector $\hat{\mathbf{z}}$, we can write
 
 \begin{equation}
-\hat{\mathbf{z}}=\mathbf{X} \mathbf{z} + \boldsymbol{\epsilon} \;,
+\hat{\mathbf{z}}=\mathbf{X} \mathbf{z} + \bm{\epsilon} \;,
 (\#eq:zbf)
 \end{equation}
 
-with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_r)$ at the $r$ sampling times, $\mathbf{X}$ the ($P \times r$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\boldsymbol{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\boldsymbol{\epsilon}$ is a vector with zeroes.  
+with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_r)$ at the $r$ sampling times, $\mathbf{X}$ the ($P \times r$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\bm{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\bm{\epsilon}$ is a vector with zeroes.  
 
 With an independent synchronous, static-synchronous and serially alternating design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. For the supplemented panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix $\mathbf{X}$ is
 
@@ -8692,12 +8541,11 @@ In practice matrix $\mathbf{C}$ in Equations \@ref(eq:DBGLS and \@ref(eq:CovGLS)
 (\#eq:covartwoelementaryestimates)
 \end{equation}
 
-
-with $m$ the number of sampling locations in the panel, and $\frac{\widehat{S^2}_{ab}}$ the estimated covariance of the study variable at times $t_a$ and $t_b$, estimated by
+with $m$ the number of sampling locations in the panel, and $\widehat{S^2}_{ab}$ the estimated covariance of the study variable at times $t_a$ and $t_b$, estimated by
 
 \begin{equation}
-\widehat{S^2}_{ab} = \frac{1}{m-1}\sum_{k=1}^m (z_{apk}-\hat{\bar{z}}_{ap})(z_{bpk}-\hat{\bar{z}}_{bp}) 
-(\#eq:)
+\widehat{S^2}_{ab} = \frac{1}{m-1}\sum_{k=1}^m (z_{apk}-\hat{\bar{z}}_{ap})(z_{bpk}-\hat{\bar{z}}_{bp}) \;,
+(\#eq:S2ab)
 \end{equation}
 
 with $z_{apk}$ the study variable of unit $k$ in panel $p$ at time $t_a$, and \hat{\bar{z}}_{ap}$ the spatial mean at time $t_a$ as estimated from panel $p$.
@@ -8705,8 +8553,10 @@ with $z_{apk}$ the study variable of unit $k$ in panel $p$ at time $t_a$, and \h
 The sampling variances and covariances of the GLS estimated spatial means at the $r$ sampling times can be estimated by
 
 \begin{equation}
+$$
 \mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}}) = (\mathbf{X}^{\text{T}}\widehat{\mathbf{C}}^{-1}\mathbf{X})^{-1}
 (\#eq:CovGLS) \;.
+$$
 \end{equation}
 
 Given the design-based GLS estimates of the spatial means at the different times it is an easy job to compute the estimated change of the mean between two surveys, the estimated temporal trend of the mean and the estimated space-time mean. 
@@ -8892,7 +8742,7 @@ se_mz_st <- t(w)%*%C%*%w %>% sqrt(.)
 
 ```{r}
 set.seed(314)
-units <- sample.int(nrow(xy), size=n*2, replace=TRUE)
+units <- sample.int(nrow(xy), size=2*n, replace=TRUE)
 mysample_SA <- zsim[units,c("z1","z2","z3","z4")]
 mysample_SA$panel <- rep(c("a","b"), each=n)
 panel_a <- filter(mysample_SA, panel=="a")[,c(1,3)]
@@ -8932,9 +8782,10 @@ se_mz_st <- t(w)%*%C%*%w %>% sqrt(.)
 ### Supplemented panel design
 
 ```{r}
-units <- sample.int(nrow(xy), size=n*5, replace=TRUE)
+set.seed(314)
+units <- sample.int(nrow(xy), size=5*n/2, replace=TRUE)
 mysample_SP <- zsim[units,c("z1","z2","z3","z4")]
-mysample_SP$panel <- rep(c("a","b","c","d","e"), each=n)
+mysample_SP$panel <- rep(c("a","b","c","d","e"), each=n/2)
 #compute eight elementary estimates
 mz_1 <- tapply(mysample_SP$z1, INDEX=mysample_SP$panel,
                FUN=mean)[c(1,2)]
@@ -8952,38 +8803,98 @@ X <- rbind(diag(4),diag(4))
 mysubsample_SS <- mysample_SP[mysample_SP$panel=="a",]
 C_SS <- var(mysubsample_SS[,1:4])/(n/2)
 #estimate variances of elementary estimates of independent synchronous subsample
-mysubsample_IS <- mysample_SP[mysample_SP$panel!="a",]
-C_IS <- var(mysubsample_IS[,1:4])/(n/2)
-C_IS[row(C_IS) != col(C_IS)] <- 0
+mysubsample_IS <- cbind(mysample_SP$z1[mysample_SP$panel=="b"],
+                        mysample_SP$z2[mysample_SP$panel=="c"],
+                        mysample_SP$z3[mysample_SP$panel=="d"],
+                        mysample_SP$z4[mysample_SP$panel=="e"])
+C_IS <- var(mysubsample_IS)/(n/2)
+C_IS[row(C_IS)!=col(C_IS)] <- 0
 zeroes <- matrix(0,4,4)
 C <- rbind(cbind(C_SS,zeroes),cbind(zeroes,C_IS))
-Cinv <- chol2inv(chol(C))
-XC <- crossprod(X, Cinv)
-XCz <- XC%*%mz_el
-XCX <- XC%*%X
-mz_GLS <- solve(XCX, XCz)
-C_GLS <- solve(XCX)
+Cinv <- solve(chol(C))
+XCXinv <- solve(crossprod(X, Cinv)%*%X)
+XCz <- crossprod(X, Cinv)%*%mz_el
+mz_GLS <- XCXinv%*%XCz
 
 #current mean
 mz_cur <- mz_GLS[4]
-se_mz_cur <- C_GLS[4,4] %>% sqrt(.)
+se_mz_cur <- XCXinv[4,4] %>% sqrt(.)
 
 #change of mean
 w <- c(-1,0,0,1)
 d_mz <- t(w)%*%mz_GLS
-se_d_mz <- t(w)%*%C_GLS%*%w %>% sqrt(.)
+se_d_mz <- t(w)%*%XCXinv%*%w %>% sqrt(.)
 
 #trend of mean
 w <- (t-mean(t))/sum((t-mean(t))^2)
 mz_trend <- t(w)%*%mz_GLS
-(se_mz_trend <- t(w)%*%C_GLS%*%w %>% sqrt(.))
+se_mz_trend <- t(w)%*%XCXinv%*%w %>% sqrt(.)
 
 #space-time mean
 w <- rep(1/4,4)
 mz_st <- t(w)%*%mz_GLS
-se_mz_st <- t(w)%*%C_GLS%*%w %>% sqrt(.)
+se_mz_st <- t(w)%*%XCXinv%*%w %>% sqrt(.)
 ```
 
+### Rotating panel design
+
+```{r}
+set.seed(314)
+units <- sample.int(nrow(xy), size=5*n/2, replace=TRUE)
+mysample_RP <- zsim[units,c("z1","z2","z3","z4")]
+mysample_RP$panel <- rep(c("a","b","c","d","e"), each=n/2)
+mz_1 <- tapply(mysample_SP$z1, INDEX=mysample_SP$panel,
+               FUN=mean)[c(1,2)]
+mz_2 <- tapply(mysample_SP$z2, INDEX=mysample_SP$panel,
+               FUN=mean)[c(2,3)]
+mz_3 <- tapply(mysample_SP$z3, INDEX=mysample_SP$panel,
+               FUN=mean)[c(3,4)]
+mz_4 <- tapply(mysample_SP$z4, INDEX=mysample_SP$panel,
+               FUN=mean)[c(4,5)]
+mz_el <- c(mz_1,mz_2,mz_3,mz_4)
+X <- matrix(c(rep(c(1,0,0,0),2),
+              rep(c(0,1,0,0),2),
+              rep(c(0,0,1,0),2),
+              rep(c(0,0,0,1),2)), nrow=8, ncol=4, byrow=TRUE)
+
+mysubsample <- mysample_RP[mysample_RP$panel=="b",c("z1","z2")] 
+C_b <- var(mysubsample)/(n/2)
+mysubsample <- mysample_RP[mysample_RP$panel=="c",c("z2","z3")] 
+C_c <- var(mysubsample)/(n/2)
+mysubsample <- mysample_RP[mysample_RP$panel=="d",c("z3","z4")] 
+C_d <- var(mysubsample)/(n/2)
+
+C <- matrix(data=0, ncol=8, nrow=8)
+C[2:3,2:3] <- C_b
+C[4:5,4:5] <- C_c
+C[6:7,6:7] <- C_d
+C[1,1] <- var(mysample_RP[mysample_RP$panel=="a","z1"])/(n/2)
+C[8,8] <- var(mysample_RP[mysample_RP$panel=="e","z4"])/(n/2)
+
+Cinv <- solve(chol(C))
+XCXinv <- solve(crossprod(X, Cinv) %*% X)
+XCz <- crossprod(X, Cinv) %*% mz_el
+mz_GLS <- XCXinv %*% XCz
+
+#current mean
+mz_cur <- mz_GLS[4]
+se_mz_cur <- XCXinv[4,4] %>% sqrt(.)
+
+#change of mean
+w <- c(-1,0,0,1)
+d_mz <- t(w)%*%mz_GLS
+se_d_mz <- t(w) %*% XCXinv %*% w %>% sqrt(.)
+
+#trend of mean
+w <- (t-mean(t))/sum((t-mean(t))^2)
+mz_trend <- t(w)%*%mz_GLS
+se_mz_trend <- t(w) %*% XCXinv %*% w %>% sqrt(.)
+
+#space-time mean
+w <- rep(1/4,4)
+mz_st <- t(w) %*% mz_GLS
+se_mz_st <- t(w) %*% XCXinv %*% w %>% sqrt(.)
+```
 
 <!--chapter:end:15-RepeatedSurveys.Rmd-->
 
@@ -9172,7 +9083,7 @@ units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=gridAmazonia$pi)
 mysample <- gridAmazonia[units,]
 ```
 
-```{r Sample4MappingandEstimationAmazonia2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced stratified sample with geograhical spreading, balanced on lnSWIR2 and stratum sample sizes (biomes used as strata),  Eastern Amazonia (Brazil)."}
+```{r Sample4MappingandEstimationAmazonia2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced stratified sample with geographical spreading, balanced on lnSWIR2 and stratum sample sizes (biomes used as strata),  Eastern Amazonia (Brazil)."}
 ggplot(data=gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
   geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000, shape=Biome), size=2)+
@@ -9223,8 +9134,8 @@ library(sp)
 load("data/Voorst.RData")
 gridded(grdVoorst) <- ~s1+s2
 mysample <- spsample(
-  x=grdVoorst, type="regular", cellsize=c(200,200),
-  offset=c(0.5,0.5)) %>% as(.,"data.frame")
+  x=grdVoorst, type="regular", cellsize=c(200,200), offset=c(0.5,0.5)) %>% 
+  as(.,"data.frame")
 ```
 
 Figure \@ref(fig:gridVoorst) shows the selected square grid.
@@ -9379,7 +9290,7 @@ This problem can easily be solved by selecting points inside the study area clos
 library(fields)
 units_out <- which(inside==FALSE)
 D <- fields::rdist(x1=mysample_kmeans[units_out,],
-                   x2=grdVoorst[,c("s1","s2")])
+  x2=grdVoorst[,c("s1","s2")])
 units_close <- apply(D, MARGIN=1, FUN=which.min)
 mysample_kmeans[units_out,] <- grdVoorst[units_close,c("s1","s2")]
 ```
@@ -9406,8 +9317,7 @@ ntot <- n+length(priordataEthiopia)
 priordata <- as(priordataEthiopia, "SpatialPoints")
 proj4string(priordata) <- NA_character_
 set.seed(314)
-mystrata <- stratify(
-  grdEthiopia, nStrata=ntot, priorPoints=priordata, nTry=10)
+mystrata <- stratify(grdEthiopia, nStrata=ntot, priorPoints=priordata, nTry=10)
 mysample <- spsample(mystrata)
 plot(mystrata, mysample)
 ```
@@ -9446,8 +9356,7 @@ covs <- names(gridAmazonia)[c(4,5,6,7,8)]
 n <- 20
 set.seed(314)
 myclusters <- kmeans(
-  scale(gridAmazonia[,covs]), centers=n, 
-  iter.max=10000, nstart=100)
+  scale(gridAmazonia[,covs]), centers=n, iter.max=10000, nstart=100)
 gridAmazonia$cluster <- myclusters$cluster
 ```
 
@@ -9467,9 +9376,8 @@ The next code chunk shows how the MSSSD of the selected sample can be computed.
 ```{r}
 popmeans <- apply(gridAmazonia[,covs], MARGIN=2, FUN=mean)
 popsds <- apply(gridAmazonia[,covs], MARGIN=2, FUN=sd)
-D <- rdist(
-  x1=scale(myCSCsample[,covs], center=popmeans, scale=popsds),
-  x2=scale(gridAmazonia[,covs]))
+D <- rdist(x1=scale(myCSCsample[,covs], center=popmeans, scale=popsds),
+           x2=scale(gridAmazonia[,covs]))
 dmin <- apply(D, MARGIN=2, min)
 MSSSD <- mean(dmin^2)
 ```
@@ -9543,8 +9451,7 @@ CSIS <- function (fixed,nsup,nstarts,mygrd) {
     centers <- rbind(fixed[,names(mygrd)],centers_sup)
     repeat {
       D <- rdist(x1=centers, x2=mygrd)
-      clusters <- apply(X=D, MARGIN=2, FUN=which.min) %>% 
-        as.factor(.)
+      clusters <- apply(X=D, MARGIN=2, FUN=which.min) %>% as.factor(.)
       centers_cur <- centers
       for (i in 1:p) {
         centers[,i] <- tapply(mygrd[,i], INDEX=clusters, FUN=mean)
@@ -9697,8 +9604,7 @@ library(clhs)
 load("data/Amazonia_5km.RData")
 covs <- names(gridAmazonia)[c(4,5,6,7,8)]
 set.seed(314)
-res <- clhs(
-  gridAmazonia[,covs], size=20, tdecrease=0.95,
+res <- clhs(gridAmazonia[,covs], size=20, tdecrease=0.95,
   iter=10000, progress=FALSE, simple=FALSE)
 index <- res$index_samples
 myCLHsample <- gridAmazonia[index, ]
@@ -9793,10 +9699,8 @@ To illustrate conditioned Latin hypercube *infill* sampling (cLHIS), I selected 
 ```{r, eval=FALSE}
 set.seed(314)
 units <- sample.int(nrow(gridAmazonia), 10, replace=FALSE)
-res <- clhs(
-  gridAmazonia[,covs], size=30, include=units,
-  tdecrease=0.95, iter=10000,
-  progress=FALSE, simple=FALSE)
+res <- clhs(gridAmazonia[,covs], size=30, include=units,
+  tdecrease=0.95, iter=10000, progress=FALSE, simple=FALSE)
 index <- res$index_samples
 myCLHIsample <- gridAmazonia[index, ]
 myCLHIsample$free <- as.factor(rep(c(1,0), c(20,10)))
@@ -10219,8 +10123,7 @@ The next step is to select for each design point several candidate sampling unit
 EM_CRF$unit <- 1:nrow(EM_CRF)
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
-    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+
-                     (EM_CRF$PC2-ccd_df$x2[i])^2)
+    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
     q <- quantile(d2dpnt, p=0.005)
     units_close <- which(d2dpnt < q)
     candi <- EM_CRF[units_close,c("unit","x1","x2","PC1","PC2")]
@@ -10260,8 +10163,7 @@ As a first step an initial subsample from the candidate sampling units is select
 ```{r}
 library(sampling)
 set.seed(314)
-units_stsi <- sampling::strata(
-  candi_all, stratanames="dpnt", size=rep(1,9))
+units_stsi <- sampling::strata(candi_all, stratanames="dpnt", size=rep(1,9))
 mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ```
@@ -10276,8 +10178,7 @@ A function is defined for computing the minimisation criterion.  Given a chosen 
 
 ```{r}
 getCriterion <- function(mysample, dpnt, weight=0, phi=NULL){
-  D2dpnt <- sqrt((mysample$PC1-dpnt$x1)^2+
-                   (mysample$PC2-dpnt$x2)^2)
+  D2dpnt <- sqrt((mysample$PC1-dpnt$x1)^2+(mysample$PC2-dpnt$x2)^2)
   D <- as.matrix(dist(mysample[,c("x1","x2")]))
   if (!is.null(phi)) {
     vgmodel <- vgm(model="Exp", psill=1, range=phi)
@@ -10301,8 +10202,7 @@ The initial value of the geometric criterion  is `r round(criterion_geo,3)`. The
 
 ```{r}
 phi <- 50
-criterion_mb <- getCriterion(
-  mysample=mysample0, dpnt=ccd_df, phi=phi)
+criterion_mb <- getCriterion(mysample=mysample0, dpnt=ccd_df, phi=phi)
 ```
 
 The initial value of the model-based criterion is `r round(criterion_mb,3)`.
@@ -10313,11 +10213,9 @@ The objective function defining the minimisation criterion is minimised with sim
 ```{r, eval=FALSE}
 source('Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R')
 set.seed(314)
-mySRSsample <- anneal(
-  mysample=mysample0, candidates=candi_all, dpnt=ccd_df,
-  phi=50, T_ini=1, coolingRate=0.9,
-  maxPermuted=25*nrow(mysample0), maxNoChange=20,
-  verbose=TRUE)
+mySRSsample <- anneal(mysample=mysample0, candidates=candi_all, dpnt=ccd_df,
+  phi=50, T_ini=1, coolingRate=0.9, maxPermuted=25*nrow(mysample0),
+  maxNoChange=20, verbose=TRUE)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -10369,8 +10267,7 @@ Nine points are rather few for fitting a polynomial regression model, especially
 ```{r}
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
-    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+
-                     (EM_CRF$PC2-ccd_df$x2[i])^2)
+    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
     q <- quantile(d2dpnt, p=0.01)
     units_close <- which(d2dpnt < q)
     candi <- EM_CRF[units_close,c("unit","x1","x2","PC1","PC2")]
@@ -10383,8 +10280,7 @@ A stratified random subsample of two points per stratum is selected, which serve
 
 ```{r}
 set.seed(314)
-units_stsi <- sampling::strata(
-  candi_all, stratanames="dpnt", size=rep(2,9))
+units_stsi <- sampling::strata(candi_all, stratanames="dpnt", size=rep(2,9))
 mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ```
@@ -10465,11 +10361,10 @@ for (h in c(1,2)) {
   candi_stratum <- NULL
   for (i in 1:nrow(ccd_df)) {
       d2dpnt <- sqrt((data_stratum$PC1-ccd_df$x1[i])^2+
-                       (data_stratum$PC2-ccd_df$x2[i])^2)
+                     (data_stratum$PC2-ccd_df$x2[i])^2)
       q <- quantile(d2dpnt,p=p[h])
       units_close <- which(d2dpnt < q)
-      candi <- data_stratum[units_close,
-                            c("unit","x1","x2","PC1","PC2")]
+      candi <- data_stratum[units_close, c("unit","x1","x2","PC1","PC2")]
       candi$dpnt <- i + (h-1)*nrow(ccd_df)
       candi_stratum <- rbind(candi_stratum, candi)
   }
@@ -10494,8 +10389,7 @@ As before, `dpnt` is used as a stratum identifier to subsample the candidate sam
 
 ```{r}
 set.seed(314)
-units_stsi <- sampling::strata(
-  candi_all, stratanames="dpnt", size=rep(1,18))
+units_stsi <- sampling::strata(candi_all, stratanames="dpnt", size=rep(1,18))
 mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ccd_df2 <- rbind(ccd_df,ccd_df)
@@ -10656,7 +10550,7 @@ Replacing submatrices by single symbols results in the shorthand matrix equation
 \right]
 \left[
 \begin{array}{c}
-\boldsymbol{\lambda}\\
+\bm{\lambda}\\
 \nu\\
 \end{array}
 \right]
@@ -10670,7 +10564,7 @@ Replacing submatrices by single symbols results in the shorthand matrix equation
 (\#eq:OKsystemshort)
 \end{eqnarray}
 
-The kriging weights\index{Kriging weight} $\boldsymbol{\lambda}$ and the Lagrange multiplier $\nu$ can then be computed by premultiplying both sides of Equation \@ref(eq:OKsystemshort) with the inverse of the first matrix of this equation:
+The kriging weights\index{Kriging weight} $\bm{\lambda}$ and the Lagrange multiplier $\nu$ can then be computed by premultiplying both sides of Equation \@ref(eq:OKsystemshort) with the inverse of the first matrix of this equation:
 
 \begin{eqnarray}
 \left[
@@ -10707,11 +10601,11 @@ with $\sigma^2$ the sill of the semivariogram (a priori variance\index{A priori 
 Commonly the kriging variance is expressed in terms of the *semivariances*\index{Semivariance} between the sampling points and a prediction point (hereafter the relation between a covariance function and a semivariogram is explained):
 
 \begin{equation}
-V_{\mathrm{OK}}(\widehat{Z}(\mathbf{s}_0))= \lambda^{\mathrm{T}}\boldsymbol{\gamma}_0 + \nu \;,
+V_{\mathrm{OK}}(\widehat{Z}(\mathbf{s}_0))= \lambda^{\mathrm{T}}\bm{\gamma}_0 + \nu \;,
 (\#eq:OKvariancesemivariances)
 \end{equation}
 
-with $\boldsymbol{\gamma}_0$ the vector with semivariances between the sampling points and a prediction point.
+with $\bm{\gamma}_0$ the vector with semivariances between the sampling points and a prediction point.
 
 Computing the kriging predictor requires a model for the covariance as a function of the vector separating two locations. Often the covariance is modelled as a function of the length of the separation vector only, so as a function of the Euclidian distance between two locations. We then assume isotropy\index{Isotropy}. In general practice, the covariance function is not used in kriging, rather, a semivariogram\index{Semivariogram}. A semivariogram is a model of the *dissimilarity* of the study variable at two locations. The dissimilarity is quantified by half the squared difference of the study variable values at two points. A covariance function and semivariogram are related by, see Figure \@ref(fig:CovFunctionVariogram):
 
@@ -10843,8 +10737,7 @@ library(sp)
 library(gstat)
 vgmodel <- vgm(model="Sph", nugget=25, psill=75, range=500)
 gridded(mypop) <- ~s1+s2
-mysample <- spsample(
-  x=mypop, type="regular", cellsize=c(100,100),
+mysample <- spsample(x=mypop, type="regular", cellsize=c(100,100),
   offset=c(0.5,0.5))
 zsim_sample <- over(mysample, mypop)
 coordinates(s_0) <- ~s1+s2
@@ -10884,11 +10777,11 @@ In block-kriging the mean of a prediction block $\mathcal{B}_0$ is predicted as 
 The variance of the prediction error of the block-mean (block-kriging variance\index{Block-kriging variance}) equals
 
 \begin{equation}
-V_{\mathrm{OBK}}(\widehat{\overline{Z}}(\mathcal{B}_0)) = \lambda^{\mathrm{T}}\bar{\boldsymbol{\gamma}}(\mathcal{B}_0) + \nu - \bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)\;,
+V_{\mathrm{OBK}}(\widehat{\overline{Z}}(\mathcal{B}_0)) = \lambda^{\mathrm{T}}\bar{\bm{\gamma}}(\mathcal{B}_0) + \nu - \bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)\;,
 (\#eq:OBKvariance)
 \end{equation}
 
-with $\bar{\boldsymbol{\gamma}}(\mathcal{B}_0)$ the vector with mean semivariances between the sampling points and a prediction block, and $\bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)$ the mean semivariance within the prediction block. Comparing this with the variance with point-kriging (Equation \@ref(eq:OKvariancesemivariances)) shows that the block-kriging variance is smaller than the point-kriging variance\index{Point-kriging variance} by an amount approximately equal to the mean semivariance within a prediction block\index{Mean semivariance!within prediction block}. Recall from Chapter \@ref(MBpredictionofDesignVariance) that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
+with $\bar{\bm{\gamma}}(\mathcal{B}_0)$ the vector with mean semivariances between the sampling points and a prediction block, and $\bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)$ the mean semivariance within the prediction block. Comparing this with the variance with point-kriging (Equation \@ref(eq:OKvariancesemivariances)) shows that the block-kriging variance is smaller than the point-kriging variance\index{Point-kriging variance} by an amount approximately equal to the mean semivariance within a prediction block\index{Mean semivariance!within prediction block}. Recall from Chapter \@ref(MBpredictionofDesignVariance) that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
 
 ## Kriging with an external drift {#IntroKED}
 
@@ -10923,7 +10816,7 @@ The optimal kriging weights $\lambda_i, i = 1 \dots n$ are obtained in a similar
 \right]
 \left[
 \begin{array}{c}
-\boldsymbol{\lambda}\\
+\bm{\lambda}\\
 \nu\\
 \end{array}
 \right]
@@ -11108,8 +11001,8 @@ head(vg[,c(1,2,3)])
 The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range and 75 for the partial sill. These are specified to the `vgm` function, and used as the `model` argument to `fit.variogram`. The sample semivariogram and the fitted model can simply be plotted with function `plot`.
 
 ```{r semivariogramSimulatedField1, fig.asp=0.7}
-vgm_MoM <- fit.variogram(
-  vg, model=vgm(model="Sph", psill=75, range=250, nugget=25))
+vgm_MoM <- fit.variogram(vg, model=vgm(model="Sph",
+  psill=75, range=250, nugget=25))
 plot(vg, vgm_MoM, plot.numbers=TRUE)
 print(vgm_MoM)
 ```
@@ -11131,29 +11024,26 @@ f(z|\mu,\sigma ^{2})=
 with $\mu$ the mean and $\sigma^2$ the variance. With multiple independent observations, each of them coming from a normal distribution, the joint probability density is given by the product of the probability densities per observation. However, if the data are not independent we must account for the covariances, and the joint probability density can be computed with
 
 \begin{equation}
-f(\mathbf{z}|\boldsymbol{\mu} ,\boldsymbol{\theta})=
+f(\mathbf{z}|\bm{\mu} ,\bm{\theta})=
 (2\pi )^{-\frac{n}{2}}|\mathbf{C}|^{-\frac{1}{2}}
-\exp \left\{ -\frac{1}{2}(\mathbf{z}-\boldsymbol{\mu} )^{\mathrm{T}}\,\mathbf{C}^{-1}\,(\mathbf{z}-\boldsymbol{\mu} )\right\} \;,
+\exp \left\{ -\frac{1}{2}(\mathbf{z}-\bm{\mu} )^{\mathrm{T}}\,\mathbf{C}^{-1}\,(\mathbf{z}-\bm{\mu} )\right\} \;,
 (\#eq:densitymvnormal)
 \end{equation}
 
-where $\mathbf{z}$ is the vector with the $n$ sample data, $\boldsymbol{\mu}$ is the vector with means, $\boldsymbol{\theta}$ is the vector with parameters of the covariance function, and $\mathbf{C}$ is the $n \times n$ matrix with variances and covariances of the sample data. If the probability density of Equation \@ref(eq:densitymvnormal) is regarded as a function of $\boldsymbol{\mu}$ and $\boldsymbol{\theta}$ with the data $\mathbf{z}$ fixed, this equation defines the likelihood\index{Likelihood}. 
+where $\mathbf{z}$ is the vector with the $n$ sample data, $\bm{\mu}$ is the vector with means, $\bm{\theta}$ is the vector with parameters of the covariance function, and $\mathbf{C}$ is the $n \times n$ matrix with variances and covariances of the sample data. If the probability density of Equation \@ref(eq:densitymvnormal) is regarded as a function of $\bm{\mu}$ and $\bm{\theta}$ with the data $\mathbf{z}$ fixed, this equation defines the likelihood\index{Likelihood}. 
 
 Maximum likelihood estimates of the semivariogram can be obtained with function `likfit` of package **geoR** [@geoR]. First a geoR object must be made, specifying in which columns of the data frame the spatial coordinates and the study variable are.
 
 ```{r}
 library(geoR)
 mysample <- as(mysample,"data.frame")
-dGeoR <- as.geodata(
-  obj=mysample, header=TRUE,
-  coords.col=1:2, data.col=3)
+dGeoR <- as.geodata(obj=mysample, header=TRUE, coords.col=1:2, data.col=3)
 ```
 
 The model parameters can then be estimated with function `likfit`. The argument `trend="cte"` means that we assume that the mean is constant throughout the study area.
 
 ```{r}
-vgm_ML <- likfit(
-  geodata=dGeoR, trend="cte", 
+vgm_ML <- likfit(geodata=dGeoR, trend="cte", 
   cov.model="spherical", ini.cov.pars=c(80,200),
   nugget=20, lik.method="ML", messages=FALSE)
 ```
@@ -11197,7 +11087,7 @@ vgmdl <- vgm(model="Sph", psill=10, range=150, nugget=0)
 vgmresi_MoM <- fit.variogram(vg_resi, model=vgmdl)
 ```
 
-Given these estimates of the semivariogram parameters, the regression coefficients are re-estimated by accounting for spatial dependency of the residuals. This can be done by generalised least squares\index{Generalised least squares} (GLS). Function `spDists` of package **sp** is used to compute the matrix with distances between the sampling locations, `variogramLine` of package **gstat** to transform the distance matrix into a covariance matrix. The operator `%*%` is for multiplying two matrices.  Type `?<name of function>` for help about the functions `chol2inv`, `crossprod` and `solve`.
+Given these estimates of the semivariogram parameters, the regression coefficients are re-estimated by accounting for spatial dependency of the residuals. This can be done by generalised least squares\index{Generalised least squares} (GLS). Function `spDists` of package **sp** is used to compute the matrix with distances between the sampling locations, `variogramLine` of package **gstat** to transform the distance matrix into a covariance matrix.
 
 ```{r}
 X <- matrix(data=1, nrow=nrow(as(mysample, "data.frame")), ncol=2)
@@ -11205,11 +11095,10 @@ X[,2] <- mysample$x
 z <- mysample$z
 D <- spDists(mysample)
 C <- variogramLine(vgmresi_MoM, dist_vector=D, covariance=TRUE)
-Cinv <- chol2inv(chol(C))
-XC <- crossprod(X, Cinv)
-XCz <- XC%*%z
-XCX <- XC%*%X
-betaGLS <- solve(XCX, XCz)
+Cinv <- solve(C)
+XCXinv <- solve(crossprod(X, Cinv) %*% X)
+XCz <- crossprod(X, Cinv) %*% z
+betaGLS <- XCXinv %*% XCz
 ```
 
 The GLS estimates of the regression coefficients can then be used to re-compute the residuals of the mean, and so on, until the changes in the model parameters are negligible.
@@ -11217,16 +11106,15 @@ The GLS estimates of the regression coefficients can then be used to re-compute 
 ```{r}
 repeat {
   betaGLS.cur <- betaGLS
-  mu <- X%*%betaGLS
+  mu <- X %*% betaGLS
   mysample$e <- z-mu
   vg_resi <- variogram(e~1, data=mysample)
   vgmresi_MoM <- fit.variogram(vg_resi, model=vgmdl)
   C <- variogramLine(vgmresi_MoM, dist_vector=D, covariance=TRUE)
-  Cinv <- chol2inv(chol(C))
-  XC <- crossprod(X, Cinv)
-  XCz <- XC%*%z
-  XCX <- XC%*%X
-  betaGLS <- solve(XCX, XCz)
+  Cinv <- solve(C)
+  XCXinv <- solve(crossprod(X, Cinv) %*% X)
+  XCz <- crossprod(X, Cinv) %*% z
+  betaGLS <- XCXinv %*% XCz
   if (sum(abs(betaGLS-betaGLS.cur))<0.0001) {
     break
   }
@@ -11246,7 +11134,7 @@ The estimates of the residual semivariogram parameters obtained by the iterative
 Pre-multiplying both sides of the KED model (Equation \@ref(eq:KEDmodel2)) with $\mathbf{P}$ gives [@webster2007]
 
 \begin{equation}
-\mathbf{P}\mathbf{z}(\mathbf{s})=\mathbf{y}(\mathbf{s})=\mathbf{P}\mathbf{X}\boldsymbol{\beta} + \mathbf{P}\boldsymbol{\epsilon}(\mathbf{s})=\mathbf{P}\boldsymbol{\epsilon}(\mathbf{s}) \;.
+\mathbf{P}\mathbf{z}(\mathbf{s})=\mathbf{y}(\mathbf{s})=\mathbf{P}\mathbf{X}\bm{\beta} + \mathbf{P}\bm{\epsilon}(\mathbf{s})=\mathbf{P}\bm{\epsilon}(\mathbf{s}) \;.
 \end{equation}
 
 In words, by pre-multiplying the variable $\mathbf{z}$ with matrix $\mathbf{P}$ a new variable $\mathbf{y}$ is obtained that has a constant mean. So the trend is filtered out, whatever the regression coefficients are. The semivariogram parameters of this new variable can be estimated by ML. The projection matrix $\mathbf{P}$ can be computed with
@@ -11258,7 +11146,7 @@ In words, by pre-multiplying the variable $\mathbf{z}$ with matrix $\mathbf{P}$ 
 with  $\mathbf{I}$ the $n \times n$ identity matrix (matrix with ones on the diagonal, zeroes in all off-diagonal elements). The natural logarithm of the residual likelihood can be computed with [@lar06]
 
 \begin{equation}
-\ell(\boldsymbol{\theta}|\mathbf{z})=\mathrm{constant}-0.5(\mathrm{ln}|\mathbf{C}|+|\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X}|+\mathbf{y}^{\mathbf{T}}\mathbf{C}^{-1}(\mathbf{I-\mathbf{Q}})\mathbf{z})) \;,
+\ell(\bm{\theta}|\mathbf{z})=\mathrm{constant}-0.5(\mathrm{ln}|\mathbf{C}|+|\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X}|+\mathbf{y}^{\mathbf{T}}\mathbf{C}^{-1}(\mathbf{I-\mathbf{Q}})\mathbf{z})) \;,
 \end{equation}
 
 with $\mathbf{Q} = \mathbf{X}(\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X})^{-1}\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}$
@@ -11278,8 +11166,7 @@ dGeoR <- as.geodata(
 ```
 
 ```{r}
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~x,
+vgm_REML <- likfit( geodata=dGeoR, trend=~x,
   cov.model="spherical", ini.cov.pars=c(2,100),
   nugget=0, lik.method="REML", messages=FALSE)
 ```
@@ -11344,11 +11231,8 @@ The semivariogram of SOM can also be estimated by maximum likelihood using funct
 ```{r}
 library(geoR)
 priordata <- as(priordataEthiopia,"data.frame")
-dGeoR <- as.geodata(
-  obj=priordata, header=TRUE,
-  coords.col=13:14, data.col=1)
-vgm_ML <- likfit(
-  geodata=dGeoR, trend="cte",
+dGeoR <- as.geodata(obj=priordata, header=TRUE, coords.col=13:14, data.col=1)
+vgm_ML <- likfit(geodata=dGeoR, trend="cte",
   cov.model="spherical", ini.cov.pars=c(0.4,40),
   nugget=0.6, lik.method="ML", messages=FALSE)
 ```
@@ -11391,14 +11275,11 @@ The **R** code below shows the next steps. Given a spacing, a square grid with a
 ```{r}
 coordinates(mysample) <- ~s1+s2
 gridded(grdEthiopia) <- ~s1+s2
-MKV_OK <- P50KV_OK <- P90KV_OK <- samplesize <- 
-  numeric(length=length(spacing))
-vgm_ML_gstat <- vgm(
-  model="Sph", nugget=vgm_ML$nugget, psill=vgm_ML$sigmasq,
-  range=vgm_ML$phi)
+MKV_OK <- P50KV_OK <- P90KV_OK <- samplesize <- numeric(length=length(spacing))
+vgm_ML_gstat <- vgm(model="Sph", nugget=vgm_ML$nugget,
+  psill=vgm_ML$sigmasq, range=vgm_ML$phi)
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(
-    x=grdEthiopia, cellsize=spacing[i],
+  mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
     type="regular", offset=c(0.5,0.5))
   mygrid<-data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
   samplesize[i] <- nrow(mygrid)
@@ -11414,8 +11295,7 @@ for (i in 1:length(spacing)) {
   P50KV_OK[i] <- quantile(predictions$var1.var,probs=0.5)
   P90KV_OK[i] <- quantile(predictions$var1.var,probs=0.9)
 }
-dfKV_OK <- data.frame(
-  spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
+dfKV_OK <- data.frame(spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
 ```
 
 The estimated mean and quantiles of the kriging variance are plotted against the grid spacing.
@@ -11434,8 +11314,7 @@ ggplot(df) +
 The tolerable grid spacing for the three quality indices can be computed with function `approx` of the **base** package, as shown below for the median kriging variance\index{Median kriging variance}.
 
 ```{r}
-spacing_tol_P50 <- approx(
-  x=dfKV_OK$P50, y=dfKV_OK$spacing, xout=0.8)$y
+spacing_tol_P50 <- approx(x=dfKV_OK$P50, y=dfKV_OK$spacing, xout=0.8)$y
 ```
 
 ```{r, echo=FALSE}
@@ -11458,11 +11337,9 @@ For a mean kriging variance of 0.8 the tolerable grid spacing is `r round(spacin
 In the previous section the tolerable grid spacing is derived from a constraint on the mean, P50 or P90 of the error variances of predictions at points. The alternative is to put a constraint on the mean (P50, P90) of the error variances of the predicted means of blocks. These means can be predicted with block-kriging\index{Kriging!block-kriging} (Section \@ref(BlockKriging)). Block-kriging predictions can be obtained with function `krige` of package **gstat**, using argument `block`. In the code chunk below the means of 100 m $\times$ 100 m blocks are predicted by ordinary block-kriging. 
 
 ```{r}
-MKV_OBK <- P50KV_OBK <- P90KV_OBK <-
-  numeric(length=length(spacing))
+MKV_OBK <- P50KV_OBK <- P90KV_OBK <- numeric(length=length(spacing))
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(
-    x=grdEthiopia, cellsize=spacing[i],
+  mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
     type="regular", offset=c(0.5,0.5))
   mygrid<-data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
   samplesize[i] <- nrow(mygrid)
@@ -11503,15 +11380,13 @@ The SOM data of the three woredas of Ethiopia are used to estimate the parameter
 
 ```{r}
 library(geoR)
-dGeoR <- as.geodata(
-  obj = priordata, header=TRUE,
-  coords.col=13:14, data.col=1,
-  covar.col=c(3,9,10,11))
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
+dGeoR <- as.geodata(obj = priordata, header=TRUE,
+  coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
+vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
   cov.model="spherical", ini.cov.pars=c(1,5),
   nugget=0.2, lik.method="REML", messages=FALSE)
 ```
+
 ```{r VariogramREMLEthiopia, echo=FALSE}
 tbl <- data.frame(Parameter=c("nugget","partial sill", "range"),ML=c(round(vgm_ML_gstat$psill,2),round(vgm_ML_gstat$range[2],1)),REML=c(round(vgm_REML$nugget,2),round(vgm_REML$sigmasq,2),round(vgm_REML$phi,1)))
 
@@ -11529,14 +11404,12 @@ The mean kriging variance as obtained with KED is used as the evaluation criteri
 ```{r, eval=FALSE}
 r <- 10
 MKV_KED <- matrix(nrow=length(spacing), ncol=r)
-vgm_REML_gstat <- vgm(
-  model="Sph", nugget=vgm_REML$nugget,
+vgm_REML_gstat <- vgm(model="Sph", nugget=vgm_REML$nugget,
   psill=vgm_REML$sigmasq, range=vgm_REML$phi)
 set.seed(314)
 for (i in 1:length(spacing)) {
   for (j in 1:r) {
-    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
-                         type="regular")
+    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i], type="regular")
     mygrid <- data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
     coordinates(mygrid) <- ~s1+s2
     mygrd <- data.frame(over(mygrid, grdEthiopia), mygrid)
@@ -11594,11 +11467,11 @@ The tolerable grid spacing for a mean kriging variance of 0.8, using KED, equals
 In practice we do not know the semivariogram. In the best case we have prior data that can be used to estimate the semivariogram. However, even in this case we are uncertain about the semivariogram type (spherical, exponential, etc.) and the semivariogram parameters. @Lark2017 showed how in a Bayesian approach\index{Bayesian approach!to grid spacing determination} we can account for uncertainty about the semivariogram parameters when we must decide on the grid spacing. In this approach a prior distribution of the semivariogram parameters is updated with the sample data to a posterior distribution [@Gelman2013]:
 
 \begin{equation}
-f(\boldsymbol{\theta}|\mathbf{z}) = \frac{f(\boldsymbol{\theta}) f(\mathbf{z}|\boldsymbol{\theta})} {f(\mathbf{z})}\;,
+f(\bm{\theta}|\mathbf{z}) = \frac{f(\bm{\theta}) f(\mathbf{z}|\bm{\theta})} {f(\mathbf{z})}\;,
 (\#eq:BayesRule)
 \end{equation}
 
-with $f(\boldsymbol{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\boldsymbol{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\boldsymbol{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
+with $f(\bm{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\bm{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\bm{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
 
 Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution  through Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling}, see Section \@ref(MBpredSamplingVarBayes). 
 
@@ -11614,12 +11487,11 @@ ll <-function(thetas) {
     model=model, psill=psill, range=thetas[3],
     nugget=nugget)
   C <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
-  Cinv <- chol2inv(chol(C))
-  XC <- crossprod(X, Cinv)
-  XCz <- XC%*%z
-  XCX <- XC%*%X
-  betahat <- solve(XCX, XCz)
-  mu <- as.numeric(X%*%betahat)
+  Cinv <- solve(C)
+  XCXinv <- solve(crossprod(X, Cinv) %*% X)
+  XCz <- crossprod(X, Cinv) %*% z
+  betahat <- XCXinv %*% XCz
+  mu <- as.numeric(X %*% betahat)
   logLik <- dmvnorm(x=z, mean=mu, sigma=C, log=TRUE)
   logLik
 }
@@ -11640,8 +11512,7 @@ priors <- createUniformPrior(
 sill_ML <- vgm_ML$psill[1]+vgm_ML$psill[2]
 thetas_ML <- c(1/sill_ML,vgm_ML$psill[2]/sill_ML,vgm_ML$range[2])
 model <- "Sph"
-setup <- createBayesianSetup(
-  likelihood=ll, prior=priors,
+setup <- createBayesianSetup(likelihood=ll, prior=priors,
   best=thetas_ML, names=c("lambda","xi","range"))
 ```
 
@@ -11862,12 +11733,9 @@ ggplot(data=df) +
 
 ```{r}
 library(gstat)
-res <- nls(
-  semivar~nugget+psill*(1-exp(-h/range)),
-  start=list(nugget=0.1, psill=0.4, range=200),
-  weights=somnp)
-vgm_lnECe <- vgm(
-  model="Exp", nugget=coef(res)[1],
+res <- nls(semivar~nugget+psill*(1-exp(-h/range)),
+  start=list(nugget=0.1, psill=0.4, range=200), weights=somnp)
+vgm_lnECe <- vgm(model="Exp", nugget=coef(res)[1],
   psill=coef(res)[2], range=coef(res)[3])
 ```
 
@@ -12011,11 +11879,9 @@ library(geoR)
 clbdat$lnEM100 <- log(clbdat$EMv1m)
 clbdat$x <- jitter(clbdat$x, amount=0.001)
 clbdat$y <- jitter(clbdat$y, amount=0.001)
-dGeoR <- as.geodata(
-  obj=clbdat, header=TRUE,
+dGeoR <- as.geodata(obj=clbdat, header=TRUE,
   coords.col=17:18, data.col=16, covar.col=19)
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~lnEM100,
+vgm_REML <- likfit(geodata=dGeoR, trend=~lnEM100,
   cov.model="exponential", ini.cov.pars=c(0.1,200),
   nugget=0.1, lik.method="REML", messages=FALSE)
 ```
@@ -12132,13 +11998,9 @@ library(geoR)
 load(file="data/CovariatesThreeWoredasEthiopia.RData")
 load(file="data/ThreeWoredasEthiopia.RData")
 priordata <- as(priordataEthiopia, "data.frame")
-dGeoR <- as.geodata(
-   obj=priordata, header=TRUE, 
-   coords.col=13:14, data.col=1)
-vgm_ML <- likfit(
-  geodata=dGeoR, trend="cte", cov.model="spherical",
-  ini.cov.pars=c(0.4,40), nugget=0.6,
-  lik.method="ML", messages=FALSE)
+dGeoR <- as.geodata(obj=priordata, header=TRUE,  coords.col=13:14, data.col=1)
+vgm_ML <- likfit(geodata=dGeoR, trend="cte", cov.model="spherical",
+  ini.cov.pars=c(0.4,40), nugget=0.6, lik.method="ML", messages=FALSE)
 ```
 
 In the next code chunk a list is created, containing a data frame (or matrix) with the coordinates of the fixed points (specified with sub-argument `fixed`), and an integer of the number of additional points to be selected (specified with sub-argument `free`). The list is assigned to argument `points` of function `optimMKV`. For kriging I slightly reduced the number of legacy points by keeping one point only per grid cell of  1 km $\times$ 1 km. This is done with function `remove.duplicates` of package **sp**.
@@ -12146,8 +12008,7 @@ In the next code chunk a list is created, containing a data frame (or matrix) wi
 ```{r}
 library(sp)
 load(file="data/ThreeWoredasEthiopia.RData")
-legacy <- remove.duplicates(
-  priordataEthiopia, zero=1, remove.second=TRUE)
+legacy <- remove.duplicates(priordataEthiopia, zero=1, remove.second=TRUE)
 pnts <- list(fixed=coordinates(legacy), free=100)
 candi <- grdEthiopia[,c(1,2)]
 names(candi) <- c("x","y")
@@ -12165,8 +12026,7 @@ With numerous legacy points computing time can be reduced with argument `nmax`, 
 
 ```{r, eval=FALSE}
 set.seed(314)
-vgm_ML_gstat <- vgm(
-  model="Sph", psill=vgm_ML$sigmasq,
+vgm_ML_gstat <- vgm(model="Sph", psill=vgm_ML$sigmasq,
   range=vgm_ML$phi, nugget=vgm_ML$nugget)
 rslt <- optimMKV(
   points=pnts, candi=candi,
@@ -12199,12 +12059,9 @@ For the study area in Ethiopia maps of covariates are available that can be used
 
 ```{r}
 library(geoR)
-dGeoR <- as.geodata(
-   obj=priordata, header=TRUE, 
-   coords.col=13:14, data.col=1, covar.col=c(3,9,10,11)
- )
-vgm_REML <- likfit(
-  geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
+dGeoR <- as.geodata(obj=priordata, header=TRUE, 
+   coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
+vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
   cov.model="spherical", ini.cov.pars=c(1,5), nugget=0.2,
   lik.method="REML", messages=FALSE)
 ```
@@ -12222,8 +12079,7 @@ schedule <- scheduleSPSANN(
 
 ```{r, eval=FALSE}
 covars <- grdEthiopia[,c("dem","rfl_NIR","rfl_red","lst")]
-vgm_REML_gstat <- vgm(
-  model="Sph", psill=vgm_REML$sigmasq, 
+vgm_REML_gstat <- vgm(model="Sph", psill=vgm_REML$sigmasq, 
   range=vgm_REML$phi, nugget=vgm_REML$nugget)
 set.seed(314)
 rslt <- optimMKV(
@@ -12362,7 +12218,7 @@ library(sp)
 load(file="data/HunterValley.RData")
 grd <- grdHunterValley
 names(grd)[c(1,2)] <- c("s1","s2")
-#make a copy of grd (class of grd is changed)
+#make a copy of grd
 grid <- grd
 gridded(grd) <- ~s1+s2
 lags <- c(2000,1000,500,250)
@@ -12379,8 +12235,7 @@ mynestedsample <- rbind(mainstation, newpnt)
 for (j in 2:length(lags)) {
   newpnts <- NULL
   for (i in 1:nrow(mynestedsample)) {
-    pnts <- SelectPoint(
-      start=mynestedsample[i,], h=lags[j], area=grd)
+    pnts <- SelectPoint(start=mynestedsample[i,], h=lags[j], area=grd)
     newpnts <- rbind(newpnts, pnts)
   }
   mynestedsample <- rbind(mynestedsample, newpnts)
@@ -12496,8 +12351,7 @@ The **R** code below shows how the variance components and semivariances can be 
 
 ```{r EstimateVarianceComponents, eval=FALSE}
 library(nlme)
-lmodel <- lme(fixed=z~1, data=mynestedsample,
-              random=~1|factor1/factor2/factor3)
+lmodel <- lme(fixed=z~1, data=mynestedsample, random=~1|factor1/factor2/factor3)
 res <- as.matrix(VarCorr(lmodel))
 sigmas <- as.numeric(res[c(2,4,6,7),1])
 sigma <- rev(sigmas)
@@ -12600,10 +12454,8 @@ SphNug <- function(h, range, psill, nugget) {
   h <- h/range
   nugget+psill*ifelse(h<1, (1.5*h-0.5*h^3), 1)
 }
-fit.var <- nls(
-  gammah~SphNug(h, range, psill, nugget),
-  data=samplevariogram,
-  start=list(psill=4, range=200, nugget=1),
+fit.var <- nls(gammah~SphNug(h, range, psill, nugget),
+  data=samplevariogram, start=list(psill=4, range=200, nugget=1),
   weights=1/vgammah, algorithm="port", lower=c(0,0,0))
 print(pars <- signif(coef(fit.var),3))
 ```
@@ -12639,10 +12491,8 @@ for (j in 1:R) {
     vgammah[i] <- var((mybtps$z1-mybtps$z2)^2, na.rm=TRUE)/(n*4)
   }
   samplevariogram <- data.frame(h, gammah, vgammah)
-  tryCatch({fittedvariogram <- nls(
-    gammah~SphNug(h, range, psill, nugget), 
-    data=samplevariogram, 
-    start=list(psill=4, range=200, nugget=1), 
+  tryCatch({fittedvariogram <- nls(gammah~SphNug(h, range, psill, nugget), 
+    data=samplevariogram, start=list(psill=4, range=200, nugget=1), 
     weights=1/vgammah, algorithm="port", lower=c(0,0,0))
   pars <- coef(fittedvariogram)
   allpars <- rbind(allpars,pars)}, error=function(e){})
@@ -12713,8 +12563,7 @@ coordinates(mysample0) <- ~Easting+Northing
 D <- spDists(mysample0)
 xi <- 0.8; phi <- 200
 thetas <- c(xi,phi)
-vgmodel <- vgm(
-  model="Exp", psill=thetas[1],
+vgmodel <- vgm(model="Exp", psill=thetas[1],
   range=thetas[2], nugget=1-thetas[1])
 A <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
 ```
@@ -12727,11 +12576,9 @@ pA <- dA <- list()
 for (i in 1:length(thetas)) {
   thetas_pert <- thetas
   thetas_pert[i] <- (1+perturbation)*thetas[i]
-  vgmodel_pert <- vgm(
-    model="Exp", psill=thetas_pert[1], 
+  vgmodel_pert <- vgm(model="Exp", psill=thetas_pert[1], 
     range=thetas_pert[2], nugget=1-thetas_pert[1])
-  pA[[i]] <- variogramLine(
-    vgmodel_pert, dist_vector=D, covariance=TRUE)
+  pA[[i]] <- variogramLine(vgmodel_pert, dist_vector=D, covariance=TRUE)
   dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
 }
 ```
@@ -12740,15 +12587,14 @@ Finally the Fisher information matrix is computed, using Equation \@ref(eq:Fishe
 
 ```{r}
 library(matrixcalc)
-invA <- chol2inv(chol(A))
+invA <- solve(A)
 I <- matrix(0, length(thetas), length(thetas))
 for (i in 1:length(thetas)){
   for (j in i:length(thetas)){
-    I[i,j] <- I[j,i] <- 
-      0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+    I[i,j] <- I[j,i] <- 0.5*matrix.trace(invA %*% dA[[i]] %*% invA %*% dA[[j]])
   }
 }
-(invI <- chol2inv(chol(I)))
+(invI <- solve(I))
 logdet0 <- determinant(invI, logarithm=TRUE)$modulus
 ```
 
@@ -12799,7 +12645,7 @@ VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \f
 (\#eq:varkrigingvar)
 \end{equation}
 
-with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\boldsymbol{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
+with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\bm{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
 
 The first step is to select a sample for the second sampling round in which data are collected for mapping. For this a spatial coverage sample is selected, using function `stratify` of package **spcosa**, see Chapter \@ref(SpatialCoverage). The observations on this sample are used for prediction by kriging. The population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred square grid of 101 points, the evaluation sample. (In the code chunk below `n=100` is used in function `spsample`, but actually 101 locations are selected.) 
 
@@ -12812,8 +12658,7 @@ n <- 100
 set.seed(314)
 myStrata <- stratify(grd, nStrata=n, equalArea=FALSE, nTry=10)
 mySCsample <- as(spsample(myStrata), "SpatialPoints")
-myevalsample <- spsample(
-  x=grd, n=100, type="regular", offset=c(0.5,0.5))
+myevalsample <- spsample(x=grd, n=100, type="regular", offset=c(0.5,0.5))
 ```
 
 The following code chunks show how the estimation variance of the kriging variance at the evaluation point is computed. First the correlation matrix of the spatial coverage sample (`A`), and the correlation matrix of the spatial coverage sample and the evaluation points (`A0`) is computed. Correlation matrix `A` is extended with a column and row with ones, see Equation \@ref(eq:krigingeqsmatrix).
@@ -12821,7 +12666,7 @@ The following code chunks show how the estimation variance of the kriging varian
 ```{r}
 D <- spDists(mySCsample)
 vgmodel <- vgm(model="Exp", psill=thetas[1], range=thetas[2],
-               nugget=1-thetas[1])
+  nugget=1-thetas[1])
 A <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
 nobs <- length(mySCsample)
 B <- matrix(data=0, nrow=nobs+1, ncol=nobs+1)
@@ -12839,13 +12684,10 @@ pA  <- pA0 <- list()
 for (i in 1:length(thetas)) {
   thetas_pert <- thetas
   thetas_pert[i] <- (1+perturbation)*thetas[i]
-  vgmodel_pert <- vgm(
-    model="Exp", psill=thetas_pert[1], 
+  vgmodel_pert <- vgm(model="Exp", psill=thetas_pert[1], 
     range=thetas_pert[2], nugget=1-thetas_pert[1]) 
-  pA[[i]] <- variogramLine(
-    vgmodel_pert, dist_vector=D, covariance=TRUE)
-  pA0[[i]] <- variogramLine(
-    vgmodel_pert, dist_vector=D0, covariance=TRUE)
+  pA[[i]] <- variogramLine(vgmodel_pert, dist_vector=D, covariance=TRUE)
+  pA0[[i]] <- variogramLine(vgmodel_pert, dist_vector=D0, covariance=TRUE)
 }
 pB <- pb <- list()
 for (i in 1:length(thetas)) {
@@ -12864,10 +12706,10 @@ for (i in 1:length(myevalsample)) {
   b <- c(A0[i,],1)
   #compute kriging weights and Lagrange multiplier
   l <- solve(B,b) 
-  var[i] <- 1-l[1:nobs]%*%A0[i,]-l[nobs+1]
+  var[i] <- 1-l[1:nobs] %*% A0[i,]-l[nobs+1]
   for (j in 1:length(thetas)){
     pl <- solve(pB[[j]], pb[[j]][i,])
-    pvar[i,j] <- 1-pl[1:nobs]%*%pA0[[j]][i,]-pl[nobs+1]
+    pvar[i,j] <- 1-pl[1:nobs] %*% pA0[[j]][i,]-pl[nobs+1]
   }
 }
 dvar <- list()
@@ -12939,7 +12781,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 
-Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\boldsymbol{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\boldsymbol{\theta}}$, leads to a locally optimal design at $\hat{\boldsymbol{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
+Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\bm{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\bm{\theta}}$, leads to a locally optimal design at $\hat{\bm{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
 
 Both methods for sample optimisation rely on, amongst others, the assumption that the mean and variance are constant throughout the area. Under this assumption it is no problem that the sampling units are spatially clustered. So we assume that the semivariogram estimated from the data collected in a small portion of the study area is representative for the whole study area. If we do not feel comfortable with this assumption, spreading out the sampling units by the sampling methods described in the next two sections can be a good option.   
 
@@ -13000,8 +12842,7 @@ mySCsample <- as(spsample(myStrata), "SpatialPoints")
 nsup <- 10
 units <- sample.int(nrow(grd), nsup)
 mysupsample0 <- as(grd[units,], "SpatialPoints")
-myevalsample <- spsample(
-  x=grd, n=100, type="regular", offset=c(0.5,0.5))
+myevalsample <- spsample(x=grd, n=100, type="regular", offset=c(0.5,0.5))
 ```
 
 The next step is to compute the inverse of the Fisher information matrix, given a preliminary semivariogram model, which is used as the variance-covariance matrix of the estimated semivariogram parameters. Contrary to Section \@ref(samplingforvariogram) now *all* sampling locations are used to compute this matrix. The locations of the spatial coverage sample and the supplemental sample are merged into one `SpatialPoints` object.  
@@ -13021,21 +12862,21 @@ for (i in 1:length(thetas)) {
   thetas_pert <- thetas
   thetas_pert[i] <- (1+perturbation)*thetas[i]
   vgmdl <- vgm(model="Exp", psill=thetas_pert[1],
-               range=thetas_pert[2], nugget=1-thetas_pert[1]) 
+    range=thetas_pert[2], nugget=1-thetas_pert[1]) 
   pA[[i]] <- variogramLine(vgmdl, dist_vector=D, covariance=TRUE)
   dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
 }
 
-invA <- chol2inv(chol(A))
+invA <- solve(A)
 
 I <- matrix(0, length(thetas), length(thetas))
 for (i in 1:length(thetas)){
   for (j in i:length(thetas)){
-    I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+    I[i,j]=I[j,i]=0.5*matrix.trace(invA %*% dA[[i]] %*% invA %*% dA[[j]])
   }
 }
     
-invI <- chol2inv(chol(I))
+invI <- solve(I)
 
 nobs <- length(mysample)
 nrowB <- nobs + 1
@@ -13075,11 +12916,11 @@ for (i in 1:length(myevalsample)) {
   b <- c(A0[i,],1)
   l <- solve(B,b)
   L[i,] <- l[1:nobs]
-  var[i] <- 1-l[1:nobs]%*%A0[i,]-l[-(1:nobs)]
+  var[i] <- 1-l[1:nobs] %*% A0[i,]-l[-(1:nobs)]
   for (j in 1:length(thetas)){
     pl <- solve(pB[[j]], pb[[j]][i,])
     pL[i,,j] <- pl[1:nobs]
-    pvar[i,j] <- 1-pl[1:nobs]%*%pA0[[j]][i,]-pl[-(1:nobs)]
+    pvar[i,j] <- 1-pl[1:nobs] %*% pA0[[j]][i,]-pl[-(1:nobs)]
   }
 }
 dL <- dvar <- list()
@@ -13097,7 +12938,7 @@ tausqk <- 0
 for (k in 1:length(myevalsample)) {
   for (i in 1:length(dL)){
     for (j in 1:length(dL)){
-      tausqijk <- invI[i,j]*t(dL[[i]][k,])%*%A%*%dL[[j]][k,] 
+      tausqijk <- invI[i,j]*t(dL[[i]][k,]) %*% A %*% dL[[j]][k,] 
       tausqk <- tausqk+tausqijk
     }
   }
@@ -13280,16 +13121,16 @@ for (i in 1:length(thetas)) {
   dA[[i]] <- (pA[[i]]-A)/(thetas[i]*perturbation)
 }
   
-invA <- chol2inv(chol(A))
+invA <-solve(A)
 
 I <- matrix(data=0, nrow=length(thetas), ncol=length(thetas))
 for (i in 1:length(thetas)){
   for (j in i:length(thetas)){
-    I[i,j]=I[j,i]=0.5*matrix.trace(invA%*%dA[[i]]%*%invA%*%dA[[j]])
+    I[i,j]=I[j,i]=0.5*matrix.trace(invA %*% dA[[i]] %*% invA%*%dA[[j]])
   }
 }
     
-invI <- chol2inv(chol(I))
+invI <- solve(I)
 
 nobs <- length(mysample)
 nrowB <- nobs + 1
@@ -13339,7 +13180,7 @@ tausqk <- 0
 for (k in 1:length(myevalsample)) {
   for (i in 1:length(dL)){
     for (j in 1:length(dL)){
-      tausqijk <- invI[i,j]*t(dL[[i]][k,])%*%A%*%dL[[j]][k,] 
+      tausqijk <- invI[i,j]*t(dL[[i]][k,]) %*% A %*% dL[[j]][k,] 
       tausqk <- tausqk+tausqijk
     }
   }
@@ -13554,8 +13395,8 @@ ggplot(df_lf) +
 To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in the data frame `mysample` is `SOM_A_hori`. Four new columns are added to `mysample`, by computing the prediction errors for KED and RF, and squaring these errors. The next code chunks show the computations for KED only.
 
 ```{r}
-mysample <- read.csv(
-  file="data/Xuancheng_Stratifiedrandomsample.csv", header=TRUE)
+mysample <- read.csv(file="data/Xuancheng_Stratifiedrandomsample.csv",
+  header=TRUE)
 mysample$eKED <- mysample$SOM_A_hori-mysample$KED
 mysample$e2KED <- (mysample$eKED)^2
 ```
@@ -13587,14 +13428,12 @@ me_RF <- sum(w_h*me_RF_h)
 This is repeated for the squared prediction errors.
 
 ```{r}
-mse_KED_h <- tapply(mysample$e2KED, INDEX=mysample$stratum,
-                   FUN=mean)
+mse_KED_h <- tapply(mysample$e2KED, INDEX=mysample$stratum, FUN=mean)
 mse_KED <- sum(w_h*mse_KED_h)
 ```
 
 ```{r, echo=FALSE}
-mse_RF_h <- tapply(mysample$e2RF, INDEX=mysample$stratum,
-                  FUN=mean)
+mse_RF_h <- tapply(mysample$e2RF, INDEX=mysample$stratum, FUN=mean)
 mse_RF <- sum(w_h*mse_RF_h)
 ```
 
@@ -13632,20 +13471,16 @@ n_hc <- table(mysample$collapsedstrata)
 The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation \@ref(eq:EstVarMeanSTSI). In the next code chunk this is shown for the RF predictions only.
 
 ```{r}
-s2e_KED_hc <- tapply(
-  mysample$eKED, INDEX=mysample$collapsedstrata, FUN=var)
+s2e_KED_hc <- tapply(mysample$eKED, INDEX=mysample$collapsedstrata, FUN=var)
 se_me_KED <- sqrt(sum(w_hc^2*s2e_KED_hc/n_hc))
-s2e2_KED_hc <- tapply(
-  mysample$e2KED, INDEX=mysample$collapsedstrata, FUN=var)
+s2e2_KED_hc <- tapply(mysample$e2KED, INDEX=mysample$collapsedstrata, FUN=var)
 se_mse_KED <- sqrt(sum(w_hc^2*s2e2_KED_hc/n_hc))
 ```
 
 ```{r, echo=FALSE}
-s2e_RF_hc <- tapply(mysample$eRF, INDEX=mysample$collapsedstrata,
-                   FUN=var)
+s2e_RF_hc <- tapply(mysample$eRF, INDEX=mysample$collapsedstrata, FUN=var)
 se_me_RF <- sqrt(sum(w_hc^2*s2e_RF_hc/n_hc))
-s2e2_RF_hc <- tapply(mysample$e2RF, INDEX=mysample$collapsedstrata,
-                    FUN=var)
+s2e2_RF_hc <- tapply(mysample$e2RF, INDEX=mysample$collapsedstrata, FUN=var)
 se_mse_RF <- sqrt(sum(w_hc^2*s2e2_RF_hc/n_hc))
 ```
 
@@ -13712,11 +13547,9 @@ Now we test whether the two population MSE's  differ significantly. This can be 
 
 ```{r}
 mysample$dife2 <- mysample$e2KED-mysample$e2RF
-mdife2_h <- tapply(
-  mysample$dife2, INDEX=mysample$stratum, FUN=mean)
+mdife2_h <- tapply(mysample$dife2, INDEX=mysample$stratum, FUN=mean)
 mdife2 <- sum(w_h*mdife2_h)
-vardife2_h <- tapply(
-  mysample$dife2, INDEX=mysample$collapsedstrata, FUN=var)
+vardife2_h <- tapply(mysample$dife2, INDEX=mysample$collapsedstrata, FUN=var)
 sdmdife2 <- sqrt(sum(w_hc^2*vardife2_h/n_hc))
 t <- mdife2/sdmdife2
 lowertail <- (t<0)

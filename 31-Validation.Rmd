@@ -182,8 +182,8 @@ ggplot(df_lf) +
 To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in the data frame `mysample` is `SOM_A_hori`. Four new columns are added to `mysample`, by computing the prediction errors for KED and RF, and squaring these errors. The next code chunks show the computations for KED only.
 
 ```{r}
-mysample <- read.csv(
-  file="data/Xuancheng_Stratifiedrandomsample.csv", header=TRUE)
+mysample <- read.csv(file="data/Xuancheng_Stratifiedrandomsample.csv",
+  header=TRUE)
 mysample$eKED <- mysample$SOM_A_hori-mysample$KED
 mysample$e2KED <- (mysample$eKED)^2
 ```
@@ -215,14 +215,12 @@ me_RF <- sum(w_h*me_RF_h)
 This is repeated for the squared prediction errors.
 
 ```{r}
-mse_KED_h <- tapply(mysample$e2KED, INDEX=mysample$stratum,
-                   FUN=mean)
+mse_KED_h <- tapply(mysample$e2KED, INDEX=mysample$stratum, FUN=mean)
 mse_KED <- sum(w_h*mse_KED_h)
 ```
 
 ```{r, echo=FALSE}
-mse_RF_h <- tapply(mysample$e2RF, INDEX=mysample$stratum,
-                  FUN=mean)
+mse_RF_h <- tapply(mysample$e2RF, INDEX=mysample$stratum, FUN=mean)
 mse_RF <- sum(w_h*mse_RF_h)
 ```
 
@@ -260,20 +258,16 @@ n_hc <- table(mysample$collapsedstrata)
 The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation \@ref(eq:EstVarMeanSTSI). In the next code chunk this is shown for the RF predictions only.
 
 ```{r}
-s2e_KED_hc <- tapply(
-  mysample$eKED, INDEX=mysample$collapsedstrata, FUN=var)
+s2e_KED_hc <- tapply(mysample$eKED, INDEX=mysample$collapsedstrata, FUN=var)
 se_me_KED <- sqrt(sum(w_hc^2*s2e_KED_hc/n_hc))
-s2e2_KED_hc <- tapply(
-  mysample$e2KED, INDEX=mysample$collapsedstrata, FUN=var)
+s2e2_KED_hc <- tapply(mysample$e2KED, INDEX=mysample$collapsedstrata, FUN=var)
 se_mse_KED <- sqrt(sum(w_hc^2*s2e2_KED_hc/n_hc))
 ```
 
 ```{r, echo=FALSE}
-s2e_RF_hc <- tapply(mysample$eRF, INDEX=mysample$collapsedstrata,
-                   FUN=var)
+s2e_RF_hc <- tapply(mysample$eRF, INDEX=mysample$collapsedstrata, FUN=var)
 se_me_RF <- sqrt(sum(w_hc^2*s2e_RF_hc/n_hc))
-s2e2_RF_hc <- tapply(mysample$e2RF, INDEX=mysample$collapsedstrata,
-                    FUN=var)
+s2e2_RF_hc <- tapply(mysample$e2RF, INDEX=mysample$collapsedstrata, FUN=var)
 se_mse_RF <- sqrt(sum(w_hc^2*s2e2_RF_hc/n_hc))
 ```
 
@@ -340,11 +334,9 @@ Now we test whether the two population MSE's  differ significantly. This can be 
 
 ```{r}
 mysample$dife2 <- mysample$e2KED-mysample$e2RF
-mdife2_h <- tapply(
-  mysample$dife2, INDEX=mysample$stratum, FUN=mean)
+mdife2_h <- tapply(mysample$dife2, INDEX=mysample$stratum, FUN=mean)
 mdife2 <- sum(w_h*mdife2_h)
-vardife2_h <- tapply(
-  mysample$dife2, INDEX=mysample$collapsedstrata, FUN=var)
+vardife2_h <- tapply(mysample$dife2, INDEX=mysample$collapsedstrata, FUN=var)
 sdmdife2 <- sqrt(sum(w_hc^2*vardife2_h/n_hc))
 t <- mdife2/sdmdife2
 lowertail <- (t<0)

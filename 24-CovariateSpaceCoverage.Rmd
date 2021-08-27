@@ -12,8 +12,7 @@ covs <- names(gridAmazonia)[c(4,5,6,7,8)]
 n <- 20
 set.seed(314)
 myclusters <- kmeans(
-  scale(gridAmazonia[,covs]), centers=n, 
-  iter.max=10000, nstart=100)
+  scale(gridAmazonia[,covs]), centers=n, iter.max=10000, nstart=100)
 gridAmazonia$cluster <- myclusters$cluster
 ```
 
@@ -33,9 +32,8 @@ The next code chunk shows how the MSSSD of the selected sample can be computed.
 ```{r}
 popmeans <- apply(gridAmazonia[,covs], MARGIN=2, FUN=mean)
 popsds <- apply(gridAmazonia[,covs], MARGIN=2, FUN=sd)
-D <- rdist(
-  x1=scale(myCSCsample[,covs], center=popmeans, scale=popsds),
-  x2=scale(gridAmazonia[,covs]))
+D <- rdist(x1=scale(myCSCsample[,covs], center=popmeans, scale=popsds),
+           x2=scale(gridAmazonia[,covs]))
 dmin <- apply(D, MARGIN=2, min)
 MSSSD <- mean(dmin^2)
 ```
@@ -109,8 +107,7 @@ CSIS <- function (fixed,nsup,nstarts,mygrd) {
     centers <- rbind(fixed[,names(mygrd)],centers_sup)
     repeat {
       D <- rdist(x1=centers, x2=mygrd)
-      clusters <- apply(X=D, MARGIN=2, FUN=which.min) %>% 
-        as.factor(.)
+      clusters <- apply(X=D, MARGIN=2, FUN=which.min) %>% as.factor(.)
       centers_cur <- centers
       for (i in 1:p) {
         centers[,i] <- tapply(mygrd[,i], INDEX=clusters, FUN=mean)
