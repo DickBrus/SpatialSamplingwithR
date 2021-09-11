@@ -53,8 +53,8 @@ units <- sample.int(nrow(grdEthiopia), size=1000, replace=TRUE)
 mysample <- grdEthiopia[units,]
 
 #Shift the randomly selected points to random points within the cells (cellsize is 1 km x 1 km)
-mysample$s1 <- jitter(mysample$s1,amount=0.5)
-mysample$s2 <- jitter(mysample$s2,amount=0.5)
+mysample$s1 <- jitter(mysample$s1, amount=0.5)
+mysample$s2 <- jitter(mysample$s2, amount=0.5)
 ```
 
 ### Kriging
@@ -72,9 +72,9 @@ spacing <- 5:12
 #specify cumulative probabilities
 cprob <- c(0.5, 0.8, 0.95)
 
-QKV <- matrix(nrow=length(spacing),ncol=length(cprob))
+QKV <- matrix(nrow=length(spacing), ncol=length(cprob))
 for (i in 1:length(spacing)) {
-    mygridxy <- spsample(x=grdEthiopia,cellsize=spacing[i],type="regular",offset=c(0.5,0.5))
+    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i], type="regular", offset=c(0.5,0.5))
     #add a dummy variable for interpolation
     mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
     coordinates(mygrid) <- ~s1+s2
@@ -86,7 +86,7 @@ for (i in 1:length(spacing)) {
         model = vgm_MoM,
         nmax = 20
     )
-    QKV[i,] <- quantile(predictions$var1.var,probs=cprob)
+    QKV[i,] <- quantile(predictions$var1.var, probs=cprob)
 }
 
 result <- data.table(spacing, QKV)

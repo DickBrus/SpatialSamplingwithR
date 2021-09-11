@@ -81,7 +81,7 @@ mysamples$samid <- rep(c("E","E and N"), each=4)
 ggplot(data=grid) +
   geom_tile(mapping=aes(x=x1, y=x2, fill=z)) +
   geom_tile(data=mysamples, mapping=aes(x=x1, y=x2), colour="white", size=0.8, width=1, height=1, fill=NA)+
-  scale_fill_continuous(name="x",type= "viridis") +
+  scale_fill_continuous(name="z",type= "viridis") +
   scale_x_continuous(name="Easting") +
   scale_y_continuous(name="Northing") +
   facet_wrap(~ samid, ncol=2, nrow=1) +
@@ -94,7 +94,7 @@ We must distinguish a balanced *sample* from a balanced sampling *design*. A sam
 
 Figure \@ref(fig:scatterplotsqerror) shows for one thousand simple random samples the squared error of the estimated population mean of the study variable $z$ against the difference between the sample mean of $x$ and the population mean of $x$.
 
-```{r scatterplotsqerror, echo=FALSE, fig.cap="Squared error in estimated mean of $z$ against difference between population and sample mean of a covariate."}
+```{r scatterplotsqerror, echo=FALSE, fig.cap="Squared error in estimated mean of $z$ against difference between population and sample mean of a covariate, for simple random sampling of size 4 from population shown in Figure 9.1. "}
 nsam <- 1000
 n <- 4
 mz_sample <- mx_sample <- numeric(length=nsam)
@@ -120,7 +120,7 @@ Clearly, the larger the absolute value of the difference, the larger on average 
 Sampling designs can also be balanced on multiple covariates. Figure \@ref(fig:simpleexample)(b) shows a sample balanced on both Easting and Northing. Using Easting as a balancing variable reduced the sampling variance of the estimator of the mean substantially, see Table \@ref(tab:tablebalanced). Using Northing as a second balancing variable further reduced the sampling variance.  
 
 ```{r tablebalanced, echo=FALSE}
-tbl <- data.frame(x=c("SI","Balanced","Balanced"),y=c("-","Easting","Easting+Northing"),z=c(39.7,14.4,9.77))
+tbl <- data.frame(x=c("SI","Balanced","Balanced"),y=c("-","Easting","Easting and Northing"),z=c(39.7,14.4,9.77))
 
 knitr::kable(
   tbl, caption = 'Sampling variances of estimated mean for simple random sampling and balanced sampling of four units.',
@@ -208,7 +208,7 @@ mysample <- gridAmazonia[units,]
 The population mean can be estimated by the sample mean.
 
 ```{r}
-mz_sample <- mean(mysample$AGB)
+mz <- mean(mysample$AGB)
 ```
 
 To estimate the variance a function is defined for estimating the population regression coefficients. 
@@ -241,7 +241,7 @@ v_tz <- n/(n-ncol(X))*sum(c*(e/pi)^2)
 v_mz <- v_tz/N^2
 ```
 
-Figure \@ref(fig:BalancedSampleAmazonia) shows the result. The sample mean of AGB equals `r as.character(round(mz_sample,1))`. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))`. Note the spatial clustering of some units. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))`.
+Figure \@ref(fig:BalancedSampleAmazonia) shows the result. The sample mean of AGB equals `r as.character(round(mz,1))`. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))`. Note the spatial clustering of some units. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))`.
 
 ```{r BalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample from Eastern Amazonia (Brazil), balanced on covariate lnSWIR2."}
 ggplot(data=gridAmazonia) +
@@ -304,6 +304,13 @@ ggplot(data=estimates) +
   scale_y_continuous(name="Frequency") +
   scale_x_continuous(name="Sample mean lnSWIR2")
 ```
+#### Exercises {-}
+
+1. Load the data of Amazonia (Amazonia\_5km.RData) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
+    + Estimate the population mean.   
+    + Estimate the standard error of the $\pi$ estimator. First estimate the regression coefficients, using function `estimate\_b` defined above, then compute the residuals, and finally compute the variance.      
+2. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
+
 ### Stratified random sampling {#StratifiedsamplingasBalancedsampling}
 
 In the previous section a continuous variable was used to balance the sample. However, also a categorical variable can be used for this. A sample balanced on a categorical variable actually is a  stratified random sample. Figure \@ref(fig:BalancedSampleCategorical) shows four strata. These four strata can be used in balanced sampling by constructing the following design matrix\index{Design matrix} $\mathbf{X}$ with as many columns as there are classes:
@@ -508,11 +515,6 @@ v_tz <- n/(n-ncol(X))*sum(c*(e/mysample$pih)^2)
 print(v_mz <- v_tz/N^2)
 ```
 
-
-#### Exercises {-}
-
-1. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
-
 ## Well-spread sampling {#Spreaded}
 
 With balanced sampling the spreading of the sampling units in the space spanned by the balancing variables can be poor. For instance, in Figure \@ref(fig:simpleexample)(a) the Easting coordinates of all units of a sample balanced on Easting can be equal or close to the population mean of 10. So, in this example balancing does not guarantee a good geographical spreading. A balanced sample can be selected that shows strong clustering in the space spanned by the balancing variables. This clustering may inflate the standard error of the estimated population total and mean. The clustering in geographical or covariate space can be avoided by the local pivotal method [@Grafstrom2012], and the spatially correlated Poisson sampling method\index{Spatially correlated Poisson sampling} [@Grafstrom2012b]. 
@@ -582,7 +584,7 @@ As explained above, the LPM design can also be used to select a probability samp
 
 #### Exercises {-}
 
-2. Geographical spreading of the sampling units can also be achieved by random sampling from compact geographical strata (Section \@ref(geostrata)). Can you think of one or more advantages of LPM sampling over random sampling from geostrata?  
+3. Geographical spreading of the sampling units can also be achieved by random sampling from compact geographical strata (geostrata) (Section \@ref(geostrata)). Can you think of one or more advantages of LPM sampling over random sampling from geostrata?  
 
 ### Generalised random-tessellation stratified sampling {#GRTS}
 
@@ -738,7 +740,6 @@ X <- cbind(grdKandahar$x, grdKandahar$y)
 Xsample <- X[units,]
 sqrt(vsb(pi[units], myGRTSsample$poppy, Xsample)) %>% round(.,0)
 ```
-
 
 ## Balanced sampling with spreading {#BalancedandSpreaded}
 

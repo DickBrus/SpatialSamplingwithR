@@ -83,10 +83,10 @@ In simple random sampling with replacement of finite populations a unit may occu
 (\#eq:HHTotal)
 \end{equation}
 
-where $n$ is the number of draws, and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \dots , N$. Inserting this in the pwr estimator yields
+where $n$ is the number of draws (samle size), and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \dots , N$. Inserting this in the pwr estimator yields
 
 \begin{equation}
-\hat{t}(z)= \frac{N}{d} \sum_{k \in \mathcal{S}} z_{k} \;.
+\hat{t}(z)= \frac{N}{n} \sum_{k \in \mathcal{S}} z_{k} \;.
 (\#eq:HHTotalSIR)
 \end{equation}
 
@@ -105,12 +105,12 @@ The simple random sample of size 40 selected above is used to estimate the popul
 mz <- mean(mysample$z)
 ```
 
-The estimated population mean is `r round(mz,2)`. Simply multiplying the estimated population mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is g kg$^{-1}$ m$^2$. To estimate the total of SOM in the soil layer 0-30 cm, first the soil volume in m$^3$ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil in g cm$^{-3}$ and the estimated population mean. This is divided by $10^6$ to obtain the total SOM in megatons ($10^{9}$ kg).
+The estimated population mean is `r round(mz,2)`. Simply multiplying the estimated population mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is g kg$^{-1}$ m$^2$. To estimate the total of SOM in the soil layer 0-30 cm, first the soil volume in m$^3$ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil (1500 kg m$^{-3}$) and the estimated population mean (g kg$^{-1}$). This is multiplied by $10^{-6}$ to obtain the total SOM in tons (1 ton is 10$^3$ kg).
 
 ```{r}
-Vol <- N*25^2*0.3
-bd <- 1.5
-tz <- Vol*bd*mz*10^-6
+vol_soil <- N*25^2*0.3
+bd <- 1500
+tz <- vol_soil*bd*mz*10^-6
 ```
 
 The estimated total is `r round(tz,1)` megaton. Note that that a constant bulk density is used. Ideally, this bulk density is also measured at the sampling points, by collecting soil aliquots of a constant volume. The measured SOM concentration and bulk density can then be used to compute the volumetric SOM content in kg m$^{-3}$ at the sampling points. The estimated population mean of this volumetric SOM content can then be multiplied by the total volume of soil in the study area, to get an estimate of the total mass of SOM in the study area.   
@@ -261,7 +261,7 @@ Estimation of the standard error of the estimated population mean in **R** is ve
 
 ```{r}
 se_mz <- sqrt(var(mysample$z)/n)
-se_tz <- se_mz*Vol*bd*10^-6
+se_tz <- se_mz*vol_soil*bd*10^-6
 ```
 
 The estimated standard error of the estimated total equals `r round(se_tz,3)`. This standard error does not account for spatial variation of bulk density.
@@ -481,11 +481,11 @@ This interval is referred to as the Wald interval\index{Wald interval}. It is a 
 
 #### Exercises {-}
 
-8. Write an **R** script to select a simple random sample of size 100 from Voorst (data are in `data/Voorst.RData`).  
+8. Write an **R** script to select a simple random sample of size 40 from Voorst (data are in `data/Voorst.RData`).  
     + Use the selected sample to estimate the population mean of SOM and its standard error (SOM is in the column $z$ of the data frame).  
     + Compute the lower- and upper bound of the 90\% confidence interval using the Student's $t$ distribution, and check whether the population mean SOM is covered by the interval.  
     + Compare the length of the 90\% confidence interval with the length of the 95\% interval. Explain the difference in width.  
-    + Use the selected sample to estimate the total mass of soil organic matter in the topsoil (0 - 20 cm) of Voorst. Use as a bulk density 1.4 g/kg. The size of the pixels is 25 m by 25 m.  
+    + Use the selected sample to estimate the total mass of soil organic matter in megatons in the topsoil (0 - 30 cm) of Voorst. Use as a bulk density 1500 kg m$^{-3}$. The size of the pixels is 25 m by 25 m.  
     + Estimate the standard error of the estimated total.  
     + Do you think this standard error is a realistic estimate of the uncertainty about the estimated total?
     

@@ -33,8 +33,6 @@ library(tidyverse)
 library(data.table)
 library(kableExtra)
 library(gridExtra)
-
-library(ggplot2)
 library(ggforce)
 
 library(e1071)
@@ -374,7 +372,7 @@ ggplot(grdKandahar) +
 
 ### Aboveground biomass in Eastern Amazonia
 
-This data set consists of data on the aboveground live woody biomass (AGB) in megatons per ha [@Baccini2012]. A rectangular area of 1642 km by 928 km in Eastern Amazonia (Brazil) was selected from this data set, and aggregated to a map with a resolution of 1 km $\times$ 1 km. Besides, a stack of five ecologically relevant covariates of the same spatial extent was prepared, being MODIS long term mean of short-wave infrared radiation (SWIR2), Primary Production in kg C per m$^2$ (Terra_PP), average precipitation in driest month in mm (Prec_dm), Elevation in m, and Clay content in g per kg soil.  All covariates were either resampled using bilinear interpolation, or aggregated to conform with the grid of the above-ground biomass map. Figure \@ref(fig:mapsAmazonia) shows a map of AGB and SWIR2.
+This data set consists of data on the aboveground live woody biomass (AGB) in megatons per ha [@Baccini2012]. A rectangular area of 1642 km by 928 km in Eastern Amazonia (Brazil) was selected from this data set, and aggregated to a map with a resolution of 1 km $\times$ 1 km. Besides, a stack of five ecologically relevant covariates of the same spatial extent was prepared, being MODIS long term mean of MODIS short-wave infrared radiation (SWIR2), Primary Production in kg C per m$^2$ (Terra_PP), average precipitation in driest month in mm (Prec_dm), Elevation in m, and Clay content in g per kg soil.  All covariates were either resampled using bilinear interpolation, or aggregated to conform with the grid of the above-ground biomass map. Figure \@ref(fig:mapsAmazonia) shows a map of AGB and SWIR2.
 
 ```{r mapsAmazonia, echo=FALSE, out.width='100%', fig.cap="Aboveground biomas in megatons per ha (AGB), and short-wave infrared radiation (SWIR2) of Eastern Amazonia (Brazil)."}
 load("data/Amazonia_1km.RData")
@@ -390,7 +388,7 @@ plt2 <- ggplot(gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=SWIR2)) +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
-  scale_fill_viridis_c(name="SWIR2") +
+  scale_fill_viridis_c(name="lnSWIR2") +
   coord_fixed()
 
 grid.arrange(plt1, plt2, nrow=2)
@@ -442,7 +440,7 @@ where $\mathcal{S} \ni k$ indicates that the sum is over all samples that contai
 2. Select with equal probability $1/(N-1)$ a second unit from the remaining $N-1$ units.  
 3. Repeat this until an $n$th unit is selected  with equal probability from the $N-(n-1)$ units.  
 
-This is a selection scheme for simple random sampling without replacement. With this scheme the selection probability of any sample of $n$ units is $1/\binom{N}{n}$, and zero for all other samples. There are $\binom{N-1}{n-1}$ samples of size $n$. The inclusion probability of each unit $k$ therefore is $\binom{N-1}{n-1}/\binom{N}{n}=\frac{n}{N}$. The sampling design plays a key role in the design-based approach as it determines the sampling distribution of random quantities computed from a sample such as the estimator of the population mean, see Section \@ref(HTestimator). The number of selected population units is referred to as the *sample size*\index{Sample size}^[In sampling with replacement the number of unique populations units in the sample can be smaller than the sample size.].
+This is a selection scheme for simple random sampling without replacement. With this scheme the selection probability of any sample of $n$ units is $1/\binom{N}{n}$ (there are $\binom{N}{n}$ samples of szie $n$, and each sample has an equal selection probability), and zero for all other samples. There are $\binom{N-1}{n-1}$ samples of size $n$ in which unit $k$ is included. The inclusion probability of each unit $k$ therefore is $\binom{N-1}{n-1}/\binom{N}{n}=\frac{n}{N}$. The sampling design plays a key role in the design-based approach as it determines the sampling distribution of random quantities computed from a sample such as the estimator of the population mean, see Section \@ref(HTestimator). The number of selected population units is referred to as the *sample size*\index{Sample size}^[In sampling with replacement the number of unique populations units in the sample can be smaller than the sample size.].
 
 A common misunderstanding is that with probability sampling the inclusion probabilities must be equal. Sampling with unequal inclusion probabilities can be more efficient than with equal probabilities. Unequal probability  sampling is no problem as long as these inclusion probabilities are known and proper formulas are used for estimation, see Section \@ref(HTestimator).
 
@@ -470,7 +468,7 @@ For any probability sampling design the population total can be estimated as a w
 (\#eq:HTTotal)
 \end{equation}
 
-with $\mathcal{S}$ the sample, $z_k$ the observed study variable for unit $k$, and $w_k$ the design weight\index{Design weight} attached to unit $k$:
+with $\mathcal{S}$ the sample, $z_k$ the observed study variable for unit $k$, and $w_k$ the *design weight*\index{Design weight} attached to unit $k$:
 
 \begin{equation}
 w_k = \frac{1}{\pi_k}\;,
@@ -624,10 +622,10 @@ In simple random sampling with replacement of finite populations a unit may occu
 (\#eq:HHTotal)
 \end{equation}
 
-where $n$ is the number of draws, and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \dots , N$. Inserting this in the pwr estimator yields
+where $n$ is the number of draws (samle size), and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \dots , N$. Inserting this in the pwr estimator yields
 
 \begin{equation}
-\hat{t}(z)= \frac{N}{d} \sum_{k \in \mathcal{S}} z_{k} \;.
+\hat{t}(z)= \frac{N}{n} \sum_{k \in \mathcal{S}} z_{k} \;.
 (\#eq:HHTotalSIR)
 \end{equation}
 
@@ -646,12 +644,12 @@ The simple random sample of size 40 selected above is used to estimate the popul
 mz <- mean(mysample$z)
 ```
 
-The estimated population mean is `r round(mz,2)`. Simply multiplying the estimated population mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is g kg$^{-1}$ m$^2$. To estimate the total of SOM in the soil layer 0-30 cm, first the soil volume in m$^3$ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil in g cm$^{-3}$ and the estimated population mean. This is divided by $10^6$ to obtain the total SOM in megatons ($10^{9}$ kg).
+The estimated population mean is `r round(mz,2)`. Simply multiplying the estimated population mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is g kg$^{-1}$ m$^2$. To estimate the total of SOM in the soil layer 0-30 cm, first the soil volume in m$^3$ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil (1500 kg m$^{-3}$) and the estimated population mean (g kg$^{-1}$). This is multiplied by $10^{-6}$ to obtain the total SOM in tons (1 ton is 10$^3$ kg).
 
 ```{r}
-Vol <- N*25^2*0.3
-bd <- 1.5
-tz <- Vol*bd*mz*10^-6
+vol_soil <- N*25^2*0.3
+bd <- 1500
+tz <- vol_soil*bd*mz*10^-6
 ```
 
 The estimated total is `r round(tz,1)` megaton. Note that that a constant bulk density is used. Ideally, this bulk density is also measured at the sampling points, by collecting soil aliquots of a constant volume. The measured SOM concentration and bulk density can then be used to compute the volumetric SOM content in kg m$^{-3}$ at the sampling points. The estimated population mean of this volumetric SOM content can then be multiplied by the total volume of soil in the study area, to get an estimate of the total mass of SOM in the study area.   
@@ -802,7 +800,7 @@ Estimation of the standard error of the estimated population mean in **R** is ve
 
 ```{r}
 se_mz <- sqrt(var(mysample$z)/n)
-se_tz <- se_mz*Vol*bd*10^-6
+se_tz <- se_mz*vol_soil*bd*10^-6
 ```
 
 The estimated standard error of the estimated total equals `r round(se_tz,3)`. This standard error does not account for spatial variation of bulk density.
@@ -1022,11 +1020,11 @@ This interval is referred to as the Wald interval\index{Wald interval}. It is a 
 
 #### Exercises {-}
 
-8. Write an **R** script to select a simple random sample of size 100 from Voorst (data are in `data/Voorst.RData`).  
+8. Write an **R** script to select a simple random sample of size 40 from Voorst (data are in `data/Voorst.RData`).  
     + Use the selected sample to estimate the population mean of SOM and its standard error (SOM is in the column $z$ of the data frame).  
     + Compute the lower- and upper bound of the 90\% confidence interval using the Student's $t$ distribution, and check whether the population mean SOM is covered by the interval.  
     + Compare the length of the 90\% confidence interval with the length of the 95\% interval. Explain the difference in width.  
-    + Use the selected sample to estimate the total mass of soil organic matter in the topsoil (0 - 20 cm) of Voorst. Use as a bulk density 1.4 g/kg. The size of the pixels is 25 m by 25 m.  
+    + Use the selected sample to estimate the total mass of soil organic matter in megatons in the topsoil (0 - 30 cm) of Voorst. Use as a bulk density 1500 kg m$^{-3}$. The size of the pixels is 25 m by 25 m.  
     + Estimate the standard error of the estimated total.  
     + Do you think this standard error is a realistic estimate of the uncertainty about the estimated total?
     
@@ -1104,10 +1102,10 @@ where $H$ is the number of strata, $w_{h}$ are the relative sizes (areas) of the
 
 with $\mathcal{S}_h$ the sample selected from stratum $h$.
 
-The same estimator is found when the $\pi$ estimator is worked out for stratified simple random sampling. With stratified simple random sampling without replacement and different sampling fractions for the strata^[The sampling fractions are usually slightly different, even with proportional allocation (Section \@ref(STSIallocation)) because $n_h/N_h$ cannot be made exactly equal for all strata.] the inclusion probabilities differ among the strata and equal $\pi_{hk} = n_h/N_h$ for all $k$ in stratum $h$, with $n_h$ the sample size of stratum $h$ and $N_h$ the size of stratum $h$. Inserting this in the $\pi$ estimator of the population mean (Equation \@ref(eq:HTMean)) gives
+The same estimator is found when the $\pi$ estimator is worked out for stratified simple random sampling. With stratified simple random sampling without replacement and different sampling fractions for the strata^[The sampling fractions are usually slightly different, even with proportional allocation (Section \@ref(STSIallocation)) because $n_h/N_h$ cannot be made exactly equal for all strata.] the inclusion probabilities differ among the strata and equal $\pi_{k} = n_h/N_h$ for all $k$ in stratum $h$, with $n_h$ the sample size of stratum $h$ and $N_h$ the size of stratum $h$. Inserting this in the $\pi$ estimator of the population mean (Equation \@ref(eq:HTMean)) gives
 
 \begin{equation}
-\hat{\bar{z}}= \frac{1}{N}\sum\limits_{h=1}^{H}\sum\limits_{k \in \mathcal{S}_h} \frac{z_{hk}}{\pi_{hk}} = \frac{1}{N}\sum\limits_{h=1}^{H} \frac{N_h}{n_h}\sum\limits_{k \in \mathcal{S}_h} z_{hk} = \sum\limits_{h=1}^{H} w_{h}\,\hat{\bar{z}}_{h} \;.
+\hat{\bar{z}}= \frac{1}{N}\sum\limits_{h=1}^{H}\sum\limits_{k \in \mathcal{S}_h} \frac{z_{k}}{\pi_{k}} = \frac{1}{N}\sum\limits_{h=1}^{H} \frac{N_h}{n_h}\sum\limits_{k \in \mathcal{S}_h} z_{k} = \sum\limits_{h=1}^{H} w_{h}\,\hat{\bar{z}}_{h} \;.
 (\#eq:HTMeanSTSI2)
 \end{equation}
 
@@ -1128,7 +1126,7 @@ where $\widehat{V}\!\left(\hat{\bar{z}}_{h}\right)$ is the estimated sampling va
 with $\widehat{S^2}_h(z)$ the estimated variance of $z$ within stratum $h$:
 
 \begin{equation}
-\widehat{S^2}_h(z)=\frac{1}{n_h-1}\sum\limits_{k \in \mathcal{S}_h}\left(z_{hk}-\hat{\bar{z}}_{h}\right)^{2}\;.
+\widehat{S^2}_h(z)=\frac{1}{n_h-1}\sum\limits_{k \in \mathcal{S}_h}\left(z_{k}-\hat{\bar{z}}_{h}\right)^{2}\;.
 (\#eq:EstStratumVar)
 \end{equation}
 
@@ -1231,7 +1229,7 @@ ggplot(dat)+
 The estimated proportions (cumulative frequencies) are used to estimate a quantile. These estimates are easily obtained with function `svyquantile` of package **survey**.
 
 ```{r}
-svyquantile(~z, design_stsi, quantile=c(0.5,0.9))
+svyquantile(~z, design_stsi, quantile=c(0.5,0.8))
 ```
 
 ### Why should we stratify? {#WhyStratify}
@@ -1344,16 +1342,24 @@ The estimated design effect as estimated from the stratified sample is a bit sma
 Stratified simple random sampling with proportional allocation (Section \@ref(STSIallocation)) is more precise than simple random sampling when the sum of squares of the stratum means is larger than the sum of squares within strata [@loh99]:
 
 \begin{equation}
-SSB > \sum_{h=1}^H (1-\frac{N_h}{N})S^2_h \;,
+SSB > SSW\;,
 (\#eq:STSImoreprecisewhen)
 \end{equation}
 
 with SSB the weighted sum-of-squares between the stratum means:
 
 \begin{equation}
-SSB= \sum_{h=1}^H N_h (\bar{z}_h-\bar{z})^2 \;.
+SSB = \sum_{h=1}^H N_h (\bar{z}_h-\bar{z})^2 \;,
 (\#eq:SSB)
 \end{equation}
+
+and SSW the sum over the strata of the weighted variances within strata (weights equal to $1-N_h/N$):
+
+\begin{equation}
+SSW = \sum_{h=1}^H (1-\frac{N_h}{N})S^2_h\;.
+(\#eq:SSW)
+\end{equation}
+
 
 In other words, the smaller the differences in the stratum means and the larger the variances within the strata, the smaller the stratification effect will be. Figure \@ref(fig:boxplotsSOMstrata) shows boxplots of SOM per stratum (soil-land use combination). The stratum means are equal to `r round(mz_h_pop,2)`. The stratum variances are `r round(S2z_h_pop,1)`. The rather small differences in stratum means, in combination with the large stratum variances explain the modest gain in precision realised by stratified simple random sampling compared to simple random sampling in this case.
 
@@ -1484,11 +1490,15 @@ Optimal allocation and Neyman allocation assume univariate stratification\index{
 
 #### Exercises {-}
 
-1. Looking at Figure \@ref(fig:boxplotsSOMstrata), which strata do you expect can be merged without losing much precision of the estimated population mean?  
-2. Load the data of Voorst, and use function `fct_collapse` of package **forcats** [@forcats] to merge the strata EA and PA.  
-    + Compute the true sampling variance of the estimator of the mean for this new stratification, a total sample size of 40 and proportional allocation. Check that the sum of stratum sample sizes is 40. (Hint: compute the population variances of SOM per stratum, and divide these by the stratum sample sizes).  
+1. Load the data of Voorst, and use function `strata` of package **sampling** to select a stratified simple random sample with replacement of size 40, using proportional allocation. Check that the sum of stratum sample sizes is 40.  
+    + Estimate the population mean and the standard error of the estimator.  
+    + Compute the true standard error of the estimator. Hint: compute the population variances of the study variable $z$ per stratum, and divide these by the stratum sample sizes.  
+    + Compute a 95% confidence interval estimate of the population mean, using function `confint` of package **survey**.  
+2. Looking at Figure \@ref(fig:boxplotsSOMstrata), which strata do you expect can be merged without losing much precision of the estimated population mean?  
+3. Use function `fct_collapse` of package **forcats** [@forcats] to merge the strata EA and PA.  
+    + Compute the true sampling variance of the estimator of the mean for this new stratification, a total sample size of 40 and proportional allocation.    
     + Compare this true sampling variance with the true sampling variance using the original five strata (same sample size, proportional allocation). What is your conclusion about the new stratification?   
-3. Proof that the sum of the inclusion probabilities over all populations units with stratified simple random sampling equals the sample size $n$.
+4. Proof that the sum of the inclusion probabilities over all populations units with stratified simple random sampling equals the sample size $n$.
 
 ## *Cum-root-f* stratification {#cumrootf}
 When we have a quantitative covariate $x$ related to the study variable $z$ and that is known for all units in the population, strata can be constructed with the *cum-root-f* method using this covariate as a stratification variable, see @Dalenius1959 and @coc77. Population units with similar values for the covariate (stratification variable) are grouped into a stratum. Strata are computed as follows:  
@@ -1544,11 +1554,11 @@ ggplot(data=grd) +
 
 #### Exercises {-}
 
-4. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `data/Amazonia_5km.RData`.  
+5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `data/Amazonia_5km.RData`.  
     +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by the function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?  
     + Select a stratified simple random sample of 100 units. First compute the stratum sample sizes for proportional allocation.  
     + Estimate the population mean of AGB and its sampling variance.  
-    + Compute the true sampling variance of the estimator of the mean for this sampling design (see Exercise 2 for a hint).  
+    + Compute the true sampling variance of the estimator of the mean for this sampling design (see Exercise 3 for a hint).  
     + Compute the stratification effect (gain in precision) (Hint: compute the sampling variance for simple random sampling by computing the population variance of AGB, and divide this by the total sample size).  
 
 ## Stratification with multiple covariates {#kmeansstratification}
@@ -1681,14 +1691,14 @@ The estimated population mean equals `r round(mean, 2)`, with an estimated stand
 
 #### Exercises {-}  
 
-5. Why is it attractive to select at least two points per geostratum?  
-6. The alternative to 20 geostrata and two points per geostratum is 40 geostrata and one point per geostratum. Which sampling strategy will be more precise?  
-7. The geostrata in the figure above have equal area, which can be enforced by argument `equalArea=TRUE`. Why are equal areas attractive? Work out the estimator of the population mean for strata of equal size.  
-8. Write an **R** script to construct 20 compact geographical strata of equal area for agricultural field Leest. Read the shapefile `Leest5` using function `readOGR` of the package **rgdal**. Remove the projection attributes with `proj4string(shpField) <- NA_character_`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal area, and randomly select one point per stratum.  
+6. Why is it attractive to select at least two points per geostratum?  
+7. The alternative to 20 geostrata and two points per geostratum is 40 geostrata and one point per geostratum. Which sampling strategy will be more precise?  
+8. The geostrata in the figure above have equal area, which can be enforced by argument `equalArea=TRUE`. Why are equal areas attractive? Work out the estimator of the population mean for strata of equal size.  
+9. Write an **R** script to construct 20 compact geographical strata of equal area for agricultural field Leest. Read the shapefile `Leest5` using function `readOGR` of the package **rgdal**. Remove the projection attributes with `proj4string(shpField) <- NA_character_`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal area, and randomly select one point per stratum.  
     + If only one point per stratum is selected, the sampling variance can be approximated by the collapsed strata\index{Collapsed strata} estimator. In this method pairs of strata are formed, and the two strata of a pair are joined. In each new stratum we now have two points. With an odd number of strata there will be one group of three strata and three points. The sample is then analyzed as if it were a random sample from the new collapsed strata. Suppose we group the strata on the basis of the measurements of the study variable. Do you think this is a proper way of grouping?  
     + In case you think this is not a proper way of grouping the strata, how would you group the strata?  
     + Will the estimated sampling variance estimator be unbiased? If not, will it be overestimated or underestimated?  
-9. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use the argument `equalArea = TRUE`. Select four points per stratum using argument `type="composite"`, and change class of resulting object in `SpatialPoints`. Extract the z-values in grdVoorst at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Estimate the population mean and its standard error.  
+10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use the argument `equalArea = TRUE`. Select four points per stratum using argument `type="composite"`, and change class of resulting object in `SpatialPoints`. Extract the z-values in grdVoorst at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Estimate the population mean and its standard error.  
     + Can the sampling variance of the estimator of the mean be estimated for bulking within the strata?  
     + The alternative to analyzing the concentration of four composite samples obtained by bulking across strata  is to analyze all $20 \times 4$ aliquots separately. The strata have equal area, so the inclusion probabilities are equal. As a consequence the sample mean is an unbiased estimator of the population mean. Is the precision of this estimated population mean equal to the estimated population mean with composite sampling? If not, is it smaller or larger, and why?   
     + If you use argument `equalArea = FALSE` in combination with argument `type="composite"`, you get an error message. Why does this not work? 
@@ -2345,7 +2355,7 @@ df$name <- factor(df$name, levels=c("SI","STSI","Mat"), ordered=TRUE)
 ggplot(data = df) +
     geom_boxplot(aes(y=value, x=name)) +
     geom_hline(yintercept=sqrt(var(mz_SY_ratio)), colour="red")+
-    scale_x_discrete(name = "Approximtation method") +
+    scale_x_discrete(name = "Approximation method") +
     scale_y_continuous(name = "Approximated standard error")
 ```
 
@@ -2376,7 +2386,7 @@ The approximated variance for this clustering equals `r round(av_STSI_mz_SYtri,3
 
 #### Exercises {-}  
 
-1. One solution to the problem of variance estimation with systematic random sampling is to select multiple systematic random samples independently from each other. So, for instance, instead of one systematic random sample of with an expected sample size of 40, we may select two systematic random samples with an expected size of 20.  
+1. One solution to the problem of variance estimation with systematic random sampling is to select multiple systematic random samples independently from each other. So, for instance, instead of one systematic random sample with an expected sample size of 40, we may select two systematic random samples with an expected size of 20.  
     + Write an **R** script to select two systematic random samples (random square grids) both with an expected size of 20 from Voorst (data are in `data/Voorst.RData`).  
     + Use each sample to estimate the population mean, so that you obtain two estimated means. Overlay the points of each sample with `grdVoorst`, using function `over` and extract the *z*-values.    
     + Use the two estimated means to estimate the sampling variance of the estimator of the mean for systematic random sampling *with an expected sample size of 20*.  
@@ -2581,7 +2591,7 @@ se_mz <- sqrt(var(mz_cl)/n)
 
 The estimated mean equals `r round(mz,3)` and the estimated standard error equals `r round(se_mz,3)`. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
 
-The same estimates are obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. Argument `weights` specifies the  weights of the sampled clusters equal to $M/(M_j\; d)$ (Equation \@ref(eq:EstTotalCl)).
+The same estimates are obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. Argument `weights` specifies the  weights of the sampled clusters equal to $M/(M_j\; n)$ (Equation \@ref(eq:EstTotalCl)).
 
 ```{r}
 library(survey)
@@ -2681,7 +2691,7 @@ sampledclusters <- clusters[sampleind==1]
 mysample <- grdVoorst[grdVoorst$cluster %in% sampledclusters,]
 ```
 
-The population mean can be estimated with function `svymean` of package **survey** [@Lumley2020]. Estimation of the sampling variance in pps sampling of clusters without replacement is difficult^[The problem is the computation of the joint inclusion probabilities of pairs of points.]. A simple solution is to treat the cluster sample as a ppswr sample, and to estimate the variance with Equation \@ref(eq:VarEstMeanCl). With small sampling fractions this variance approximation is fine: the overestimation of the variance is negligible. For larger sampling fractions various alternative variance approximations are developed, see @Berger2004 for details. One of the methods is Brewer's method\index{Brewer's variance estimator}, which is implemented in function `svydesign`.
+The population mean can be estimated by the $\pi$ estimator writing a few lines of R code yourself, or by using function `svymean` of package **survey** [@Lumley2020] as shown hereafter. Estimation of the sampling variance in pps sampling of clusters without replacement is difficult^[The problem is the computation of the joint inclusion probabilities of pairs of points.]. A simple solution is to treat the cluster sample as a ppswr sample, and to estimate the variance with Equation \@ref(eq:VarEstMeanCl). With small sampling fractions this variance approximation is fine: the overestimation of the variance is negligible. For larger sampling fractions various alternative variance approximations are developed, see @Berger2004 for details. One of the methods is Brewer's method\index{Brewer's variance estimator}, which is implemented in function `svydesign`.
 
 ```{r}
 mysample$pi <- n*M_cl[mysample$cluster]/M
@@ -3760,7 +3770,7 @@ mysamples$samid <- rep(c("E","E and N"), each=4)
 ggplot(data=grid) +
   geom_tile(mapping=aes(x=x1, y=x2, fill=z)) +
   geom_tile(data=mysamples, mapping=aes(x=x1, y=x2), colour="white", size=0.8, width=1, height=1, fill=NA)+
-  scale_fill_continuous(name="x",type= "viridis") +
+  scale_fill_continuous(name="z",type= "viridis") +
   scale_x_continuous(name="Easting") +
   scale_y_continuous(name="Northing") +
   facet_wrap(~ samid, ncol=2, nrow=1) +
@@ -3773,7 +3783,7 @@ We must distinguish a balanced *sample* from a balanced sampling *design*. A sam
 
 Figure \@ref(fig:scatterplotsqerror) shows for one thousand simple random samples the squared error of the estimated population mean of the study variable $z$ against the difference between the sample mean of $x$ and the population mean of $x$.
 
-```{r scatterplotsqerror, echo=FALSE, fig.cap="Squared error in estimated mean of $z$ against difference between population and sample mean of a covariate."}
+```{r scatterplotsqerror, echo=FALSE, fig.cap="Squared error in estimated mean of $z$ against difference between population and sample mean of a covariate, for simple random sampling of size 4 from population shown in Figure 9.1. "}
 nsam <- 1000
 n <- 4
 mz_sample <- mx_sample <- numeric(length=nsam)
@@ -3799,7 +3809,7 @@ Clearly, the larger the absolute value of the difference, the larger on average 
 Sampling designs can also be balanced on multiple covariates. Figure \@ref(fig:simpleexample)(b) shows a sample balanced on both Easting and Northing. Using Easting as a balancing variable reduced the sampling variance of the estimator of the mean substantially, see Table \@ref(tab:tablebalanced). Using Northing as a second balancing variable further reduced the sampling variance.  
 
 ```{r tablebalanced, echo=FALSE}
-tbl <- data.frame(x=c("SI","Balanced","Balanced"),y=c("-","Easting","Easting+Northing"),z=c(39.7,14.4,9.77))
+tbl <- data.frame(x=c("SI","Balanced","Balanced"),y=c("-","Easting","Easting and Northing"),z=c(39.7,14.4,9.77))
 
 knitr::kable(
   tbl, caption = 'Sampling variances of estimated mean for simple random sampling and balanced sampling of four units.',
@@ -3887,7 +3897,7 @@ mysample <- gridAmazonia[units,]
 The population mean can be estimated by the sample mean.
 
 ```{r}
-mz_sample <- mean(mysample$AGB)
+mz <- mean(mysample$AGB)
 ```
 
 To estimate the variance a function is defined for estimating the population regression coefficients. 
@@ -3920,7 +3930,7 @@ v_tz <- n/(n-ncol(X))*sum(c*(e/pi)^2)
 v_mz <- v_tz/N^2
 ```
 
-Figure \@ref(fig:BalancedSampleAmazonia) shows the result. The sample mean of AGB equals `r as.character(round(mz_sample,1))`. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))`. Note the spatial clustering of some units. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))`.
+Figure \@ref(fig:BalancedSampleAmazonia) shows the result. The sample mean of AGB equals `r as.character(round(mz,1))`. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))`. Note the spatial clustering of some units. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))`.
 
 ```{r BalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample from Eastern Amazonia (Brazil), balanced on covariate lnSWIR2."}
 ggplot(data=gridAmazonia) +
@@ -3983,6 +3993,13 @@ ggplot(data=estimates) +
   scale_y_continuous(name="Frequency") +
   scale_x_continuous(name="Sample mean lnSWIR2")
 ```
+#### Exercises {-}
+
+1. Load the data of Amazonia (Amazonia\_5km.RData) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
+    + Estimate the population mean.   
+    + Estimate the standard error of the $\pi$ estimator. First estimate the regression coefficients, using function `estimate\_b` defined above, then compute the residuals, and finally compute the variance.      
+2. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
+
 ### Stratified random sampling {#StratifiedsamplingasBalancedsampling}
 
 In the previous section a continuous variable was used to balance the sample. However, also a categorical variable can be used for this. A sample balanced on a categorical variable actually is a  stratified random sample. Figure \@ref(fig:BalancedSampleCategorical) shows four strata. These four strata can be used in balanced sampling by constructing the following design matrix\index{Design matrix} $\mathbf{X}$ with as many columns as there are classes:
@@ -4187,11 +4204,6 @@ v_tz <- n/(n-ncol(X))*sum(c*(e/mysample$pih)^2)
 print(v_mz <- v_tz/N^2)
 ```
 
-
-#### Exercises {-}
-
-1. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
-
 ## Well-spread sampling {#Spreaded}
 
 With balanced sampling the spreading of the sampling units in the space spanned by the balancing variables can be poor. For instance, in Figure \@ref(fig:simpleexample)(a) the Easting coordinates of all units of a sample balanced on Easting can be equal or close to the population mean of 10. So, in this example balancing does not guarantee a good geographical spreading. A balanced sample can be selected that shows strong clustering in the space spanned by the balancing variables. This clustering may inflate the standard error of the estimated population total and mean. The clustering in geographical or covariate space can be avoided by the local pivotal method [@Grafstrom2012], and the spatially correlated Poisson sampling method\index{Spatially correlated Poisson sampling} [@Grafstrom2012b]. 
@@ -4261,7 +4273,7 @@ As explained above, the LPM design can also be used to select a probability samp
 
 #### Exercises {-}
 
-2. Geographical spreading of the sampling units can also be achieved by random sampling from compact geographical strata (Section \@ref(geostrata)). Can you think of one or more advantages of LPM sampling over random sampling from geostrata?  
+3. Geographical spreading of the sampling units can also be achieved by random sampling from compact geographical strata (geostrata) (Section \@ref(geostrata)). Can you think of one or more advantages of LPM sampling over random sampling from geostrata?  
 
 ### Generalised random-tessellation stratified sampling {#GRTS}
 
@@ -4418,7 +4430,6 @@ Xsample <- X[units,]
 sqrt(vsb(pi[units], myGRTSsample$poppy, Xsample)) %>% round(.,0)
 ```
 
-
 ## Balanced sampling with spreading {#BalancedandSpreaded}
 
 As mentioned in the introduction to this chapter a sample balanced on a covariate still may have a poor spreading along the axis spanned by the covariate. @Grafstrom2013 presented a method for selecting balanced samples that are also well-spread in the space spanned by the covariates, which they refer to as doubly-balanced sampling\index{Doubly-balanced sampling}. If we take one or more covariates as balancing variables, and besides Easting and Northing as spreading variables, this leads to balanced samples with good *geographical* spreading. When the residuals of the regression model show spatial structure (are spatially correlated), the estimated population mean of the study variable becomes more precise thanks to the improved geographical spreading. Balanced samples with spreading can be selected with function `lcube` of package **BalancedSampling** [@Grafstrom2016]. This is illustrated with Eastern Amazonia, using as before lnSWIR2 for balancing the sample.  
@@ -4485,16 +4496,16 @@ rm(list=ls())
 
 In many cases ancillary information is available that could be useful to increase the accuracy of the estimated mean or total of the study variable. The ancillary variable(s) can be qualitative (i.e. classifications) or quantitative. As we have seen before, both types of ancillary variable can be used at the design stage, i.e. in selecting the sampling units, to improve the performance of the sampling strategy, for instance by stratification (Chapter \@ref(STSI)), selecting sampling units with probabilities proportional to size (Chapter \@ref(pps)), or through balancing and/or spreading the sample on the covariates (Chapter \@ref(BalancedSpreaded)). In this chapter I explain how these covariates can be used at the stage of *estimation*, once the data are collected.
 
-In the design-based approach for sampling various estimators are developed that exploit one or more covariates. These estimators are derived from different superpopulation model\index{Superpopulation model} of the study variable. A superpopulation model is a statistical model that can be used to generate an infinite number of populations, a superpopulation, through simulation. An example is the simulation of spatial populations using a geostatistical model, through sequential Gaussian simulation, see Chapter \@ref(MBpredictionofDesignVariance). A superpopulation is a construct, it does not exist in reality. We assume that the population of interest is one of the populations that can be generated with the chosen model. The combination of probability sampling and estimators that are build on a superpopulation model, is referred to as the model-assisted approach\index{Model-assisted approach}. Also in the model-based approach a superpopulation model is used, however, its role is fundamentally different from that in the model-assisted approach, see Chapter \@ref(Approaches). To stress the different use of the superpopulation model in the model-assisted approach this model is referred to as the "working model"\index{Working model}, i.e. the superpopulation model that is used to derive a model-assisted estimator.
+In the design-based approach for sampling various estimators are developed that exploit one or more covariates. These estimators are derived from different superpopulation models\index{Superpopulation model} of the study variable. A superpopulation model is a statistical model that can be used to generate an infinite number of populations, a superpopulation, through simulation. An example is the simulation of spatial populations using a geostatistical model, see Chapter \@ref(MBpredictionofDesignVariance). A superpopulation is a construct, it does not exist in reality. We assume that the population of interest is one of the populations that can be generated with the chosen model. The combination of probability sampling and estimators that are build on a superpopulation model, is referred to as the model-assisted approach\index{Model-assisted approach}. Also in the model-based approach a superpopulation model is used, however, its role is fundamentally different from that in the model-assisted approach, see Chapter \@ref(Approaches). To stress the different use of the superpopulation model in the model-assisted approach this model is referred to as the "working model"\index{Working model}, i.e. the superpopulation model that is used to derive a model-assisted estimator.
 
 @Breidt2017 present an overview of model-assisted estimators derived from a general working model:
 
 \begin{equation}
-z_k = \mu(\mathbf{x}_k)+\epsilon_k\;,
+Z_k = \mu(\mathbf{x}_k)+\epsilon_k\;,
 (\#eq:workingmodel)
 \end{equation}
 
-with $\mu(\mathbf{x}_k)$ the model mean\index{Model mean} for population unit $k$ which is a function of the covariate values of that unit collected in vector $\mathbf{x}_k = (1, x_{1,k}, \dots , x_{J,k})^{\mathrm{T}}$, and $\epsilon_k$ a random variable with zero mean. The model mean $\mu(\mathbf{x}_k)$ can be a linear or a non-linear combination of the covariates. If the study variable and the covariate values were observed for all population units, all these data can be used to compute a so-called hypothetical population fit\index{Population fit of model parameters} of the model parameters. These model parameters can then be used to compute *estimates* of the model means $\mu(\mathbf{x}_k)$, denoted by $m(\mathbf{x}_k)$, for all population units. For instance, with a multiple regression model $m(\mathbf{x}_k)=\mathbf{x}_k^T \mathbf{b}$, with $\mathbf{b}$ the vector with regression coefficients estimated from observations of the study variable $z$ and the covariates on *all* population units. In practice we have a sample only, which is used to estimate $m(\mathbf{x}_k)$ by $\hat{m}(\mathbf{x}_k)$. For the multiple regression model $\hat{m}(\mathbf{x}_k)= \mathbf{x}_k^T \mathbf{\hat{b}}$, with $\mathbf{\hat{b}}$ the vector with regression coefficients estimated from the sample data. This leads to the generalised difference estimator\index{Generalised difference estimator} [@Wu2001]:
+with $\mu(\mathbf{x}_k)$ the model mean\index{Model mean} for population unit $k$ which is a function of the covariate values of that unit collected in vector $\mathbf{x}_k = (1, x_{1,k}, \dots , x_{J,k})^{\mathrm{T}}$, and $\epsilon_k$ a random variable with zero mean. Note that I use uppercase $Z$ to distinguish the random variable $Z_k$ of unit $k$ from one realization of this random variable for unit $k$ in the population of interest, $z_k$. The model mean $\mu(\mathbf{x}_k)$ can be a linear or a non-linear combination of the covariates. If the study variable and the covariate values were observed for all population units, all these data can be used to compute a so-called hypothetical population fit\index{Population fit of model parameters} of the model parameters. These model parameters can then be used to compute *estimates* of the model means $\mu(\mathbf{x}_k)$, denoted by $m(\mathbf{x}_k)$, for all population units. For instance, with a (multiple) regression model $m(\mathbf{x}_k)=\mathbf{x}_k^{\text{T}} \mathbf{b}$, with $\mathbf{b}$ the vector with regression coefficients estimated from observations of the study variable $z$ and the covariates on *all* population units. In practice we have a sample only, which is used to estimate $m(\mathbf{x}_k)$ by $\hat{m}(\mathbf{x}_k)$. For the multiple regression model $\hat{m}(\mathbf{x}_k)= \mathbf{x}_k^{\text{T}} \hat{\mathbf{b}}$, with $\hat{\mathbf{b}}$ the vector with regression coefficients estimated from the sample data. This leads to the generalised difference estimator\index{Generalised difference estimator} [@Wu2001]:
 
 \begin{equation}
 \hat{\bar{z}}_{\mathrm{dif}}=\frac{1}{N} \sum_{k=1}^N \hat{m}(\mathbf{x}_k) + \frac{1}{N} \sum_{k \in \mathcal{S}} \frac{z_k-\hat{m}(\mathbf{x}_k)}{\pi_k}\;,
@@ -4510,18 +4521,18 @@ A wide variety of model-assisted estimators have been developed and tested in th
 The working model of the generalised regression estimator is the heteroscedastic multiple linear regression model\index{Heteroscedastic multiple linear regression model}:
 
 \begin{equation}
-Z_k = \mathbf{x}^{\mathrm{T}}_k \symbfit{\beta}+\epsilon_k \;,
+Z_k = \mathbf{x}^{\mathrm{T}}_k \pmb{\beta}+\epsilon_k \;,
 (\#eq:GREGmodel)
 \end{equation}
 
-with $\epsilon_k$ uncorrelated residuals, with zero mean and variance $\sigma^2(\epsilon_k)$. Note that I use uppercase $Z$ to distinguish the random variable $Z_k$ of unit $k$ from one realization of this random variable for unit $k$ in the population of interest, $z_k$. Further note that the variance of the residuals $\sigma^2(\epsilon_k)$ need not be constant but may differ among the population units. If $\{z_k,x_{1,k}, \dots , x_{J,k}\}$ were observed for all units $k= 1, \dots , N$ in the population, the regression coefficients $\symbfit{\beta}$ would be estimated by
+with $\epsilon_k$ uncorrelated residuals, with zero mean and variance $\sigma^2(\epsilon_k)$. Note that the variance of the residuals $\sigma^2(\epsilon_k)$ need not be constant but may differ among the population units. If $\{z_k,x_{1,k}, \dots , x_{J,k}\}$ were observed for all units $k= 1, \dots , N$ in the population, the regression coefficients $\pmb{\beta}$ would be estimated by
 
 \begin{equation}
 \mathbf{b} = \left(\sum_{k=1}^N \frac{\mathbf{x}_k\mathbf{x}_k^{\mathrm{T}}}{\sigma^2(\epsilon_k)}  \right)^{-1} \sum_{k=1}^N \frac{\mathbf{x}_k z_k}{\sigma^2(\epsilon_k)}\;,
 (\#eq:populationfitGREG)
 \end{equation}
 
-with $\mathbf{x}_k$ the vector $(1, x_{1,k}, \dots , x_{J,k})^{\mathrm{T}}$, and $\sigma^2(\epsilon_k)$ the variance of the residual of unit $k$. So, similar to the distinction between model mean and population mean (see Chapter \@ref(Approaches)), here the model regression coefficients\index{Model regression coefficient} $\symbfit{\beta}$ are distinguished from the population regression coefficients\index{Population regression coefficient} $\mathbf{b}$. The means $m(\mathbf{x}_k)$ would then be computed by
+with $\mathbf{x}_k$ the vector $(1, x_{1,k}, \dots , x_{J,k})^{\mathrm{T}}$, and $\sigma^2(\epsilon_k)$ the variance of the residual of unit $k$. So, similar to the distinction between model mean and population mean (see Chapter \@ref(Approaches)), here the model regression coefficients\index{Model regression coefficient} $\pmb{\beta}$ are distinguished from the population regression coefficients\index{Population regression coefficient} $\mathbf{b}$. The means $m(\mathbf{x}_k)$ would then be computed by
 
 \begin{equation}
 m(\mathbf{x}_k) = \mathbf{x}_k^{\mathrm{T}} \mathbf{b}\;.
@@ -4592,10 +4603,10 @@ The sampling variance of this regression estimator can be estimated by computing
 (\#eq:OLSIntercept)
 \end{equation}
 
-The sampling variance of the regression estimator is *approximately* equal to the sampling variance of the estimator of the mean of these residuals:
+The sampling variance of the regression estimator of the population mean is *approximately* equal to the sampling variance of the $\pi$ estimator of the mean of the model residuals:
 
 \begin{equation}
-\widehat{V}\!\left(\hat{\bar{z}}_{\mathrm{regr}}\right)=\frac{\widehat{S^{2}}(e)}{n} \;,
+\widehat{V}\!\left(\hat{\bar{z}}_{\mathrm{regr}}\right)=\left(1-\frac{n}{N}\right)\frac{\widehat{S^{2}}(e)}{n} \;,
 (\#eq:VarianceRegressionEstimatorSI)
 \end{equation}
 
@@ -4606,7 +4617,7 @@ with $\widehat{S^{2}}(e)$ the estimated population variance of the regression re
 (\#eq:VarianceResiduals)
 \end{equation}
 
-The variance estimator is an approximation because the regression coefficients are also estimated from the sample, which makes the regression estimator nonlinear. The approximation of the variance is based on a Taylor linearisation\index{Taylor linearisation of regression estimator} of the regression estimator (@sar92, p. 235). For simple random sampling without replacement from finite populations, the variance estimator must be multiplied by the finite population correction factor  $1-n/N$, see Chapter \@ref(SI).
+The variance estimator is an approximation because the regression coefficients are also estimated from the sample, which makes the regression estimator nonlinear. The approximation of the variance is based on a Taylor linearisation\index{Taylor linearisation of regression estimator} of the regression estimator (@sar92, p. 235). For simple random sampling with replacement from finite populations and simple random sampling of infinite populations, the the finite population correction factor  $1-n/N$ must be dropped, see Chapter \@ref(SI).
 
 In the multiple linear regression model\index{Multiple linear regression model} the mean is a linear function of multiple covariates. This model leads to the multiple regression estimator \index{Regression estimator!multiple regression estimator}. With simple random sampling the population regression coefficients of this estimator can be estimated by
 
@@ -4617,7 +4628,7 @@ In the multiple linear regression model\index{Multiple linear regression model} 
 
 Comparison with the general regression estimator of the population regression coefficients (Equation \@ref(eq:EstimatorGREGCoefficients)) shows that both the variance of the residuals, $\sigma^2(\epsilon_k)$, and the inclusion probabilities $\pi_k$ are missing, as they are (assumed) constant.
 
-The simple regression estimator is illustrated with Eastern Amazonia, see Section \@ref(Datasets). The population mean of the aboveground biomass (AGB) is estimated by the simple regression estimator, using natural logarithms of  MODIS short-wave infrared radiation (SWIR2) as a covariate.
+The simple regression estimator is illustrated with Eastern Amazonia, see Section \@ref(Datasets). The population mean of the aboveground biomass (AGB) is estimated by the simple regression estimator, using natural logarithms of MODIS short-wave infrared radiation (SWIR2) as a covariate.
 
 ```{r, echo=FALSE}
 load("data/Amazonia_1km.RData")
@@ -4632,7 +4643,6 @@ r <- cor(gridAmazonia$AGB, gridAmazonia$lnSWIR2)
 The correlation coefficient equals `r as.character(round(r,3))`. The slope of the fitted line equals `r as.character(round(ab[2],1))`. Now a simple random sample without replacement of 100 units is selected, and the two population regression coefficients are estimated with Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). `t(X)` computes the transpose of a matrix, function `solve` computes the inverse of a matrix, and the operator `%*%` is for multiplying two matrices. 
 
 ```{r}
-N <- nrow(gridAmazonia) 
 n <- 100
 set.seed(321)
 units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
@@ -4655,7 +4665,7 @@ But care must be taken: the design-based estimates of the population regression 
 
 Figure \@ref(fig:ScatterAGBvsSWIR2) shows the scatter plot for the sample and the fitted simple linear regression model. 
 
-```{r ScatterAGBvsSWIR2, echo=FALSE, fig.asp=.6, fig.cap="Scatterplot and fitted simple linear regression model for aboveground biomass (AGB), using lnSWIR2 as predictor, for simple random sample."}
+```{r ScatterAGBvsSWIR2, echo=FALSE, fig.asp=.6, fig.cap="Scatter plot and fitted simple linear regression model for aboveground biomass (AGB), using lnSWIR2 as predictor, for simple random sample."}
 ggplot(data=mysample) +
         geom_point(mapping=aes(x=lnSWIR2, y=AGB)) +
         geom_abline(intercept=ab[1], slope=ab[2])+
@@ -4663,7 +4673,7 @@ ggplot(data=mysample) +
         scale_y_continuous(name="AGB")
 ```
 
-The simple random sample is used to estimate the population mean of the study variable AGB by the simple regression estimator, and to approximate the sampling variance of the regression estimator. The residuals of the fitted model can be extracted with function `residuals`, because in this case the model-based estimates of the regression coefficients are equal to the design-based estimates.
+The simple random sample is used to estimate the population mean of the study variable AGB by the simple regression estimator, and to approximate the sampling variance of the regression estimator. The residuals of the fitted model can be extracted with function `residuals`, because in this case the OLS estimates of the regression coefficients are equal to the design-based estimates. With unequal inclusion probabilities the residuals must be computed by predicting the study variable for the selected units, using the design-based estimates of the regression coefficients, and subtracting the observations of the study variable.
 
 ```{r}
 mx_pop <- mean(gridAmazonia$lnSWIR2) 
@@ -4740,6 +4750,7 @@ The calibrated weights\index{Calibrated weights} can be extracted with function 
 g <- weights(mysample_cal)
 all.equal(sum(g),N)
 ```
+
 and the sample sum of the product of the weights and the covariate equals the population total of the covariate:
 
 ```{r}
@@ -4752,7 +4763,7 @@ Finally, the population mean can be estimated with function `svymean`. This is s
 svymean(~AGB, mysample_cal)
 ```
 
-Figure \@ref(fig:SamplingDistributionRegression) shows the sampling distribution of the simple regression estimator along with the distribution of the $\pi$ estimator, obtained by repeating simple random sampling of 100 units and estimation 10,000 times.
+The standard error is computed with Equation \@ref(eq:AlternativeVarianceRegressionEstimator). Figure \@ref(fig:SamplingDistributionRegression) shows the sampling distribution of the simple regression estimator along with the distribution of the $\pi$ estimator, obtained by repeating simple random sampling of 100 units and estimation 10,000 times.
 
 ```{r, eval=FALSE, echo=FALSE}
 number_of_samples <- 10000
@@ -4875,7 +4886,11 @@ sqrt(res$pop_mean_var)
 
 #### Exercises {-}
 
-1. The data for this Exercise are in `data/Amazonia_1km.RData`. Write an **R** script to
+1. The data for this exercise are in `data/Amazonia_1km.RData`. Write an **R** script to
+    + Select a simple random sample without replacement of size 50. Compute the regression estimator of the population mean of AGB and its standard error "by hand", using lnSWIR2 as a covariate (so do not not use package **survey**). Use Equation \@ref(eq:VarianceRegressionEstimatorSI) to estimate the standard error.   
+    + Use the same sample to compute the regression estimator with functions `calibrate` and `svymean` of package **survey**. The regression estimate and its standard error can be extracted from the output object of `svymean` with methods `coef` and `SE`, respectively.
+    + Repeat both estimation procedures 1000 times (write a for-loop). Check that the 2 $\times$ 1000 estimated population means obtained with both estimators are all equal (use function `all.equal`), and compute summary statistics of the two approximated standard errors. Which approximate standard error estimator has the largest mean value?  
+2. Write an **R** script to
     + Compute the sampling variance of the simple regression estimator of the mean of AGB, using lnSWIR2 as a covariate, for simple random sampling and sample sizes of 10, 25 and 100, assuming that the population regression coefficients are perfectly known. Hint: fit a simple linear regression model on all data, and compute the population variance of the residuals.  
     + Select 10,000 times a simple random sample with replacement of size 10 (use a for-loop). Use each sample to estimate the population mean of AGB with the simple regression estimator (using sample estimates of the population regression coefficients), and estimate the approximate variance of the estimator of the mean.  Compute the variance of the 10,000 regression estimates and the average of the 10,000 approximate variance estimates. Repeat this for sample sizes 25, 100.   
     + Compute for each sample size the difference between the experimental variance (variance of the 10,000 regression estimates) and the variance obtained with the population fit of the regression model as a proportion of the experimental variance. Explain what you see.   
@@ -5126,7 +5141,7 @@ In some cases it is reasonable to assume that the fitted line passes through the
 
 with $\hat{t}_{\pi}(z)$ and $\hat{t}_{\pi}(x)$ the $\pi$ estimators of the total of the study variable (poppy area) and ancillary variable (agricultural area), respectively, and $t(x)$ the total of the ancillary variable, which must be known.
 
-The working model\index{Working model} of the ratio estimator\index{Ratio estimator} is a heteroscedastic model, i.e. a model with non-constant variance (see Exercise 2, hereafter):
+The working model\index{Working model} of the ratio estimator\index{Ratio estimator} is a heteroscedastic model, i.e. a model with non-constant variance (see Exercise 3, hereafter):
 
 \begin{eqnarray}
 Z(x_k) &=& \beta \;x_k  + \epsilon_k \notag \\
@@ -5230,7 +5245,7 @@ Figure \@ref(fig:SamplingDistributionRatio) shows the sampling distribution of t
 
 #### Exercises {-}
 
-2. Write an **R** script to compute the ratio of the population total poppy area and population total agricultural area ($t(z)/t(x)$). Then use all data to fit a linear model without intercept for the poppy area, using the agricultural area as a covariate, assuming that the variance of the residuals is proportional to the agricultural area (heteroscedastic model). Hint: use function `lm` with argument `formula = poppy \sim agri-1` and argument `weights=1/agri`. Also fit a model without intercept, assuming a constant variance of the residuals (homoscedastic model). Compare the estimated slopes of the two models with the ratio of the total poppy area and total agricultural area.  
+3. Write an **R** script to compute the ratio of the population total poppy area and population total agricultural area ($t(z)/t(x)$). Then use all data to fit a linear model without intercept for the poppy area, using the agricultural area as a covariate, assuming that the variance of the residuals is proportional to the agricultural area (heteroscedastic model). Hint: use function `lm` with argument `formula = poppy \sim agri-1` and argument `weights=1/agri`. Also fit a model without intercept, assuming a constant variance of the residuals (homoscedastic model). Compare the estimated slopes of the two models with the ratio of the total poppy area and total agricultural area.  
 
 ### Ratio estimators with stratified simple random sampling {#RatioEstimatorSTSI}
 
@@ -6666,11 +6681,11 @@ In the analytical approach the sampling variance of the estimator of the mean is
 The sampling variance of a design-based estimator of the population mean can be predicted by (@dom94, @gru06)
 
 \begin{equation}
-E_{\xi}\{V_p(\hat{\bar{z}})\}=\bar{\gamma}-E_p(\symbfit{\lambda}^{\prime}\symbfit{\Gamma}_{\mathcal{S}}\symbfit{\lambda}) \;,
+E_{\xi}\{V_p(\hat{\bar{z}})\}=\bar{\gamma}-E_p(\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda}) \;,
 (\#eq:MBdesignvarAnydesign)
 \end{equation}
 
-where $E_{\xi}(\cdot)$ is the statistical expectation over realisations from the model $\xi$, $E_{p}(\cdot)$ is the statistical expectation over repeated sampling with sampling design $p$, $V_{p}(\hat{\bar{z}})$ is the variance of the estimator of the mean over repeated sampling with sampling design $p$, $\bar{\gamma}$ is the mean semivariance of the random variable at two randomly selected points in the area, $\symbfit{\lambda}$ is the vector of design-based weights of the units of a sample selected with design $p$, and $\symbfit{\Gamma}_{\mathcal{S}}$ is the matrix of semivariances between the units of a sample $\mathcal{S}$ selected with design $p$.
+where $E_{\xi}(\cdot)$ is the statistical expectation over realisations from the model $\xi$, $E_{p}(\cdot)$ is the statistical expectation over repeated sampling with sampling design $p$, $V_{p}(\hat{\bar{z}})$ is the variance of the estimator of the mean over repeated sampling with sampling design $p$, $\bar{\gamma}$ is the mean semivariance of the random variable at two randomly selected points in the area, $\pmb{\lambda}$ is the vector of design-based weights of the units of a sample selected with design $p$, and $\pmb{\Gamma}_{\mathcal{S}}$ is the matrix of semivariances between the units of a sample $\mathcal{S}$ selected with design $p$.
 
 The mean semivariance $\bar{\gamma}$ is a model-based prediction of the population variance (spatial variance):
 
@@ -6679,9 +6694,9 @@ The mean semivariance $\bar{\gamma}$ is a model-based prediction of the populati
 (\#eq:meansemivariance)
 \end{equation}
 
-The mean semivariance $\bar{\gamma}$ can be calculated by discretising the area by a fine square grid, and computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\symbfit{\lambda}^{\prime}\symbfit{\Gamma}_{\mathcal{S}}\symbfit{\lambda})$ can be evaluated by Monte-Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\symbfit{\lambda}^{\prime}\symbfit{\Gamma}_{\mathcal{S}}\symbfit{\lambda}$, and averaging.
+The mean semivariance $\bar{\gamma}$ can be calculated by discretising the area by a fine square grid, and computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda})$ can be evaluated by Monte-Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda}$, and averaging.
 
-The semivariance at zero distance (same point) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, these zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\symbfit{\Gamma}_{\mathcal{S}}$.  
+The semivariance at zero distance (same point) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, these zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\pmb{\Gamma}_{\mathcal{S}}$.  
 
 This generic procedure is still computationally demanding, but it is the only option for complex spatial sampling designs. For basic sampling designs the general formula can be worked out. For simple random sampling, the sampling variance can be predicted by
 
@@ -6966,7 +6981,7 @@ mydata$Northing <- mydata$Northing - min_Northing
 
 As a first step the semivariogram of lnN is estimated by maximum likelihood\index{Maximum likelihood estimation} (Section \@ref(MLestimationVariogram)). An exponential semivariogram model is assumed. Note that the parameters that are estimated are the reciprocal of the sill $\lambda$, the ratio of spatial dependence\index{Ratio of spatial dependence} $\xi$, defined as the partial sill divided by the sill, and the distance parameter $\phi$. This parameterisation of the semivariogram is chosen because hereafter in the Bayesian approach prior distributions are chosen for these parameters.
 
-The likelihood function is defined, using a somewhat unusual parameterisation, tailored at the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated by using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, chapter 11]. In MCMC sampling the probability of accepting a proposed sampling unit $\symbfit{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\symbfit{\theta}^*|\mathbf{z})/f(\symbfit{\theta}_{t-1}|\mathbf{z})$, so that the normalizing constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels. For a nice introduction to MCMC I refer to these [lecture notes](http://nitro.biosci.arizona.edu/courses/EEB596/handouts/Gibbs.pdf). `crossprod(X, Cinv)` is the same as `t(X) %*% Cinv`.
+The likelihood function is defined, using a somewhat unusual parameterisation, tailored at the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated by using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, chapter 11]. In MCMC sampling the probability of accepting a proposed sampling unit $\pmb{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\pmb{\theta}^*|\mathbf{z})/f(\pmb{\theta}_{t-1}|\mathbf{z})$, so that the normalizing constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels. For a nice introduction to MCMC I refer to these [lecture notes](http://nitro.biosci.arizona.edu/courses/EEB596/handouts/Gibbs.pdf). `crossprod(X, Cinv)` is the same as `t(X) %*% Cinv`.
 
 ```{r}
 library(mvtnorm)
@@ -7750,7 +7765,7 @@ For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:Tabl
 
 Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates. The variation of the regression estimates is smaller than those of the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
 
-```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatterplot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
+```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatter plot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
 mysample$N <- nrow(gridAmazonia)
 design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
@@ -7870,7 +7885,7 @@ The alternative for design-based and model-assisted estimation of the means or t
 A basic linear mixed model for model-based prediction of means of small domains is the random intercept model\index{Random intercept model}:
 
 \begin{eqnarray}
-Z_{dk} &=& \mathbf{x}_{dk}^{\text{T}} \symbfit{\beta} + v_d + \epsilon_{dk} \notag \\
+Z_{dk} &=& \mathbf{x}_{dk}^{\text{T}} \pmb{\beta} + v_d + \epsilon_{dk} \notag \\
 v_d &\sim& \mathcal{N}(0,\sigma^2_v) \\
 \epsilon_{dk} &\sim& \mathcal{N}(0,\sigma^2_{\epsilon}) \notag \;.
 (\#eq:RandomInterceptModel)
@@ -7883,7 +7898,7 @@ Two random variables are now involved, both with a normal distribution with mean
 (\#eq:mbpredictordomainmeanrandomintercept)
 \end{equation}
 
-with $\hat{\symbfit{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
+with $\hat{\pmb{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
 
 \begin{equation}
 \hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
@@ -8077,7 +8092,7 @@ knitr::kable(
 
 Similar to the synthetic estimator, for all ecoregions an estimate of the mean AGB is obtained, also for the unsampled ecoregions (Table \@ref(tab:TableGeostatisticqalModelEstimates)). The model-based prediction is strongly correlated with the synthetic estimate (Figure \@ref(fig:MBvsSynt)).
 
-```{r MBvsSynt, echo=FALSE, fig.cap="Scatterplot of model-based prediction and synthetic estimate of the mean AGB of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
+```{r MBvsSynt, echo=FALSE, fig.cap="Scatter plot of model-based prediction and synthetic estimate of the mean AGB of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
 df <- data.frame(ecoregions, mb=mz_eco_mb, se.mb=se_mz_eco_mb, synt=synt$estimate, se.synt=sqrt(synt$g_variance)) 
 ggplot(data=df) +
         geom_point(mapping=aes(x=synt, y=mb), size=2) +
@@ -8091,7 +8106,7 @@ The most striking difference is the standard error. The standard errors of the s
 
 It makes more sense to compare the two model-based predictions, the random intercept model predictions and the geostatistical predictions, and their standard errors. Figure \@ref(fig:MBvsMB) shows that the two model-based predictions are very similar. 
 
-```{r MBvsMB, echo=FALSE, fig.cap="Scatterplot of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
+```{r MBvsMB, echo=FALSE, fig.cap="Scatter plot of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
 res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
 TF <- (ecoregions %in% ecos_in_sam)
 n_eco <- tapply(mysample$AGB, INDEX=mysample$Ecoregion, FUN=length)
@@ -8106,7 +8121,7 @@ ggplot(data=df) +
 
 For four ecoregions the standard errors of the geostatistical model predictions are much smaller than those of the random intercept model predictions (Figure \@ref(fig:MBvsMBse)). These are ecoregions with small sample sizes.
 
-```{r MBvsMBse, echo=FALSE,  fig.cap="Scatterplot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
+```{r MBvsMBse, echo=FALSE,  fig.cap="Scatter plot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
 ggplot(data=df) +
         geom_point(mapping=aes(x=semb.rint, y=semb.geo), size=2) +
         geom_text(mapping=aes(x=semb.rint, y=semb.geo, label=n_eco), hjust=1, vjust=1)+
@@ -8439,11 +8454,11 @@ In overlapping samples such as a supplemented panel or rotating panel sample we 
 The essence of the estimation method described in this section is to estimate the spatial mean at a given time point as a weighted average of the elementary estimates *of all time points*, with the weights determined by the sampling variances and covariances of the elementary estimates. Collecting all elementary estimates of the spatial means of the different sampling times in vector $\hat{\mathbf{z}}$, we can write
 
 \begin{equation}
-\hat{\mathbf{z}}=\mathbf{X} \mathbf{z} + \symbfit{\epsilon} \;,
+\hat{\mathbf{z}}=\mathbf{X} \mathbf{z} + \pmb{\epsilon} \;,
 (\#eq:zbf)
 \end{equation}
 
-with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_r)$ at the $r$ sampling times, $\mathbf{X}$ the ($P \times r$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\symbfit{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\symbfit{\epsilon}$ is a vector with zeroes.  
+with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_r)$ at the $r$ sampling times, $\mathbf{X}$ the ($P \times r$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\pmb{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\pmb{\epsilon}$ is a vector with zeroes.  
 
 With an independent synchronous, static-synchronous and serially alternating design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. For the supplemented panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix $\mathbf{X}$ is
 
@@ -8904,14 +8919,14 @@ se_mz_st <- t(w) %*% XCXinv %*% w %>% sqrt(.)
 
 This second part of the book deals with sampling for mapping, i.e. for predicting the study variable at the nodes of a fine discretisation grid. For mapping a model-based sampling approach is the most natural option. When a statistical model, i.e. a model containing an error term modelled by a probability distribution, is used to map the study variable from the sample data, selection of the sampling units by probability sampling is not strictly needed anymore in order to make statistical statements about the population, i.e. statements with quantified uncertainty, see Section \@ref(DBvsMB). In a model-based approach we assume the model is correct, possibly after we have managed to verify the model assumptions. As a consequence there is room for optimising the sampling units, i.e. searching for those units that lead to the most accurate map in some operational sense related to map quality, for instance, the smallest squared prediction error averaged over all locations in the mapped study area, see Chapter \@ref(Validation). 
 
-As an illustration, consider the following statistical model to be used for mapping: a linear regression model between a single predictor and the target variable to be mapped:
+As an illustration, consider the following statistical model to be used for mapping: a simple linear regression model for the target variable to be mapped:
 
 \begin{equation}
 Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
 (\#eq:simplelinearregressionmodel)
 \end{equation}
 
-with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $Cov(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the single covariate (predictor). 
+with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $Cov(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate. 
 
 ```{r, echo=FALSE}
 library(gstat)
@@ -8969,9 +8984,9 @@ model.opt <- lm(z~x, data=optsample)
 det.opt <- det(vcov(model.opt))
 ```
 
-```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample (a), and optimised sample for mapping with simple linear regression model (b), plotted in a map of the covariate."}
+```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample, and optimal sample for mapping with simple linear regression model, plotted in a map of the covariate."}
 mysamples <- rbind(randomsample,optsample)
-mysamples$design <- rep(c("Random","Optimal"),each=16)
+mysamples$design <- factor(rep(c("Random","Optimal"),each=16), levels=c("Random","Optimal"), ordered=TRUE)
 
 ggplot(data = grid) +
   geom_raster(mapping = aes(x = s1, y = s2, fill = x)) +
@@ -8983,7 +8998,7 @@ ggplot(data = grid) +
   coord_fixed()
 ```
 
-The optimised sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimised sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. The standard errors of both regression coefficients are considerably smaller for the optimised sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the estimated regression coefficients, equals `r as.character(round(det.random, 5))` for the simple random sample and `r as.character(round(det.opt, 6))` for the optimised sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ for at points where we have observations of the covariate $x$ only. So, we conclude that for mapping with a simple linear regression model, simple random sampling is not a good option if we are willing to rely on the assumption that there is a linear relation between $z$ and $x$. 
+The optimal sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, this spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the estimated regression coefficients is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ for at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option if we are willing to rely on the assumption that there is a linear relation between $z$ and $x$.  
 
 ```{r sebetas, echo=FALSE}
 tbl <- data.frame(x=c("SI","Optimised"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
@@ -9248,9 +9263,9 @@ library(spcosa)
 n <- 115
 set.seed(314)
 gridded(grdVoorst) <- ~s1+s2
-mystrata<-stratify(grdVoorst, nStrata=n, equalArea=FALSE, nTry=10)
+mystrata <- spcosa::stratify(grdVoorst, nStrata=n, equalArea=FALSE, nTry=10)
 mysample <- spsample(mystrata)
-plot(mystrata,mysample)
+plot(mystrata, mysample)
 mysample <- as(mysample, "data.frame")
 ```
 
@@ -9282,7 +9297,7 @@ ggplot() +
   theme_minimal()+
   coord_fixed()
 ```
-This problem can easily be solved by selecting points inside the study area closest to the centers that are outside the study area. Function `rdist` of package **fields** is used to compute a matrix with distances between the centers outside the study area and the nodes of the discretisation grid. Then function `apply` is used with argument `FUN=which.min` to compute the discretisation nodes closest to the centers outside the study area. This procedure is implemented in function `spsample` of package **spcosa** without argument `n`.
+This problem can easily be solved by selecting points inside the study area closest to the centers that are outside the study area. Function `rdist` of package **fields** is used to compute a matrix with distances between the centers outside the study area and the nodes of the discretisation grid. Then function `apply` is used with argument `FUN=which.min` to compute the discretisation nodes closest to the centers outside the study area. This procedure is implemented in function `spsample` of package **spcosa** when the centers of the clusters are selected as sampling points (so, when argument `n` of function `spsample` is not used).
 
 ```{r}
 library(fields)
@@ -9315,7 +9330,8 @@ ntot <- n+length(priordataEthiopia)
 priordata <- as(priordataEthiopia, "SpatialPoints")
 proj4string(priordata) <- NA_character_
 set.seed(314)
-mystrata <- stratify(grdEthiopia, nStrata=ntot, priorPoints=priordata, nTry=10)
+mystrata <- spcosa::stratify(grdEthiopia, nStrata=ntot,
+  priorPoints=priordata, nTry=10)
 mysample <- spsample(mystrata)
 plot(mystrata, mysample)
 ```
@@ -9330,7 +9346,7 @@ mysample_new <- mysample[units,]
 
 #### Exercises {-}
 5. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on soil organic matter (SOM, g/kg) in the topsoil at 60 sampling points are in the data.frame `data/Xuancheng_iPSMsample.csv`. To map SOM we want to measure SOM at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif`  as a discretisation of the study area. This file can be read with function `raster` of package **raster**. 
-    +  In the example of this section there are far too many raster cells that could be used as new points in spatial infill sampling. That many cells are not needed. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type=regular`.  
+    +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type=regular`.  
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
   
 ```{r, echo=FALSE}
@@ -9394,7 +9410,9 @@ ggplot(gridAmazonia) +
 ```
 
 ```{r CSCsampleinscatter, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space coverage sample, obtained with $k$-means, plotted in scatter diagrams of pairs of covariates, coloured by cluster."}
-plt1 <- ggplot(gridAmazonia) +
+units <- sample.int(nrow(gridAmazonia), size=10000, replace=FALSE)
+grd <- gridAmazonia[units,]
+plt1 <- ggplot(grd) +
   geom_point(mapping=aes(x=SWIR2, y=Prec_dm, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSCsample, mapping=aes(x=SWIR2, y=Prec_dm), size=1.5, colour="red") +
@@ -9404,7 +9422,7 @@ plt1 <- ggplot(gridAmazonia) +
   theme(axis.title.x=element_text(size=14),
         axis.title.y=element_text(size=14))
 
-plt2 <- ggplot(gridAmazonia) +
+plt2 <- ggplot(grd) +
   geom_point(mapping=aes(x=Terra_PP, y=Elevation, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSCsample, mapping=aes(x=Terra_PP, y=Elevation), size=1.5, colour="red") +
@@ -9512,7 +9530,10 @@ ggplot(data=gridAmazonia) +
 ```
 
 ```{r CSInfillsampleinscatter, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space infill sample, obtained with modified $k$-means, plotted in scatter diagrams of pairs of covariates. The dots represent the fixed centers (legacy sample), the triangles the infill sample."}
-plt1 <- ggplot(gridAmazonia) +
+units <- sample.int(nrow(gridAmazonia), size=10000, replace=FALSE)
+grd <- gridAmazonia[units,]
+
+plt1 <- ggplot(grd) +
   geom_point(mapping=aes(x=SWIR2, y=Prec_dm, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSIsample, mapping=aes(x=SWIR2, y=Prec_dm, shape=free), size=1.5, colour="red") +
@@ -9522,7 +9543,7 @@ plt1 <- ggplot(gridAmazonia) +
   theme(axis.title.x=element_text(size=14),
         axis.title.y=element_text(size=14))
 
-plt2 <- ggplot(gridAmazonia) +
+plt2 <- ggplot(grd) +
   geom_point(mapping=aes(x=Terra_PP, y=Elevation, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSIsample, mapping=aes(x=Terra_PP, y=Elevation, shape=free), size=1.5, colour="red") +
@@ -9565,8 +9586,8 @@ ggplot(df, mapping=aes(x=MSSSD, y=RMSE, shape=Samplesize))+
 
 #### Exercises {-}
 
-1. Write an **R** script to select a covariate space coverage (CSC) sample of size 20,  using the covariates cti and ndvi in $k$-means clustering of the grid cells. Plot the clusters and the sample in a scatter diagram of cti against ndvi.  
-2. Repeat this, but now with covariates cti, ndvi *and* elevation_m as covariates. Plot the clusters and the sample again in a scatter diagram of cti against ndvi. Explain that in this case a sampling location (cluster center) can be quite close to another sampling location, and that a cluster in a 2D-scatter diagram may also contain units of a different cluster.   
+1. Write an **R** script to select a covariate space coverage (CSC) sample of size 20 from Hunter Valley. The data are in `data/HunterValley.RData`. Use the covariates cti (compound topographic index) and ndvi (normalized difference vegetation index) in $k$-means clustering of the grid cells. Plot the clusters and the sample in a scatter diagram of cti against ndvi.  
+2. Repeat this, but now with covariates cti, ndvi *and* elevation_m as covariates. Plot the clusters and the sample again in a scatter diagram of cti against ndvi. Explain that in this case a sampling location (cluster center) can be quite close to another sampling location in the 2D-scatter diagram, and that a cluster in the diagram may also contain units of a different cluster.   
   
 ```{r, echo=FALSE}
 rm(list=ls())
@@ -9679,11 +9700,12 @@ ggplot(tracedf) +
   scale_y_continuous(name="Criterion")
 ```
 
-cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}. It has some interesting arguments so that we have better control of the annealing compared to the package **clhs**, such as the arguments `initial.acceptance` and `stopping`, see Chapter \@ref(MBSamplePattern) for details. On the other hand, my experience is that package **clhs** is much quicker than package **spsann**, and can handle larger data sets.
+cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann**, and can handle larger data sets. The function `clhs` of this package has alos other interesting argument, such as the argument cost for cost-constrained cLH sampling [@Roudier2012], and `eta` to control the sampling intensities of the marginal strata [@Minasny2010]. The argument `eta` is of interest if we would like to oversample the marginal strata near the edge of the multivariate distribution.
 
 #### Exercises {-}
 
-1. Load the simulated data of Figure \@ref(fig:twosamples) (data/SimulatedSquare.RData), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
+1. Load the data of Hunter Valley (`data/HunterValley.RData`) to select a Latin hypercube sample of size 50, using elevation_m, slope_deg, cos_aspect, cti and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a 2D-scatter diagram of cti against elevation_m. In which part of the scatter diagram are most units selected, and which part is undersampled?   
+2. Load the simulated data of Figure \@ref(fig:twosamples) (`data/SimulatedSquare.RData`), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
     +  What do you think of the geographical spreading of the sampling units (spatial coverage)? Is it optimal?  
     +  Compute the number of sampling points in the marginal strata of $s1$, $s2$ and the covariate $x$. First compute the breaks of these marginal strata.  Are all marginal strata of $s1$ and $s2$ sampled?  Suppose that all marginal strata of $s1$ and $s2$ are sampled (contain one sampling point), does this guarantee good spatial coverage?  
     +  Plot the trace of the minimisation criterion, and retrieve the minimised value. Is this minimised value in agreement with the marginal stratum sample sizes?  
@@ -10260,7 +10282,7 @@ ggplot(mysamples) +
 
 ## Increasing the sample size {#IncreaseSampleSize}
 
-Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on the strength of the spatial clustering of the candidate sampling units per design point. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster, so in this case this solution may work properly. I increased the number of candidate sampling units per design point (argument `p` in function `quantile` is now 0.01), so that there is a larger choice in the optimisation of the sample pattern. 
+Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on the strength of the spatial clustering of the candidate sampling units per design point. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster, so in this case this solution may work properly. I increased the number of candidate sampling units per design point (argument `p` in function `quantile` is now 0.01), so that there is a larger choice in the optimisation of the sampling pattern. 
 
 ```{r}
 candi_all <- NULL
@@ -10548,7 +10570,7 @@ Replacing submatrices by single symbols results in the shorthand matrix equation
 \right]
 \left[
 \begin{array}{c}
-\symbfit{\lambda}\\
+\pmb{\lambda}\\
 \nu\\
 \end{array}
 \right]
@@ -10562,7 +10584,7 @@ Replacing submatrices by single symbols results in the shorthand matrix equation
 (\#eq:OKsystemshort)
 \end{eqnarray}
 
-The kriging weights\index{Kriging weight} $\symbfit{\lambda}$ and the Lagrange multiplier $\nu$ can then be computed by premultiplying both sides of Equation \@ref(eq:OKsystemshort) with the inverse of the first matrix of this equation:
+The kriging weights\index{Kriging weight} $\pmb{\lambda}$ and the Lagrange multiplier $\nu$ can then be computed by premultiplying both sides of Equation \@ref(eq:OKsystemshort) with the inverse of the first matrix of this equation:
 
 \begin{eqnarray}
 \left[
@@ -10599,11 +10621,11 @@ with $\sigma^2$ the sill of the semivariogram (a priori variance\index{A priori 
 Commonly the kriging variance is expressed in terms of the *semivariances*\index{Semivariance} between the sampling points and a prediction point (hereafter the relation between a covariance function and a semivariogram is explained):
 
 \begin{equation}
-V_{\mathrm{OK}}(\widehat{Z}(\mathbf{s}_0))= \lambda^{\mathrm{T}}\symbfit{\gamma}_0 + \nu \;,
+V_{\mathrm{OK}}(\widehat{Z}(\mathbf{s}_0))= \lambda^{\mathrm{T}}\pmb{\gamma}_0 + \nu \;,
 (\#eq:OKvariancesemivariances)
 \end{equation}
 
-with $\symbfit{\gamma}_0$ the vector with semivariances between the sampling points and a prediction point.
+with $\pmb{\gamma}_0$ the vector with semivariances between the sampling points and a prediction point.
 
 Computing the kriging predictor requires a model for the covariance as a function of the vector separating two locations. Often the covariance is modelled as a function of the length of the separation vector only, so as a function of the Euclidian distance between two locations. We then assume isotropy\index{Isotropy}. In general practice, the covariance function is not used in kriging, rather, a semivariogram\index{Semivariogram}. A semivariogram is a model of the *dissimilarity* of the study variable at two locations. The dissimilarity is quantified by half the squared difference of the study variable values at two points. A covariance function and semivariogram are related by, see Figure \@ref(fig:CovFunctionVariogram):
 
@@ -10775,11 +10797,11 @@ In block-kriging the mean of a prediction block $\mathcal{B}_0$ is predicted as 
 The variance of the prediction error of the block-mean (block-kriging variance\index{Block-kriging variance}) equals
 
 \begin{equation}
-V_{\mathrm{OBK}}(\widehat{\overline{Z}}(\mathcal{B}_0)) = \lambda^{\mathrm{T}}\bar{\symbfit{\gamma}}(\mathcal{B}_0) + \nu - \bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)\;,
+V_{\mathrm{OBK}}(\widehat{\overline{Z}}(\mathcal{B}_0)) = \lambda^{\mathrm{T}}\bar{\pmb{\gamma}}(\mathcal{B}_0) + \nu - \bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)\;,
 (\#eq:OBKvariance)
 \end{equation}
 
-with $\bar{\symbfit{\gamma}}(\mathcal{B}_0)$ the vector with mean semivariances between the sampling points and a prediction block, and $\bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)$ the mean semivariance within the prediction block. Comparing this with the variance with point-kriging (Equation \@ref(eq:OKvariancesemivariances)) shows that the block-kriging variance is smaller than the point-kriging variance\index{Point-kriging variance} by an amount approximately equal to the mean semivariance within a prediction block\index{Mean semivariance!within prediction block}. Recall from Chapter \@ref(MBpredictionofDesignVariance) that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
+with $\bar{\pmb{\gamma}}(\mathcal{B}_0)$ the vector with mean semivariances between the sampling points and a prediction block, and $\bar{\gamma}(\mathcal{B}_0,\mathcal{B}_0)$ the mean semivariance within the prediction block. Comparing this with the variance with point-kriging (Equation \@ref(eq:OKvariancesemivariances)) shows that the block-kriging variance is smaller than the point-kriging variance\index{Point-kriging variance} by an amount approximately equal to the mean semivariance within a prediction block\index{Mean semivariance!within prediction block}. Recall from Chapter \@ref(MBpredictionofDesignVariance) that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
 
 ## Kriging with an external drift {#IntroKED}
 
@@ -10814,7 +10836,7 @@ The optimal kriging weights $\lambda_i, i = 1 \dots n$ are obtained in a similar
 \right]
 \left[
 \begin{array}{c}
-\symbfit{\lambda}\\
+\pmb{\lambda}\\
 \nu\\
 \end{array}
 \right]
@@ -10957,7 +10979,7 @@ for (i in 1:length(x0)) {
 
 Figure \@ref(fig:KEDVarSKVar) shows that, contrary to the ordinary kriging variance,  the kriging variance with KED is not constant, but depends on the covariate value at the prediction location. It is the smallest near the mean of the covariate values at the sampling sites, which is 10.0. The more extreme the covariate value at the prediction location, the larger the kriging variance with KED. This is analogous to the variance of predictions with a linear regression model.
 
-The variance with simple kriging (SK) is constant. This is because with SK only the error in the interpolation of the residuals contribute to the variance (first two terms in Equation \@ref(eq:KEDvariance2). This interpolation error is independent of the value of $x$ at the prediction location. In Figure \@ref(fig:KEDVarSKVar) the difference between the variance with KED and with SK is the variance of the predictor of the mean, due to uncertainty about the regression coefficients. These regression coefficients must be *estimated* from the sample data. 
+The variance with simple kriging (SK) is constant. This is because with SK we assume that the regression coefficients are known, so that we know the model mean at a prediction location. What remains is the error in the interpolation of the residuals (first two terms in Equation \@ref(eq:KEDvariance2). This interpolation error is independent of the value of $x$ at the prediction location. In Figure \@ref(fig:KEDVarSKVar) the difference between the variance with KED and with SK is the variance of the predictor of the model mean, due to uncertainty about the regression coefficients. In real-world applications these regression coefficients are unknown and must be *estimated* from the sample data. This variance is smallest for a covariate value about equal to the sample mean of the covariate, and increases with the absolute difference of the covariate value and this sample mean.
 
 ```{r KEDVarSKVar, echo=FALSE, fig.asp=0.7, fig.cap="Variance of prediction error with kriging with an external drift (KED) and simple kriging (SK) as a function of the covariate value at a fixed prediction location."}
 df<-data.frame(x0, KED=v_zpred_KED, SK=v_zpred_SK)
@@ -11022,13 +11044,13 @@ f(z|\mu,\sigma ^{2})=
 with $\mu$ the mean and $\sigma^2$ the variance. With multiple independent observations, each of them coming from a normal distribution, the joint probability density is given by the product of the probability densities per observation. However, if the data are not independent we must account for the covariances, and the joint probability density can be computed with
 
 \begin{equation}
-f(\mathbf{z}|\symbfit{\mu} ,\symbfit{\theta})=
+f(\mathbf{z}|\pmb{\mu} ,\pmb{\theta})=
 (2\pi )^{-\frac{n}{2}}|\mathbf{C}|^{-\frac{1}{2}}
-\exp \left\{ -\frac{1}{2}(\mathbf{z}-\symbfit{\mu} )^{\mathrm{T}}\,\mathbf{C}^{-1}\,(\mathbf{z}-\symbfit{\mu} )\right\} \;,
+\exp \left\{ -\frac{1}{2}(\mathbf{z}-\pmb{\mu} )^{\mathrm{T}}\,\mathbf{C}^{-1}\,(\mathbf{z}-\pmb{\mu} )\right\} \;,
 (\#eq:densitymvnormal)
 \end{equation}
 
-where $\mathbf{z}$ is the vector with the $n$ sample data, $\symbfit{\mu}$ is the vector with means, $\symbfit{\theta}$ is the vector with parameters of the covariance function, and $\mathbf{C}$ is the $n \times n$ matrix with variances and covariances of the sample data. If the probability density of Equation \@ref(eq:densitymvnormal) is regarded as a function of $\symbfit{\mu}$ and $\symbfit{\theta}$ with the data $\mathbf{z}$ fixed, this equation defines the likelihood\index{Likelihood}. 
+where $\mathbf{z}$ is the vector with the $n$ sample data, $\pmb{\mu}$ is the vector with means, $\pmb{\theta}$ is the vector with parameters of the covariance function, and $\mathbf{C}$ is the $n \times n$ matrix with variances and covariances of the sample data. If the probability density of Equation \@ref(eq:densitymvnormal) is regarded as a function of $\pmb{\mu}$ and $\pmb{\theta}$ with the data $\mathbf{z}$ fixed, this equation defines the likelihood\index{Likelihood}. 
 
 Maximum likelihood estimates of the semivariogram can be obtained with function `likfit` of package **geoR** [@geoR]. First a geoR object must be made, specifying in which columns of the data frame the spatial coordinates and the study variable are.
 
@@ -11132,7 +11154,7 @@ The estimates of the residual semivariogram parameters obtained by the iterative
 Pre-multiplying both sides of the KED model (Equation \@ref(eq:KEDmodel2)) with $\mathbf{P}$ gives [@webster2007]
 
 \begin{equation}
-\mathbf{P}\mathbf{z}(\mathbf{s})=\mathbf{y}(\mathbf{s})=\mathbf{P}\mathbf{X}\symbfit{\beta} + \mathbf{P}\symbfit{\epsilon}(\mathbf{s})=\mathbf{P}\symbfit{\epsilon}(\mathbf{s}) \;.
+\mathbf{P}\mathbf{z}(\mathbf{s})=\mathbf{y}(\mathbf{s})=\mathbf{P}\mathbf{X}\pmb{\beta} + \mathbf{P}\pmb{\epsilon}(\mathbf{s})=\mathbf{P}\pmb{\epsilon}(\mathbf{s}) \;.
 \end{equation}
 
 In words, by pre-multiplying the variable $\mathbf{z}$ with matrix $\mathbf{P}$ a new variable $\mathbf{y}$ is obtained that has a constant mean. So the trend is filtered out, whatever the regression coefficients are. The semivariogram parameters of this new variable can be estimated by ML. The projection matrix $\mathbf{P}$ can be computed with
@@ -11144,7 +11166,7 @@ In words, by pre-multiplying the variable $\mathbf{z}$ with matrix $\mathbf{P}$ 
 with  $\mathbf{I}$ the $n \times n$ identity matrix (matrix with ones on the diagonal, zeroes in all off-diagonal elements). The natural logarithm of the residual likelihood can be computed with [@lar06]
 
 \begin{equation}
-\ell(\symbfit{\theta}|\mathbf{z})=\mathrm{constant}-0.5(\mathrm{ln}|\mathbf{C}|+|\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X}|+\mathbf{y}^{\mathbf{T}}\mathbf{C}^{-1}(\mathbf{I-\mathbf{Q}})\mathbf{z})) \;,
+\ell(\pmb{\theta}|\mathbf{z})=\mathrm{constant}-0.5(\mathrm{ln}|\mathbf{C}|+|\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X}|+\mathbf{y}^{\mathbf{T}}\mathbf{C}^{-1}(\mathbf{I-\mathbf{Q}})\mathbf{z})) \;,
 \end{equation}
 
 with $\mathbf{Q} = \mathbf{X}(\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X})^{-1}\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}$
@@ -11196,15 +11218,15 @@ rm(list=ls())
 
 This is the first chapter on model-based sampling\index{Model-based sampling}^[Spatial response surface sampling can also be considered as model-based sampling, especially when a model-based criterion is used, see Chapter \@ref(SpatialResponseSurface.]. In Chapters \@ref(SpatialCoverage) and \@ref(kmeans) a geometric criterion was minimised, i.e. a criterion defined in terms of distances, either in geographic space (Chapter \@ref(SpatialCoverage)), or in covariate space (Chapter \@ref(kmeans)). In model-based sampling the minimisation criterion is a function of the variance of the prediction errors.
 
-This first chapter on model-based sampling is about optimisation of the spacing of a regular grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Chapter \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
+This first chapter on model-based sampling is about optimisation of the spacing of a square grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Chapter \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
 
 ## Optimal grid spacing for ordinary kriging {#GridspacingOK}
 
-Suppose that we require the mean kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing\index{Tolerable grid spacing} one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the mean of the study variable is constant throughout the study area, but unknown. With the mean unknown, this implies that ordinary kriging is used for mapping.  Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.
+Suppose that we require the mean kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing\index{Tolerable grid spacing} one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the model mean of the study variable is constant throughout the study area, but unknown. With the model mean unknown, this implies that ordinary kriging is used for mapping.  Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.
 
 There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean kriging variance for a range of grid spacings, plot the mean kriging variances against the grid spacing, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean ordinary kriging variance.
 
-In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in the three woredas of Ethiopia. The legacy data used before to design a spatial infill sample (Chapter \@ref(SpatialCoverage)) are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package **gstat** [@peb04]. Note that the values for the partial sill, range and nugget in the `model` argument of the function `fit.variogram` are guesses from an eyeball examination of the sample semivariogram obtained with the function  `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). 
+In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in the three woredas of Ethiopia. The legacy data used before to design a spatial infill sample (Chapter \@ref(SpatialCoverage)) are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package **gstat** [@peb04]. Note that the values for the partial sill, range and nugget in the `model` argument of the function `fit.variogram` are guesses from an eyeball examination of the sample semivariogram obtained with the function  `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates (Table \@ref(tab::VariogramEstimatesEthiopia)).
 
 ```{r}
 library(gstat)
@@ -11224,7 +11246,7 @@ ggplot(data=vg) +
   scale_y_continuous(name= "Semivariance",limits=c(0,1.3))
 ```
 
-The semivariogram of SOM can also be estimated by maximum likelihood using function `likfit` of package **geoR** [@geoR].
+The semivariogram of SOM can also be estimated by maximum likelihood using function `likfit` of package **geoR** [@geoR], see Section \@ref(VariogramEstimation).
 
 ```{r}
 library(geoR)
@@ -11249,7 +11271,7 @@ knitr::kable(
 
 ## Controlling the mean or a quantile of the ordinary kriging variance
 
-To decide on the grid spacing we may require that the population mean of the kriging variance (MKV) not exceeds a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.
+To decide on the grid spacing we may require that the population mean of the kriging variance (MKV) not exceeds a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the spatial cumulative distribution function of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.
 
 As a first step a series of spacings of the square grid with observations are specified. Only spacings are considered which would result in expected sample sizes that are reasonable for kriging. With a spacing of 5 km the expected sample size is 434 points, with a spacing of 12 km these are 75 points. 
 
@@ -11290,8 +11312,8 @@ for (i in 1:length(spacing)) {
     nmax=100,
     debug.level=0)
   MKV_OK[i] <- mean(predictions$var1.var)
-  P50KV_OK[i] <- quantile(predictions$var1.var,probs=0.5)
-  P90KV_OK[i] <- quantile(predictions$var1.var,probs=0.9)
+  P50KV_OK[i] <- quantile(predictions$var1.var, probs=0.5)
+  P90KV_OK[i] <- quantile(predictions$var1.var, probs=0.9)
 }
 dfKV_OK <- data.frame(spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
 ```
@@ -11357,7 +11379,7 @@ for (i in 1:length(spacing)) {
 dfKV_OBK <- data.frame(spacing, MKV_OBK, P50KV_OBK, P90KV_OBK)
 ```
 
-Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50 and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure \@ref(fig:MOKVvsSpacingEthiopia)). This can be explained by the large nugget of the semivariogram (Table \@ref(tab:VariogramEstimatesEthiopia)). The side length of a prediction block (100 m) is much smaller than the range of the variogram (`r round(vgm_ML$phi,1)` km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, given a grid spacing the mean point-kriging variance is reduced by an amount about equal to this means semivariance, to yield the mean block-kriging variance for this spacing (Section \@ref(BlockKriging)). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
+Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50 and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure \@ref(fig:MOKVvsSpacingEthiopia)). This can be explained by the large nugget of the semivariogram (Table \@ref(tab:VariogramEstimatesEthiopia)). The side length of a prediction block (100 m) is much smaller than the range of the variogram (`r round(vgm_ML$phi,1)` km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, given a grid spacing the mean point-kriging variance is reduced by an amount about equal to this mean semivariance, to yield the mean block-kriging variance for this spacing (Section \@ref(BlockKriging)). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
 
 ```{r MOBKVvsSpacingEthiopia, echo=FALSE, fig.asp=0.7, fig.cap="Mean, median (P50) and 0.90 quantile (P90) of the ordinary block-kriging variance of predictions of the mean SOM of blocks of 100 m by 100 m, in three woredas of Ethiopia, as a function of the spacing of a square grid."}
 names(dfKV_OBK)[c(2,3,4)] <- c("Mean","P50","P90")
@@ -11372,7 +11394,7 @@ ggplot(df) +
 
 ## Optimal grid spacing for kriging with an external drift {#MBgridspacingKED}
 
-In the previous section I assumed a constant mean for the study variable. I now consider the case where covariates that are related to the study variable are available. A model is calibrated that is the sum of a linear combination of the covariates (spatial trend) and a spatially structured residual, see Equation \@ref(eq:KEDmodel2). Predictions at the nodes of a fine grid are obtained by kriging with an external drift (KED).
+In the previous section I assumed a constant model mean for the study variable. I now consider the case where covariates that are related to the study variable are available. A model is calibrated that is the sum of a linear combination of the covariates (spatial trend) and a spatially structured residual, see Equation \@ref(eq:KEDmodel2). Predictions at the nodes of a fine grid are obtained by kriging with an external drift (KED).
 
 The SOM data of the three woredas of Ethiopia are used to estimate the parameters (regression coefficients and residual semivariogram parameters) of the model by restricted maximum likelihood\index{Restricted maximum likelihood estimation} (REML), see Section \@ref(REML).
 
@@ -11386,7 +11408,7 @@ vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
 ```
 
 ```{r VariogramREMLEthiopia, echo=FALSE}
-tbl <- data.frame(Parameter=c("nugget","partial sill", "range"),ML=c(round(vgm_ML_gstat$psill,2),round(vgm_ML_gstat$range[2],1)),REML=c(round(vgm_REML$nugget,2),round(vgm_REML$sigmasq,2),round(vgm_REML$phi,1)))
+tbl <- data.frame(Parameter=c("nugget","partial sill", "range (km)"),ML=c(round(vgm_ML_gstat$psill,2),round(vgm_ML_gstat$range[2],1)),REML=c(round(vgm_REML$nugget,2),round(vgm_REML$sigmasq,2),round(vgm_REML$phi,1)))
 
 knitr::kable(
   tbl, caption = 'Maximum likelihood estimates of parameters of spherical semivariogram of SOM, and restricted maximum likelihood estimates of residual semivariogram of SOM in Ethiopia.',
@@ -11395,9 +11417,9 @@ knitr::kable(
   kable_classic()
 ```
 
-The total sill (partial sill + nugget) of the residual semivariogram equals `r as.character(round(tbl$REML[1]+tbl$REML[2], 2))`, which is considerably smaller than that of the ML semivariogram of SOM (Table \@ref(tab:VariogramREMLEthiopia)). A considerable part of the variance of SOM is explained by the covariates. Note the much smaller range of the residual semivariogram. So the spatial structure of SOM is largely captured by the covariates. The residuals of the mean, which is a linear combination of the covariates, do not show much spatial structure anymore.
+The total sill (partial sill + nugget) of the residual semivariogram equals `r as.character(round(tbl$REML[1]+tbl$REML[2], 2))`, which is considerably smaller than that of the ML semivariogram of SOM (Table \@ref(tab:VariogramREMLEthiopia)). A considerable part of the variance of SOM is explained by the covariates. Note the much smaller range of the residual semivariogram. So the spatial structure of SOM is largely captured by the covariates. The residuals of the model mean, which is a linear combination of the covariates, do not show much spatial structure anymore.
 
-The mean kriging variance as obtained with KED is used as the evaluation criterion. With KED the kriging variance is also a function of the values of the covariates at the sampling locations and prediction location (Section \@ref(IntroKED)). Compared to the procedure above for ordinary kriging, in the code chunk below a slightly different procedure is used. The square grid of a given spacing is randomly placed on the area (option `offset` in function `spsample` is not used), and this is repeated several times.
+The mean kriging variance as obtained with KED is used as the evaluation criterion. With KED the kriging variance is also a function of the values of the covariates at the sampling locations and prediction location (Section \@ref(IntroKED)). Compared with the procedure above for OK, in the code chunk below a slightly different procedure is used. The square grid of a given spacing is randomly placed on the area (option `offset` in function `spsample` is not used), and this is repeated several times.
 
 ```{r, eval=FALSE}
 r <- 10
@@ -11429,7 +11451,7 @@ dfKV_KED <- data.frame(spacing,MKV_KED)
 save(dfKV_KED,file="results/MKEDVarvsGridspacing_Ethiopia.RData")
 ```
 
-Figure \@ref(fig:MKEDVvsSpacingEthiopia) shows the mean kriging variances obtained with kriging with an external drift and with ordinary kriging, as a function of the grid spacing.
+Figure \@ref(fig:MKEDVvsSpacingEthiopia) shows the mean kriging variances obtained with KED and OK, as a function of the grid spacing.
 
 ```{r MKEDVvsSpacingEthiopia, echo=FALSE, fig.asp=0.7, fig.cap="Mean kriging variance of SOM predictions with KED and OK, in three woredas of Ethiopia, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown corresponding with ten randomly placed grids."}
 load(file="results/MKEDVarvsGridspacing_Ethiopia.RData")
@@ -11458,18 +11480,18 @@ The tolerable grid spacing for a mean kriging variance of 0.8, using KED, equals
 #### Exercises {-}
 
 3. Given a grid spacing the mean kriging variance varies among randomly selected grids, especially for large spacings. Explain why.   
-4. Write an **R** script to compute the tolerable grid spacing for kriging with an external drift of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate. Use the estimated parameters of an exponential semivariogram of the residuals, as shown  in Table \@ref(tab:TableVariogramsCRF4). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv1m values (available in file `data/CottonResearchFarm.RData`) to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centers of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, $\dots$, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of lnECE150 of 0.1605?
+4. Write an **R** script to compute the tolerable grid spacing for KED of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate (these covariate data are in `data/CottonResearchFarm.RData`). Use the estimated parameters of an exponential semivariogram of the residuals, as shown  in Table \@ref(tab:TableVariogramsCRF4). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv100cm values to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centers of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, $\dots$, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
 
 ## Bayesian approach {#BayesianGridSpacing}
 
 In practice we do not know the semivariogram. In the best case we have prior data that can be used to estimate the semivariogram. However, even in this case we are uncertain about the semivariogram type (spherical, exponential, etc.) and the semivariogram parameters. @Lark2017 showed how in a Bayesian approach\index{Bayesian approach!to grid spacing determination} we can account for uncertainty about the semivariogram parameters when we must decide on the grid spacing. In this approach a prior distribution of the semivariogram parameters is updated with the sample data to a posterior distribution [@Gelman2013]:
 
 \begin{equation}
-f(\symbfit{\theta}|\mathbf{z}) = \frac{f(\symbfit{\theta}) f(\mathbf{z}|\symbfit{\theta})} {f(\mathbf{z})}\;,
+f(\pmb{\theta}|\mathbf{z}) = \frac{f(\pmb{\theta}) f(\mathbf{z}|\pmb{\theta})} {f(\mathbf{z})}\;,
 (\#eq:BayesRule)
 \end{equation}
 
-with $f(\symbfit{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\symbfit{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\symbfit{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
+with $f(\pmb{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\pmb{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\pmb{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
 
 Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution  through Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling}, see Section \@ref(MBpredSamplingVarBayes). 
 
@@ -11621,11 +11643,11 @@ rm(list=ls())
 
 In Chapter \@ref(MBgridspacing) a model of the spatial variation was used to optimise the spacing of a regular  grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size.
 
-This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So we are searching for the optimal locations of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling locations through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by *k*-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). *k*-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centers (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. The kriging system also takes into account the separation between sampling points. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. This is an optimisation approach that mimics the gradual cooling of metal alloys, resulting in an optimum or near-optimum structure of the atoms in the alloy.
+This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by *k*-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). *k*-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centers (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. The kriging system also takes into account the separation between sampling points. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. This is an optimisation approach that mimics the gradual cooling of metal alloys, resulting in an optimum or near-optimum structure of the atoms in the alloy. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
 
 ## Spatial simulated annealing {#SSA}
 
-Inspired by the potentials of optimisation through simulated annealing [@Kirkpatrick1983], @vgr98 proposed to optimise the sampling locations by spatial simulated annealing (SSA), see also @vgr99 and @vgr00. This is an iterative, random search procedure, in which a sequence of samples is generated. A new sample (proposed sample) is obtained by slightly modifying the current sample. One sampling location of the current sample is randomly selected, and this location is shifted to a random location within the neighbourhood of the selected location.
+Inspired by the potentials of optimisation through simulated annealing [@Kirkpatrick1983], @vgr98 proposed to optimise the sampling pattern by spatial simulated annealing (SSA), see also @vgr99 and @vgr00. This is an iterative, random search procedure, in which a sequence of samples is generated. A new sample (proposed sample) is obtained by slightly modifying the current sample. One sampling location of the current sample is randomly selected, and this location is shifted to a random location within the neighbourhood of the selected location.
 
 The minimisation criterion is computed for the proposed sample and compared wth that of the current sample. If the criterion of the proposed sample is smaller, it is accepted. If the criterion is larger, the proposed sample is accepted with a probability equal to
 
@@ -11671,11 +11693,11 @@ plt2 <- ggplot(df) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-## Optimising the sample pattern for ordinary kriging {#SamplePatternOK}
+## Optimising the sampling pattern for ordinary kriging {#SamplePatternOK}
 
-In ordinary kriging we assume a constant mean. No covariates are available that are related to the study variable. Optimisation of the sampling locations for ordinary kriging is illustrated with the Cotton Research Farm in Uzbekistan, which was used before to illustrate spatial response surface sampling (Chapter \@ref(SpatialResponseSurface)). The spatial coordinates of 50 sampling locations are optimised for mapping of the electrical conductivity (ECe) of the soil by ordinary kriging. In this section the coordinates of the sampling points are optimised for ordinary kriging. In Section \@ref(SamplePatternKED) hereafter this is done for kriging with an external drift, and a map of electromagnetic induction (EM) is used to further optimise the coordinates of the sampling points. 
+In ordinary kriging we assume a constant model mean. No covariates are available that are related to the study variable. Optimisation of the sampling pattern for ordinary kriging is illustrated with the Cotton Research Farm in Uzbekistan, which was used before to illustrate spatial response surface sampling (Chapter \@ref(SpatialResponseSurface)). The spatial coordinates of 50 sampling locations are optimised for mapping of the electrical conductivity (ECe) of the soil by ordinary kriging. In this section the coordinates of the sampling points are optimised for ordinary kriging. In Section \@ref(SamplePatternKED) hereafter this is done for kriging with an external drift, and a map of electromagnetic induction (EM) is used to further optimise the coordinates of the sampling points. 
 
-Model-based optimisation of the sampling locations for ordinary kriging requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the years 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package, because this function requires the output of the function `variogram` as input, whereas the sample semivariogram is here computed in a different way^[The sample semivariogram is computed by first estimating sample semivariograms for each of the eight surveys separately, followed by computing weighted averages of semivariances and distances per lag, using the numbers of pairs as weights.]. The semivariogram parameters as estimated by `nls` are then used to define a semivariogram model of class `variogramModel` of package **gstat**, using function `vgm`. This is done because the function `optimMKV` requires a semivariogram model of this class, see hereafter. As already mentioned before in Chapter \@ref(MBgridspacing), in practice we often do not have legacy data from which we can estimate the semivariogram, and a best guess of the semivariogram then must be made.
+Model-based optimisation of the sampling pattern for ordinary kriging requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the years 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package, because this function requires the output of the function `variogram` as input, whereas the sample semivariogram is here computed in a different way^[The sample semivariogram is computed by first estimating sample semivariograms for each of the eight surveys separately, followed by computing weighted averages of semivariances and distances per lag, using the numbers of pairs as weights.]. The semivariogram parameters as estimated by `nls` are then used to define a semivariogram model of class `variogramModel` of package **gstat**, using function `vgm`. This is done because the function `optimMKV` requires a semivariogram model of this class, see hereafter. As already mentioned before in Chapter \@ref(MBgridspacing), in practice we often do not have legacy data from which we can estimate the semivariogram, and a best guess of the semivariogram then must be made.
 
 
 ```{r variogramlnECe, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram and fitted exponential model of natural logarithms of soil salinity (ECe) for the Cotton Research Farm in Uzbekistan."}
@@ -11753,7 +11775,7 @@ schedule <- scheduleSPSANN(
   x.min=0, y.min=0, cellsize=25)
 ```
 
-The **R** code for optimising the coordinates of the sampling points is as follows.
+The **R** code for optimising the sampling pattern is as follows.
 
 ```{r, eval=FALSE}
 set.seed(314)
@@ -11772,7 +11794,7 @@ save(mysample, trace, file="results/MBSample_OK_Uzbekistan.RData")
 
 The spatial pattern of the sample in Figure \@ref(fig:ModelBasedSampleOK) and the trace of the MKV in Figure \@ref(fig:TraceMOKV) suggest that we are close to the global optimum.
 
-```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sample optimised with the mean variance of ordinary kriging predictions of lnECe (Model-based), and spatial coverage sample (SCS) from the Cotton Research Farm in Uzbekistan."}
+```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sampling pattern optimised for the mean variance of ordinary kriging predictions of lnECe (Model-based sample), and spatial coverage sample (SCS) from the Cotton Research Farm in Uzbekistan."}
 library(spcosa)
 load(file="results/MBSample_OK_Uzbekistan.RData")
 
@@ -11784,11 +11806,11 @@ myspcsample <- spsample(myStrata) %>% as(.,"data.frame")
 
 names(mysample) <- names(myspcsample)
 mysamples <- rbind(mysample,myspcsample)
-mysamples$design <- rep(c("Model-based","SCS"))
+mysamples$design <- rep(c("Model-based sample","Spatial coverage sample"),each=50)
 
 ggplot(data=mysamples) +
   geom_raster(data=EM_CRF, mapping=aes(x=x1/1000, y=x2/1000), fill="grey") +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="black") +
+  geom_point(data=mysamples, mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="black") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
   facet_wrap(~ design) +
@@ -11815,7 +11837,7 @@ ggplot(trace) +
   scale_y_continuous(name="Mean kriging variance")
 ```
 
-For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r as.character(round(MKV,4))`, whereas for the model-based sample this MKV equals `r as.character(round(trace$obj[nrow(trace)],4))`. So a small gain in precision is achieved only by the model-based optimisation of the sampling locations compared to spatial coverage sampling. This result is in agreement with the results reported by @bru07c.
+For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r as.character(round(MKV,4))`, whereas for the model-based sample this MKV equals `r as.character(round(trace$obj[nrow(trace)],4))`. So a small gain in precision is achieved only by the model-based optimisation of the sampling pattern compared to spatial coverage sampling. This result is in agreement with the results reported by @bru07c.
 
 Instead of the mean of the ordinary kriging variance (MOKV), we may prefer to use some quantile of the frequency distribution of the ordinary kriging variance as a minimisation criterion. For instance, if we use the 0.90 quantile as criterion, we are searching for the sampling locations so that the 90th percentile (P90) of the ordinary kriging variance is minimal. This can be done with function `optimUSER` of package **spsann** [@Alessandro2016]. This function has an argument `fun` that can be used to specify the objective function\index{Objective function} to be minimised. In this case the objective function is as follows.
 
@@ -11850,23 +11872,23 @@ rslt <- optimUSER(
   schedule=schedule)
 ```
 
-Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Chapter \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sample pattern\index{Sample pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
+Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Chapter \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sampling pattern\index{Sampling pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
 
 #### Exercises {-}
 
-1. Write an **R** script to optimise the coordinates of sixteen points in a square for ordinary kriging. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the locations with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**).  
+1. Write an **R** script to optimise the spatial coordinates of sixteen points in a square for ordinary kriging. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the sampling pattern with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**).  
     + Check whether the optimisation has converged by plotting the trace of the optimisation criterion MKV.  
     + Based on the coordinates of the sampling points, do you think this is the global optimum, i.e. the sample with the smallest possible MKV?  
-2. Write an **R** script to optimise the coordinates of 50 points, using the P90 of the variance of ordinary kriging predictions of lnECe on the Cotton Research Farm as a minimisation criterion. Use the semivariogram parameters of Table  \@ref(tab:TableVariogramsCRF4). 
+2. Write an **R** script to optimise the sampling pattern of 50 points, using the P90 of the variance of ordinary kriging predictions of lnECe on the Cotton Research Farm as a minimisation criterion. Use the semivariogram parameters of Table  \@ref(tab:TableVariogramsCRF4). 
     + Compare the optimised sample with the sample optimised with the mean ordinary kriging variance (shown in Figure \@ref(fig:ModelBasedSampleOK)).  
 
-## Optimising the sample pattern for kriging with an external drift {#SamplePatternKED}
+## Optimising the sampling pattern for kriging with an external drift {#SamplePatternKED}
 
 If we have one or more covariates that are linearly related to the study variable, the study variable can be mapped by kriging with an external drift\index{Kriging!kriging with an external drift} (KED). A requirement is that we have maps of the covariate so that, once we have estimated the parameters of the model for KED from the data collected at the optimised sample, these covariate maps can be used to map the study variable.
 
-Optimisation of the sampling locations for KED requires as input the semivariogram of the residuals. Besides, we must decide on the covariates for the mean. Note that we do not need as input estimates of the regression coefficients associated with the covariates, just which combination of covariates we want to use for modelling the mean of the study variable, and as said before, the values of these covariates at the prediction locations.
+Optimisation of the sampling pattern for KED requires as input the semivariogram of the residuals. Besides, we must decide on the covariates for the model mean. Note that we do not need as input estimates of the regression coefficients associated with the covariates, just which combination of covariates we want to use for modelling the model mean of the study variable, and as said before, the values of these covariates at the prediction locations.
 
-Optimisation of the sampling locations for KED is illustrated with the Cotton Research Farm. The interpolated natural logarithm of the EM data is used as a covariate, see Figure \@ref(fig:EMdataUzbekistan). The data for fitting the model are in data file `clbdat`. The parameters of the residual semivariogram are estimated by REML, see Section \@ref(REML). 
+Optimisation of the sampling pattern for KED is illustrated with the Cotton Research Farm. The interpolated natural logarithm of the EM data is used as a covariate, see Figure \@ref(fig:EMdataUzbekistan). The data for fitting the model are in data file `clbdat`. The parameters of the residual semivariogram are estimated by REML, see Section \@ref(REML). 
 
 At several points multiple observations have been made; these data have exactly the same spatial coordinates. This leads to problems with REML estimation (covariance matrix not positive definite so that it cannot be inverted). To solve this problem I jittered the coordinates of the sampling points by a very small amount.
 
@@ -11896,7 +11918,7 @@ coefs <- data.frame(variable,nugget,psill,range)
 rownames(coefs)<-c()
 
 knitr::kable(
-  coefs, caption='Fitted parameters of exponential semivariogram for natural logarithm of ECe (estimated by MoM) and of residuals (estimated by REML).',
+  coefs, caption='Fitted parameters of exponential semivariogram for natural logarithm of ECe (estimated by method-of-moments) and of residuals (estimated by REML).',
   booktabs=TRUE,col.names=c("Variable","Nugget","Partial sill", "Distance parameter (m)")
 ) %>%
   kable_classic()
@@ -11921,13 +11943,12 @@ vgm_REML_gstat <- vgm(
   range=vgm_REML$phi)
 ```
 
-To optimise the locations for KED, using the mean KED variance as a minimisation criterion, a data frame with the covariates at the candidate sampling locations must be assigned to the argument `covars`. The argument `eqn` specifies the KED model as a formula.
+To optimise the sampling pattern for KED, using the mean KED variance as a minimisation criterion, a data frame with the covariates at the candidate sampling locations must be assigned to the argument `covars`. The argument `eqn` specifies the KED model as a formula.
 
 ```{r, eval=FALSE}
-covars <- EM_CRF
 set.seed(314)
 rslt <- optimMKV(
-  points=50, candi=candi, covars=covars,
+  points=50, candi=candi, covars=EM_CRF,
   vgm=vgm_REML_gstat, eqn=z~lnEM100cm,
   schedule=schedule,
   plotit=FALSE, track=FALSE)
@@ -11943,7 +11964,7 @@ save(mysample,trace,file="results/MBSample_KED_Uzbekistan.RData")
 
 Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample of 50 points. This clearly shows the irregular spatial pattern of the sampling points induced by the covariate. 
 
-```{r ModelBasedSampleKED, echo=FALSE, fig.cap="Optimised sampling locations for kriging with an external drift of lnECe at the Cotton Research Farm in Uzbekistan, using lnEM as a covariate."}
+```{r ModelBasedSampleKED, echo=FALSE, fig.cap="Optimised sampling pattern for kriging with an external drift of lnECe at the Cotton Research Farm in Uzbekistan, using lnEM as a covariate."}
 load(file="results/MBSample_KED_Uzbekistan.RData")
 
 covars <- EM_CRF
@@ -11957,9 +11978,9 @@ ggplot(data=covars) +
   coord_fixed()
 ```
 
-Comparing the population and sample histograms of the covariate clearly shows that locations with either small or large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sample pattern is a compromise between spreading in geographic space and feature space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the predictor of the mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.
+Comparing the population and sample histograms of the covariate clearly shows that locations with either small or large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sampling pattern is a compromise between spreading in geographic space and feature space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the estimator of the model mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.
 
-```{r histogramslnEM, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Sample and population histograms of lnEM, used as covariate in model-based optimisation of sampling locations for mapping with KED."}
+```{r histogramslnEM, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Sample and population histograms of lnEM, used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
 plt1 <- ggplot(data=mysample) +
   geom_histogram(mapping=aes(x=lnEM100cm), breaks=seq(from=2.75, to=5, by=0.25), fill="black", alpha=0.5, color="black") +
   ggtitle("Sample")+
@@ -11979,9 +12000,9 @@ Further, note that a sample with covariate values close to the minimum and maxim
 
 #### Exercises {-}
 
-3. Write an **R** script to optimise the coordinates of sixteen points in a square for kriging with an external drift. Use the $x$-coordinate as a covariate. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential residual semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the locations with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**)  
-    + What do you think of the spatial coverage of the optimised sample?  Compare the sample with the optimised sample for ordinary kriging, see exercise of Section \@ref(SamplePatternOK)   
-    + Repeat the optimisation using a residual semivariogram, with a nugget of 1.5 and a partial sill of 0.5. Note that the sill is again 2, as before  
+3. Write an **R** script to optimise the sampling pattern of sixteen points in a square for kriging with an external drift. Use the $x$-coordinate as a covariate. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential residual semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the sampling pattern with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**).  
+    + What do you think of the spatial coverage of the optimised sample?  Compare the sample with the optimised sample for ordinary kriging, see exercise of Section \@ref(SamplePatternOK).   
+    + Repeat the optimisation using a residual semivariogram, with a nugget of 1.5 and a partial sill of 0.5. Note that the sill is again 2, as before.  
     + Compare the optimised sample with the previous sample. What is the most striking difference? 
     + How will the optimised sample look like with a pure nugget semivariogram? Check your assumption by using such semivariogram in spatial simulated annealing. 
 
@@ -12091,7 +12112,7 @@ rslt <- optimMKV(
 save(rslt, file="results/MBInfillSample_KED_Ethiopia.RData")
 ```
 
-Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample for KED using as covariates elevation, NIR-reflectance, red-reflectance and land surface temperature. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with ordinary kriging because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with ordinary kriging, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated mean.
+Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample for KED using as covariates elevation, NIR-reflectance, red-reflectance and land surface temperature. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with ordinary kriging because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with ordinary kriging, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated model mean.
 
 ```{r ModelBasedInfillKED, echo=FALSE, fig.cap="Model-based infill sample for kriging with an external drift of SOM across three woredas of Ethiopia, plotted on a map of one of the covariates."}
 load("results/MBInfillSample_KED_Ethiopia.RData")
@@ -12162,7 +12183,7 @@ rm(list=ls())
 
 For model-based sampling as described in Chapters \@ref(MBgridspacing) and \@ref(MBSamplePattern) we must specify the (residual) semivariogram. In case we do not have a reasonable prior estimate from a similar study, we may decide to collect first data with the specific aim of estimating the semivariogram. This semivariogram is subsequently used to design a model-based sample for mapping. This chapter is about how to design a reconnaissance sample survey\index{Reconnaissance sample survey} for estimating the semivariogram.
 
-The first question is how many observations we need for this. @web92 gave as a rule of thumb that 150 to 225 points are needed to obtain a reliable semivariogram when estimated by the method-of-moments. @lar00b showed that with maximum likelihood (ML) estimation two-third to only half of the observations are needed to achieve equal precision of the estimated semivariogram parameters. Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described in this chapter, nested sampling and independent sampling of pairs of points. A following section is devoted to model-based optimisation of the sample pattern for semivariogram estimation. The final section is about how to design a single sample that can be used both for estimating the semivariogram and prediction (mapping).
+The first question is how many observations we need for this. @web92 gave as a rule of thumb that 150 to 225 points are needed to obtain a reliable semivariogram when estimated by the method-of-moments. @lar00b showed that with maximum likelihood (ML) estimation two-third to only half of the observations are needed to achieve equal precision of the estimated semivariogram parameters. Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described in this chapter, nested sampling and independent sampling of pairs of points. A following section is devoted to model-based optimisation of the sampling pattern for semivariogram estimation. The final section is about how to design a single sample that can be used both for estimating the semivariogram and prediction (mapping).
 
 ## Nested sampling
 
@@ -12525,13 +12546,13 @@ grid.arrange(plt1, plt2, plt3, nrow=2)
     + Estimate the variance-covariance matrix of the estimated semivariogram parameters by bootstrapping.  
     + Compare the variances of the estimated semivariogram parameters with the variances obtained with the larger separation distances. Which variance is changed most?  
 
-## Model-based optimisation of sample pattern for semivariogram estimation {#samplingforvariogram}
+## Model-based optimisation of sampling pattern for semivariogram estimation {#samplingforvariogram}
 
-There is rich literature on model-based optimisation of the sampling locations for semivariogram estimation. Several design criteria (minimisation criteria) have been proposed for optimising the sampling locations. Various authors have proposed a measure of the uncertainty about the semivariogram parameters as a minimisation criterion. This is because the kriging variance, which could be used as an optimisation criterion, is sensitive to errors in the estimated semivariogram. @lar02 proposed to use a measure of the uncertainty about the kriging variance as a minimisation criterion.
+There is rich literature on model-based optimisation of the sampling locations for semivariogram estimation. Several design criteria (minimisation criteria) have been proposed for optimising the sampling locations. Various authors have proposed a measure of the uncertainty about the semivariogram parameters as a minimisation criterion. This is because the kriging variance, which could be used as an optimisation criterion, is sensitive to errors in the estimated semivariogram. @lar02 therefore proposed to use a measure of the uncertainty about the kriging variance as a minimisation criterion, see Section \@ref(UncertainKrigingVariance) hereafter.
 
 ### Uncertainty about semivariogram parameters {#UncertainSemivariogramParameters}
 
-@mul99 and @bog99 proposed the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of semivariogram parameters, estimated by generalised least squares to fit the experimental method-of-moments semivariogram. For instance, if we have two semivariogram parameters, $\theta_1$ and $\theta_2$, the determinant of the $2\times2$ variance-covariance matrix equals $var(\theta_1) var(\theta_2) - (covar(\theta_1,\theta_2))^2$. So, if the two estimated parameters are correlated, the determinant of the matrix is smaller than if they are uncorrelated and the covariance term is 0. The determinant is a measure of our *joint* uncertainty about the semivariogram parameters.
+@mul99 and @bog99 proposed the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of semivariogram parameters, estimated by generalised least squares to fit the method-of-moments sample semivariogram. For instance, if we have two semivariogram parameters, $\theta_1$ and $\theta_2$, the determinant of the $2\times2$ variance-covariance matrix equals $var(\theta_1) var(\theta_2) - (covar(\theta_1,\theta_2))^2$. So, if the two estimated parameters are correlated, the determinant of the matrix is smaller than if they are uncorrelated and the covariance term is 0. The determinant is a measure of our *joint* uncertainty about the semivariogram parameters.
 
 @zhu05 proposed as a minimisation criterion the logarithm of the  determinant of the inverse Fisher information matrix\index{Fisher information matrix} in maximum likelihood (ML) estimation\index{Maximum likelihood estimation} of the semivariogram, hereafter shortly denoted by logdet. The Fisher information about a semivariogram parameter is a function of the likelihood of the semivariogram parameter; the likelihood of a semivariogram parameter is the probability of the data as a function of the semivariogram parameter. The logarithm of this likelihood can be plotted against values of the parameter. The flatter the log-likelihood surface\index{Log-likelihood surface}, the less information is in the data about the parameter. The flatness of the surface can be measured by the first derivative of the log-likelihood to the semivariogram parameter. Strong negative or positive derivative values indicate a steep surface. The Fisher information for a model parameter is defined as the expectation of the *square* of the first derivative of the log-likelihood to that semivariogram parameter, see @Ly2017 for a nice tutorial on this subject. The more information, the less uncertain we are about the parameter, which explains why the inverse of the Fisher information can be used as a measure of uncertainty. The inverse Fisher information matrix contains the variances and covariances of the estimated semivariogram parameters.
 
@@ -12596,7 +12617,7 @@ for (i in 1:length(thetas)){
 logdet0 <- determinant(invI, logarithm=TRUE)$modulus
 ```
 
-Note the large variance of the distance parameter, equal to `r as.character(round(invI[2,2],0))`. The standard error of the ratio of spatial dependence parameter $\xi$ equals `r signif(sqrt(invI[1,1]),2)` (the square root of the value in the first column and first row of the inverse Fisher information matrix), and for the distance parameter $\phi$ it is  `r signif(sqrt(invI[2,2]),3)` m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters as quantified by the logarithm of the determinant of the matrix equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation.
+Note the large variance of the distance parameter, equal to `r as.character(round(invI[2,2],0))`. The standard error of the ratio of spatial dependence parameter $\xi$ equals `r signif(sqrt(invI[1,1]),2)` (the square root of the value in the first column and first row of the inverse Fisher information matrix), and for the distance parameter $\phi$ it is  `r signif(sqrt(invI[2,2]),3)` m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters, as quantified by the logarithm of the determinant of the matrix equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
 
 Function `optimUSER` of package **spsann** can be used to search for the locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). This package cannot deal with the `r nrow(grdHunterValley)` candidate grid nodes of Hunter Valley, these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. Note that the argument `cellsize` is also set to this number. The objective function `logdet` is defined in **R** script [ObjectiveFunctions4MBSamplingVariogram.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R)^[https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R]. Argument `points` specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample by  function `optimUSER`. Argument `model` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. `Argument` perturbation specifies how much the variogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
 
@@ -12634,7 +12655,7 @@ logdetopt <- tail(rslt$objective$energy$obj,1)
 
 Figure \@ref(fig:MBVariogram) shows the optimised sample of 100 points.  The logdet of the optimised sample equals `r round(logdetopt,3)` which is `r round(100*logdetopt/logdet0,0)`\% of the value of the simple random sample used above to illustrate the computations. The optimised sample shows strong spatial clustering. Connecting neighbouring points of the sample by lines results in  a sort of mycelium.
 
-### Uncertainty about the kriging variance
+### Uncertainty about the kriging variance {#UncertainKrigingVariance}
 
 @lar02 proposed as a minimisation criterion the estimation variance of the kriging variance due to uncertainty in the ML estimates of the semivariogram parameters (hereafter denoted by VKV). This variance is approximated by a first order Taylor series\index{First order Taylor series}, requiring the partial derivatives of the kriging variance with respect to the semivariogram parameters:
 
@@ -12643,7 +12664,7 @@ VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \f
 (\#eq:varkrigingvar)
 \end{equation}
 
-with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\symbfit{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
+with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\pmb{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
 
 The first step is to select a sample for the second sampling round in which data are collected for mapping. For this a spatial coverage sample is selected, using function `stratify` of package **spcosa**, see Chapter \@ref(SpatialCoverage). The observations on this sample are used for prediction by kriging. The population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred square grid of 101 points, the evaluation sample. (In the code chunk below `n=100` is used in function `spsample`, but actually 101 locations are selected.) 
 
@@ -12779,7 +12800,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 
-Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\symbfit{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\symbfit{\theta}}$, leads to a locally optimal design at $\hat{\symbfit{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
+Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\pmb{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\pmb{\theta}}$, leads to a locally optimal design at $\hat{\pmb{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
 
 Both methods for sample optimisation rely on, amongst others, the assumption that the mean and variance are constant throughout the area. Under this assumption it is no problem that the sampling units are spatially clustered. So we assume that the semivariogram estimated from the data collected in a small portion of the study area is representative for the whole study area. If we do not feel comfortable with this assumption, spreading out the sampling units by the sampling methods described in the next two sections can be a good option.   
 
@@ -12788,7 +12809,7 @@ Both methods for sample optimisation rely on, amongst others, the assumption tha
 3. Write an **R** script to design a model-based sample of 100 points for the Hunter Valley, to estimate the semivariogram for a study variable. Use logdet as a minimisation criterion. Optimisation with this criterion requires a prior estimate of the semivariogram.  Use for this an exponential semivariogram with a distance parameter of 200 m and a ratio of spatial dependence of 0.5. Compare the sample with the optimised sample in Figure \@ref(fig:MBVariogram), which was obtained with a spatial dependence ratio of 0.8. 
 4. Repeat this for MVKV as a minimisation criterion. 
 
-## Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction {#SamplingEstimationandPrediction}
+## Model-based optimisation of pattern of a single sample for both semivariogram estimation and prediction {#SamplingEstimationandPrediction}
 
 In practice, often a reconnaissance survey for semivariogram estimation is not feasible, and a single sample must be designed that is suitable both for estimating the model parameters and prediction with the estimated model parameters. Another reason is that in a reconnaissance survey we seldom can afford a sample size large enough to obtain reliable estimates of the model parameters. @Papritz2011 found that for a sample size of 192 points the estimated variance components with balanced and unbalanced nested designs were highly uncertain. For this reason it is attractive to use also the sampling points designed for spatial prediction (mapping) for estimating the semivariogram. From this it follows that designing two samples, one for estimating the semivariogram and one for spatial prediction, is suboptimal. Designing one sample that can be used both for estimation of the model parameters and for prediction potentially is more efficient.
 
@@ -13048,10 +13069,10 @@ D <- spDists(x=as(mysupsample_EAC,"matrix"), y=as(myscsample_EAC,"matrix"))
 DminEAC <- apply(D,MARGIN=1, FUN=min)
 
 mysupsamples <- rbind(mysupsample_AKV,mysupsample_EAC)
-mysupsamples$criterion <- rep(c("AKV","EAC"), each=10)
+mysupsamples$criterion <- rep(c("MAKV","MEAC"), each=10)
 
 myscsamples <- rbind(myscsample_AKV,myscsample_EAC)
-myscsamples$criterion <-  rep(c("AKV","EAC"), each=90)
+myscsamples$criterion <-  rep(c("MAKV","MEAC"), each=90)
 
 plot(myStrata) +
   geom_point(data=myscsamples, mapping=aes(x=x, y=y), shape=1, size=1.5 ) +
@@ -13062,11 +13083,11 @@ plot(myStrata) +
 
 Figure \@ref(fig:FigMBEK) shows that with MAKV as a minimisation criterion there is one point that is very close to a spatial coverage sample point (distance $<2$ m.). A histogram of the shortest distance to the spatial coverage sample is shown in Figure \@ref(fig:HistogramShortestDistance). With MEAC two points are at very short distance of the spatial coverage sample ($< 3$ m). The average distance between neighbouring spatial coverage sampling points equals `r round(mDSCmin,0)`. 
 
-```{r HistogramShortestDistance, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Shortest distance of supplemental sample, optimised with mean augmented kriging variance (AKV) and mean estimation adjusted criterion (EAC), to spatial coverage sample."}
+```{r HistogramShortestDistance, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Shortest distance of supplemental sample, optimised with mean augmented kriging variance (MAKV) and mean estimation adjusted criterion (MEAC), to spatial coverage sample."}
 
-df <- data.frame(AKV=DminAV, EAC=DminEAC)
+df <- data.frame(MAKV=DminAV, MEAC=DminEAC)
 
-dflf <- df %>% pivot_longer(cols=c("AKV","EAC"))
+dflf <- df %>% pivot_longer(cols=c("MAKV","MEAC"))
 ggplot(data=dflf) +
   geom_histogram(aes(x=value), fill="black", alpha=0.5, colour="black", binwidth=25) +
   xlab("Minimum distance") +
@@ -13338,11 +13359,28 @@ In principle all probability sampling designs described in Part I are appropriat
 
 As an illustration two soil maps of the three northern counties of Xuancheng City (Anhui province, China), both depicting soil organic matter (SOM) concentration (g/kg) in the topsoil, are evaluated. In Section \@ref(Ospats) the data of three samples, including the stratified random sample, were merged to estimate the parameters of a spatial model for the natural log of SOM. Here only the data of the two non-random samples are used to map SOM. The stratified simple random sample is used for validation.
 
-Two methods are used in mapping, kriging with an external drift\index{Kriging!kriging with an external drift} (KED) and a machine learning method, random forest\index{Random forest} (RF). For mapping with RF seven covariates are used: planar curvature, profile curvature, slope, temperature, precipitation, topographic wetness index and elevation. For mapping with KED only the two most important covariates in the RF model are used: precipitation and elevation. The two maps are evaluated by statistical validation with a stratified simple random sample of 62 units (points). The strata are the eight units of a geological map (Figure \@ref(fig:validationsample)).
+Two methods are used in mapping, kriging with an external drift\index{Kriging!kriging with an external drift} (KED) and a machine learning method, random forest\index{Random forest} (RF). For mapping with RF seven covariates are used: planar curvature, profile curvature, slope, temperature, precipitation, topographic wetness index and elevation. For mapping with KED only the two most important covariates in the RF model are used: precipitation and elevation. 
 
-```{r validationsample, echo=FALSE, fig.cap="Stratified simple random sample for validation of the map of soil organic map concentrations in topsoil of Xuancheng, China."}
+The two maps that are to be validated are shown in Figure \@ref(fig:validatedmaps). Note that non-soil areas (built-up, water, roads) are not predicted. The maps are quite similar. The most striking difference between the maps is the highest and lowest predictions by KED that are not seen in the RF map.
+
+```{r validatedmaps, echo=FALSE, fig.cap="Map of soil organic matter concentration (g/kg) in the topsoil of Xuancheng, obtained by kriging with an external drift (KED) and random forest (RF)."}
 load(file="data/Xuancheng_RFKED.RData")
 
+df <- grid[,c("x1","x2","KED","RF")]
+df_lf <- df %>% pivot_longer(cols=c("KED","RF"))
+
+ggplot(df_lf) +
+  geom_raster(mapping = aes(x = x1/1000, y = x2/1000, fill=value)) +
+  scale_fill_viridis_c(name="SOM", limits=c(5,90)) + 
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
+  facet_wrap(~ name, ncol=2, nrow=1) +
+  coord_fixed()
+```
+
+The two maps are evaluated by statistical validation with a stratified simple random sample of 62 units (points). The strata are the eight units of a geological map (Figure \@ref(fig:validationsample)).
+
+```{r validationsample, echo=FALSE, fig.cap="Stratified simple random sample for validation of the two maps of soil organic map concentrations in topsoil of Xuancheng, China."}
 library(raster)
 
 rmap <- raster("data/Xuancheng_geo.tif")
@@ -13372,21 +13410,6 @@ ggplot(data=grd) +
 coord_fixed()
 ```
 
-The two maps that are to be validated are shown in Figure \@ref(fig:validatedmaps). Note that non-soil areas (built-up, water, roads) are not predicted. The maps are quite similar. The most striking difference between the maps is the highest and lowest predictions by KED that are not seen in the RF map.
-
-```{r validatedmaps, echo=FALSE, fig.cap="Map of soil organic matter concentration (g/kg) in the topsoil of Xuancheng, obtained by kriging with an external drift (KED) and random forest (RF)."}
-
-df <- grid[,c("x1","x2","KED","RF")]
-df_lf <- df %>% pivot_longer(cols=c("KED","RF"))
-
-ggplot(df_lf) +
-  geom_raster(mapping = aes(x = x1/1000, y = x2/1000, fill=value)) +
-  scale_fill_viridis_c(name="SOM", limits=c(5,90)) + 
-  scale_x_continuous(name = "Easting (km)") +
-  scale_y_continuous(name = "Northing (km)") +
-  facet_wrap(~ name, ncol=1, nrow=2) +
-  coord_fixed()
-```
 
 ### Estimation of the population Mean Error and Mean Squared Error
 
@@ -13820,7 +13843,7 @@ grid.arrange(plt1, plt2, nrow=2)
 
 Again, if we plot the sample means of pairs of simple random samples and pairs of systematic random samples against each other, we see that the two averages are not correlated (Figure \@ref(fig:ScatterplotsSISY)). Note that the variation of the averages of the systematic random samples is considerably smaller than that of the simple random samples. The sampled population shows spatial structure, and by spreading the sampling units out over the spatial population, the precision of the estimated population mean is increased, see Chapter \@ref(SY).
 
-```{r ScatterplotsSISY, echo=FALSE, out.width='100%', fig.cap="Scatterplot of averages of 1000 pairs of simple random samples of ten points, and of averages of 1000 pairs of systematic random samples of ten points on average."}
+```{r ScatterplotsSISY, echo=FALSE, out.width='100%', fig.cap="Scatter plot of averages of 1000 pairs of simple random samples of ten points (SI), and of averages of 1000 pairs of systematic random samples of ten points on average (SY)."}
 #make scatter plot of means estimated from repeated SI samples
 mz <- matrix(nrow=nsim,ncol=2)
 
@@ -13919,7 +13942,7 @@ preds$zpred[which.max(preds$zpred)] <- maxsimz
 preds$zpred[1] <- minsimz
 ```
 
-```{r preferentialsample, echo=FALSE, out.width='100%', fig.cap="Preferential sample (size of open dots is proportional to value of study variable) and ordinary kriging predictions."}
+```{r preferentialsample, echo=FALSE, out.width='100%', fig.cap="Preferential sample (size of open dots is proportional to value of study variable) from a simulated field (z), and map of ordinary kriging predictions (zpred)."}
 
 df <- data.frame(s1=sim$s1, s2=sim$s2, z=sim$z, zpred=preds$zpred)
 d <- df %>% pivot_longer(., cols=c("z","zpred"))
@@ -14439,18 +14462,19 @@ rm(list=ls())
 
 ## Stratified random sampling {-}
 
-1. Strata EA and PA can be merged: their means are about equal.  
-2. See STSI.R.  
-3. The proof is as follows: $\sum_N\pi_i=\sum_H \sum_{N_h}\pi_{hi}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n$.  
-4. See [STSIcumrootf.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R).  
-5. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum.  
-6. On average the sampling variance of the estimator of the mean with $40 \times 1$ is smaller than with $20 \times 2$ points because the geographical spreading will be somewhat better (less spatial clustering).  
-7. With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: $\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{sh} = \bar{z}_{\mathcal{S}}$ with $\bar{z}_{\mathcal{S}h}$ the average of the sample from stratum $h$ and $\bar{z}_{s}$ the average of all sampling points.  
-8. See [STSIgeostrata.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIgeostrata.R).  
+1. See [STSI1.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSI1.R)    
+2. Strata EA and PA can be merged: their means are about equal.  
+3. See [STSI2.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSI2.R).      
+4. The proof is as follows: $\sum_N \pi_k=\sum_H \sum_{N_h}\pi_{hk}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n$.  
+5. See [STSIcumrootf.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R).  
+6. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum.  
+7. On average the sampling variance of the estimator of the mean with $40 \times 1$ is smaller than with $20 \times 2$ points because the geographical spreading will be somewhat better (less spatial clustering).  
+8. With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: $\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{sh} = \bar{z}_{\mathcal{S}}$ with $\bar{z}_{\mathcal{S}h}$ the average of the sample from stratum $h$ and $\bar{z}_{s}$ the average of all sampling points.  
+9. See [STSIgeostrata.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIgeostrata.R).  
   + Collapsing the geostrata on the basis of the measurements of the study variable is not a proper way, as it will lead to a biased estimator of the sampling variance of the estimator of the mean. The estimated stratum variances $\widehat{S}^2(z)$ will be small, and so the estimated sampling variance will underestimate the true sampling variance.  
   + I propose to group neighbouring geostrata, i.e. geostrata that are close to each other.  
   + The sampling variance is slightly overestimated because we assume that the two (or three) points within a collapsed stratum are selected by simple random sampling, whereas they are selected by stratified random sampling (a collapsed stratum consists of two or three geostrata), and so there is less spatial clustering compared to simple random sampling.  
-9. See STSIgeostrata_composite.R.  
+10. See [STSIgeostrata_composite.R.](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIgeostrata_composite.R).  
   + No, with bulking within strata the sampling variance cannot be estimated, because then we cannot estimate the sampling variances of the estimated stratum means, which are needed for estimating the sampling variance of the estimator of the population mean.  
   + If all aliquots are analyzed separately the estimated population mean is more precise (variance of the estimator of the mean is smaller) because the contribution of the measurement error to the total variance of the estimator of the mean is smaller.  
   + This does not work because with geostrata of unequal area the mean of a composite sample is a biased estimator of the population mean.  All aliquots bulked into a composite get equal weight, but they should get different weights because they do not represent equal fractions of the population.   
@@ -14498,17 +14522,19 @@ Division of both variance components by $M^2$ yields the variance estimator of t
 
 ## Balanced and well-spread sampling {-}
 
-1. Spatial clustering may lead to a less precise estimate of the population mean. This will happen when the residuals of the regression model are spatially correlated (show spatial structure). This will occur when the spatial variation of the study variable is also determined by covariates or factors that are not used in balancing the sample.  If the residuals are not spatially correlated (white noise), spatial clustering does no harm.  
-2. One advantage is that unequal inclusion probabilities can be used in the LPM design. If the sampling units have unequal size (as in the poppy survey of Kandahar) or if a covariate is available that is linearly related to the study variable (as in the aboveground biomass survey of Eastern Amazonia), sampling efficiency can be increased by sampling with (inclusion) probabilities proportional to size. The only option for random sampling from geostrata is then to select the unit(s) *within geostrata* by pps sampling.     
+1. See [Balanced.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/Balanced.R).   
+2. Spatial clustering may lead to a less precise estimate of the population mean. This will happen when the residuals of the regression model are spatially correlated (show spatial structure). This will occur when the spatial variation of the study variable is also determined by covariates or factors that are not used in balancing the sample.  If the residuals are not spatially correlated (white noise), spatial clustering does no harm.  
+3. One advantage is that unequal inclusion probabilities can be used in the LPM design. If the sampling units have unequal size (as in the poppy survey of Kandahar) or if a covariate is available that is linearly related to the study variable (as in the aboveground biomass survey of Eastern Amazonia), sampling efficiency can be increased by sampling with (inclusion) probabilities proportional to size. The only option for random sampling from geostrata is then to select the unit(s) *within geostrata* by pps sampling.     
 
 ## Ratio and regression estimator {-}
 
-1. See [RegressionEstimator.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator.R). In reality we do not have a population fit of the regression coefficients, but these coefficients must be estimated from a sample. The estimated coefficients vary among the samples, which explains that the experimental variance, i.e. the variance of the 10,000 regression estimates obtained by estimating the coefficients from the sample (Sample in Figure \@ref(fig:RegressionEstimatorsAmazonia)) is larger than the variance as computed with the population fit of the regression coefficients (Exhaust in Figure \@ref(fig:RegressionEstimatorsAmazonia)).  
+1. See [RegressionEstimator.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator.R). The approximate standard error estimator that uses the $g$-weights has a larger mean.   
+2. See [VarianceRegressionEstimator.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/VarianceRegressionEstimator.R). In reality we do not have a population fit of the regression coefficients, but these coefficients must be estimated from a sample. The estimated coefficients vary among the samples, which explains that the experimental variance, i.e. the variance of the 10,000 regression estimates obtained by estimating the coefficients from the sample (Sample in Figure \@ref(fig:RegressionEstimatorsAmazonia)) is larger than the variance as computed with the population fit of the regression coefficients (Exhaust in Figure \@ref(fig:RegressionEstimatorsAmazonia)).  
 
 The difference between the variance obtained with the population fit and the experimental variance (variance of regression estimator with sample fit of coefficients), as a proportion of the experimental variance, decreases with the sample size. The same holds for the difference between the approximated variance and the experimental variance. Both findings can be explained by the smaller contribution of the variance of the estimated regression coefficients to the variance of the regression estimator with the large sample size. The approximated variance does not account for the uncertainty about the regression coefficients, so that for all three sample sixes this approximated variance is about equal to the variance of the regression estimator as computed with the population fit of the regression coefficients.
 
 ```{r RegressionEstimatorsAmazonia, echo=FALSE, fig.asp=0.5, fig.cap="Variance of regression estimator of mean AGB with population fit of regression coefficients (Exhaust), with sample fit of regression coefficients (Sample), and approximated variance of regression estimator (Approx)"}
-load(file="results/RegressionEstimator.RData")
+load(file="results/VarRegressionEstimator.RData")
 names(df) <- c("n", "Exhaust", "Sample", "Approx")
 
 library(tidyverse)
@@ -14521,7 +14547,7 @@ ggplot(df_lf) +
   scale_x_continuous(name="Sample size") +
   scale_y_continuous(name="Variance")
 ```
-2. See [RatioEstimator.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RatioEstimator.R). The population fit of the slope coefficient of the homoscedastic model differs from the ratio of the population total of poppy area and population total of agricultural area. For the heteroscedastic model these are equal.   
+3. See [RatioEstimator.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RatioEstimator.R). The population fit of the slope coefficient of the homoscedastic model differs from the ratio of the population total of poppy area and population total of agricultural area. For the heteroscedastic model these are equal.   
 
 ## Two-phase random sampling {-}
 
@@ -14568,7 +14594,7 @@ For a prior proportion $p^*$ of 0.5 the standard deviation $\sqrt{p^*(1-p^*)}$ i
 ## Spatial coverage sampling {-}  
 
 1. The optimal spatial coverage sample (optimal in terms of MSSD) consists of the four points in the center of the four subsquares of equal size.  
-2. If we are also interested in the accuracy of the estimated plot mean, the sampling units should be selected randomly from the subsquares (strata). Preferably at least two points should then be selected from the strata, see Section \@ref(geostrata).   
+2. If we are also interested in the accuracy of the estimated plot mean, the sampling units can best be selected by probability sampling, for instance by simple random sampling, from the subsquares (strata). Preferably at least two points should then be selected from the strata, see Section \@ref(geostrata).   
 3. See [SpatialCoverageCircularPlot.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SpatialCoverageCircularPlot.R). 
 
 ```{r SCScircularplot, echo=FALSE, fig.cap="Spatial coverage samples of five and six points in a circular plot used as sampling unit."}
@@ -14615,10 +14641,11 @@ When using only two covariates (cti and ndvi), in a two-dimensional scatter diag
 
 ## Conditioned Latin hypercube sampling {-}  
 
-1. See [cLHS.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R).
+1. See [cLHS.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R). Most units are selected in the part of the diagram with the highest density of pixels. Pixels with a large cti value and low elevation and pixels with high elevation and small cti value are (nearly) absent in the sample. In the population not many pixels are present with these combinations of covariate values.        
+2. See [cLHS_Square.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS_Square.R).
   +  Spatial coverage is improved by using the spatial coordinates as covariates, but it is not optimal in terms of mean squared shortest distance (MSSD).   
   +  It may happen that not all marginal strata of $s1$ and $s2$ are sampled. Even when all these marginal strata are sampled, this does not guarantee a perfect spatial coverage.  
-  +  There are two unsampled marginal strata, and two marginal strata with two sampling locations. So the sum of the absolute values of the marginal stratum sample sizes minus 1 equals four. The minimised value (4.28) is slightly larger due to the contribution of O3 to the criterion.   
+  +  With `set.seed(314)`, and default values for the arguments of function `clhs` there are two unsampled marginal strata, and two marginal strata with two sampling locations. So the sum of the absolute values of the marginal stratum sample sizes minus 1 equals four. The minimised value (4.28) is slightly larger due to the contribution of O3 to the criterion.   
 
 ## Model-based optimisation of the grid spacing {-}
 
@@ -14650,7 +14677,7 @@ ggplot(data=df_lf) +
 ```
 
 3. This variation can be explained by the random sample size (for a given spacing the number of points of a randomly selected grid inside the study area is not fixed but varies), and partly because the covariate values at the grid points vary, so that also the variance of the estimator of the mean differs among grid samples.   
-4. See [MBGridspacing_MKEDV.Rmd](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_MKEDV.Rmd). The tolerable grid spacing for a mean kriging variance is 82 m.
+4. See [MBGridspacing_MKEDV.Rmd](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_MKEDV.Rmd). The tolerable grid spacing for a mean kriging variance of 0.165 is 82 m.
 
 ## Model-based optimisation of sampling pattern {-}
 
@@ -14674,7 +14701,7 @@ ggplot(data = grid) +
 
 2. See [MBSample_QOKV.Rmd](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleQOKV.Rmd). 
 
-```{r MBsampleP90OKVCRF, echo=FALSE, fig.cap="Optimized sample pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECE as a minimisation criterion."}
+```{r MBsampleP90OKVCRF, echo=FALSE, fig.cap="Optimized sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECE as a minimisation criterion."}
 load(file="data/CottonResearchFarm.RData")
 load(file="results/MBSample_OK_P90_Uzbekistan.RData")
 ggplot(data=EM_CRF) +
@@ -14685,14 +14712,14 @@ ggplot(data=EM_CRF) +
   coord_fixed() 
 ```
 
-Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sample pattern. Compared with the optimised sample pattern using the *mean* ordinary kriging variance as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with, for instance, a spatial coverage sample, near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
+Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sampling pattern. Compared with the optimised sampling pattern using the *mean* ordinary kriging variance as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with, for instance, a spatial coverage sample, near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
 
-3. See [MBSampleSquare_KED.Rmd](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleSquare_KED.Rmd). Figure \@ref(fig:EffectNuggetOptimalSamplePattern) shows the optimised sample patterns with the three semivariograms.  
+3. See [MBSampleSquare_KED.Rmd](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleSquare_KED.Rmd). Figure \@ref(fig:EffectNuggetOptimalSamplePattern) shows the optimised sampling patterns with the three semivariograms.  
   + With zero nugget and a (partial) sill of 2 the sampling points are well spread throughout the area.       
   + With a nugget of 1.5 and a partial sill of 0.5 the sampling points are pushed toward the left and right side of the square. With this residual semivariogram the contribution of the variance of the predictor of the mean (as a proportion) to the total kriging variance is larger than with the previous semivariogram. By shifting the sampling points towards the left and right side of the square this contribution becomes smaller. At the same time the variance of the interpolation error increases as the spatial coverage becomes worse. The optimised sample is the right balance of these two variance components.  
   + With a pure nugget semivariogram all sampling points are at the left and right side of the square. This is because with a pure nugget semivariogram the variance of the interpolation error is independent of the locations (the variance equals the nugget variance everywhere), while the variance of the predictor of the mean is minimal for this sample.  
 
-```{r EffectNuggetOptimalSamplePattern, echo=FALSE, out.width='100%', fig.cap="Effect of size of nugget on optimised coordinates of sixteen points for kriging with an external drift."}
+```{r EffectNuggetOptimalSamplePattern, echo=FALSE, out.width='100%', fig.cap="Effect of size of nugget (no nugget, large nugget, pure nugget) on optimised sampling pattern of sixteen points for kriging with an external drift."}
 s1 <- s2 <- 1:20 - 0.5
 grid <- expand.grid(s1,s2)
 names(grid) <- c("s1","s2")
@@ -14705,7 +14732,7 @@ load(file="results/MBSampleSquare_KED_PureNugget_16pnts.RData")
 sample_purenug<-res$points
 
 mysamples <- rbind(sample_nonug,sample_largenug,sample_purenug)
-mysamples$model <- rep(c("no","large","pure"), each=16)
+mysamples$model <- factor(rep(c("no","large","pure"), each=16),levels=c("no","large","pure"), ordered=TRUE)
 
 ggplot(data=mysamples) +
   geom_tile(data=grid, mapping = aes(x = s1, y = s2, fill = s1)) +
@@ -14723,9 +14750,9 @@ ggplot(data=mysamples) +
 
 1. See [NestedSampling_v1.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/NestedSampling_v1.R).  
 2. See [SI_PointPairs.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SI_PointPairs.R). With the seed I used (314) the variance of the estimator of the range parameter is much smaller compared to that obtained with the larger separation distances.  
-3. See [MBSample_SSA_logdet.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSampleLogdetHV) shows the optimised sample pattern.
+3. See [MBSample_SSA_logdet.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSampleLogdetHV) shows the optimised sampling pattern.
 
-```{r MBSampleLogdetHV, echo=FALSE, fig.cap="Model-based sample for estimating the semivariogram, using logdet as a minimisation criterion. The prior semivariogram used in optimising the sample pattern is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
+```{r MBSampleLogdetHV, echo=FALSE, fig.cap="Model-based sample for estimating the semivariogram, using logdet as a minimisation criterion. The prior semivariogram used in optimising the sampling pattern is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
 load(file="data/HunterValley.RData")
 load(file="results/MBSample_logdet_phi200nug05.RData")
 ggplot(data=grdHunterValley) +
@@ -14736,9 +14763,9 @@ ggplot(data=grdHunterValley) +
   coord_fixed() 
 ```
 
-4. See [MBSample_SSA_varkrigvar.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_varkrigvar.R). Figure \@ref(fig:MBSampleVarkrigvarHV) shows the optimised sample pattern.
+4. See [MBSample_SSA_varkrigvar.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_varkrigvar.R). Figure \@ref(fig:MBSampleVarkrigvarHV) shows the optimised sampling pattern.
 
-```{r MBSampleVarkrigvarHV, echo=FALSE, fig.cap="Model-based sample for estimating the semivariogram, using the variance of the kriging variance (VKV) as a minimisation criterion. The prior semivariogram used in optimising the sample pattern is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
+```{r MBSampleVarkrigvarHV, echo=FALSE, fig.cap="Model-based sample for estimating the semivariogram, using the variance of the kriging variance (VKV) as a minimisation criterion. The prior semivariogram used in optimising the sampling pattern is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
 load(file="data/HunterValley.RData")
 load(file="results/MBSample_varkrigvar_phi200nug05.RData")
 ggplot(data=grdHunterValley) +

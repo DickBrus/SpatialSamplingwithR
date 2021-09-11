@@ -2,7 +2,7 @@
 
 For model-based sampling as described in Chapters \@ref(MBgridspacing) and \@ref(MBSamplePattern) we must specify the (residual) semivariogram. In case we do not have a reasonable prior estimate from a similar study, we may decide to collect first data with the specific aim of estimating the semivariogram. This semivariogram is subsequently used to design a model-based sample for mapping. This chapter is about how to design a reconnaissance sample survey\index{Reconnaissance sample survey} for estimating the semivariogram.
 
-The first question is how many observations we need for this. @web92 gave as a rule of thumb that 150 to 225 points are needed to obtain a reliable semivariogram when estimated by the method-of-moments. @lar00b showed that with maximum likelihood (ML) estimation two-third to only half of the observations are needed to achieve equal precision of the estimated semivariogram parameters. Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described in this chapter, nested sampling and independent sampling of pairs of points. A following section is devoted to model-based optimisation of the sample pattern for semivariogram estimation. The final section is about how to design a single sample that can be used both for estimating the semivariogram and prediction (mapping).
+The first question is how many observations we need for this. @web92 gave as a rule of thumb that 150 to 225 points are needed to obtain a reliable semivariogram when estimated by the method-of-moments. @lar00b showed that with maximum likelihood (ML) estimation two-third to only half of the observations are needed to achieve equal precision of the estimated semivariogram parameters. Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described in this chapter, nested sampling and independent sampling of pairs of points. A following section is devoted to model-based optimisation of the sampling pattern for semivariogram estimation. The final section is about how to design a single sample that can be used both for estimating the semivariogram and prediction (mapping).
 
 ## Nested sampling
 
@@ -365,13 +365,13 @@ grid.arrange(plt1, plt2, plt3, nrow=2)
     + Estimate the variance-covariance matrix of the estimated semivariogram parameters by bootstrapping.  
     + Compare the variances of the estimated semivariogram parameters with the variances obtained with the larger separation distances. Which variance is changed most?  
 
-## Model-based optimisation of sample pattern for semivariogram estimation {#samplingforvariogram}
+## Model-based optimisation of sampling pattern for semivariogram estimation {#samplingforvariogram}
 
-There is rich literature on model-based optimisation of the sampling locations for semivariogram estimation. Several design criteria (minimisation criteria) have been proposed for optimising the sampling locations. Various authors have proposed a measure of the uncertainty about the semivariogram parameters as a minimisation criterion. This is because the kriging variance, which could be used as an optimisation criterion, is sensitive to errors in the estimated semivariogram. @lar02 proposed to use a measure of the uncertainty about the kriging variance as a minimisation criterion.
+There is rich literature on model-based optimisation of the sampling locations for semivariogram estimation. Several design criteria (minimisation criteria) have been proposed for optimising the sampling locations. Various authors have proposed a measure of the uncertainty about the semivariogram parameters as a minimisation criterion. This is because the kriging variance, which could be used as an optimisation criterion, is sensitive to errors in the estimated semivariogram. @lar02 therefore proposed to use a measure of the uncertainty about the kriging variance as a minimisation criterion, see Section \@ref(UncertainKrigingVariance) hereafter.
 
 ### Uncertainty about semivariogram parameters {#UncertainSemivariogramParameters}
 
-@mul99 and @bog99 proposed the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of semivariogram parameters, estimated by generalised least squares to fit the experimental method-of-moments semivariogram. For instance, if we have two semivariogram parameters, $\theta_1$ and $\theta_2$, the determinant of the $2\times2$ variance-covariance matrix equals $var(\theta_1) var(\theta_2) - (covar(\theta_1,\theta_2))^2$. So, if the two estimated parameters are correlated, the determinant of the matrix is smaller than if they are uncorrelated and the covariance term is 0. The determinant is a measure of our *joint* uncertainty about the semivariogram parameters.
+@mul99 and @bog99 proposed the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of semivariogram parameters, estimated by generalised least squares to fit the method-of-moments sample semivariogram. For instance, if we have two semivariogram parameters, $\theta_1$ and $\theta_2$, the determinant of the $2\times2$ variance-covariance matrix equals $var(\theta_1) var(\theta_2) - (covar(\theta_1,\theta_2))^2$. So, if the two estimated parameters are correlated, the determinant of the matrix is smaller than if they are uncorrelated and the covariance term is 0. The determinant is a measure of our *joint* uncertainty about the semivariogram parameters.
 
 @zhu05 proposed as a minimisation criterion the logarithm of the  determinant of the inverse Fisher information matrix\index{Fisher information matrix} in maximum likelihood (ML) estimation\index{Maximum likelihood estimation} of the semivariogram, hereafter shortly denoted by logdet. The Fisher information about a semivariogram parameter is a function of the likelihood of the semivariogram parameter; the likelihood of a semivariogram parameter is the probability of the data as a function of the semivariogram parameter. The logarithm of this likelihood can be plotted against values of the parameter. The flatter the log-likelihood surface\index{Log-likelihood surface}, the less information is in the data about the parameter. The flatness of the surface can be measured by the first derivative of the log-likelihood to the semivariogram parameter. Strong negative or positive derivative values indicate a steep surface. The Fisher information for a model parameter is defined as the expectation of the *square* of the first derivative of the log-likelihood to that semivariogram parameter, see @Ly2017 for a nice tutorial on this subject. The more information, the less uncertain we are about the parameter, which explains why the inverse of the Fisher information can be used as a measure of uncertainty. The inverse Fisher information matrix contains the variances and covariances of the estimated semivariogram parameters.
 
@@ -436,7 +436,7 @@ for (i in 1:length(thetas)){
 logdet0 <- determinant(invI, logarithm=TRUE)$modulus
 ```
 
-Note the large variance of the distance parameter, equal to `r as.character(round(invI[2,2],0))`. The standard error of the ratio of spatial dependence parameter $\xi$ equals `r signif(sqrt(invI[1,1]),2)` (the square root of the value in the first column and first row of the inverse Fisher information matrix), and for the distance parameter $\phi$ it is  `r signif(sqrt(invI[2,2]),3)` m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters as quantified by the logarithm of the determinant of the matrix equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation.
+Note the large variance of the distance parameter, equal to `r as.character(round(invI[2,2],0))`. The standard error of the ratio of spatial dependence parameter $\xi$ equals `r signif(sqrt(invI[1,1]),2)` (the square root of the value in the first column and first row of the inverse Fisher information matrix), and for the distance parameter $\phi$ it is  `r signif(sqrt(invI[2,2]),3)` m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters, as quantified by the logarithm of the determinant of the matrix equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
 
 Function `optimUSER` of package **spsann** can be used to search for the locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). This package cannot deal with the `r nrow(grdHunterValley)` candidate grid nodes of Hunter Valley, these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. Note that the argument `cellsize` is also set to this number. The objective function `logdet` is defined in **R** script [ObjectiveFunctions4MBSamplingVariogram.R](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R)^[https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R]. Argument `points` specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample by  function `optimUSER`. Argument `model` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. `Argument` perturbation specifies how much the variogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
 
@@ -474,7 +474,7 @@ logdetopt <- tail(rslt$objective$energy$obj,1)
 
 Figure \@ref(fig:MBVariogram) shows the optimised sample of 100 points.  The logdet of the optimised sample equals `r round(logdetopt,3)` which is `r round(100*logdetopt/logdet0,0)`\% of the value of the simple random sample used above to illustrate the computations. The optimised sample shows strong spatial clustering. Connecting neighbouring points of the sample by lines results in  a sort of mycelium.
 
-### Uncertainty about the kriging variance
+### Uncertainty about the kriging variance {#UncertainKrigingVariance}
 
 @lar02 proposed as a minimisation criterion the estimation variance of the kriging variance due to uncertainty in the ML estimates of the semivariogram parameters (hereafter denoted by VKV). This variance is approximated by a first order Taylor series\index{First order Taylor series}, requiring the partial derivatives of the kriging variance with respect to the semivariogram parameters:
 
@@ -483,7 +483,7 @@ VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \f
 (\#eq:varkrigingvar)
 \end{equation}
 
-with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\symbfit{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
+with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\pmb{\theta})$) (Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
 
 The first step is to select a sample for the second sampling round in which data are collected for mapping. For this a spatial coverage sample is selected, using function `stratify` of package **spcosa**, see Chapter \@ref(SpatialCoverage). The observations on this sample are used for prediction by kriging. The population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred square grid of 101 points, the evaluation sample. (In the code chunk below `n=100` is used in function `spsample`, but actually 101 locations are selected.) 
 
@@ -619,7 +619,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 
-Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\symbfit{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\symbfit{\theta}}$, leads to a locally optimal design at $\hat{\symbfit{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
+Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\pmb{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\pmb{\theta}}$, leads to a locally optimal design at $\hat{\pmb{\theta}}$. For that reason @bog99 and @zhu05 proposed a Bayesian approach in which a multivariate prior distribution for the semivariogram parameters is postulated, and the expected value over this distribution of the criterion is minimised. @lar02 computed the average of the estimation variance of the kriging variance over a number of semivariograms.
 
 Both methods for sample optimisation rely on, amongst others, the assumption that the mean and variance are constant throughout the area. Under this assumption it is no problem that the sampling units are spatially clustered. So we assume that the semivariogram estimated from the data collected in a small portion of the study area is representative for the whole study area. If we do not feel comfortable with this assumption, spreading out the sampling units by the sampling methods described in the next two sections can be a good option.   
 
@@ -628,7 +628,7 @@ Both methods for sample optimisation rely on, amongst others, the assumption tha
 3. Write an **R** script to design a model-based sample of 100 points for the Hunter Valley, to estimate the semivariogram for a study variable. Use logdet as a minimisation criterion. Optimisation with this criterion requires a prior estimate of the semivariogram.  Use for this an exponential semivariogram with a distance parameter of 200 m and a ratio of spatial dependence of 0.5. Compare the sample with the optimised sample in Figure \@ref(fig:MBVariogram), which was obtained with a spatial dependence ratio of 0.8. 
 4. Repeat this for MVKV as a minimisation criterion. 
 
-## Model-based optimisation of a single sample pattern for both semivariogram estimation and prediction {#SamplingEstimationandPrediction}
+## Model-based optimisation of pattern of a single sample for both semivariogram estimation and prediction {#SamplingEstimationandPrediction}
 
 In practice, often a reconnaissance survey for semivariogram estimation is not feasible, and a single sample must be designed that is suitable both for estimating the model parameters and prediction with the estimated model parameters. Another reason is that in a reconnaissance survey we seldom can afford a sample size large enough to obtain reliable estimates of the model parameters. @Papritz2011 found that for a sample size of 192 points the estimated variance components with balanced and unbalanced nested designs were highly uncertain. For this reason it is attractive to use also the sampling points designed for spatial prediction (mapping) for estimating the semivariogram. From this it follows that designing two samples, one for estimating the semivariogram and one for spatial prediction, is suboptimal. Designing one sample that can be used both for estimation of the model parameters and for prediction potentially is more efficient.
 
@@ -888,10 +888,10 @@ D <- spDists(x=as(mysupsample_EAC,"matrix"), y=as(myscsample_EAC,"matrix"))
 DminEAC <- apply(D,MARGIN=1, FUN=min)
 
 mysupsamples <- rbind(mysupsample_AKV,mysupsample_EAC)
-mysupsamples$criterion <- rep(c("AKV","EAC"), each=10)
+mysupsamples$criterion <- rep(c("MAKV","MEAC"), each=10)
 
 myscsamples <- rbind(myscsample_AKV,myscsample_EAC)
-myscsamples$criterion <-  rep(c("AKV","EAC"), each=90)
+myscsamples$criterion <-  rep(c("MAKV","MEAC"), each=90)
 
 plot(myStrata) +
   geom_point(data=myscsamples, mapping=aes(x=x, y=y), shape=1, size=1.5 ) +
@@ -902,11 +902,11 @@ plot(myStrata) +
 
 Figure \@ref(fig:FigMBEK) shows that with MAKV as a minimisation criterion there is one point that is very close to a spatial coverage sample point (distance $<2$ m.). A histogram of the shortest distance to the spatial coverage sample is shown in Figure \@ref(fig:HistogramShortestDistance). With MEAC two points are at very short distance of the spatial coverage sample ($< 3$ m). The average distance between neighbouring spatial coverage sampling points equals `r round(mDSCmin,0)`. 
 
-```{r HistogramShortestDistance, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Shortest distance of supplemental sample, optimised with mean augmented kriging variance (AKV) and mean estimation adjusted criterion (EAC), to spatial coverage sample."}
+```{r HistogramShortestDistance, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Shortest distance of supplemental sample, optimised with mean augmented kriging variance (MAKV) and mean estimation adjusted criterion (MEAC), to spatial coverage sample."}
 
-df <- data.frame(AKV=DminAV, EAC=DminEAC)
+df <- data.frame(MAKV=DminAV, MEAC=DminEAC)
 
-dflf <- df %>% pivot_longer(cols=c("AKV","EAC"))
+dflf <- df %>% pivot_longer(cols=c("MAKV","MEAC"))
 ggplot(data=dflf) +
   geom_histogram(aes(x=value), fill="black", alpha=0.5, colour="black", binwidth=25) +
   xlab("Minimum distance") +

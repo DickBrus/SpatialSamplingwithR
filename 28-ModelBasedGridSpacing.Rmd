@@ -2,15 +2,15 @@
 
 This is the first chapter on model-based sampling\index{Model-based sampling}^[Spatial response surface sampling can also be considered as model-based sampling, especially when a model-based criterion is used, see Chapter \@ref(SpatialResponseSurface.]. In Chapters \@ref(SpatialCoverage) and \@ref(kmeans) a geometric criterion was minimised, i.e. a criterion defined in terms of distances, either in geographic space (Chapter \@ref(SpatialCoverage)), or in covariate space (Chapter \@ref(kmeans)). In model-based sampling the minimisation criterion is a function of the variance of the prediction errors.
 
-This first chapter on model-based sampling is about optimisation of the spacing of a regular grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Chapter \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
+This first chapter on model-based sampling is about optimisation of the spacing of a square grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Chapter \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
 
 ## Optimal grid spacing for ordinary kriging {#GridspacingOK}
 
-Suppose that we require the mean kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing\index{Tolerable grid spacing} one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the mean of the study variable is constant throughout the study area, but unknown. With the mean unknown, this implies that ordinary kriging is used for mapping.  Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.
+Suppose that we require the mean kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing\index{Tolerable grid spacing} one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the model mean of the study variable is constant throughout the study area, but unknown. With the model mean unknown, this implies that ordinary kriging is used for mapping.  Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.
 
 There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean kriging variance for a range of grid spacings, plot the mean kriging variances against the grid spacing, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean ordinary kriging variance.
 
-In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in the three woredas of Ethiopia. The legacy data used before to design a spatial infill sample (Chapter \@ref(SpatialCoverage)) are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package **gstat** [@peb04]. Note that the values for the partial sill, range and nugget in the `model` argument of the function `fit.variogram` are guesses from an eyeball examination of the sample semivariogram obtained with the function  `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). 
+In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in the three woredas of Ethiopia. The legacy data used before to design a spatial infill sample (Chapter \@ref(SpatialCoverage)) are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package **gstat** [@peb04]. Note that the values for the partial sill, range and nugget in the `model` argument of the function `fit.variogram` are guesses from an eyeball examination of the sample semivariogram obtained with the function  `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates (Table \@ref(tab:VariogramEstimatesEthiopia)).
 
 ```{r}
 library(gstat)
@@ -30,7 +30,7 @@ ggplot(data=vg) +
   scale_y_continuous(name= "Semivariance",limits=c(0,1.3))
 ```
 
-The semivariogram of SOM can also be estimated by maximum likelihood using function `likfit` of package **geoR** [@geoR].
+The semivariogram of SOM can also be estimated by maximum likelihood using function `likfit` of package **geoR** [@geoR], see Section \@ref(VariogramEstimation).
 
 ```{r}
 library(geoR)
@@ -55,7 +55,7 @@ knitr::kable(
 
 ## Controlling the mean or a quantile of the ordinary kriging variance
 
-To decide on the grid spacing we may require that the population mean of the kriging variance (MKV) not exceeds a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.
+To decide on the grid spacing we may require that the population mean of the kriging variance (MKV) not exceeds a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the spatial cumulative distribution function of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.
 
 As a first step a series of spacings of the square grid with observations are specified. Only spacings are considered which would result in expected sample sizes that are reasonable for kriging. With a spacing of 5 km the expected sample size is 434 points, with a spacing of 12 km these are 75 points. 
 
@@ -96,8 +96,8 @@ for (i in 1:length(spacing)) {
     nmax=100,
     debug.level=0)
   MKV_OK[i] <- mean(predictions$var1.var)
-  P50KV_OK[i] <- quantile(predictions$var1.var,probs=0.5)
-  P90KV_OK[i] <- quantile(predictions$var1.var,probs=0.9)
+  P50KV_OK[i] <- quantile(predictions$var1.var, probs=0.5)
+  P90KV_OK[i] <- quantile(predictions$var1.var, probs=0.9)
 }
 dfKV_OK <- data.frame(spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
 ```
@@ -163,7 +163,7 @@ for (i in 1:length(spacing)) {
 dfKV_OBK <- data.frame(spacing, MKV_OBK, P50KV_OBK, P90KV_OBK)
 ```
 
-Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50 and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure \@ref(fig:MOKVvsSpacingEthiopia)). This can be explained by the large nugget of the semivariogram (Table \@ref(tab:VariogramEstimatesEthiopia)). The side length of a prediction block (100 m) is much smaller than the range of the variogram (`r round(vgm_ML$phi,1)` km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, given a grid spacing the mean point-kriging variance is reduced by an amount about equal to this means semivariance, to yield the mean block-kriging variance for this spacing (Section \@ref(BlockKriging)). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
+Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50 and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure \@ref(fig:MOKVvsSpacingEthiopia)). This can be explained by the large nugget of the semivariogram (Table \@ref(tab:VariogramEstimatesEthiopia)). The side length of a prediction block (100 m) is much smaller than the range of the variogram (`r round(vgm_ML$phi,1)` km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, given a grid spacing the mean point-kriging variance is reduced by an amount about equal to this mean semivariance, to yield the mean block-kriging variance for this spacing (Section \@ref(BlockKriging)). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Equation \@ref(eq:meansemivariance)).
 
 ```{r MOBKVvsSpacingEthiopia, echo=FALSE, fig.asp=0.7, fig.cap="Mean, median (P50) and 0.90 quantile (P90) of the ordinary block-kriging variance of predictions of the mean SOM of blocks of 100 m by 100 m, in three woredas of Ethiopia, as a function of the spacing of a square grid."}
 names(dfKV_OBK)[c(2,3,4)] <- c("Mean","P50","P90")
@@ -178,7 +178,7 @@ ggplot(df) +
 
 ## Optimal grid spacing for kriging with an external drift {#MBgridspacingKED}
 
-In the previous section I assumed a constant mean for the study variable. I now consider the case where covariates that are related to the study variable are available. A model is calibrated that is the sum of a linear combination of the covariates (spatial trend) and a spatially structured residual, see Equation \@ref(eq:KEDmodel2). Predictions at the nodes of a fine grid are obtained by kriging with an external drift (KED).
+In the previous section I assumed a constant model mean for the study variable. I now consider the case where covariates that are related to the study variable are available. A model is calibrated that is the sum of a linear combination of the covariates (spatial trend) and a spatially structured residual, see Equation \@ref(eq:KEDmodel2). Predictions at the nodes of a fine grid are obtained by kriging with an external drift (KED).
 
 The SOM data of the three woredas of Ethiopia are used to estimate the parameters (regression coefficients and residual semivariogram parameters) of the model by restricted maximum likelihood\index{Restricted maximum likelihood estimation} (REML), see Section \@ref(REML).
 
@@ -192,7 +192,7 @@ vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
 ```
 
 ```{r VariogramREMLEthiopia, echo=FALSE}
-tbl <- data.frame(Parameter=c("nugget","partial sill", "range"),ML=c(round(vgm_ML_gstat$psill,2),round(vgm_ML_gstat$range[2],1)),REML=c(round(vgm_REML$nugget,2),round(vgm_REML$sigmasq,2),round(vgm_REML$phi,1)))
+tbl <- data.frame(Parameter=c("nugget","partial sill", "range (km)"),ML=c(round(vgm_ML_gstat$psill,2),round(vgm_ML_gstat$range[2],1)),REML=c(round(vgm_REML$nugget,2),round(vgm_REML$sigmasq,2),round(vgm_REML$phi,1)))
 
 knitr::kable(
   tbl, caption = 'Maximum likelihood estimates of parameters of spherical semivariogram of SOM, and restricted maximum likelihood estimates of residual semivariogram of SOM in Ethiopia.',
@@ -201,9 +201,9 @@ knitr::kable(
   kable_classic()
 ```
 
-The total sill (partial sill + nugget) of the residual semivariogram equals `r as.character(round(tbl$REML[1]+tbl$REML[2], 2))`, which is considerably smaller than that of the ML semivariogram of SOM (Table \@ref(tab:VariogramREMLEthiopia)). A considerable part of the variance of SOM is explained by the covariates. Note the much smaller range of the residual semivariogram. So the spatial structure of SOM is largely captured by the covariates. The residuals of the mean, which is a linear combination of the covariates, do not show much spatial structure anymore.
+The total sill (partial sill + nugget) of the residual semivariogram equals `r as.character(round(tbl$REML[1]+tbl$REML[2], 2))`, which is considerably smaller than that of the ML semivariogram of SOM (Table \@ref(tab:VariogramREMLEthiopia)). A considerable part of the variance of SOM is explained by the covariates. Note the much smaller range of the residual semivariogram. So the spatial structure of SOM is largely captured by the covariates. The residuals of the model mean, which is a linear combination of the covariates, do not show much spatial structure anymore.
 
-The mean kriging variance as obtained with KED is used as the evaluation criterion. With KED the kriging variance is also a function of the values of the covariates at the sampling locations and prediction location (Section \@ref(IntroKED)). Compared to the procedure above for ordinary kriging, in the code chunk below a slightly different procedure is used. The square grid of a given spacing is randomly placed on the area (option `offset` in function `spsample` is not used), and this is repeated several times.
+The mean kriging variance as obtained with KED is used as the evaluation criterion. With KED the kriging variance is also a function of the values of the covariates at the sampling locations and prediction location (Section \@ref(IntroKED)). Compared with the procedure above for OK, in the code chunk below a slightly different procedure is used. The square grid of a given spacing is randomly placed on the area (option `offset` in function `spsample` is not used), and this is repeated several times.
 
 ```{r, eval=FALSE}
 r <- 10
@@ -235,7 +235,7 @@ dfKV_KED <- data.frame(spacing,MKV_KED)
 save(dfKV_KED,file="results/MKEDVarvsGridspacing_Ethiopia.RData")
 ```
 
-Figure \@ref(fig:MKEDVvsSpacingEthiopia) shows the mean kriging variances obtained with kriging with an external drift and with ordinary kriging, as a function of the grid spacing.
+Figure \@ref(fig:MKEDVvsSpacingEthiopia) shows the mean kriging variances obtained with KED and OK, as a function of the grid spacing.
 
 ```{r MKEDVvsSpacingEthiopia, echo=FALSE, fig.asp=0.7, fig.cap="Mean kriging variance of SOM predictions with KED and OK, in three woredas of Ethiopia, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown corresponding with ten randomly placed grids."}
 load(file="results/MKEDVarvsGridspacing_Ethiopia.RData")
@@ -264,18 +264,18 @@ The tolerable grid spacing for a mean kriging variance of 0.8, using KED, equals
 #### Exercises {-}
 
 3. Given a grid spacing the mean kriging variance varies among randomly selected grids, especially for large spacings. Explain why.   
-4. Write an **R** script to compute the tolerable grid spacing for kriging with an external drift of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate. Use the estimated parameters of an exponential semivariogram of the residuals, as shown  in Table \@ref(tab:TableVariogramsCRF4). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv1m values (available in file `data/CottonResearchFarm.RData`) to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centers of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, $\dots$, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of lnECE150 of 0.1605?
+4. Write an **R** script to compute the tolerable grid spacing for KED of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate (these covariate data are in `data/CottonResearchFarm.RData`). Use the estimated parameters of an exponential semivariogram of the residuals, as shown  in Table \@ref(tab:TableVariogramsCRF4). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv100cm values to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centers of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, $\dots$, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
 
 ## Bayesian approach {#BayesianGridSpacing}
 
 In practice we do not know the semivariogram. In the best case we have prior data that can be used to estimate the semivariogram. However, even in this case we are uncertain about the semivariogram type (spherical, exponential, etc.) and the semivariogram parameters. @Lark2017 showed how in a Bayesian approach\index{Bayesian approach!to grid spacing determination} we can account for uncertainty about the semivariogram parameters when we must decide on the grid spacing. In this approach a prior distribution of the semivariogram parameters is updated with the sample data to a posterior distribution [@Gelman2013]:
 
 \begin{equation}
-f(\symbfit{\theta}|\mathbf{z}) = \frac{f(\symbfit{\theta}) f(\mathbf{z}|\symbfit{\theta})} {f(\mathbf{z})}\;,
+f(\pmb{\theta}|\mathbf{z}) = \frac{f(\pmb{\theta}) f(\mathbf{z}|\pmb{\theta})} {f(\mathbf{z})}\;,
 (\#eq:BayesRule)
 \end{equation}
 
-with $f(\symbfit{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\symbfit{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\symbfit{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
+with $f(\pmb{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the probability density function of the semivariogram parameters given the sample data, $f(\pmb{\theta})$ our prior belief\index{Prior belief} in the parameters specified by a probability density function, $f(\mathbf{z}|\pmb{\theta})$ the likelihood\index{Likelihood} of the data, and $f(\mathbf{z})$ the probability density function of the data. This probability density function $f(\mathbf{z})$ is hard to obtain.
 
 Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution  through Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling}, see Section \@ref(MBpredSamplingVarBayes). 
 

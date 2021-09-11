@@ -188,7 +188,7 @@ se_mz <- sqrt(var(mz_cl)/n)
 
 The estimated mean equals `r round(mz,3)` and the estimated standard error equals `r round(se_mz,3)`. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
 
-The same estimates are obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. Argument `weights` specifies the  weights of the sampled clusters equal to $M/(M_j\; d)$ (Equation \@ref(eq:EstTotalCl)).
+The same estimates are obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. Argument `weights` specifies the  weights of the sampled clusters equal to $M/(M_j\; n)$ (Equation \@ref(eq:EstTotalCl)).
 
 ```{r}
 library(survey)
@@ -288,7 +288,7 @@ sampledclusters <- clusters[sampleind==1]
 mysample <- grdVoorst[grdVoorst$cluster %in% sampledclusters,]
 ```
 
-The population mean can be estimated with function `svymean` of package **survey** [@Lumley2020]. Estimation of the sampling variance in pps sampling of clusters without replacement is difficult^[The problem is the computation of the joint inclusion probabilities of pairs of points.]. A simple solution is to treat the cluster sample as a ppswr sample, and to estimate the variance with Equation \@ref(eq:VarEstMeanCl). With small sampling fractions this variance approximation is fine: the overestimation of the variance is negligible. For larger sampling fractions various alternative variance approximations are developed, see @Berger2004 for details. One of the methods is Brewer's method\index{Brewer's variance estimator}, which is implemented in function `svydesign`.
+The population mean can be estimated by the $\pi$ estimator writing a few lines of R code yourself, or by using function `svymean` of package **survey** [@Lumley2020] as shown hereafter. Estimation of the sampling variance in pps sampling of clusters without replacement is difficult^[The problem is the computation of the joint inclusion probabilities of pairs of points.]. A simple solution is to treat the cluster sample as a ppswr sample, and to estimate the variance with Equation \@ref(eq:VarEstMeanCl). With small sampling fractions this variance approximation is fine: the overestimation of the variance is negligible. For larger sampling fractions various alternative variance approximations are developed, see @Berger2004 for details. One of the methods is Brewer's method\index{Brewer's variance estimator}, which is implemented in function `svydesign`.
 
 ```{r}
 mysample$pi <- n*M_cl[mysample$cluster]/M

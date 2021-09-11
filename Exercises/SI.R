@@ -17,28 +17,24 @@ print(upper95 <- mz + margin95)
 
 #check whether 95% confidence interval covers the true mean
 print(mz_pop <- mean(grdVoorst$z))
-print(ind <- (mz_pop >lower95 & mz_pop < upper95))
+print(ind <- (mz_pop > lower95 & mz_pop < upper95))
 
 #compute 90% confidence interval
 margin90 <- qt(0.95, n-1, lower.tail=TRUE)*se_mz
 print(lower90 <- mz - margin90)
 print(upper90 <- mz + margin90)
 
-#Estimate total mass of soil organic matter in topsoil (0 - 20 cm) of Voorst
+#Estimate total mass of soil organic matter in topsoil (0 - 30 cm) of Voorst
 
-#Compute the mass (kg) of 1 ha of soil until a depth of 0.2 m;
-#Use a bulk density of soil of 1.4 g/cm3
-soilmass_1ha <-  1.4 * 0.2 * 10^7
+#Compute total volume of soil in layer 0 - 30 cm, in m3. 1 pixel of Voorst is 25 m * 25 m
+vol_soil <- N * 25^2  * 0.3
 
-#Compute total area in ha of Voorst; 1 pixel of Voorst is 0.25 * 0.25 ha
-ha_pop <- N*0.25^2
+#Compute total mass of soil in kg. Use bulk density of 1.5 g/cm3 = 1500 kg/m3
+mass_soil <- vol_soil * 1500
 
-#Compute total mass of SOM in Voorst; unit of z is g/kg soil
-soilmass <- soilmass_1ha * ha_pop
-
-#Estimate total mass of SOM
-print(tz <- mz * soilmass)
+#Estimate total mass of SOM in tons. Note dimension of mz is g/kg
+print(tz <- mz * mass_soil * 10^-6)
 
 #Estimate the standard error of estimated total
-v_tz <- v_mz*soilmass^2
+v_tz <- v_mz * mass_soil^2 *10^-12
 print(se_tz <- sqrt(v_tz))

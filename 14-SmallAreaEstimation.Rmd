@@ -258,7 +258,7 @@ For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:Tabl
 
 Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates. The variation of the regression estimates is smaller than those of the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
 
-```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatterplot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
+```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatter plot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
 mysample$N <- nrow(gridAmazonia)
 design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
@@ -378,7 +378,7 @@ The alternative for design-based and model-assisted estimation of the means or t
 A basic linear mixed model for model-based prediction of means of small domains is the random intercept model\index{Random intercept model}:
 
 \begin{eqnarray}
-Z_{dk} &=& \mathbf{x}_{dk}^{\text{T}} \symbfit{\beta} + v_d + \epsilon_{dk} \notag \\
+Z_{dk} &=& \mathbf{x}_{dk}^{\text{T}} \pmb{\beta} + v_d + \epsilon_{dk} \notag \\
 v_d &\sim& \mathcal{N}(0,\sigma^2_v) \\
 \epsilon_{dk} &\sim& \mathcal{N}(0,\sigma^2_{\epsilon}) \notag \;.
 (\#eq:RandomInterceptModel)
@@ -391,7 +391,7 @@ Two random variables are now involved, both with a normal distribution with mean
 (\#eq:mbpredictordomainmeanrandomintercept)
 \end{equation}
 
-with $\hat{\symbfit{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
+with $\hat{\pmb{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
 
 \begin{equation}
 \hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
@@ -585,7 +585,7 @@ knitr::kable(
 
 Similar to the synthetic estimator, for all ecoregions an estimate of the mean AGB is obtained, also for the unsampled ecoregions (Table \@ref(tab:TableGeostatisticqalModelEstimates)). The model-based prediction is strongly correlated with the synthetic estimate (Figure \@ref(fig:MBvsSynt)).
 
-```{r MBvsSynt, echo=FALSE, fig.cap="Scatterplot of model-based prediction and synthetic estimate of the mean AGB of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
+```{r MBvsSynt, echo=FALSE, fig.cap="Scatter plot of model-based prediction and synthetic estimate of the mean AGB of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
 df <- data.frame(ecoregions, mb=mz_eco_mb, se.mb=se_mz_eco_mb, synt=synt$estimate, se.synt=sqrt(synt$g_variance)) 
 ggplot(data=df) +
         geom_point(mapping=aes(x=synt, y=mb), size=2) +
@@ -599,7 +599,7 @@ The most striking difference is the standard error. The standard errors of the s
 
 It makes more sense to compare the two model-based predictions, the random intercept model predictions and the geostatistical predictions, and their standard errors. Figure \@ref(fig:MBvsMB) shows that the two model-based predictions are very similar. 
 
-```{r MBvsMB, echo=FALSE, fig.cap="Scatterplot of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
+```{r MBvsMB, echo=FALSE, fig.cap="Scatter plot of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
 res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
 TF <- (ecoregions %in% ecos_in_sam)
 n_eco <- tapply(mysample$AGB, INDEX=mysample$Ecoregion, FUN=length)
@@ -614,7 +614,7 @@ ggplot(data=df) +
 
 For four ecoregions the standard errors of the geostatistical model predictions are much smaller than those of the random intercept model predictions (Figure \@ref(fig:MBvsMBse)). These are ecoregions with small sample sizes.
 
-```{r MBvsMBse, echo=FALSE,  fig.cap="Scatterplot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
+```{r MBvsMBse, echo=FALSE,  fig.cap="Scatter plot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
 ggplot(data=df) +
         geom_point(mapping=aes(x=semb.rint, y=semb.geo), size=2) +
         geom_text(mapping=aes(x=semb.rint, y=semb.geo, label=n_eco), hjust=1, vjust=1)+

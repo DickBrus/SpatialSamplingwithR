@@ -52,7 +52,9 @@ ggplot(gridAmazonia) +
 ```
 
 ```{r CSCsampleinscatter, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space coverage sample, obtained with $k$-means, plotted in scatter diagrams of pairs of covariates, coloured by cluster."}
-plt1 <- ggplot(gridAmazonia) +
+units <- sample.int(nrow(gridAmazonia), size=10000, replace=FALSE)
+grd <- gridAmazonia[units,]
+plt1 <- ggplot(grd) +
   geom_point(mapping=aes(x=SWIR2, y=Prec_dm, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSCsample, mapping=aes(x=SWIR2, y=Prec_dm), size=1.5, colour="red") +
@@ -62,7 +64,7 @@ plt1 <- ggplot(gridAmazonia) +
   theme(axis.title.x=element_text(size=14),
         axis.title.y=element_text(size=14))
 
-plt2 <- ggplot(gridAmazonia) +
+plt2 <- ggplot(grd) +
   geom_point(mapping=aes(x=Terra_PP, y=Elevation, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSCsample, mapping=aes(x=Terra_PP, y=Elevation), size=1.5, colour="red") +
@@ -170,7 +172,10 @@ ggplot(data=gridAmazonia) +
 ```
 
 ```{r CSInfillsampleinscatter, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space infill sample, obtained with modified $k$-means, plotted in scatter diagrams of pairs of covariates. The dots represent the fixed centers (legacy sample), the triangles the infill sample."}
-plt1 <- ggplot(gridAmazonia) +
+units <- sample.int(nrow(gridAmazonia), size=10000, replace=FALSE)
+grd <- gridAmazonia[units,]
+
+plt1 <- ggplot(grd) +
   geom_point(mapping=aes(x=SWIR2, y=Prec_dm, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSIsample, mapping=aes(x=SWIR2, y=Prec_dm, shape=free), size=1.5, colour="red") +
@@ -180,7 +185,7 @@ plt1 <- ggplot(gridAmazonia) +
   theme(axis.title.x=element_text(size=14),
         axis.title.y=element_text(size=14))
 
-plt2 <- ggplot(gridAmazonia) +
+plt2 <- ggplot(grd) +
   geom_point(mapping=aes(x=Terra_PP, y=Elevation, colour=as.character(cluster)), alpha=0.5) +
   scale_colour_viridis_d() +
   geom_point(data=myCSIsample, mapping=aes(x=Terra_PP, y=Elevation, shape=free), size=1.5, colour="red") +
@@ -223,8 +228,8 @@ ggplot(df, mapping=aes(x=MSSSD, y=RMSE, shape=Samplesize))+
 
 #### Exercises {-}
 
-1. Write an **R** script to select a covariate space coverage (CSC) sample of size 20,  using the covariates cti and ndvi in $k$-means clustering of the grid cells. Plot the clusters and the sample in a scatter diagram of cti against ndvi.  
-2. Repeat this, but now with covariates cti, ndvi *and* elevation_m as covariates. Plot the clusters and the sample again in a scatter diagram of cti against ndvi. Explain that in this case a sampling location (cluster center) can be quite close to another sampling location, and that a cluster in a 2D-scatter diagram may also contain units of a different cluster.   
+1. Write an **R** script to select a covariate space coverage (CSC) sample of size 20 from Hunter Valley. The data are in `data/HunterValley.RData`. Use the covariates cti (compound topographic index) and ndvi (normalized difference vegetation index) in $k$-means clustering of the grid cells. Plot the clusters and the sample in a scatter diagram of cti against ndvi.  
+2. Repeat this, but now with covariates cti, ndvi *and* elevation_m as covariates. Plot the clusters and the sample again in a scatter diagram of cti against ndvi. Explain that in this case a sampling location (cluster center) can be quite close to another sampling location in the 2D-scatter diagram, and that a cluster in the diagram may also contain units of a different cluster.   
   
 ```{r, echo=FALSE}
 rm(list=ls())

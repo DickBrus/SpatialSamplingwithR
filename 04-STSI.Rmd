@@ -65,10 +65,10 @@ where $H$ is the number of strata, $w_{h}$ are the relative sizes (areas) of the
 
 with $\mathcal{S}_h$ the sample selected from stratum $h$.
 
-The same estimator is found when the $\pi$ estimator is worked out for stratified simple random sampling. With stratified simple random sampling without replacement and different sampling fractions for the strata^[The sampling fractions are usually slightly different, even with proportional allocation (Section \@ref(STSIallocation)) because $n_h/N_h$ cannot be made exactly equal for all strata.] the inclusion probabilities differ among the strata and equal $\pi_{hk} = n_h/N_h$ for all $k$ in stratum $h$, with $n_h$ the sample size of stratum $h$ and $N_h$ the size of stratum $h$. Inserting this in the $\pi$ estimator of the population mean (Equation \@ref(eq:HTMean)) gives
+The same estimator is found when the $\pi$ estimator is worked out for stratified simple random sampling. With stratified simple random sampling without replacement and different sampling fractions for the strata^[The sampling fractions are usually slightly different, even with proportional allocation (Section \@ref(STSIallocation)) because $n_h/N_h$ cannot be made exactly equal for all strata.] the inclusion probabilities differ among the strata and equal $\pi_{k} = n_h/N_h$ for all $k$ in stratum $h$, with $n_h$ the sample size of stratum $h$ and $N_h$ the size of stratum $h$. Inserting this in the $\pi$ estimator of the population mean (Equation \@ref(eq:HTMean)) gives
 
 \begin{equation}
-\hat{\bar{z}}= \frac{1}{N}\sum\limits_{h=1}^{H}\sum\limits_{k \in \mathcal{S}_h} \frac{z_{hk}}{\pi_{hk}} = \frac{1}{N}\sum\limits_{h=1}^{H} \frac{N_h}{n_h}\sum\limits_{k \in \mathcal{S}_h} z_{hk} = \sum\limits_{h=1}^{H} w_{h}\,\hat{\bar{z}}_{h} \;.
+\hat{\bar{z}}= \frac{1}{N}\sum\limits_{h=1}^{H}\sum\limits_{k \in \mathcal{S}_h} \frac{z_{k}}{\pi_{k}} = \frac{1}{N}\sum\limits_{h=1}^{H} \frac{N_h}{n_h}\sum\limits_{k \in \mathcal{S}_h} z_{k} = \sum\limits_{h=1}^{H} w_{h}\,\hat{\bar{z}}_{h} \;.
 (\#eq:HTMeanSTSI2)
 \end{equation}
 
@@ -89,7 +89,7 @@ where $\widehat{V}\!\left(\hat{\bar{z}}_{h}\right)$ is the estimated sampling va
 with $\widehat{S^2}_h(z)$ the estimated variance of $z$ within stratum $h$:
 
 \begin{equation}
-\widehat{S^2}_h(z)=\frac{1}{n_h-1}\sum\limits_{k \in \mathcal{S}_h}\left(z_{hk}-\hat{\bar{z}}_{h}\right)^{2}\;.
+\widehat{S^2}_h(z)=\frac{1}{n_h-1}\sum\limits_{k \in \mathcal{S}_h}\left(z_{k}-\hat{\bar{z}}_{h}\right)^{2}\;.
 (\#eq:EstStratumVar)
 \end{equation}
 
@@ -192,7 +192,7 @@ ggplot(dat)+
 The estimated proportions (cumulative frequencies) are used to estimate a quantile. These estimates are easily obtained with function `svyquantile` of package **survey**.
 
 ```{r}
-svyquantile(~z, design_stsi, quantile=c(0.5,0.9))
+svyquantile(~z, design_stsi, quantile=c(0.5,0.8))
 ```
 
 ### Why should we stratify? {#WhyStratify}
@@ -305,16 +305,24 @@ The estimated design effect as estimated from the stratified sample is a bit sma
 Stratified simple random sampling with proportional allocation (Section \@ref(STSIallocation)) is more precise than simple random sampling when the sum of squares of the stratum means is larger than the sum of squares within strata [@loh99]:
 
 \begin{equation}
-SSB > \sum_{h=1}^H (1-\frac{N_h}{N})S^2_h \;,
+SSB > SSW\;,
 (\#eq:STSImoreprecisewhen)
 \end{equation}
 
 with SSB the weighted sum-of-squares between the stratum means:
 
 \begin{equation}
-SSB= \sum_{h=1}^H N_h (\bar{z}_h-\bar{z})^2 \;.
+SSB = \sum_{h=1}^H N_h (\bar{z}_h-\bar{z})^2 \;,
 (\#eq:SSB)
 \end{equation}
+
+and SSW the sum over the strata of the weighted variances within strata (weights equal to $1-N_h/N$):
+
+\begin{equation}
+SSW = \sum_{h=1}^H (1-\frac{N_h}{N})S^2_h\;.
+(\#eq:SSW)
+\end{equation}
+
 
 In other words, the smaller the differences in the stratum means and the larger the variances within the strata, the smaller the stratification effect will be. Figure \@ref(fig:boxplotsSOMstrata) shows boxplots of SOM per stratum (soil-land use combination). The stratum means are equal to `r round(mz_h_pop,2)`. The stratum variances are `r round(S2z_h_pop,1)`. The rather small differences in stratum means, in combination with the large stratum variances explain the modest gain in precision realised by stratified simple random sampling compared to simple random sampling in this case.
 
@@ -445,11 +453,15 @@ Optimal allocation and Neyman allocation assume univariate stratification\index{
 
 #### Exercises {-}
 
-1. Looking at Figure \@ref(fig:boxplotsSOMstrata), which strata do you expect can be merged without losing much precision of the estimated population mean?  
-2. Load the data of Voorst, and use function `fct_collapse` of package **forcats** [@forcats] to merge the strata EA and PA.  
-    + Compute the true sampling variance of the estimator of the mean for this new stratification, a total sample size of 40 and proportional allocation. Check that the sum of stratum sample sizes is 40. (Hint: compute the population variances of SOM per stratum, and divide these by the stratum sample sizes).  
+1. Load the data of Voorst, and use function `strata` of package **sampling** to select a stratified simple random sample with replacement of size 40, using proportional allocation. Check that the sum of stratum sample sizes is 40.  
+    + Estimate the population mean and the standard error of the estimator.  
+    + Compute the true standard error of the estimator. Hint: compute the population variances of the study variable $z$ per stratum, and divide these by the stratum sample sizes.  
+    + Compute a 95% confidence interval estimate of the population mean, using function `confint` of package **survey**.  
+2. Looking at Figure \@ref(fig:boxplotsSOMstrata), which strata do you expect can be merged without losing much precision of the estimated population mean?  
+3. Use function `fct_collapse` of package **forcats** [@forcats] to merge the strata EA and PA.  
+    + Compute the true sampling variance of the estimator of the mean for this new stratification, a total sample size of 40 and proportional allocation.    
     + Compare this true sampling variance with the true sampling variance using the original five strata (same sample size, proportional allocation). What is your conclusion about the new stratification?   
-3. Proof that the sum of the inclusion probabilities over all populations units with stratified simple random sampling equals the sample size $n$.
+4. Proof that the sum of the inclusion probabilities over all populations units with stratified simple random sampling equals the sample size $n$.
 
 ## *Cum-root-f* stratification {#cumrootf}
 When we have a quantitative covariate $x$ related to the study variable $z$ and that is known for all units in the population, strata can be constructed with the *cum-root-f* method using this covariate as a stratification variable, see @Dalenius1959 and @coc77. Population units with similar values for the covariate (stratification variable) are grouped into a stratum. Strata are computed as follows:  
@@ -505,11 +517,11 @@ ggplot(data=grd) +
 
 #### Exercises {-}
 
-4. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `data/Amazonia_5km.RData`.  
+5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `data/Amazonia_5km.RData`.  
     +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by the function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?  
     + Select a stratified simple random sample of 100 units. First compute the stratum sample sizes for proportional allocation.  
     + Estimate the population mean of AGB and its sampling variance.  
-    + Compute the true sampling variance of the estimator of the mean for this sampling design (see Exercise 2 for a hint).  
+    + Compute the true sampling variance of the estimator of the mean for this sampling design (see Exercise 3 for a hint).  
     + Compute the stratification effect (gain in precision) (Hint: compute the sampling variance for simple random sampling by computing the population variance of AGB, and divide this by the total sample size).  
 
 ## Stratification with multiple covariates {#kmeansstratification}
@@ -642,14 +654,14 @@ The estimated population mean equals `r round(mean, 2)`, with an estimated stand
 
 #### Exercises {-}  
 
-5. Why is it attractive to select at least two points per geostratum?  
-6. The alternative to 20 geostrata and two points per geostratum is 40 geostrata and one point per geostratum. Which sampling strategy will be more precise?  
-7. The geostrata in the figure above have equal area, which can be enforced by argument `equalArea=TRUE`. Why are equal areas attractive? Work out the estimator of the population mean for strata of equal size.  
-8. Write an **R** script to construct 20 compact geographical strata of equal area for agricultural field Leest. Read the shapefile `Leest5` using function `readOGR` of the package **rgdal**. Remove the projection attributes with `proj4string(shpField) <- NA_character_`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal area, and randomly select one point per stratum.  
+6. Why is it attractive to select at least two points per geostratum?  
+7. The alternative to 20 geostrata and two points per geostratum is 40 geostrata and one point per geostratum. Which sampling strategy will be more precise?  
+8. The geostrata in the figure above have equal area, which can be enforced by argument `equalArea=TRUE`. Why are equal areas attractive? Work out the estimator of the population mean for strata of equal size.  
+9. Write an **R** script to construct 20 compact geographical strata of equal area for agricultural field Leest. Read the shapefile `Leest5` using function `readOGR` of the package **rgdal**. Remove the projection attributes with `proj4string(shpField) <- NA_character_`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal area, and randomly select one point per stratum.  
     + If only one point per stratum is selected, the sampling variance can be approximated by the collapsed strata\index{Collapsed strata} estimator. In this method pairs of strata are formed, and the two strata of a pair are joined. In each new stratum we now have two points. With an odd number of strata there will be one group of three strata and three points. The sample is then analyzed as if it were a random sample from the new collapsed strata. Suppose we group the strata on the basis of the measurements of the study variable. Do you think this is a proper way of grouping?  
     + In case you think this is not a proper way of grouping the strata, how would you group the strata?  
     + Will the estimated sampling variance estimator be unbiased? If not, will it be overestimated or underestimated?  
-9. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use the argument `equalArea = TRUE`. Select four points per stratum using argument `type="composite"`, and change class of resulting object in `SpatialPoints`. Extract the z-values in grdVoorst at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Estimate the population mean and its standard error.  
+10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use the argument `equalArea = TRUE`. Select four points per stratum using argument `type="composite"`, and change class of resulting object in `SpatialPoints`. Extract the z-values in grdVoorst at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Estimate the population mean and its standard error.  
     + Can the sampling variance of the estimator of the mean be estimated for bulking within the strata?  
     + The alternative to analyzing the concentration of four composite samples obtained by bulking across strata  is to analyze all $20 \times 4$ aliquots separately. The strata have equal area, so the inclusion probabilities are equal. As a consequence the sample mean is an unbiased estimator of the population mean. Is the precision of this estimated population mean equal to the estimated population mean with composite sampling? If not, is it smaller or larger, and why?   
     + If you use argument `equalArea = FALSE` in combination with argument `type="composite"`, you get an error message. Why does this not work? 

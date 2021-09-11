@@ -79,9 +79,9 @@ library(spcosa)
 n <- 115
 set.seed(314)
 gridded(grdVoorst) <- ~s1+s2
-mystrata<-stratify(grdVoorst, nStrata=n, equalArea=FALSE, nTry=10)
+mystrata <- spcosa::stratify(grdVoorst, nStrata=n, equalArea=FALSE, nTry=10)
 mysample <- spsample(mystrata)
-plot(mystrata,mysample)
+plot(mystrata, mysample)
 mysample <- as(mysample, "data.frame")
 ```
 
@@ -113,7 +113,7 @@ ggplot() +
   theme_minimal()+
   coord_fixed()
 ```
-This problem can easily be solved by selecting points inside the study area closest to the centers that are outside the study area. Function `rdist` of package **fields** is used to compute a matrix with distances between the centers outside the study area and the nodes of the discretisation grid. Then function `apply` is used with argument `FUN=which.min` to compute the discretisation nodes closest to the centers outside the study area. This procedure is implemented in function `spsample` of package **spcosa** without argument `n`.
+This problem can easily be solved by selecting points inside the study area closest to the centers that are outside the study area. Function `rdist` of package **fields** is used to compute a matrix with distances between the centers outside the study area and the nodes of the discretisation grid. Then function `apply` is used with argument `FUN=which.min` to compute the discretisation nodes closest to the centers outside the study area. This procedure is implemented in function `spsample` of package **spcosa** when the centers of the clusters are selected as sampling points (so, when argument `n` of function `spsample` is not used).
 
 ```{r}
 library(fields)
@@ -146,7 +146,8 @@ ntot <- n+length(priordataEthiopia)
 priordata <- as(priordataEthiopia, "SpatialPoints")
 proj4string(priordata) <- NA_character_
 set.seed(314)
-mystrata <- stratify(grdEthiopia, nStrata=ntot, priorPoints=priordata, nTry=10)
+mystrata <- spcosa::stratify(grdEthiopia, nStrata=ntot,
+  priorPoints=priordata, nTry=10)
 mysample <- spsample(mystrata)
 plot(mystrata, mysample)
 ```
@@ -161,7 +162,7 @@ mysample_new <- mysample[units,]
 
 #### Exercises {-}
 5. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on soil organic matter (SOM, g/kg) in the topsoil at 60 sampling points are in the data.frame `data/Xuancheng_iPSMsample.csv`. To map SOM we want to measure SOM at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif`  as a discretisation of the study area. This file can be read with function `raster` of package **raster**. 
-    +  In the example of this section there are far too many raster cells that could be used as new points in spatial infill sampling. That many cells are not needed. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type=regular`.  
+    +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type=regular`.  
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
   
 ```{r, echo=FALSE}

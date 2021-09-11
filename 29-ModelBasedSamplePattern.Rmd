@@ -2,11 +2,11 @@
 
 In Chapter \@ref(MBgridspacing) a model of the spatial variation was used to optimise the spacing of a regular  grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size.
 
-This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So we are searching for the optimal locations of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling locations through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by *k*-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). *k*-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centers (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. The kriging system also takes into account the separation between sampling points. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. This is an optimisation approach that mimics the gradual cooling of metal alloys, resulting in an optimum or near-optimum structure of the atoms in the alloy.
+This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by *k*-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). *k*-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centers (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. The kriging system also takes into account the separation between sampling points. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. This is an optimisation approach that mimics the gradual cooling of metal alloys, resulting in an optimum or near-optimum structure of the atoms in the alloy. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
 
 ## Spatial simulated annealing {#SSA}
 
-Inspired by the potentials of optimisation through simulated annealing [@Kirkpatrick1983], @vgr98 proposed to optimise the sampling locations by spatial simulated annealing (SSA), see also @vgr99 and @vgr00. This is an iterative, random search procedure, in which a sequence of samples is generated. A new sample (proposed sample) is obtained by slightly modifying the current sample. One sampling location of the current sample is randomly selected, and this location is shifted to a random location within the neighbourhood of the selected location.
+Inspired by the potentials of optimisation through simulated annealing [@Kirkpatrick1983], @vgr98 proposed to optimise the sampling pattern by spatial simulated annealing (SSA), see also @vgr99 and @vgr00. This is an iterative, random search procedure, in which a sequence of samples is generated. A new sample (proposed sample) is obtained by slightly modifying the current sample. One sampling location of the current sample is randomly selected, and this location is shifted to a random location within the neighbourhood of the selected location.
 
 The minimisation criterion is computed for the proposed sample and compared wth that of the current sample. If the criterion of the proposed sample is smaller, it is accepted. If the criterion is larger, the proposed sample is accepted with a probability equal to
 
@@ -52,11 +52,11 @@ plt2 <- ggplot(df) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-## Optimising the sample pattern for ordinary kriging {#SamplePatternOK}
+## Optimising the sampling pattern for ordinary kriging {#SamplePatternOK}
 
-In ordinary kriging we assume a constant mean. No covariates are available that are related to the study variable. Optimisation of the sampling locations for ordinary kriging is illustrated with the Cotton Research Farm in Uzbekistan, which was used before to illustrate spatial response surface sampling (Chapter \@ref(SpatialResponseSurface)). The spatial coordinates of 50 sampling locations are optimised for mapping of the electrical conductivity (ECe) of the soil by ordinary kriging. In this section the coordinates of the sampling points are optimised for ordinary kriging. In Section \@ref(SamplePatternKED) hereafter this is done for kriging with an external drift, and a map of electromagnetic induction (EM) is used to further optimise the coordinates of the sampling points. 
+In ordinary kriging we assume a constant model mean. No covariates are available that are related to the study variable. Optimisation of the sampling pattern for ordinary kriging is illustrated with the Cotton Research Farm in Uzbekistan, which was used before to illustrate spatial response surface sampling (Chapter \@ref(SpatialResponseSurface)). The spatial coordinates of 50 sampling locations are optimised for mapping of the electrical conductivity (ECe) of the soil by ordinary kriging. In this section the coordinates of the sampling points are optimised for ordinary kriging. In Section \@ref(SamplePatternKED) hereafter this is done for kriging with an external drift, and a map of electromagnetic induction (EM) is used to further optimise the coordinates of the sampling points. 
 
-Model-based optimisation of the sampling locations for ordinary kriging requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the years 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package, because this function requires the output of the function `variogram` as input, whereas the sample semivariogram is here computed in a different way^[The sample semivariogram is computed by first estimating sample semivariograms for each of the eight surveys separately, followed by computing weighted averages of semivariances and distances per lag, using the numbers of pairs as weights.]. The semivariogram parameters as estimated by `nls` are then used to define a semivariogram model of class `variogramModel` of package **gstat**, using function `vgm`. This is done because the function `optimMKV` requires a semivariogram model of this class, see hereafter. As already mentioned before in Chapter \@ref(MBgridspacing), in practice we often do not have legacy data from which we can estimate the semivariogram, and a best guess of the semivariogram then must be made.
+Model-based optimisation of the sampling pattern for ordinary kriging requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the years 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package, because this function requires the output of the function `variogram` as input, whereas the sample semivariogram is here computed in a different way^[The sample semivariogram is computed by first estimating sample semivariograms for each of the eight surveys separately, followed by computing weighted averages of semivariances and distances per lag, using the numbers of pairs as weights.]. The semivariogram parameters as estimated by `nls` are then used to define a semivariogram model of class `variogramModel` of package **gstat**, using function `vgm`. This is done because the function `optimMKV` requires a semivariogram model of this class, see hereafter. As already mentioned before in Chapter \@ref(MBgridspacing), in practice we often do not have legacy data from which we can estimate the semivariogram, and a best guess of the semivariogram then must be made.
 
 
 ```{r variogramlnECe, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram and fitted exponential model of natural logarithms of soil salinity (ECe) for the Cotton Research Farm in Uzbekistan."}
@@ -134,7 +134,7 @@ schedule <- scheduleSPSANN(
   x.min=0, y.min=0, cellsize=25)
 ```
 
-The **R** code for optimising the coordinates of the sampling points is as follows.
+The **R** code for optimising the sampling pattern is as follows.
 
 ```{r, eval=FALSE}
 set.seed(314)
@@ -153,7 +153,7 @@ save(mysample, trace, file="results/MBSample_OK_Uzbekistan.RData")
 
 The spatial pattern of the sample in Figure \@ref(fig:ModelBasedSampleOK) and the trace of the MKV in Figure \@ref(fig:TraceMOKV) suggest that we are close to the global optimum.
 
-```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sample optimised with the mean variance of ordinary kriging predictions of lnECe (Model-based), and spatial coverage sample (SCS) from the Cotton Research Farm in Uzbekistan."}
+```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sampling pattern optimised for the mean variance of ordinary kriging predictions of lnECe (Model-based sample), and spatial coverage sample (SCS) from the Cotton Research Farm in Uzbekistan."}
 library(spcosa)
 load(file="results/MBSample_OK_Uzbekistan.RData")
 
@@ -165,11 +165,11 @@ myspcsample <- spsample(myStrata) %>% as(.,"data.frame")
 
 names(mysample) <- names(myspcsample)
 mysamples <- rbind(mysample,myspcsample)
-mysamples$design <- rep(c("Model-based","SCS"))
+mysamples$design <- rep(c("Model-based sample","Spatial coverage sample"),each=50)
 
 ggplot(data=mysamples) +
   geom_raster(data=EM_CRF, mapping=aes(x=x1/1000, y=x2/1000), fill="grey") +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="black") +
+  geom_point(data=mysamples, mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="black") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
   facet_wrap(~ design) +
@@ -196,7 +196,7 @@ ggplot(trace) +
   scale_y_continuous(name="Mean kriging variance")
 ```
 
-For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r as.character(round(MKV,4))`, whereas for the model-based sample this MKV equals `r as.character(round(trace$obj[nrow(trace)],4))`. So a small gain in precision is achieved only by the model-based optimisation of the sampling locations compared to spatial coverage sampling. This result is in agreement with the results reported by @bru07c.
+For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r as.character(round(MKV,4))`, whereas for the model-based sample this MKV equals `r as.character(round(trace$obj[nrow(trace)],4))`. So a small gain in precision is achieved only by the model-based optimisation of the sampling pattern compared to spatial coverage sampling. This result is in agreement with the results reported by @bru07c.
 
 Instead of the mean of the ordinary kriging variance (MOKV), we may prefer to use some quantile of the frequency distribution of the ordinary kriging variance as a minimisation criterion. For instance, if we use the 0.90 quantile as criterion, we are searching for the sampling locations so that the 90th percentile (P90) of the ordinary kriging variance is minimal. This can be done with function `optimUSER` of package **spsann** [@Alessandro2016]. This function has an argument `fun` that can be used to specify the objective function\index{Objective function} to be minimised. In this case the objective function is as follows.
 
@@ -231,23 +231,23 @@ rslt <- optimUSER(
   schedule=schedule)
 ```
 
-Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Chapter \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sample pattern\index{Sample pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
+Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Chapter \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sampling pattern\index{Sampling pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
 
 #### Exercises {-}
 
-1. Write an **R** script to optimise the coordinates of sixteen points in a square for ordinary kriging. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the locations with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**).  
+1. Write an **R** script to optimise the spatial coordinates of sixteen points in a square for ordinary kriging. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the sampling pattern with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**).  
     + Check whether the optimisation has converged by plotting the trace of the optimisation criterion MKV.  
     + Based on the coordinates of the sampling points, do you think this is the global optimum, i.e. the sample with the smallest possible MKV?  
-2. Write an **R** script to optimise the coordinates of 50 points, using the P90 of the variance of ordinary kriging predictions of lnECe on the Cotton Research Farm as a minimisation criterion. Use the semivariogram parameters of Table  \@ref(tab:TableVariogramsCRF4). 
+2. Write an **R** script to optimise the sampling pattern of 50 points, using the P90 of the variance of ordinary kriging predictions of lnECe on the Cotton Research Farm as a minimisation criterion. Use the semivariogram parameters of Table  \@ref(tab:TableVariogramsCRF4). 
     + Compare the optimised sample with the sample optimised with the mean ordinary kriging variance (shown in Figure \@ref(fig:ModelBasedSampleOK)).  
 
-## Optimising the sample pattern for kriging with an external drift {#SamplePatternKED}
+## Optimising the sampling pattern for kriging with an external drift {#SamplePatternKED}
 
 If we have one or more covariates that are linearly related to the study variable, the study variable can be mapped by kriging with an external drift\index{Kriging!kriging with an external drift} (KED). A requirement is that we have maps of the covariate so that, once we have estimated the parameters of the model for KED from the data collected at the optimised sample, these covariate maps can be used to map the study variable.
 
-Optimisation of the sampling locations for KED requires as input the semivariogram of the residuals. Besides, we must decide on the covariates for the mean. Note that we do not need as input estimates of the regression coefficients associated with the covariates, just which combination of covariates we want to use for modelling the mean of the study variable, and as said before, the values of these covariates at the prediction locations.
+Optimisation of the sampling pattern for KED requires as input the semivariogram of the residuals. Besides, we must decide on the covariates for the model mean. Note that we do not need as input estimates of the regression coefficients associated with the covariates, just which combination of covariates we want to use for modelling the model mean of the study variable, and as said before, the values of these covariates at the prediction locations.
 
-Optimisation of the sampling locations for KED is illustrated with the Cotton Research Farm. The interpolated natural logarithm of the EM data is used as a covariate, see Figure \@ref(fig:EMdataUzbekistan). The data for fitting the model are in data file `clbdat`. The parameters of the residual semivariogram are estimated by REML, see Section \@ref(REML). 
+Optimisation of the sampling pattern for KED is illustrated with the Cotton Research Farm. The interpolated natural logarithm of the EM data is used as a covariate, see Figure \@ref(fig:EMdataUzbekistan). The data for fitting the model are in data file `clbdat`. The parameters of the residual semivariogram are estimated by REML, see Section \@ref(REML). 
 
 At several points multiple observations have been made; these data have exactly the same spatial coordinates. This leads to problems with REML estimation (covariance matrix not positive definite so that it cannot be inverted). To solve this problem I jittered the coordinates of the sampling points by a very small amount.
 
@@ -277,7 +277,7 @@ coefs <- data.frame(variable,nugget,psill,range)
 rownames(coefs)<-c()
 
 knitr::kable(
-  coefs, caption='Fitted parameters of exponential semivariogram for natural logarithm of ECe (estimated by MoM) and of residuals (estimated by REML).',
+  coefs, caption='Fitted parameters of exponential semivariogram for natural logarithm of ECe (estimated by method-of-moments) and of residuals (estimated by REML).',
   booktabs=TRUE,col.names=c("Variable","Nugget","Partial sill", "Distance parameter (m)")
 ) %>%
   kable_classic()
@@ -302,13 +302,12 @@ vgm_REML_gstat <- vgm(
   range=vgm_REML$phi)
 ```
 
-To optimise the locations for KED, using the mean KED variance as a minimisation criterion, a data frame with the covariates at the candidate sampling locations must be assigned to the argument `covars`. The argument `eqn` specifies the KED model as a formula.
+To optimise the sampling pattern for KED, using the mean KED variance as a minimisation criterion, a data frame with the covariates at the candidate sampling locations must be assigned to the argument `covars`. The argument `eqn` specifies the KED model as a formula.
 
 ```{r, eval=FALSE}
-covars <- EM_CRF
 set.seed(314)
 rslt <- optimMKV(
-  points=50, candi=candi, covars=covars,
+  points=50, candi=candi, covars=EM_CRF,
   vgm=vgm_REML_gstat, eqn=z~lnEM100cm,
   schedule=schedule,
   plotit=FALSE, track=FALSE)
@@ -324,7 +323,7 @@ save(mysample,trace,file="results/MBSample_KED_Uzbekistan.RData")
 
 Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample of 50 points. This clearly shows the irregular spatial pattern of the sampling points induced by the covariate. 
 
-```{r ModelBasedSampleKED, echo=FALSE, fig.cap="Optimised sampling locations for kriging with an external drift of lnECe at the Cotton Research Farm in Uzbekistan, using lnEM as a covariate."}
+```{r ModelBasedSampleKED, echo=FALSE, fig.cap="Optimised sampling pattern for kriging with an external drift of lnECe at the Cotton Research Farm in Uzbekistan, using lnEM as a covariate."}
 load(file="results/MBSample_KED_Uzbekistan.RData")
 
 covars <- EM_CRF
@@ -338,9 +337,9 @@ ggplot(data=covars) +
   coord_fixed()
 ```
 
-Comparing the population and sample histograms of the covariate clearly shows that locations with either small or large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sample pattern is a compromise between spreading in geographic space and feature space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the predictor of the mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.
+Comparing the population and sample histograms of the covariate clearly shows that locations with either small or large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sampling pattern is a compromise between spreading in geographic space and feature space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the estimator of the model mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.
 
-```{r histogramslnEM, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Sample and population histograms of lnEM, used as covariate in model-based optimisation of sampling locations for mapping with KED."}
+```{r histogramslnEM, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Sample and population histograms of lnEM, used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
 plt1 <- ggplot(data=mysample) +
   geom_histogram(mapping=aes(x=lnEM100cm), breaks=seq(from=2.75, to=5, by=0.25), fill="black", alpha=0.5, color="black") +
   ggtitle("Sample")+
@@ -360,9 +359,9 @@ Further, note that a sample with covariate values close to the minimum and maxim
 
 #### Exercises {-}
 
-3. Write an **R** script to optimise the coordinates of sixteen points in a square for kriging with an external drift. Use the $x$-coordinate as a covariate. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential residual semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the locations with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**)  
-    + What do you think of the spatial coverage of the optimised sample?  Compare the sample with the optimised sample for ordinary kriging, see exercise of Section \@ref(SamplePatternOK)   
-    + Repeat the optimisation using a residual semivariogram, with a nugget of 1.5 and a partial sill of 0.5. Note that the sill is again 2, as before  
+3. Write an **R** script to optimise the sampling pattern of sixteen points in a square for kriging with an external drift. Use the $x$-coordinate as a covariate. First create a discretisation grid of 20 $\times$ 20 nodes. Use an exponential residual semivariogram without nugget, with a sill of 2 and a distance parameter of four times the spacing of the discretisation grid. Optimise the sampling pattern with spatial simulated annealing (using functions `scheduleSPSANN` and `optimMKV` of package **spsann**).  
+    + What do you think of the spatial coverage of the optimised sample?  Compare the sample with the optimised sample for ordinary kriging, see exercise of Section \@ref(SamplePatternOK).   
+    + Repeat the optimisation using a residual semivariogram, with a nugget of 1.5 and a partial sill of 0.5. Note that the sill is again 2, as before.  
     + Compare the optimised sample with the previous sample. What is the most striking difference? 
     + How will the optimised sample look like with a pure nugget semivariogram? Check your assumption by using such semivariogram in spatial simulated annealing. 
 
@@ -472,7 +471,7 @@ rslt <- optimMKV(
 save(rslt, file="results/MBInfillSample_KED_Ethiopia.RData")
 ```
 
-Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample for KED using as covariates elevation, NIR-reflectance, red-reflectance and land surface temperature. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with ordinary kriging because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with ordinary kriging, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated mean.
+Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample for KED using as covariates elevation, NIR-reflectance, red-reflectance and land surface temperature. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with ordinary kriging because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with ordinary kriging, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated model mean.
 
 ```{r ModelBasedInfillKED, echo=FALSE, fig.cap="Model-based infill sample for kriging with an external drift of SOM across three woredas of Ethiopia, plotted on a map of one of the covariates."}
 load("results/MBInfillSample_KED_Ethiopia.RData")

@@ -18,8 +18,8 @@ legacy <- read.csv(file="../data/Xuancheng_iPSMsample.csv")
 
 #plot prior points
 ggplot(subgrid) +
-  geom_raster(mapping = aes(x = x1,y = x2),fill="grey") +
-  geom_point(data=legacy, mapping = aes(x = X,y = Y),size = 2) +
+  geom_raster(mapping = aes(x = x1, y = x2), fill="grey") +
+  geom_point(data=legacy, mapping = aes(x = X,y = Y), size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed(ratio = 1)

@@ -6,14 +6,14 @@
 
 This second part of the book deals with sampling for mapping, i.e. for predicting the study variable at the nodes of a fine discretisation grid. For mapping a model-based sampling approach is the most natural option. When a statistical model, i.e. a model containing an error term modelled by a probability distribution, is used to map the study variable from the sample data, selection of the sampling units by probability sampling is not strictly needed anymore in order to make statistical statements about the population, i.e. statements with quantified uncertainty, see Section \@ref(DBvsMB). In a model-based approach we assume the model is correct, possibly after we have managed to verify the model assumptions. As a consequence there is room for optimising the sampling units, i.e. searching for those units that lead to the most accurate map in some operational sense related to map quality, for instance, the smallest squared prediction error averaged over all locations in the mapped study area, see Chapter \@ref(Validation). 
 
-As an illustration, consider the following statistical model to be used for mapping: a linear regression model between a single predictor and the target variable to be mapped:
+As an illustration, consider the following statistical model to be used for mapping: a simple linear regression model for the target variable to be mapped:
 
 \begin{equation}
 Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
 (\#eq:simplelinearregressionmodel)
 \end{equation}
 
-with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $Cov(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the single covariate (predictor). 
+with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $Cov(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate. 
 
 ```{r, echo=FALSE}
 library(gstat)
@@ -71,9 +71,9 @@ model.opt <- lm(z~x, data=optsample)
 det.opt <- det(vcov(model.opt))
 ```
 
-```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample (a), and optimised sample for mapping with simple linear regression model (b), plotted in a map of the covariate."}
+```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample, and optimal sample for mapping with simple linear regression model, plotted in a map of the covariate."}
 mysamples <- rbind(randomsample,optsample)
-mysamples$design <- rep(c("Random","Optimal"),each=16)
+mysamples$design <- factor(rep(c("Random","Optimal"),each=16), levels=c("Random","Optimal"), ordered=TRUE)
 
 ggplot(data = grid) +
   geom_raster(mapping = aes(x = s1, y = s2, fill = x)) +
@@ -85,7 +85,7 @@ ggplot(data = grid) +
   coord_fixed()
 ```
 
-The optimised sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimised sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. The standard errors of both regression coefficients are considerably smaller for the optimised sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the estimated regression coefficients, equals `r as.character(round(det.random, 5))` for the simple random sample and `r as.character(round(det.opt, 6))` for the optimised sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ for at points where we have observations of the covariate $x$ only. So, we conclude that for mapping with a simple linear regression model, simple random sampling is not a good option if we are willing to rely on the assumption that there is a linear relation between $z$ and $x$. 
+The optimal sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, this spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the estimated regression coefficients is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ for at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option if we are willing to rely on the assumption that there is a linear relation between $z$ and $x$.  
 
 ```{r sebetas, echo=FALSE}
 tbl <- data.frame(x=c("SI","Optimised"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
