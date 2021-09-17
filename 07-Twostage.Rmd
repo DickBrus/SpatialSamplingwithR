@@ -13,9 +13,16 @@ Using a list as a sampling frame, the following algorithm can be used to select 
 1. Select randomly one ssu from the list with $M=\sum_{j=1}^N M_j$ ssu's ($M_j$ is number of ssu's of psu $j$), and determine the psu of the selected ssu.  
 2. Repeat step 1 until $n$ selections have been made.  
 
-In the first stage a ssu is selected in order to select a psu. This may seem unnecessary complicated. The reason for this is that this procedure automatically adjusts for the size of the psu's (number of ssu's within a psu), i.e. a psu is selected with probability proportional to its size. In the second stage, a *pre-determined* number of secondary sampling units, $m_{j}$, is selected every time psu $j$ is selected. Predetermined means that it is not allowed to decide on the secondary sample sizes (number of ssu's) per selected psu after the selection of the psu's. Note that the ssu selected in the first step of the two algorithms primarily serve to identify the psu, but these ssu's can also be used as selected ssu's.   
+In the first stage a ssu is selected in order to select a psu. This may seem unnecessary complicated. The reason for this is that this procedure automatically adjusts for the size of the psu's (number of ssu's within a psu), i.e. a psu is selected with probability proportional to its size. In the second stage, a pre-determined number of secondary sampling units, $m_{j}$, is selected every time psu $j$ is selected.
 
-The selection of a two-stage cluster random sample is illustrated again with Voorst. Twenty-four blocks of 0.5 km $\times$ 0.5 km are constructed that serve as psu's. Note that due to built-up areas, roads etc., these psu's have unequal size, i.e. the number of secondary units (pixels) within the psu's varies among the psu's. 
+Note that the ssu selected in the first step of the two algorithms primarily serve to identify the psu, but these ssu's can also be used as selected ssu's.   
+
+The selection of a two-stage cluster random sample is illustrated again with Voorst. Twenty-four blocks of 0.5 km $\times$ 0.5 km are constructed that serve as psu's.  
+
+```{block2, type='rmdnote'}
+Due to built-up areas, roads etc., the psu's in Voorst have unequal size, i.e. the number of secondary units (pixels) within the psu's varies among the psu's.
+```
+
 
 ```{r}
 load("data/Voorst.RData")
@@ -60,7 +67,7 @@ mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
 
 Figure \@ref(fig:TwostageVoorst) shows the selected sample.
 
-```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. Four times a psu is selected by ppswr. Each time a psu is selected, ten points are selected from that psu."}
+```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. Four times a psu is selected with probabilities proportional to theor size. Each time a psu is selected, ten points are selected from that psu by simple random sampling."}
 ggplot(data=grdVoorst) +        
   geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(psu))) +
   scale_fill_viridis_d(alpha=0.5) +
@@ -90,7 +97,11 @@ where $n$ is the number of psu selections and $M_{j}$ is total number of ssu's i
 
 with $\hat{\bar{z}}_{j}$ the estimated mean of the psu $j$. With simple random sampling of ssu's this mean can be estimated by the sample mean of this psu. Note the two bars $\hat{\bar{\bar{z}}}$, indicating that the population mean is estimated as the mean of estimated primary unit means. When $m_i$ is equal for all psu's the sampling design is self-weighting\index{Self-weighting sampling design}, i.e. the average of $z$ over all selected secondary units is an unbiased estimator of the population mean.
 
-The sampling variance of the estimator of the mean with two-stage cluster random sampling (primary units selected with probabilities proportional to size with replacement, secondary units by simple random sampling (with replacement in case of finite populations) and $m_j = m, j = 1, \dots, N$) is equal to (@coc77, Equation 11.33)^[The equation in Cochran (1977) is the variance estimator for the population total. In Exercise 5 you are asked to derive the estimator of the variance of the estimator of the population mean from the estimator of the variance of the estimator of the population total.]
+The sampling variance of the estimator of the mean with two-stage cluster random sampling (primary units selected with probabilities proportional to size with replacement, secondary units by simple random sampling (with replacement in case of finite populations) and $m_j = m, j = 1, \dots, N$) is equal to (@coc77, Equation (11.33))
+
+```{block2, type='rmdnote'}
+The equation in Cochran (1977) is the variance estimator for the population total. In Exercise 5 you are asked to derive the estimator of the variance of the estimator of the population mean from the estimator of the variance of the estimator of the population total.
+```
 
 \begin{equation}
 V(\hat{\bar{\bar{z}}}) = \frac{S^2_{\mathrm{b}}}{n} + \frac{S^2_{\mathrm{w}}}{n\;m} \;,
@@ -118,7 +129,9 @@ S^2_j = \frac{1}{M_j} \sum_{k=1}^{M_j} (z_{kj}-\bar{z}_j)^2 \;.
 (\#eq:WithinClusterVariance)
 \end{equation}
 
-Note that the first term of Equation \@ref(eq:TrueVarEstMeanTwostage) is equal to the variance of Equation \@ref(eq:TrueVarEstMeanCl). This variance component accounts for the variance of the true primary unit means within the population. The second variance component quantifies our additional uncertainty about the population mean, as we do not observe all secondary units of the selected primary units, but only a subset (sample) of these units.
+```{block2, type='rmdnote'}
+The first term of Equation \@ref(eq:TrueVarEstMeanTwostage) is equal to the variance of Equation \@ref(eq:TrueVarEstMeanCl). This variance component accounts for the variance of the true primary unit means within the population. The second variance component quantifies our additional uncertainty about the population mean, as we do not observe all secondary units of the selected primary units, but only a subset (sample) of these units.
+```
 
 The sampling variance of the estimator of the population mean can simply be estimated by
 
@@ -134,7 +147,11 @@ with $\widehat{S^2}(\hat{\bar{z}})$ the estimated variance of the *estimated* pr
 (\#eq:S2psuMeans)
 \end{equation}
 
-with $\hat{\bar{z}}_{j}$ the estimated mean of psu $j$, and $\hat{\bar{\bar{z}}}$ the estimated population mean (Equation \@ref(eq:EstMeanTwostage)). Note that neither the sizes of the psu's, $M_j$, nor the secondary sample sizes $m_{j}$ occur in these formulas. This simplicity is due to the fact that the psu's are selected with replacement and with probabilities proportional to size. The effect of the secondary sample sizes on the variance is implicitly accounted for. To understand this, note that the larger $m_{j}$, the less variable $\hat{\bar{z}}_{j}$, and the smaller its contribution to the variance.
+with $\hat{\bar{z}}_{j}$ the estimated mean of psu $j$, and $\hat{\bar{\bar{z}}}$ the estimated population mean (Equation \@ref(eq:EstMeanTwostage)). 
+
+```{block2, type='rmdnote'}
+Neither the sizes of the psu's, $M_j$, nor the secondary sample sizes $m_{j}$ occur in Equations \@ref(eq:VarEstMeanTwostage) and \@ref(eq:S2psuMeans). This simplicity is due to the fact that the psu's are selected with replacement and with probabilities proportional to size. The effect of the secondary sample sizes on the variance is implicitly accounted for. To understand this, note that the larger $m_{j}$, the less variable $\hat{\bar{z}}_{j}$, and the smaller its contribution to the variance.
+```
 
 Let us assume a linear model for the total costs: $C = c_0 + c_1n + c_2n\;m$, with $c_0$ the fixed costs, $c_1$ the cost per primary unit and $c_2$ the cost per secondary unit. We want to minimise the total costs, under the constraint that the variance of the estimator of the population mean may not exceed $V_{\mathrm{max}}$. The total costs can then be minimised by selecting [@gru06]
 
@@ -175,7 +192,7 @@ The estimated mean equals `r round(mz,3)` and the estimated standard error equal
 print(mean(mysample$z))
 ```
 
-The same estimate is obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. The estimator of the population total can be written as a weighted sum of the observations with all weights equal to $M/(d\;m$. These weights are assigned to argument `weight`. 
+The same estimate is obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. The estimator of the population total can be written as a weighted sum of the observations with all weights equal to $M/(n\;m$. These weights are assigned to argument `weight`. 
 
 ```{r}
 library(survey)
@@ -245,18 +262,16 @@ Optimal sample sizes for two-stage cluster random sampling (ppswr in first stage
 3. Compute the optimal sample sizes $n$ and $m$ for a maximum variance of the estimator of the population mean of 1, $c_1=2$ and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt) and \@ref(eq:mopt).  
 4. Compute the optimal sample sizes $n$ and $m$ for a budget of 100 monetary units,  $c_1=2$ and $c_2=1$ monetary units, see Equations \@ref(eq:nopt2) and \@ref(eq:mopt).  
 5. Use function `clusOpt2` of **R** package **PracTools** to compute optimal sample sizes given the precision requirement for the estimated population mean of Exercise 3 and given the budget of Exercise 4. First use function `BW2stagePPS` to compute the variance measures needed as input for function ` optClus2`. Note that the precision requirement of function `clusOpt2` is the coefficient of variation of the estimated population total, i.e. the standard deviation of the estimated population total divided by the population total. Compute this coefficient of variation from the maximum variance of the estimator of the population mean used in Exercise 3.  
-6. Derive the variance estimator for the estimated population mean, Equation \@ref(eq:TrueVarEstMeanTwostage), from the variance estimator of the estimated population total [@coc77]: 
-
+6. Derive the variance estimator for the estimated population mean, Equation \@ref(eq:TrueVarEstMeanTwostage), from the variance estimator of the estimated population total [@coc77], 
 \begin{equation}
 V(\hat{t}(z)) = \frac{1}{n} \sum_{j=1}^N p_j\left(\frac{t_j(z)}{p_j}-t(z)\right)^2 + \frac{1}{n} \sum_{j=1}^N \frac{M_j^2 (1-f_{2j})S^2_j}{m_j p_j}  \;,
 (\#eq:EstVarTotalTwostageCochran)
 \end{equation}
-
 with $\hat{t}(z)$ and $t(z)$ the estimated and true population total of $z$, respectively, $t_j(z)$ the total of psu $j$, and $p_j = M_j/M$. Use $m_j = m, j = 1, \dots, N$, and $f_{2j}=0$, i.e. sampling from infinite population, or sampling of ssu's within psu's by simple random sampling *with* replacement from finite population.
 
 ## Primary sampling units selected with probabilities proportional to size, without replacement
 
-Similar to cluster random sampling, we may prefer to select the primary sampling units without replacement\index{pps sampling!without replacement (ppswor)}. This leads to less strong spatial clustering of the sampling points, especially with large sampling fractions of primary sampling units. The psu's are selected with function `UPpivotal` of package **sampling** [@Tille2016], see Section \@ref(pivotalmethod). The second stage sample of secondary sampling units is selected with function `strata` of the same package, using the psu's as strata.
+Similar to cluster random sampling, we may prefer to select the primary sampling units without replacement\index{pps sampling!without replacement (ppswor)}. This leads to less strong spatial clustering of the sampling points, especially with large sampling fractions of primary sampling units. Sampling without replacement of psu's can be done with function `UPpivotal` of package **sampling** [@Tille2016], see Section \@ref(pivotalmethod). The second stage sample of secondary sampling units is selected with function `strata` of the same package, using the psu's as strata.
 
 ```{r}
 library(sampling)
@@ -276,7 +291,7 @@ mysample$pi <- n*m/M
 print(mean_HT <- sum(mysample$z/mysample$pi)/M)
 ```
 
-The population mean can be estimated with function `svymean` of package **survey** [@Lumley2020]. A simple solution is to treat the two-stage cluster random sample as a pps sample with replacement, and to estimate the variance with Equation \@ref(eq:VarEstMeanTwostage). With small sampling fractions of psu's the overestimation of the variance is negligible. As in cluster random sampling without replacement, the variance is approximated with Brewer's method, see @Berger2004 (option 2)\index{Brewer's variance estimator}.
+The population mean can be estimated with function `svymean` of package **survey**. To estimate the variance, a simple solution is to treat the two-stage cluster random sample as a pps sample *with replacement*, so that variance can be estimated with Equation \@ref(eq:VarEstMeanTwostage). With small sampling fractions of psu's the overestimation of the variance is negligible. With larger sampling fractions Brewer's method is recommended,  see @Berger2004 (option 2)\index{Brewer's variance estimator}.
 
 ```{r}
 mysample$fpc1 <- n*M_psu[mysample$psu]/M
@@ -298,7 +313,7 @@ Suppose the primary sampling units are for some reason not selected  with probab
 
 with $\hat{t}_j(z)$ an estimator of the total of psu $j$. The population mean can be estimated by dividing this estimator by the population size $M$. 
 
-Alternatively, we may estimate the population mean by dividing the estimate of the population total by the *estimated* population size. The $\pi$ estimator of the population size for two-stage cluster sampling is equal to that for cluster random sampling,  see Equation \@ref(eq:EstPopulatonSizeClEqual). The $\pi$ estimator and ratio estimator are equal when the psu's are selected with probabilities proportional to size and with replacement, but not so when the psu's of different size are selected with equal probabilities. This is shown below. First a sample is selected by selecting both psu's and ssu's by simple random sampling without replacement. 
+Alternatively, we may estimate the population mean by dividing the estimate of the population total by the *estimated* population size. The population szie can be estimated by the $\pi$ estimator, see Equation \@ref(eq:EstPopulatonSizeClEqual). The $\pi$ estimator and ratio estimator are equal when the psu's are selected by ppswr, but not so when the psu's of different size are selected with equal probabilities. This is shown below. First a sample is selected by selecting both psu's and ssu's by simple random sampling without replacement. 
 
 ```{r}
 library(sampling)
@@ -328,7 +343,7 @@ M_HT <- sum(1/mysample$pi)
 mz_ratio <- tz_HT/M_HT
 ```
 
-The $\pi$ estimate equals `r round(mz_HT,3)` and the ratio estimate equals `r round(mz_ratio,3)`. The $\pi$ estimator of the population mean can also be computed by first estimating totals of psu's, see Equation \@ref(eq:EstTotalTwostageEqual). 
+The $\pi$ estimate equals `r round(mz_HT,3)` and the ratio estimate equals `r round(mz_ratio,3)`. The $\pi$ estimate of the population mean can also be computed by first estimating totals of psu's, see Equation \@ref(eq:EstTotalTwostageEqual). 
 
 ```{r}
 tz_psu <- tapply(mysample$z/pi_ssu, INDEX=mysample$psu, FUN=sum)
@@ -336,13 +351,21 @@ tz_HT <- sum(tz_psu/pi_psu)
 (mz_HT <- tz_HT/M)
 ```
 
-The variance of the $\pi$ estimator of the population mean can be estimated by first estimating the variance of the estimator of the psu totals, and dividing this variance by the squared number of population units:
+The variance of the $\pi$ estimator of the population mean can be estimated by first estimating the variance of the estimator of the psu totals,
 
-\begin{eqnarray}
-\widehat{V}(\hat{t}(z)) &=& N^2\left(1-\frac{n}{N}\right)\frac{\widehat{S^2}(\hat{t}_i(z))}{n} \notag \\
-\widehat{V}(\hat{\bar{\bar{z}}}) &=& \frac{1}{M^2} \widehat{V}(\hat{t}(z))\;.
-(\#eq:EstVarTotalandMeanHTTwostageSI)
-\end{eqnarray}
+\begin{equation}
+\widehat{V}(\hat{t}(z)) = N^2\left(1-\frac{n}{N}\right)\frac{\widehat{S^2}(\hat{t}_i(z))}{n}
+\;,
+(\#eq:EstVarTotalHTTwostageSI)
+\end{equation}
+
+and dividing this variance by the squared number of population units:
+
+\begin{equation}
+\widehat{V}(\hat{\bar{\bar{z}}}) = \frac{1}{M^2} \widehat{V}(\hat{t}(z))
+\;.
+(\#eq:EstVarMeanHTTwostageSI)
+\end{equation}
 
 
 ```{r}

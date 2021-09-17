@@ -182,7 +182,7 @@ load(file="results/SYVoorst_rectangular.RData")
 summary(sampleSizes)
 ```
 
-An alternative shape for the grid is triangular\index{Triangular grid}. Triangular grids can be selected with the argument `type = "hexagonal"`^[The centers of hexagonal grid cells form a triangular grid.]. The triangular grid  was shown to be yield most precise estimates of the population mean given the expected sample size [@mat86]. Given the spacing of a triangular grid, the expected sample size can be computed by the area $A$ of the study area divided by the area of hexagonal grid cells with the sampling points at their centers. The area of a hexagon equals $6\sqrt{3}/4\;r^2$, with $r$ the radius of the circle circumscribing the hexagon (distance from center to a corner of the hexagon). So by choosing a radius of $\sqrt{A/(6\sqrt{3}/4)\;n}$ the expected sample equals $n$. The distance between neighbouring points of the triangular grid in the East-West direction then  equals $r \sqrt{3}$. The North-South distance equals $\sqrt{3}/2 \; dx$.
+An alternative shape for the grid is triangular\index{Triangular grid}. Triangular grids can be selected with the argument `type = "hexagonal"`. The centers of hexagonal grid cells form a triangular grid. The triangular grid  was shown to be yield most precise estimates of the population mean given the expected sample size [@mat86]. Given the spacing of a triangular grid, the expected sample size can be computed by the area $A$ of the study area divided by the area of hexagonal grid cells with the sampling points at their centers. The area of a hexagon equals $6\sqrt{3}/4\;r^2$, with $r$ the radius of the circle circumscribing the hexagon (distance from center to a corner of the hexagon). So by choosing a radius of $\sqrt{A/(6\sqrt{3}/4)\;n}$ the expected sample equals $n$. The distance between neighbouring points of the triangular grid in the East-West direction then  equals $r \sqrt{3}$. The North-South distance equals $\sqrt{3}/2 \; dx$.
 
 ```{r}
 cnst <- 6*sqrt(3)/4
@@ -279,7 +279,7 @@ With systematic random sampling all units have an equal inclusion probability, e
 (\#eq:HTTotalSY)
 \end{equation}
 
-The population mean can be estimated by dividing this $\pi$ estimator of the population total by the population size:
+The population mean can be estimated by dividing this $\pi$ estimator of the population total by the population size,
 
 \begin{equation}
 \hat{\bar{z}}=\sum_{k \in \mathcal{S}}\frac{z_k}{E[n]} \;.
@@ -288,14 +288,14 @@ The population mean can be estimated by dividing this $\pi$ estimator of the pop
 
 In this $\pi$ estimator of the population mean the sample sum of the observations is not divided by the number of selected units, but by the expected number of units.
 
-An alternative estimator is obtained by dividing the $\pi$ estimator of the population total by the $\pi$ estimator of the population size:
+An alternative estimator is obtained by dividing the $\pi$ estimator of the population total by the $\pi$ estimator of the population size,
 
 \begin{equation}
 \hat{N}=\sum_{k \in \mathcal{S}}\frac{1}{\pi_k} = n \frac{N}{E[n]} \;.
 (\#eq:EstimatorNSY)
 \end{equation}
 
-This yields the ratio estimator\index{Ratio estimator} of the population mean:
+This yields the ratio estimator\index{Ratio estimator} of the population mean,
 
 \begin{equation}
 \hat{\bar{z}}_{\text{ratio}}=\frac{1}{n}\sum_{k \in \mathcal{S}}z_k \;.
@@ -370,7 +370,7 @@ Alternatively, the sampling variance can be estimated by treating the systematic
 
 The clustering is repeated 100 times (`ntry=100`). The clustering with the smallest sum of the squared distances of the sampling units to their cluster centers (MSSD) is selected. 
 
-```{r}
+```{r, cache=TRUE}
 kmeans_equal_size <- function(s1, s2, k, ntry) {
   res_opt <- NULL
   MSSD_min <- Inf
@@ -390,7 +390,7 @@ res <- kmeans_equal_size(s1=mySYsample$x1/1000, s2=mySYsample$x2/1000,
 mySYsample$cluster <- res$clusters
 ```
 
-Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are then treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. With $n$ even the stratum weights are $1/H$ for all strata, with $n$ odd the weights are computed as $w_h=n_h/n$. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
+Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are then treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. The weights are computed as $w_h=n_h/n$. With $n$ even the stratum weights are $1/H$ for all strata. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
 
 ```{r}
 S2z_h <- tapply(mySYsample$z, INDEX=mySYsample$cluster, FUN=var)
@@ -416,13 +416,15 @@ This method yields an approximated variance of `r round(av_STSI_mz,3)`, which is
 
 A similar approach for approximating the variance is proposed a long time ago by Mat&eacute;rn [@Matern1947]. In this approach the variance is approximated by computing the squared difference of two local means. A local mean is computed by linear interpolation of the observations at the two nodes on the diagonal of a square grid cell. The four corners of a square grid cell serve as a group. Every grid node belongs to four groups and so the observation at a grid node is used four times in computing a local mean. Near the edges of the study area we have incomplete groups: one, two or even three observations are missing. To compute a squared difference these missing values are replaced by the sample mean. This results in as many squared differences as we have groups. Note that the number of groups is larger than the sample size. The squared differences are computed by
 
-\begin{eqnarray}
-d^2_{r,s} &=& \left(\frac{z_{r,s}+z_{r+1,s+1}}{2}-\frac{z_{r+1,s}+z_{r,s+1}}{2}\right)^2 \notag \\
-&=&\frac{(z_{r,s}-z_{r+1,s}-z_{r,s+1}+z_{r+1,s+1})^2}{4}\;,
+\begin{equation}
+\begin{split}
+d^2_{r,s} & = \left(\frac{z_{r,s}+z_{r+1,s+1}}{2}-\frac{z_{r+1,s}+z_{r,s+1}}{2}\right)^2 \\
+& =\frac{(z_{r,s}-z_{r+1,s}-z_{r,s+1}+z_{r+1,s+1})^2}{4}
+\end{split}\;,
 (\#eq:sqdiflocalmean)
-\end{eqnarray}
+\end{equation}
 
-with $r = 0,1, \dots ,R$ an index for the column-number and $s=0,1, \dots, S$ an index for the row-number of the extended grid. The variance of the estimator of the mean (sample mean) is then approximated by the sum of the squared differences divided by the squared sample size:
+with $r = 0,1, \dots ,R$ an index for the column-number and $s=0,1, \dots, S$ an index for the row-number of the extended grid. The variance of the estimator of the mean (sample mean) is then approximated by the sum of the squared differences divided by the squared sample size,
 
 \begin{equation}
 \widehat{V}(\bar{z}_{\mathcal{S}}) = \frac{\sum_{g=1}^G d^2_g}{n^2}\;,
@@ -433,7 +435,7 @@ with $d^2_g$ the squared difference of group unit $g$, and $G$ the total number 
 
 To approximate the variance with $\text{Mat{\'e}rn}$'s method\index{Mat$\text{{\'e}}$rn's variance approximation method} a function is defined. 
 
-```{r, echo=FALSE}
+```{r}
 matern <- function(s){
   g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[,c('gr','gs','z11')]
   g_12 <- within(s, {gr <- i; gs <- j-1; z12 <- z})[,c('gr','gs','z12')]
@@ -490,8 +492,7 @@ ggplot(data = df) +
     scale_y_continuous(name = "Approximated standard error")
 ```
 
-The variance of the 10,000 ratio estimates of the population mean with the triangular grid and an expected sample size of 40 equals `r as.character(round(v_mz_SYtriangular,3))`. Treating the triangular grid as a simple random sample strongly overestimates the variance: the average approximate variances equals `r round(m_av_SI_mz_SYtri,3)`. Mat&eacute;rn's method cannot be used to approximate the variance with a triangular grid. Function `kmeans_equal_size` can be used to cluster the points of the triangular grid into clusters of equal size. 
-
+The variance of the 10,000 ratio estimates of the population mean with the triangular grid and an expected sample size of 40 equals `r as.character(round(v_mz_SYtriangular,3))`. Treating the triangular grid as a simple random sample strongly overestimates the variance: the average approximate variances equals `r round(m_av_SI_mz_SYtri,3)`. Mat&eacute;rn's method cannot be used to approximate the variance with a triangular grid. Function `kmeans_equal_size` can be used to cluster the points of the triangular grid into clusters of equal size.
 ```{r, echo=FALSE}
 n <- nrow(mySYsample_tri)
 k <- floor(nrow(mySYsample_tri)/2)
@@ -509,8 +510,8 @@ v_mz_h <- S2z_h/nh
 w_h <- nh/sum(nh)
 av_STSI_mz_SYtri <- sum(w_h^2*v_mz_h)
 ```
-
 The approximated variance for this clustering equals `r round(av_STSI_mz_SYtri,3)`.
+
 
 @Brus2016c compared various variance approximations for systematic random sampling, among which model-based prediction of the variance, using a semivariogram that is estimated from the systematic sample, see Chapter \@ref(MBpredictionofDesignVariance).
 

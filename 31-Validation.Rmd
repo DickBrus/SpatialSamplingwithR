@@ -71,7 +71,7 @@ A different subpopulation is the part of the population that is *in reality* cla
 The map quality indices are defined as population or subpopulation means. To estimate these (sub)population means a design-based sampling approach is most appropriate. Sampling units are selected by probability sampling, and the map quality indices are estimated by model-free, design-based inference. So the ME of a finite population can be estimated by the $\pi$ estimator (see Equation \@ref(eq:HTMean)):
 
 \begin{equation}
-\widehat{ME}_{\pi}=\frac{1}{N} \sum_{k \in \mathcal{S}} \frac{1}{\pi_k}e_k \;,
+\widehat{ME} =\frac{1}{N} \sum_{k \in \mathcal{S}} \frac{1}{\pi_k}e_k \;,
 (\#eq:HTME)
 \end{equation}
 
@@ -121,7 +121,7 @@ x_k = \left\{
 
 This estimator is also recommended in situations where the sample size is not fixed but varies among samples selected with the sampling design. This is the case, for instance, when estimating the mean error or purity of a given map unit from a simple random sample. The number of selected sampling units within the map unit is uncontrolled and varies between simple random samples. In this case we can either estimate the mean error or purity of a map unit $u$ by using the *known* size (area, number of pixels) of map unit $u$ in the denominator, or the *estimated* size. Interestingly, by dividing by the *estimated* size of the map unit instead of its known area, the estimator generally becomes more precise [@sar92]. See also Section \@ref(LargeDomainsDirectEstimator). 
 
-In principle all probability sampling designs described in Part I are appropriate for validation. @steh99 and @brus2011d evaluated five basic probability sampling designs, and concluded that in general stratified random sampling is a good choice. For validation of categorical maps natural strata are the map units, i.e. the groups of polygons or grid cells assigned to each class. Systematic random sampling is less suitable as no unbiased estimator of the sampling variance of the estimator of the population mean exists for this design (see Chapter \@ref(SY)). For validation of maps of extensive areas, think of whole continents, travel time between sampling locations can become substantial. In this case sampling designs that lead to spatial clustering\index{Spatial clustering} of validation locations can become efficient, for instance two-stage cluster random sampling (Chapter \@ref(Twostage)) or cluster random sampling (Chapter \@ref(Cl)).
+In principle all probability sampling designs described in Part I are appropriate for validation. @steh99 evaluated five basic probability sampling designs, and concluded that in general stratified random sampling is a good choice. For validation of categorical maps natural strata are the map units, i.e. the groups of polygons or grid cells assigned to each class. Systematic random sampling is less suitable as no unbiased estimator of the sampling variance of the estimator of the population mean exists for this design (see Chapter \@ref(SY)). For validation of maps of extensive areas, think of whole continents, travel time between sampling locations can become substantial. In this case sampling designs that lead to spatial clustering\index{Spatial clustering} of validation locations can become efficient, for instance two-stage cluster random sampling (Chapter \@ref(Twostage)) or cluster random sampling (Chapter \@ref(Cl)).
 
 ## Real-world case study
 
@@ -238,12 +238,11 @@ We are uncertain about both population MSE's, as we measured the squared errors 
 table(mysample$stratum)
 ```
 
-A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. A look-up table is constructed to add the collapsed strata identifiers to the `data.frame` `mysample` and `strata`, using function `merge` of the **base** R library.
+A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. A look-up table `lut` is constructed to add the collapsed strata identifiers to the data frames `mysample` and `strata`, using function `merge`.
 
 ```{r}
 levels <- sort(unique(mysample$stratum))
 collapsedstrata <- c(1,1,2,3,4,5,6,7)
-# look-up table
 lut <- data.frame(stratum=levels, collapsedstrata)
 mysample <- merge(x=mysample, y=lut)
 strata <- merge(x=strata, y=lut)
@@ -257,7 +256,7 @@ w_hc <- N_hc/sum(N_hc)
 n_hc <- table(mysample$collapsedstrata)
 ```
 
-The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation \@ref(eq:EstVarMeanSTSI). In the next code chunk this is shown for the RF predictions only.
+The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation \@ref(eq:EstVarMeanSTSI). In the next code chunk this is shown for the KED predictions only.
 
 ```{r}
 s2e_KED_hc <- tapply(mysample$eKED, INDEX=mysample$collapsedstrata, FUN=var)
