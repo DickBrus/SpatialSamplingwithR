@@ -1,4 +1,7 @@
 load("../data/CovariatesThreeWoredasEthiopia.RData")
+load("data/CovariatesThreeWoredasEthiopia.RData")
+
+library(sp)
 
 #change class into SpatialPixelsDataFrame
 gridded(grdEthiopia) <- ~s1+s2
@@ -36,7 +39,7 @@ hist(samplesize)
 
 #Now select a square grid of exactly 100 points.
 
-for (i in 1:100) {
+for (i in 1:50) {
   mysample <- spsample(x=grdEthiopia,n=n,type="regular")
   if(length(mysample)==n) {break}
 }

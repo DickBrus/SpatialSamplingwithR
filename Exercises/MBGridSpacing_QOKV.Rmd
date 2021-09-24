@@ -16,6 +16,7 @@ library(gstat)
 library(ggplot2)
 library(sp)
 library(data.table)
+library(tidyverse)
 ```
 
 ## Load data
@@ -23,7 +24,7 @@ library(data.table)
 Load the data on soil organic carbon of the three woredas in Ethiopia. Also load the discretisation grid of the study area.
 
 ```{r}
-#load data on soil organic carbon
+#load data on soil organic matter
 load(file="../data/ThreeWoredasEthiopia.RData")
 load(file="../data/CovariatesThreeWoredasEthiopia.RData")
 ```
@@ -35,6 +36,7 @@ Use the data to compute a sample semivariogram and to fit a spherical model with
 ```{r}
 #compute sample semivariogram
 vg <- variogram(SOM~1, data = priordataEthiopia)
+plot(vg)
 #fit semivariogram model
 vgm_MoM <- fit.variogram(vg, model = vgm(psill = 0.6, model = "Sph", range = 40, nugget = 0.6))
 plot(vg,vgm_MoM)
@@ -63,8 +65,7 @@ Specify the grid spacings to be evaluated. Specify the cumulative probabilities 
 
 ```{r}
 coordinates(mysample) <- ~s1+s2
-coordinates(grdEthiopia) <- ~s1+s2
-gridded(grdEthiopia) <- TRUE
+gridded(grdEthiopia) <- ~s1+s2
 
 #define grid spacings
 spacing <- 5:12
@@ -81,7 +82,7 @@ for (i in 1:length(spacing)) {
     #Use gstat for ordinary kriging predictions
     predictions  <- krige(
         dummy ~ 1,
-        mygrid,
+        locations = mygrid,
         newdata = mysample,
         model = vgm_MoM,
         nmax = 20

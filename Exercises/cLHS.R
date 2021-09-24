@@ -1,4 +1,5 @@
 library(clhs)
+library(ggplot2)
 
 #load grid with covariates
 load(file="../data/HunterValley.RData")

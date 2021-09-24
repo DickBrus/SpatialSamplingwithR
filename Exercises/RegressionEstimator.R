@@ -1,4 +1,4 @@
-load("data/Amazonia_1km.RData")
+load("../data/Amazonia_1km.RData")
 gridAmazonia$lnSWIR2 <- log(gridAmazonia$SWIR2)
 
 library(survey)
@@ -12,12 +12,9 @@ for (i in 1:R) {
   
   units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
   mysample <- gridAmazonia[units,c("AGB","lnSWIR2")]
-  X <- matrix(nrow=n, ncol=2, data=1)
-  X[,2] <- mysample$lnSWIR2
-  XXinv <- solve(t(X) %*% X)
-  Xz <- t(X) %*% mysample$AGB
-  ab <- t(XXinv %*% Xz)
   lm_sample <- lm(AGB~lnSWIR2, data=mysample)
+#inclusion probabilities are equal, so we can estimate regression coefficients by OLS
+  ab <- coef(lm_sample)
 
   mx_sam <- mean(mysample$lnSWIR2) 
   mz_sam <- mean(mysample$AGB)

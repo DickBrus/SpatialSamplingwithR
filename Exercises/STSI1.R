@@ -1,8 +1,8 @@
 library(sampling)
-load("data/Voorst.RData")
+load("../data/Voorst.RData")
 
 #compute total number of pixels per stratum and stratum weights (relative size)
-N_h <- tapply(grdVoorst$z, INDEX=grdVoorst$newstratum, FUN=length)
+N_h <- tapply(grdVoorst$z, INDEX=grdVoorst$stratum, FUN=length)
 w_h <- N_h/sum(N_h)
 
 #total sample size
@@ -21,13 +21,14 @@ ord <- unique(grdVoorst$stratum)
 set.seed(314)
 units <- sampling::strata(grdVoorst, stratanames="stratum", size=n_h[ord], method="srswr")
 mysample <- getdata(grdVoorst, units)
+head(mysample)
 
 #estimate population means and standard error of estimator
 mz_h <- tapply(mysample$z, INDEX=mysample$stratum, FUN=mean)
-mz <- sum(w_h*mz_h)
+print(mz <- sum(w_h*mz_h))
 S2z_h <- tapply(mysample$z, INDEX=mysample$stratum, FUN=var)
 v_mz_h <- S2z_h/n_h
-se_mz <- sqrt(sum(w_h^2*v_mz_h))
+print(se_mz <- sqrt(sum(w_h^2*v_mz_h)))
 
 
 
@@ -35,8 +36,6 @@ se_mz <- sqrt(sum(w_h^2*v_mz_h))
 S2z_h_pop <- tapply(grdVoorst$z, INDEX=grdVoorst$stratum, FUN=var)
 v_mz_h_true <- S2z_h_pop/n_h
 print(se_mz_true <- sqrt(sum(w_h^2*v_mz_h_true)))
-
-
 
 #compute 95% confidence interval estimate of population mean with function confint of package survey
 library(survey)

@@ -1,6 +1,6 @@
 # Computing the required sample size {#RequiredSampleSize}
 
-An important decision in designing sampling schemes is the number of units to select. In other words, what should the sample size be? If a certain budget is available for sampling, we can determine the affordable sample size from this budget. A cost model is then needed. For simple random sampling the affordable sample size can then simply be computed by the available budget divided by the average cost per unit.
+An important decision in designing sampling schemes is the number of units to select. In other words, what should the sample size be? If a certain budget is available for sampling, we can determine the affordable sample size from this budget. A cost model is then needed.
 
 The alternative to deriving the affordable sample size from the budget is to start from a requirement on the quality of the survey result obtained by statistical inference. Two types of inference are distinguished, estimation and testing. The required sample size\index{Required sample size} depends on the type of sampling design. With stratified random sampling we expect that we need fewer sampling units compared to simple random sampling to estimate the population mean with the same precision, whereas with cluster random sampling and two-stage cluster random sampling in general we need more sampling units. To compute the sample size given some quality requirement we may start with computing this required sample size for simple random sampling, and then correct this sample size to account for the design effect. Therefore I start with presenting formulas for computing the required sample size for simple random sampling. Section \@ref(DesignEffect) describes how required sample sizes for other types of sampling designs can be derived.
 
@@ -15,7 +15,7 @@ with $n$ the required sample size for simple random sampling with replacement.
 
 ## Standard error of estimator
 
-A first option is to set a limit on the variance  of the estimated mean, see Equation \@ref(eq:VarMean), or on the square root of this variance, the standard error of the estimated mean. Given a chosen limit for the standard error $se_{\mathrm{max}}$, the required sample size for simple random sampling with replacement can be computed by
+A first option is to set a limit on the variance of the $\pi$ estimator of the population mean, see Equation \@ref(eq:VarMean), or on the square root of this variance, the standard error of the estimor. Given a chosen limit for the standard error $se_{\mathrm{max}}$, the required sample size for simple random sampling with replacement can be computed by
 
 \begin{equation}
 n = \left(\frac{S^*(z)}{se_{\mathrm{max}}}\right)^2 \;,
@@ -34,13 +34,13 @@ n = \left(\frac{\sqrt{p^*(1-p^*)}}{se_{\mathrm{max}}}\right)^2+1 \;,
 with $p^*$ a prior estimate of the population proportion\index{Prior estimate!of population proportion}.
 
 ```{block2, type= 'rmdnote'}
-To determine the required sample size for estimating the population proportion we need a prior estimate of the population parameter of interest itself, whereas for the population mean a prior estimate is needed of the population standard deviations and therefore differs from the parameter of interest. The parameter of which a prior estimate is needed is referred to as the design parameter\index{Design parameter}.
+To determine the required sample size for estimating the population proportion we need a prior estimate of the population parameter of interest itself, whereas for the population mean a prior estimate is needed of the population standard deviations, and therefore differs from the parameter of interest. The parameter of which a prior estimate is needed is referred to as the design parameter\index{Design parameter}.
 ```
 
-Alternatively, we may require that with a large probability $1-\alpha$ the *relative* standard error, i.e. the standard error divided by the population mean, may not exceed a given limit $rse_{\mathrm{max}}$. In this case the required sample size can be computed by
+Alternatively, we may require that with a large probability $1-\alpha$ the *relative* standard error, i.e. the standard error of the estimator divided by the population mean, may not exceed a given limit $rse_{\mathrm{max}}$. In this case the required sample size can be computed by
 
 \begin{equation}
-n = \left(\frac{S^*(z)}{rse_{\mathrm{max}}\;\tilde{\bar{z}}}\right)^2=\left(\frac{cv^*}{rse_{\mathrm{max}}}\right)^2 \;,
+n = \left(\frac{cv^*}{rse_{\mathrm{max}}}\right)^2 \;,
 (\#eq:nreqrse)
 \end{equation}
 
@@ -53,14 +53,14 @@ n = \left(\frac{p^*(1-p^*)}{rse_{\mathrm{max}}\;p^*}\right)^2+1=\left(\frac{1-p^
 
 ## Length of confidence interval {#ReqSampleSizeLengthCI}
 
-Another option is to require that the length of the confidence interval of the mean may not exceed a given limit $l_{\mathrm{max}}$,
+Another option is to require that the length of the confidence interval of the population mean may not exceed a given limit $l_{\mathrm{max}}$,
 
 \begin{equation}
 2 \; t_{\alpha/2,n-1}\frac{S(z)}{\sqrt{n}} \leq l_{\mathrm{max}} \;,
 (\#eq:widthCI)
 \end{equation}
 
-with $t_{\alpha/2,n-1}$ the $(1-(\alpha/2))$ quantile of the $t$ distribution with $n-1$ degrees of freedom, $S(z)$ the population standard deviation of the study variable, and $n$ the sample size.  The problem is that we do not know the degrees of freedom (we want to determine the sample size $n$). Therefore $t_{\alpha/2,n-1}$ is replaced by $u_{\alpha/2}$, the $(1-(\alpha/2))$ quantile of the standard normal distribution. Rearranging yields
+with $t_{\alpha/2,n-1}$ the $(1-(\alpha/2))$ quantile of the Student $t$ distribution with $n-1$ degrees of freedom, $S(z)$ the population standard deviation of the study variable, and $n$ the sample size.  The problem is that we do not know the degrees of freedom (we want to determine the sample size $n$). Therefore $t_{\alpha/2,n-1}$ is replaced by $u_{\alpha/2}$, the $(1-(\alpha/2))$ quantile of the standard normal distribution. Rearranging yields
 
 \begin{equation}
 n = \left(u_{\alpha/2}\frac{S^*(z)}{l_{\mathrm{max}}/2}\right)^2 \;.
@@ -99,11 +99,11 @@ u <- qnorm(p=1-0.05/2, mean=0, sd=1)
 n <- ceiling((u*cv/rmax)^2)
 ```
 
-The same result is obtained with function `nContMoe` of package **PracTools** (@PracTools, @Vaillant2018).
+The required sample size is $n$. The same result is obtained with function `nContMoe` of package **PracTools** (@PracTools, @Vaillant2018).
 
 ```{r}
 library(PracTools)
-print(nContMoe(moe.sw=2, e=rmax, alpha=0.05, CVpop=cv))
+print(ceiling(nContMoe(moe.sw=2, e=rmax, alpha=0.05, CVpop=cv)))
 ```
 
 ### Length of confidence interval for a proportion
@@ -117,7 +117,7 @@ n = \left(u_{\alpha/2}\frac{\sqrt{p^*(1-p^*)}}{l_{\mathrm{max}}/2}\right)^2 +1\;
 
 The Wald interval approximates the discrete binomial distribution by a normal distribution. See the rule of thumb in Section \@ref(ConfidenceIntervalProportion) for when this approximation is reasonable.
 
-Package **binomSamSize** [@Hohle2017] has quite a few functions for computing the required sample size. The function `ciss.wald` uses the normal approximation. Required sample sizes are computed for a prior estimate of the population proportion $p^*$ of 0.2.
+Package **binomSamSize** [@Hohle2017] has quite a few functions for computing the required sample size. The function `ciss.wald` uses the normal approximation. In the next code chunk required sample sizes are computed for a prior estimate of the population proportion $p^*$ of 0.2.
 
 ```{block2, type='rmdcaution'}
 Argument `d` in the functions below is *half* the length of the confidence interval.
@@ -188,7 +188,7 @@ ggplot(df)+
   scale_y_continuous(name="Power")
 ```
 
-Figure \@ref(fig:powerbinomialtest) shows that the power does not increase monotonically with the sample size. The graph shows a saw-toothed behaviour. This is caused by the step-wise increase of the critical number of successes ($k_{min}$) with the total sample size.
+Figure \@ref(fig:powerbinomialtest) shows that the power does not increase monotonically with the sample size. The graph shows a saw-toothed behaviour. This is caused by the step-wise increase of the critical number of successes (`k_min`) with the total sample size.
 
 The required sample size can be computed in two ways. The first option is to compute the smallest sample size for which the power is larger than or equal to the required power $1-\beta$. The alternative is to compute the smallest sample size for which the power is larger than or equal to $1-\beta$ *for all sample sizes larger than this*.
 
@@ -204,7 +204,7 @@ n2 <- n[length(n)-i+1]
 
 The smallest sample size at which the desired level of 0.8 is reached is `r n1`. However, as can be seen in Figure \@ref(fig:powerbinomialtest) for sample sizes 89, 90, 93, 94 and 97 the power drops below the desired level of  0.80. The smallest sample size at which the power stays above the level of 0.8 is `r n2`.
 
-Alternatively, we may use function `pwr.p.test` of package **pwr**. This is an approximation, using an arcsine transformation of proportions. The first step is to compute Cohens's $h$\index{Cohens's $h$}, which is a measure of the distance between two proportions: $h = 2\;arcsin(\sqrt{p_1})-2\;arcsin(\sqrt{p_2})$. This can be done with function `ES.h`. The value of $h$ must be positive, which is achieved when the proportion assigned to argument `p1` is larger than the proportion assigned to argument `p2`.
+Alternatively, we may use function `pwr.p.test` of package **pwr**. This is an approximation, using an arcsine transformation of proportions. The first step is to compute Cohens's $h$\index{Cohen's $h$}, which is a measure of the distance between two proportions: $h = 2\;arcsin(\sqrt{p_1})-2\;arcsin(\sqrt{p_2})$. This can be done with function `ES.h`. The value of $h$ must be positive, which is achieved when the proportion assigned to argument `p1` is larger than the proportion assigned to argument `p2`.
 
 ```{r}
 h <- ES.h(p1=0.30,p2=0.20)
@@ -221,7 +221,7 @@ The approximated sample size equals `r ceiling(n_approx$n)`, which is somewhat s
     
 ## Accounting for design effect {#DesignEffect}
 
-The required sample sizes computed in the previous sections are all for simple random sampling in combination with the $\pi$ estimator  of the population mean. But what is the required sample size for other types of sampling design, such as stratified (simple) random sampling, systematic random sampling, two-stage cluster random sampling and cluster random sampling? Broadly speaking we expect that with stratified random sampling and systematic random sampling the sampling variance of the estimator of the mean will be smaller than with simple random sampling of the same number of units, whereas with two-stage cluster random sampling and cluster random sampling we expect larger sampling variances. Therefore, reversely, for the first two types of sampling design we expect that the sample size required to achieve the same level of accuracy or confidence will be smaller than with simple random sampling, and for the latter two design types this sample size will be larger. The design effect\index{Design effect} is commonly quantified by the ratio of two sampling variances of the estimated mean [@loh99]
+The required sample sizes computed in the previous sections are all for simple random sampling in combination with the $\pi$ estimator  of the population mean. But what is the required sample size for other types of sampling design, such as stratified (simple) random sampling, systematic random sampling, two-stage cluster random sampling and cluster random sampling? Broadly speaking we expect that with stratified random sampling and systematic random sampling the sampling variance of the estimator of the mean will be smaller than with simple random sampling of the same number of units, whereas with two-stage cluster random sampling and cluster random sampling we expect larger sampling variances. Therefore, reversely, for the first two types of sampling design we expect that the sample size required to achieve the same level of accuracy or confidence will be smaller than with simple random sampling, and for the latter two design types this sample size will be larger. The design effect\index{Design effect} is commonly quantified by the ratio of two sampling variances of the population mean estimator [@loh99]
 
 \begin{equation}
 de(p,\hat{\bar{z}}) = \frac{V_p(\hat{\bar{z}})}{V_{\mathrm{SI}}(\hat{\bar{z}}_{\pi})}= \frac{V_p(\hat{\bar{z}})}{S^2(z)/n}\;,
@@ -231,7 +231,7 @@ de(p,\hat{\bar{z}}) = \frac{V_p(\hat{\bar{z}})}{V_{\mathrm{SI}}(\hat{\bar{z}}_{\
 with $V_p(\hat{\bar{z}})$ the sampling variance of an estimator ($\pi$ estimator, regression estimator) of the population mean with sampling design $p$ and $V_{\mathrm{SI}}(\hat{\bar{z}}_{\pi})$ the sampling variance of the $\pi$ estimator of the population mean with simple random sampling. Given an estimate of this design effect, the required sample size for a more complex sampling strategy (combination of sampling design and estimator), given a constraint on the standard error or the half-length of a confidence interval, can be computed by
 
 \begin{equation}
-n_{\mathrm{req}}(p,\hat{\bar{z}}) = \sqrt{de(p,\hat{\bar{z}})} \; n_{\mathrm{req}}(\mathrm{SI,HT}) \;.
+n_{\mathrm{req}}(p,\hat{\bar{z}}) = \sqrt{de(p,\hat{\bar{z}})} \; n_{\mathrm{req}}(\mathrm{SI},\pi) \;.
 (\#eq:nreqdesigneffect)
 \end{equation}
 
@@ -262,7 +262,7 @@ with $f(\theta|\mathbf{z})$ the posterior distribution, i.e. the probability den
 
 ### Bayesian criteria for sample size computation
 
-Equation \@ref(eq:BayesTheorem) shows that the posterior distribution of the population parameter of interest depends on the probability distribution of the new data $f(\mathbf{z})$. The problem is that these new data are not yet known. We are designing a sample, and the data yet are to be collected, so at first glance this might seem an unsolvable problem. However, what we could do is to simulate with the prior probability density function a large number of values of the population parameter(s), and with each parameter a large number of possible vectors with $n$ data. Each data vector is then used to update the prior to the posterior, using Bayes' rule (Equation \@ref(eq:BayesTheorem)). For each posterior either the length of the highest posterior density (HPD) interval \index{Highest posterior density interval} with a coverage probability\index{Coverage probability} of $1-\alpha$ is computed, or reversely, the coverage probability of the HPD interval of length $l_{\mathrm{max}}$. Finally the average of the lengths of the HPD intervals, or the average of the coverage probabilities is computed, and these averages are compared with our precision requirement. If the average length is larger than $l_{\mathrm{max}}$, or the coverage probability of intervals of length $l_{\mathrm{max}}$ is smaller than $1-\alpha$, then we must increase $n$; if the average length is smaller than $l_{\mathrm{max}}$, or the coverage probability of intervals of length $l_{\mathrm{max}}$ is larger than $1-\alpha$, then we can decrease $n$). This whole procedure is repeated until our precision requirement is met. If the Simulation is one option to compute the sample size, (partly) analytical approaches are also available.
+Equation \@ref(eq:BayesTheorem) shows that the posterior distribution of the population parameter of interest depends on the probability distribution of the new data $f(\mathbf{z})$. The problem is that these new data are not yet known. We are designing a sample, and the data yet are to be collected, so at first glance this might seem an unsolvable problem. However, what we could do is to simulate with the prior probability density function a large number of values of the population parameter(s), and with each parameter a large number of possible vectors with $n$ data. Each data vector is then used to update the prior to the posterior, using Bayes' rule (Equation \@ref(eq:BayesTheorem)). For each posterior either the length of the highest posterior density (HPD) interval \index{Highest posterior density interval} with a coverage probability\index{Coverage probability} of $1-\alpha$ is computed, or reversely, the coverage probability of the HPD interval of length $l_{\mathrm{max}}$. Finally the average of the lengths of the HPD intervals, or the average of the coverage probabilities is computed, and these averages are compared with our precision requirement. If the average length is larger than $l_{\mathrm{max}}$, or the coverage probability of intervals of length $l_{\mathrm{max}}$ is smaller than $1-\alpha$, then we must increase $n$; if the average length is smaller than $l_{\mathrm{max}}$, or the coverage probability of intervals of length $l_{\mathrm{max}}$ is larger than $1-\alpha$, then we can decrease $n$. This whole procedure is repeated until our precision requirement is met. Simulation is one option to compute the sample size, (partly) analytical approaches are also available.
 
 More formally, the procedure is as follows. The prior probability density function on the population parameter(s) $\theta$ is used to compute for a given sample size $n$ the *predictive* distribution of the data,
 
@@ -273,7 +273,7 @@ f(\mathbf{z}|n) = \int_{\Theta} f(\mathbf{z}|\theta,n)f(\theta)\mathrm{d}\theta
 
 with $\Theta$ the parameter space for $\theta$ containing all possible values of $\theta$. This predictive distribution\index{Predictive distribution} is also named the *preposterior* distribution\index{Preposterior distribution}, stressing that the data are not yet accounted for in the distribution.
 
-Even if $\theta$ would be fixed, we do not have only one vector $\mathbf{z}$ with $n$ data values but a probability distribution, from which we can simulate possible data vectors, referred to as the data space $\mathcal{Z}$. In case of a binomial probability and sample size $n$, the data space $\mathcal{Z}$ (in the form of the number of observed successes given sample size $n$) can be written as the set $\{0,1,\dots,n\}$, i.e. one vector of length $n$ with all failures, $n$ vectors of length $n$ with one success, ${n \choose 2}$  vectors with two successes, etc. Each data vector is associated with a probability density (for continuous data) or probability mass (for discrete data). As a consequence, we do not have only one posterior distribution function $f(\theta|\mathbf{z})$, but as many as we have data vectors in the data space. For each posterior distribution function the coverage of the HPD interval of a given length can be computed, or reversely, the length of the HPD interval for a given coverage. This leads to various criteria for computing the required sample size, among which are the average length criterion\index{Average length criterion}, the average coverage criterion\index{Average coverage criterion} and the worst outcome criterion\index{Worst outcome criterion} (@Joseph1995, @Joseph1997).
+Even if $\theta$ would be fixed, we do not have only one vector $\mathbf{z}$ with $n$ data values but a probability distribution, from which we can simulate possible data vectors, referred to as the data space $\mathcal{Z}$. In case of a binomial probability and sample size $n$, the data space $\mathcal{Z}$ (in the form of the number of observed successes given sample size $n$) can be written as the set $\{0,1,\dots,n\}$, i.e. one vector of length $n$ with all "failures", $n$ vectors of length $n$ with one success, ${n \choose 2}$  vectors with two successes, etc. Each data vector is associated with a probability density (for continuous data) or probability mass (for discrete data). As a consequence, we do not have only one posterior distribution function $f(\theta|\mathbf{z})$, but as many as we have data vectors in the data space. For each posterior distribution function the coverage of the HPD interval of a given length can be computed, or reversely, the length of the HPD interval for a given coverage. This leads to various criteria for computing the required sample size, among which are the average length criterion\index{Average length criterion}, the average coverage criterion\index{Average coverage criterion} and the worst outcome criterion\index{Worst outcome criterion} (@Joseph1995, @Joseph1997).
 
 #### Average length criterion
 
@@ -319,9 +319,7 @@ The smallest sample size satisfying this condition is used as the sample size. F
 
 Besides the fully Bayesian approach, @Joseph1997 describe a mixed Bayesian-likelihood approach\index{Mixed Bayesian-likelihood approach} for determining the sample size. In the mixed Bayesian-likelihood approach of sample size determination the prior distribution of the parameter(s) is only used to derive the predictive distribution of the data (Equation \@ref(eq:predictivedistribution)), not for deriving the posterior distributions of the parameter of interest for each data vector. For analysis of the posterior distribution, an uninformative prior\index{Uninformative prior} is therefore used. This mixed approach is of interest when, after the data have been collected, we prefer to estimate the population mean from these data only, using the frequentist approach described in the previous sections.
 
-```{block2, type='rmdnote'}
-An example of a situation where the mixed Bayesian-likelihood approach can be attractive is the following. Suppose some data of the study variable from the population of interest are already available, but we would like to collect more data so that we will be more confident about the (current) population mean once these new are collected. The legacy data are used to construct a prior distribution. We have doubts about the quality of the legacy data, for instance, because they have been collected a long time ago. In that case the mixed Bayesian-likelihood approach can be a good option -- we are willing to use the legacy data to plan the sampling, but not to make statements about the current population. 
-```
+An example of a situation where the mixed Bayesian-likelihood approach can be attractive is the following. Suppose some data of the study variable from the population of interest are already available, but we would like to collect more data so that we will be more confident about the (current) population mean once these new are collected. The legacy data are used to construct a prior distribution. We have doubts about the quality of the legacy data because they have been collected a long time ago and the study variable might be changed in the meantime. In that case the mixed Bayesian-likelihood approach can be a good option -- we are willing to use the legacy data to plan the sampling, but not to make statements about the current population. 
 
 No closed formula for computing the required sample size exists for this approach because the posterior density function $f(\theta|z,n)$ is not a well-defined distribution as before. However, the required sample size still can be approximated by simulation.
 
@@ -333,7 +331,7 @@ The gamma distribution\index{Gamma distribution} has two parameters $a$ and $b$.
 
 ```{r gammaprior, fig.asp=0.7,  fig.cap="Prior gamma distribution for the precision parameter for a shape parameter $a=5$ and a scale parameter $1/b=1/100$."}
 a <- 5; b <- 100
-x <- seq(from=0, to=0.5, length=1000)
+x <- seq(from=0, to=0.2, length=1000)
 dg <- dgamma(x=x, shape=a, scale=1/b)
 plot(x=x, y=dg, type="l", ylab="Density", xlab="Precision")
 ```
@@ -343,13 +341,13 @@ The mean of the precision parameter $\lambda$ is given by $a/b$, and its standar
 The normal-gamma prior is used to compute the predictive distribution for the data. For ACC the required sample size can then be computed with [@Adcock1988]
 
 \begin{equation}
-n = \frac{4b}{a\; l_{\mathrm{max}}^2}t^2_{2a;1-\alpha/2} - n_0 \;,
+n = \frac{4b}{a\; l_{\mathrm{max}}^2}t^2_{2a;\alpha/2} - n_0 \;,
 (\#eq:nreqACC)
 \end{equation}
 
-with $t^2_{2a}$ the squared $(1-\alpha/2)$ quantile of the (usual, i.e. neither shifted, nor scaled) $t$ distribution with $2a$ degrees of freedom, and $n_0$ the number of prior points. The prior sample size $n_0$ is only relevant if we have prior information about the population mean and an informative prior is used for this population mean. If we have no information about the population mean a non-informative prior is used, and $n_0$ equals 0. Note that as $a/b$ is the prior mean of the inverse of the population variance, Equation \@ref(eq:nreqACC) is similar to Equation \@ref(eq:nreqwidthCI). The only difference is that a quantile from the standard normal distribution is replaced by a quantile from a $t$ distribution with $2a$ degrees of freedom.
+with $t^2_{2a;\alpha/2}$ the squared $(1-\alpha/2)$ quantile of the (usual, i.e. neither shifted, nor scaled) $t$ distribution with $2a$ degrees of freedom, and $n_0$ the number of prior points. The prior sample size $n_0$ is only relevant if we have prior information about the population mean and an informative prior is used for this population mean. If we have no information about the population mean a non-informative prior is used, and $n_0$ equals 0. Note that as $a/b$ is the prior mean of the inverse of the population variance, Equation \@ref(eq:nreqACC) is similar to Equation \@ref(eq:nreqwidthCI). The only difference is that a quantile from the standard normal distribution is replaced by a quantile from a $t$ distribution with $2a$ degrees of freedom.
 
-No closed-form formula exists for computing the smallest $n$ satisfying ALC, but the solution can easily be found by a bisectional search algorithm [@Joseph1997].
+No closed-form formula exists for computing the smallest $n$ satisfying ALC, but the solution can be found by a bisectional search algorithm [@Joseph1997].
 
 Package **SampleSizeMeans** [@Joseph2012] is used to compute Bayesian required sample sizes, using both criteria (ACC and ALC), for the fully Bayesian and the mixed Bayesian-likelihood approach. The gamma distribution plotted in Figure \@ref(fig:gammaprior) is used as a prior distribution for the precision parameter $\lambda$. As a reference, also the frequentist required sample size is computed.
 
@@ -457,7 +455,7 @@ with $f(p)$ the prior density of the binomial parameter.
 
 For more details about ACC and ALC, and about how the required sample size can be computed with WOC in case of the binomial parameter $p$, I refer to @Joseph1995.
 
-Required sample sizes for the average length criterion (ALC), the average coverage criterion (ACC) and worst outcome criterion (WOC) described in the previous section, using the fully Bayesian approach or the mixed Bayesian-likelihood approach can be computed with package **SampleSizeBinomial**, available at  http://www.medicine.mcgill.ca/epidemiology/Joseph/software/Bayesian-Sample-Size.html. This package is used to compute the required sample sizes using the beta distribution shown in Figure \@ref(fig:betaprior) as a prior for the population proportion. Note that argument `len` of the various functions of package **SampleSizeBinomial** specify the total length of the confidence interval, not *half* the length as used in function `ciss.wald`. 
+Required sample sizes for the average length criterion (ALC), the average coverage criterion (ACC) and worst outcome criterion (WOC) described in the previous section, using the fully Bayesian approach or the mixed Bayesian-likelihood approach can be computed with package [**SampleSizeBinomial**](http://www.medicine.mcgill.ca/epidemiology/Joseph/software/Bayesian-Sample-Size.html). This package is used to compute the required sample sizes using the beta distribution shown in Figure \@ref(fig:betaprior) as a prior for the population proportion. Note that argument `len` of the various functions of package **SampleSizeBinomial** specify the total length of the confidence interval, not *half* the length as used in function `ciss.wald`. 
 
 ```{r}
 library(SampleSizeBinomial)

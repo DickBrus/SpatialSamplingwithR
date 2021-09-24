@@ -1,8 +1,8 @@
 # Model-based optimisation of probability sampling designs {#MBpredictionofDesignVariance}
 
-In Chapter \@ref(Modelassisted) on model-assisted estimation I explained how a linear regression model or a non-linear model obtained with a  machine learning algorithm, can be used to increase the precision of design-based estimates of the population mean or total using the data collected by a given probability sampling design. In this chapter I explain how a model of the study variable can be used at an earlier stage, to optimise probability sampling designs. I show how a model can be used to choose between alternative sampling design types, for instance between systematic random sampling and two-stage cluster random sampling, as well as how a model can be used to optimise the sample size of a given sampling design type, for instance, the number of primary and secondary units with two-stage cluster random sampling. In the final section of this chapter I explain how a model can be used to optimise spatial strata for stratified simple random sampling.
+In Chapter \@ref(Modelassisted) on model-assisted estimation I explained how a linear regression model or a non-linear model obtained with a  machine learning algorithm, can be used to increase the precision of design-based estimates of the population mean or total using the data collected by a given probability sampling design. In this chapter I explain how a model of the study variable can be used at an earlier stage, to optimise probability sampling designs. I show how a model can be used to choose between alternative sampling design types, for instance between systematic random sampling spreading out the sampling units throughout the study area, and two-stage cluster random sampling resulting in spatial clusters of samplng units. Besides I explain  how a model can be used to optimise the sample size of a given sampling design type, for instance, the number of primary and secondary units with two-stage cluster random sampling. The final section of this chapter is about how a model can be used to optimise spatial strata for stratified simple random sampling.
 
-The models used in this chapter are all geostatistical models of the spatial variation. Chapter \@ref(Introkriging) is an introduction to geostatistical modelling. Several geostatistical concepts explained in that chapter are needed here to predict the sampling variance. For an explanation of these concepts, I refer to that chapter.
+The models used in this chapter are all geostatistical models of the spatial variation. Chapter \@ref(Introkriging) is an introduction to geostatistical modelling. Several geostatistical concepts explained in that chapter are needed here to predict the sampling variance.
 
 A general geostatistical model of the spatial variation is
 
@@ -16,25 +16,28 @@ Z(\mathbf{s}) &= \mu(\mathbf{s}) + \epsilon(\mathbf{s}) \\
 (\#eq:geostatmodel)
 \end{equation}
 
-with $Z(\mathbf{s})$ the study variable at point $\mathbf{s}$, $\mu(\mathbf{s})$ the mean at point $\mathbf{s}$, $\epsilon(\mathbf{s})$ the residual at point $\mathbf{s}$, and $C(\mathbf{h})$ the covariance of the residuals at two points separated by vector $\mathbf{h} = \mathbf{s}-\mathbf{s}^{\prime}$. Note that contrary to the mean $\mu$ the variance of the residuals $\sigma^2$ is assumed to be constant.
+with $Z(\mathbf{s})$ the study variable at location $\mathbf{s}$, $\mu(\mathbf{s})$ the mean at location $\mathbf{s}$, $\epsilon(\mathbf{s})$ the residual at location $\mathbf{s}$, and $C(\mathbf{h})$ the covariance of the residuals at two locations separated by vector $\mathbf{h} = \mathbf{s}-\mathbf{s}^{\prime}$. Note that contrary to the mean $\mu$ the variance of the residuals $\sigma^2$ is assumed constant.
 
-The model of the spatial variation has several parameters. In case of a model in which the mean is a linear combination of covariates, these are the regression coefficients associated with the covariates, and the parameters of a semivariogram describing the spatial dependence of the residuals. A semivariogram is a plot of half the expectation of the squared difference of the study variable (in this case the residuals), referred to as the semivariance, against the distance between two points (Chapter \@ref(Introkriging)). Use of the model for prediction of the sampling variance of a design-based estimator of the population mean requires knowledge of these parameters. When data are available collected from the study area of interest, these data can be used to estimate these parameters. If no such data are available, we must make a best guess, based on data collected in other areas. In all cases I recommend to keep the model as simple as possible.
+The model of the spatial variation has several parameters. In case of a model in which the mean is a linear combination of covariates, these are the regression coefficients associated with the covariates, and the parameters of a semivariogram describing the spatial dependence of the residuals. A semivariogram is a model for half the expectation of the squared difference of the study variable or the residuals of a model at two locations, referred to as the semivariance, as a function of the length (and direction) of the vector separating the two locations (Chapter \@ref(Introkriging)).
+
+Use of the model for prediction of the sampling variance of a design-based estimator of the population mean requires prior knowledge of the semivariogram. When data are available collected from the study area of interest, these data can be used to choose a semivariogram model and estimate the parameters of the model. If no such data are available, we must make a best guess, based on data collected in other areas. In all cases I recommend to keep the model as simple as possible.
+
 
 ## Model-based optimisation of sampling design type and sample size
 
-In Chapter \@ref(RequiredSampleSize) I presented methods and formulas for computing the required sample size given various constraints on the quality of the result. These required sample sizes are for simple random sampling. For other types of sampling design, the required sample size can be approximated by multiplying the required sample size for simple random sampling with the design effect, see Section \@ref(DesignEffect). An alternative is to use a model of the spatial variation to predict the sampling variance of the estimator of the mean for the type of sampling design under study and a range of sample sizes, plotting the predicted variance (or standard error) against the sample size, and using this plot inversely to derive the required sample size given a constraint on the sampling variance (standard error).
+In Chapter \@ref(RequiredSampleSize) I presented methods and formulas for computing the required sample size given various measures to quantify the quality of the survey result. These required sample sizes are for simple random sampling. For other types of sampling design, the required sample size can be approximated by multiplying the required sample size for simple random sampling with the design effect, see Section \@ref(DesignEffect). An alternative is to use a model of the spatial variation to predict the sampling variance of the estimator of the mean for the type of sampling design under study and a range of sample sizes, plotting the predicted variance (or standard error) against the sample size, and using this plot inversely to derive the required sample size given a constraint on the sampling variance (standard error).
 
-The computed sample size applies to a given sampling design type. So, for instance, for stratified random sampling the sample size is computed for a given stratification and sample size allocation scheme, for cluster random sampling for given clusters and number of cluster draws, and for two-stage cluster random sampling for given primary sampling units (psu's), number of psu draws and number of secondary sampling units (ssu's) selected per psu draw. However, the model can also be used to optimise these sampling design parameters. For stratified random sampling the optimal allocation can be computed by predicting the population variances within strata and using the predicted population variances per stratum in Equation \@ref(eq:optallocation), and even the stratification can be optimised (Section \@ref(Ospats))). If we have a cost model, for cluster random sampling the size and shape of the clusters, and the number of cluster draws can be optimised, and for two-stage cluster random sampling the size and shape of the primary sampling units, the number of psu draws and number of ssu's per psu draw can be optimised.  
+The computed required sample size applies to several given parameters of the sampling design. For instance, for stratified random sampling the sample size is computed for a given stratification and sample size allocation scheme, for cluster random sampling for given clusters, and for two-stage cluster random sampling for given primary sampling units (psu's) and number of secondary sampling units selected per psu draw. However, the model can also be used to optimise these sampling design parameters. For stratified random sampling the optimal allocation can be computed by predicting the population variances within strata and using the predicted population variances per stratum in Equation \@ref(eq:optallocation), and even the stratification can be optimised (Section \@ref(Ospats))). If we have a cost model, for cluster random sampling the size and shape of the clusters can be optimised, and for two-stage cluster random sampling the number of psu draws and number of ssu's per psu draw can be optimised.  
 
 Model-based prediction of the sampling variance can also be useful to compare alternative types of sampling design at equal total costs or equal variances of the estimated population mean or total. For instance, to compare systematic random sampling, leading to good spatial coverage, and two-stage cluster random sampling, resulting in spatial clusters of observations.
 
-Three approaches for model-based prediction of the sampling variance of a design-based estimator of the population mean (or total) are described, the analytical approach (Section \@ref(AnalyticalApproach)), the geostatistical simulation approach (Section \@ref(GeostatisticalSimulationApproach)) and the Bayesian approach (Section \@ref(MBpredSamplingVarBayes)). In the analytical approach we assume that the mean, $\mu(\mathbf{s})$ in Equation \@ref(eq:geostatmodel), is everywhere the same, so we assume no spatial trend. This assumption is relaxed in the geostatistical simulation approach. This approach can also be used to predict the sampling variance using a model in which the mean is a linear combination of covariates, and to predict the sampling variance of the estimator of the mean of trans-Gaussian variables, i.e. random variables that can be transformed to a Gaussian variable. 
+Three approaches for model-based prediction of the sampling variance of a design-based estimator of the population mean (or total) are described, the analytical approach (Section \@ref(AnalyticalApproach)), the geostatistical simulation approach (Section \@ref(GeostatisticalSimulationApproach)) and the Bayesian approach (Section \@ref(MBpredSamplingVarBayes)). In the analytical approach we assume that the mean, $\mu(\mathbf{s})$ in Equation \@ref(eq:geostatmodel), is everywhere the same. This assumption is relaxed in the geostatistical simulation approach. This approach can also be used to predict the sampling variance using a model in which the mean is a linear combination of covariates and/or spatial coordinates, and to predict the sampling variance of the estimator of the mean of trans-Gaussian variables, i.e. random variables that can be transformed to a Gaussian variable. 
 
 The predicted sampling variances of the estimated population mean obtained with the analytical and geostatistical simulation approach are conditional on the model of the spatial variation. Uncertainty about this model is not accounted for. On the contrary, in the Bayesian approach we do account for our uncertainty about the assumed model, and we analyze how this uncertainty propagates to the sampling variance of the estimator of the mean. 
 
 ### Analytical approach {#AnalyticalApproach}
 
-In the analytical approach the sampling variance of the estimator of the mean is derived from mean semivariances within the study area\index{Mean semivariance!within a study area}  and mean semivariances within the sample\index{Mean semivariance!within a sample}. These mean semivariances are a function of the separation distance between the points, see Chapter \@ref(Introkriging) for a definition of the semivariance of two random variables. 
+In the analytical approach the sampling variance of the estimator of the mean is derived from mean semivariances within the study area\index{Mean semivariance!within a study area}  and mean semivariances within the sample\index{Mean semivariance!within a sample}. Assuming isotropy, these mean semivariances are a function of the separation distance between pairs of points. 
 
 The sampling variance of a design-based estimator of the population mean can be predicted by (@dom94, @gru06)
 
@@ -43,18 +46,20 @@ E_{\xi}\{V_p(\hat{\bar{z}})\}=\bar{\gamma}-E_p(\pmb{\lambda}^{\prime}\pmb{\Gamma
 (\#eq:MBdesignvarAnydesign)
 \end{equation}
 
-where $E_{\xi}(\cdot)$ is the statistical expectation over realisations from the model $\xi$, $E_{p}(\cdot)$ is the statistical expectation over repeated sampling with sampling design $p$, $V_{p}(\hat{\bar{z}})$ is the variance of the estimator of the mean over repeated sampling with sampling design $p$, $\bar{\gamma}$ is the mean semivariance of the random variable at two randomly selected points in the area, $\pmb{\lambda}$ is the vector of design-based weights of the units of a sample selected with design $p$, and $\pmb{\Gamma}_{\mathcal{S}}$ is the matrix of semivariances between the units of a sample $\mathcal{S}$ selected with design $p$.
+where $E_{\xi}(\cdot)$ is the statistical expectation over realisations from the model $\xi$, $E_{p}(\cdot)$ is the statistical expectation over repeated sampling with sampling design $p$, $V_{p}(\hat{\bar{z}})$ is the variance of the estimator of the population mean over repeated sampling with sampling design $p$, $\bar{\gamma}$ is the mean semivariance of the random variable at two randomly selected locations in the study area, $\pmb{\lambda}$ is the vector of design-based weights of the units of a sample selected with design $p$, and $\pmb{\Gamma}_{\mathcal{S}}$ is the matrix of semivariances between the units of a sample $\mathcal{S}$ selected with design $p$.
 
-The mean semivariance $\bar{\gamma}$ is a model-based prediction of the population variance (spatial variance),
+The mean semivariance $\bar{\gamma}$ is a model-based prediction of the population variance (spatial variance), i.e. the model-expectation of the population variance,
 
 \begin{equation}
 \bar{\gamma} = E_{\xi}\{\sigma^2(z)\}\:.
 (\#eq:meansemivariance)
 \end{equation}
 
-The mean semivariance $\bar{\gamma}$ can be calculated by discretising the area by a fine square grid, and computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda})$ can be evaluated by Monte-Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda}$, and averaging.
+The mean semivariance $\bar{\gamma}$ can be calculated by discretising the study area by a fine square grid, and computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda})$ can be evaluated by Monte-Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\pmb{\lambda}^{\prime}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda}$, and averaging.
 
-The semivariance at zero distance (same point) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, these zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\pmb{\Gamma}_{\mathcal{S}}$.  
+```{block2, type='rmdnote'}
+The semivariance at zero distance (same location) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, these zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\pmb{\Gamma}_{\mathcal{S}}$.  
+```
 
 This generic procedure is still computationally demanding, but it is the only option for complex spatial sampling designs. For basic sampling designs the general formula can be worked out. For simple random sampling, the sampling variance can be predicted by
 
@@ -70,16 +75,22 @@ E_{\xi}\{V_\mathrm{STSI}(\hat{\bar{z}})\}=\sum_{h=1}^H w^2_h \bar{\gamma_h}/n_h 
 (\#eq:MBdesignvarSTSI)
 \end{equation}
 
-with $H$ the number of strata, $w_h$ the stratum weight (relative size), $\bar{\gamma}_h$ is the mean semivariance of stratum $h$, and $n_h$ the number of sampling points of stratum $h$. For systematic random sampling (sampling on a randomly placed grid), the variance can be predicted by
+with $H$ the number of strata, $w_h$ the stratum weight (relative size), $\bar{\gamma}_h$ the mean semivariance of stratum $h$, and $n_h$ the number of sampling units of stratum $h$.
+
+```{block2, type='rmdnote'}
+The model-based predictions of the variances within the strata, $\bar{\gamma}_h$, can also be used to compute the sample sizes for Neyman allocation, which are the optimal sample sizes  when the mean costs per unit are equal for the strata. To compute these sample sizes the standard deviations $S_h(z)$ in Equation \@ref(eq:Neymanallocation) are replaced by $\sqrt{\bar{\gamma}_h}$.
+```
+
+For systematic random sampling (sampling on a randomly placed grid), the variance can be predicted by
 
 \begin{equation}
 E_{\xi}\{V_\mathrm{SY}(\hat{\bar{z}})\}=\bar{\gamma} - E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}}) \;,
 (\#eq:MBdesignvarSY)
 \end{equation}
 
-with $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ the expectation over repeated systematic sampling of the mean semivariance within the systematic sample (grid). With systematic random sampling the number of grid points within the study area can vary among samples, as well as the spatial configuration of the points (Chapter \@ref(SY)). Therefore multiple systematic random samples must be selected, and the average of the mean semivariance within the systematic sample must be computed.
+with $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ the design-expectation, i.e. the expectation over repeated systematic sampling, of the mean semivariance within the systematic sample (grid). With systematic random sampling the number of grid points within the study area can vary among samples, as well as the spatial pattern of the points (Chapter \@ref(SY)). Therefore multiple systematic random samples must be selected, and the average of the mean semivariance within the systematic sample must be computed.
 
-The analytical approach is illustrated with the data of agricultural field Leest [@HofmanBrus2021]. Nitrate-N (NO3-N) in kg/ha in the layer 0 - 90 cm below surface, using a standard soil density of 1500 kg/m$^3$, is measured at 30 points. These data are used to compute a sample semivariogram using the method-of-moments, see Chapter \@ref(Introkriging). A spherical model without nugget is fitted to the sample semivariogram using function `fit.variogram`. The numbers in this plot are the numbers of pairs of points used to compute the semivariances.
+The analytical approach is illustrated with the data of agricultural field Leest [@HofmanBrus2021]. Nitrate-N (NO3-N) in kg/ha in the layer 0 - 90 cm, using a standard soil density of 1500 kg/m$^3$, is measured at 30 points. These data are used to compute a sample semivariogram using the method-of-moments with function `variogram`, see Chapter \@ref(Introkriging). A spherical model without nugget is fitted to the sample semivariogram using function `fit.variogram`. The numbers in this plot are the numbers of pairs of points used to compute the semivariances.
 
 ```{r VariogramLeest, fig.asp=0.7, fig.cap="Sample semivariogram and fitted spherical model for NO3-N in agricultural field Leest. Numbers are numbers of pairs used in computing semivariances."}
 library(gstat)
@@ -90,7 +101,7 @@ vgm_MoM <- fit.variogram(vg, model=vgm(model="Sph", psill=2000, range=20))
 plot(vg, vgm_MoM, plot.numbers=TRUE)
 ```
 
-The few data makes that the sample semivariogram is very noisy. For the moment I ignore my uncertainty about the semivariogram parameters. In Section \@ref(MBpredSamplingVarBayes) I show how we can account for our uncertainty about the semivariogram parameters in model-based prediction of the sampling variance. A spherical semivariogram model\index{Semivariogram model} without nugget is fitted to the sample semivariogram, i.e. the intercept is 0. The fitted range of the model is `r round(vgm_MoM$range,0)` m, and the fitted sill equals `r round(vgm_MoM$psill,0)`. The fitted semivariogram is used to predict the sampling variance for three sampling designs: simple random sampling, stratified simple random sampling, and systematic random sampling. The sample size is 25 points. For systematic random sampling the number of points varies among the samples. For this sampling design the *expected* sample size is 25 points.
+The few data makes that the sample semivariogram is very noisy. For the moment I ignore my uncertainty about the semivariogram parameters; in Section \@ref(MBpredSamplingVarBayes) I show how we can account for our uncertainty about the semivariogram parameters in model-based prediction of the sampling variance. A spherical semivariogram model\index{Semivariogram model} without nugget is fitted to the sample semivariogram, i.e. the intercept is 0. The fitted range of the model is `r round(vgm_MoM$range,0)` m, and the fitted sill equals `r round(vgm_MoM$psill,0)`. The fitted semivariogram is used to predict the sampling variance for three sampling designs: simple random sampling, stratified simple random sampling, and systematic random sampling. The costs for these three design types will be about equal, as the study area is small, so that the access time of the sampling points selected with the three designs is about equal. The sample size is 25 points. For systematic random sampling the number of points varies among the samples. For this sampling design the *expected* sample size is 25 points.
 
 For simple random sampling we must compute the mean semivariance within the field (Equation \@ref(eq:MBdesignvarSI)). This mean semivariance is approximated by discretising the field by a square grid of 2000 points, computing the 2000 $\times$ 2000 matrix with distances between all pairs of discretisation nodes, transforming this distance matrix into a semivariance matrix using function `variogramLine` of package **gstat** [@peb04] , and finally averaging the semivariances. Note that in this case we do not need to replace the zeroes on the diagonal of the semivariance matrix by the nugget, as a model without nugget is fitted. The shape file is read with function `readOGR` of package **rgdal** [@rgdal], resulting in an object of class `SpatialPolygonsDataFrame`. The projection attributes of this object are removed with function `proj4string` to avoid an error message when running function `spsample`.
 
@@ -109,7 +120,12 @@ Exi_V_SI <- m_semivar_field/n
 
 The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r round(Exi_V_SI,1)`.
 
-The strata of the stratified simple random sampling design are compact geographical strata\index{Compact geographical strata} of equal size (Section \@ref(geostrata)). The number of geostrata is equal to the sample size, 25 points, so that we have one point per stratum. To predict the sampling variance we must compute the mean semivariances within the geostrata, see Equation \@ref(eq:MBdesignvarSTSI). Note that the stratum weights are constant as the strata have equal size: $w_h = 1/25$.
+The strata of the stratified simple random sampling design are compact geographical strata\index{Compact geographical strata} of equal size (Section \@ref(geostrata)). The number of geostrata is equal to the sample size, 25 points, so that we have one point per stratum. With this design the sampling points are reasonably well spread out over the field, but not as good as with systematic random sampling. To predict the sampling variance we must compute the mean semivariances within the geostrata, see Equation \@ref(eq:MBdesignvarSTSI). Note that the stratum weights are constant as the strata have equal size: $w_h = 1/n$, and as $n_h=1$ Equation \@ref(eq:MBdesignvarSTSI) reduces to
+
+\begin{equation}
+E_{\xi}\{V_\mathrm{STSI}(\hat{\bar{z}})\}=\frac{1}{n^2}\sum_{h=1}^H \bar{\gamma_h} \;,
+(\#eq:MBdesignvarSTSI2)
+\end{equation}
 
 ```{r ExiVarSTSILeest}
 library(spcosa)
@@ -127,9 +143,9 @@ for (i in 1:n) {
 Exi_V_STSI <- sum(m_semivar_geostrata)/n^2
 ```
 
-The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r round(Exi_V_STSI,1)`, which is much smaller than with simple random sampling. The large stratification effect\index{Stratification effect} can be explained by the assumed strong spatial structure of NO3-N in the agricultural field and the improved geographical spreading of the sampling points.
+The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r round(Exi_V_STSI,1)`, which is much smaller than with simple random sampling. The large stratification effect\index{Stratification effect} can be explained by the assumed strong spatial structure of NO3-N in the agricultural field and the improved geographical spreading of the sampling points, see Figure \@ref(fig:VariogramLeest).
 
-To predict the  sampling variance for systematic random sampling with an expected sample size of 25 points, we must compute the expectation of the mean semivariance within the systematic sample (Equation \@ref(eq:MBdesignvarSY)). This expectation is approximated by selecting a large number of systematic random samples, computing the mean semivariance for each sample, and averaging. This average of mean semivariances within a systematic sample is subtracted from the mean semivariance within the field.
+To predict the  sampling variance for systematic random sampling with an expected sample size of 25 points, we must compute the design-expectation of the mean semivariance within the systematic sample (Equation \@ref(eq:MBdesignvarSY)). This expectation is approximated by selecting a large number of systematic random samples, computing the mean semivariance for each sample, and averaging. This average of mean semivariances within a systematic sample is subtracted from the mean semivariance within the field.
 
 ```{r}
 set.seed(314)
@@ -144,7 +160,7 @@ for (i in 1:100) {
 Exi_V_SY <- m_semivar_field-mean(m_semivar_SY)
 ```
 
-The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r as.character(round(Exi_V_SY,1))`, which is smaller than that of stratified simple random sampling, which can be explained by the improved geographical spreading of the sampling points with systematic random sampling as compared to stratified simple random sampling with compact geographical strata.
+The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r as.character(round(Exi_V_SY,1))`, which is smaller than that of stratified simple random sampling. This can be explained by the improved geographical spreading of the sampling points with systematic random sampling as compared to stratified simple random sampling with compact geographical strata.
 
 #### Bulking soil aliquots into a composite sample
 
@@ -152,15 +168,13 @@ If the soil aliqouts collected at the points of the stratified random sample are
 
 #### Exercises {-}
 
-1. Write an **R** script to predict the sampling variance of the estimator of the mean of NO3-N of agricultural field Leest, estimated by simple random random sampling and a sample size of 25 points. Use in prediction a spherical semivariogram with a nugget of 483, a partial sill of 483 and a range of 44.6 m. The sum of the nugget and partial sill (966) is equal to the sill of the semivariogram used above in predicting sampling variances. Compare the predicted sampling variance with the predicted sampling variance for the same sampling design, obtained with the semivariogram without nugget. Explain the difference.  
+1. Write an **R** script to predict the sampling variance of the estimator of the mean of NO3-N of agricultural field Leest, for simple random random sampling and a sample size of 25 points. Use in prediction a spherical semivariogram with a nugget of 483, a partial sill of 483 and a range of 44.6 m. The sum of the nugget and partial sill (966) is equal to the sill of the semivariogram used above in predicting sampling variances. Compare the predicted sampling variance with the predicted sampling variance for the same sampling design, obtained with the semivariogram without nugget. Explain the difference.  
 2. Write an **R** script to compute the required sample size for simple random random sampling of agricultural field Leest, for a maximum length of a 95\% confidence interval of 20. Use the semivariogram without nugget in predicting the sampling variance. See Section \@ref(ReqSampleSizeLengthCI) (Equation \@ref(eq:nreqwidthCI)) for how to compute this required sample size given a prior estimate of the standard deviation of the study variable in the population.  
 3. Do the same for systematic random sampling. Note that for this sampling design no such formula is available. Predict for a series of *expected* sample sizes, $n = 5,6,\dots , 40$, the sampling variance of the estimator of the mean, using Equation \@ref(eq:MBdesignvarSY). Approximate $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ from ten repeated selections. Compute the length of the confidence interval from the predicted sampling variances, and plot the interval length against the sample size. Finally determine the required sample size for a maximum length of 20. What is the design effect for an expected sample size of 34 points (the required sample size for simple random sampling), see Equation \@ref(eq:designeffect)? Also compute the design effect for expected sample sizes of $5,6,\dots , 40$. Explain why the design effect is not constant.  
 
 ### Geostatistical simulation approach {#GeostatisticalSimulationApproach}
 
-In the analytical approach no values of the study variable are simulated, neither at the nodes of a discretisation grid to predict the population variance, nor at the points of random samples to predict the variance within samples. Mean semivariances, $\bar{\gamma}$, $\bar{\gamma}_h$, $\bar{\gamma}_\mathrm{SY}$, are computed from matrices with distances between pairs of points that are transformed into matrices with semivariances. It is true that for systematic random sampling in cases where the sample size is and/or the spatial pattern of the sampling points is random, simulation is needed. A large number of systematic samples is selected to approximate the design-expectation of the mean semivariance within a systematic sample (Equation \@ref(eq:MBdesignvarSY)). However, only the spatial coordinates of these samples are used. No values of the study variable at the sampling points are simulated.
-
-The alternative is to use a geostatistical simulation\index{Geostatistical simulation} approach. It is computationally more demanding, but an advantage of this approach is its flexibility. It can also be used to predict the sampling variance of the estimator of the mean using a geostatistical model with a non-constant mean. And besides, this approach can also handle trans-Gaussian variables\index{Trans-Gaussian variable}, i.e. of variables whose distribution can be transformed into a normal distribution. In Section \@ref(MBpredSamplingVarBayes) on the Bayesian approach geostatistical simulation is used to predict the variance of the estimator of the mean of a lognormal variable. 
+The alternative to the analytical approach is to use a geostatistical simulation\index{Geostatistical simulation} approach. It is computationally more demanding, but an advantage of this approach is its flexibility. It can also be used to predict the sampling variance of the estimator of the mean using a geostatistical model with a non-constant mean. And besides, this approach can also handle trans-Gaussian variables\index{Trans-Gaussian variable}, i.e. of variables whose distribution can be transformed into a normal distribution. In Section \@ref(MBpredSamplingVarBayes) geostatistical simulation is used to predict the variance of the estimator of the mean of a lognormal variable. 
 
 The geostatistical  simulation approach for predicting the sampling variance of a design-based estimator of the population mean involves the following steps:  
 
@@ -193,7 +207,11 @@ vgm_REML_gstat <- vgm(model="Sph", nugget=vgm_REML$tausq,
   psill=vgm_REML$sigmasq, range=vgm_REML$phi)
 ```
 
-The fitted model of the spatial variation of SOM is used to compare systematic random sampling and two-stage cluster random sampling at equal variances of the estimated mean. First the sampling variance with systematic random sampling is predicted. One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grd` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim = 1` of package **gstat**. The argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}. The alternative is conditional simulation\index{Geostatistical simulation!conditional}, using the data of the convenience sample as a conditioning data. Conditional simulation is only recommended if the quality of these legacy data is sufficient, and we may trust that the study variable at the legacy points is not changed since these legacy data are collected.
+The fitted model of the spatial variation of SOM is used to compare systematic random sampling and two-stage cluster random sampling at equal variances of the estimator of the mean. First the sampling variance with systematic random sampling is predicted. One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grd` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim = 1` of package **gstat**. The argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}.
+
+```{block2, type='rmdnote'}
+The alternative is conditional simulation\index{Geostatistical simulation!conditional}, using the data of the convenience sample as conditioning data. Conditional simulation is only recommended if the quality of these legacy data is sufficient, and we may trust that the study variable at the legacy points is not changed since these legacy data are collected.
+```
 
 Note that by first drawing 100 samples, followed by simulating values of $z$ at the selected sampling points, instead of first simulating values of $z$ at the nodes of a discretisation  grid, followed by selecting samples and overlaying with the simulated field, the simulated values of points in the same discretisation cell differ, so that we account for the infinite number of points in the population.
 
@@ -300,7 +318,9 @@ Exi_S2b <- mean(S2b)
 Exi_S2w <- mean(S2w)
 ```
 
-The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1\;n + c_2n\;m$, with $c_0$ the fixed costs, $c_1$ the access costs per primary unit, including the access costs of the ssu's (points) with a given psu, and $c_2$ the observation costs per ssu. Note that for the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values. Given values for $c_1$ and $c_2$, the optimal number of psu draws $n$, and optimal number of ssu draws per psu draw $m$ is computed, required for a sampling variance of the estimator of the mean equal to the sampling variance with systematic random sampling of 50 points, see Equations \@ref(eq:nopt) and \@ref(eq:mopt). 
+The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1\;n + c_2n\;m$, with $c_0$ the fixed costs, $c_1$ the access costs per primary unit, including the access costs of the ssu's (points) within a given psu, and $c_2$ the observation costs per ssu. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
+
+Given values for $c_1$ and $c_2$, the optimal number of psu draws $n$, and optimal number of ssu draws per psu draw $m$ is computed, required for a sampling variance of the estimator of the mean equal to the sampling variance with systematic random sampling of 50 points, see Equations \@ref(eq:nopt) and \@ref(eq:mopt). 
 
 ```{r}
 c1 <- 2; c2 <- 1
@@ -337,7 +357,11 @@ mydata$Easting <- mydata$Easting - min_Easting
 mydata$Northing <- mydata$Northing - min_Northing 
 ```
 
-As a first step the semivariogram of lnN is estimated by maximum likelihood\index{Maximum likelihood estimation} (Section \@ref(MLestimationVariogram)). An exponential semivariogram model is assumed. Note that the parameters that are estimated are the reciprocal of the sill $\lambda$, the ratio of spatial dependence\index{Ratio of spatial dependence} $\xi$, defined as the partial sill divided by the sill, and the distance parameter $\phi$. This parameterisation of the semivariogram is chosen because hereafter in the Bayesian approach prior distributions are chosen for these parameters.
+As a first step the semivariogram of lnN is estimated by maximum likelihood\index{Maximum likelihood estimation} (Section \@ref(MLestimationVariogram)). An exponential semivariogram model is assumed, see Equation \@ref(eq:exponential). 
+
+```{block2, type='rmdnote'}
+The parameters that are estimated are the reciprocal of the sill $\lambda$, the ratio of spatial dependence\index{Ratio of spatial dependence} $\xi$, defined as the partial sill divided by the sill, and the distance parameter $\phi$. This parameterisation of the semivariogram is chosen because hereafter in the Bayesian approach prior distributions are chosen for these parameters.
+```
 
 The likelihood function is defined, using a somewhat unusual parameterisation, tailored at the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated by using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, Chapter 11]. In MCMC sampling the probability of accepting a proposed sampling unit $\pmb{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\pmb{\theta}^*|\mathbf{z})/f(\pmb{\theta}_{t-1}|\mathbf{z})$, so that the normalizing constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels. For a nice introduction to MCMC I refer to these [lecture notes](http://nitro.biosci.arizona.edu/courses/EEB596/handouts/Gibbs.pdf). `crossprod(X, Cinv)` is the same as `t(X) %*% Cinv`.
 
@@ -374,7 +398,7 @@ vgML <- optim(pars, ll, control=list(fnscale = -1),
   lower=c(1e-6,0,1e-6), upper=c(1000,1,150), method="L-BFGS-B")
 ```
 
-The maximum likelihood (ML) estimates of the semivariogram parameters are used as initial values in MCMC sampling. In the Bayesian approach, I use a uniform prior for the inverse of the sill parameter, $\lambda=1/\sigma^2$, with a lower bound of $10^{-6}$ and an upper bound of 1. For the distance parameter $\phi$ of the exponential semivariogram a uniform prior is assumed, with a lower bound of $10^{-6}$ m. and an upper bound of 150 m. For the relative nugget, $\tau^2/\sigma^2$, a uniform prior is assumed with a lower bound of 0 and an upper bound of 1.
+The maximum likelihood (ML) estimates of the semivariogram parameters are used as initial values in MCMC sampling. A uniform prior is used for the inverse of the sill parameter, $\lambda=1/\sigma^2$, with a lower bound of $10^{-6}$ and an upper bound of 1. For the distance parameter $\phi$ of the exponential semivariogram a uniform prior is assumed, with a lower bound of $10^{-6}$ m. and an upper bound of 150 m. For the relative nugget, $\tau^2/\sigma^2$, a uniform prior is assumed with a lower bound of 0 and an upper bound of 1.
 
 These priors can be defined by function `createUniformPrior` of package **BayesianTools** [@Hartig2018]. The function `createBayesianSetup` is then used to define the setup of the MCMC sampling, specifying the likelihood function, the prior, and the vector with best prior estimates of the model parameters, specified with argument `best`. Argument `sampler` of function `runMCMC` specifies the type of MCMC sampler. I used the differential evolution algorithm\index{Differential evolution algorithm} of @terBraak2008. Argument `start` of function `getSample` specifies the burn-in period\index{Burn-in period}, i.e. the number of first samples that are discarded to diminish the influence of the initial semivariogram parameter values. Argument `numSamples` specifies the sample size, i.e. the number of saved vectors with semivariogram parameter values, drawn from the posterior distribution.
 
@@ -421,7 +445,7 @@ ggplot(df_lf, mapping=aes(x=d,y=value, group=name))+
   scale_y_continuous(name="Semivariance",limits=c(0,NA))
 ```
 
-The evaluated sampling design is the same as used in Section \@ref(AnalyticalApproach) above for field Leest: stratified simple random sampling, using compact geographical strata of equal size, a total sample size of 25 points, and one point per stratum. 
+The evaluated sampling design is the same as used in Section \@ref(AnalyticalApproach) for field Leest: stratified simple random sampling, using compact geographical strata of equal size, a total sample size of 25 points, and one point per stratum. 
 
 ```{r, echo=FALSE}
 shpField <- readOGR(dsn="data", layer="Melle17", verbose=FALSE)
@@ -434,14 +458,12 @@ n <- 25
 mygeostrata <- stratify(mygrid,nStrata=n,equalArea=TRUE,nTry=10)
 ```
 
-The next step is to simulate with each of the sampled semivariograms a large number of maps of lnN. This is done by sequential Gaussian simulation, conditional on the available data. The simulated values are backtransformed. Each simulated map is then used to compute the variance of the simulated values within the geostrata $S^2_h$. These stratum variances are used to compute the sampling variance of the estimator of the mean,
+The next step is to simulate with each of the sampled semivariograms a large number of maps of lnN. This is done by sequential Gaussian simulation, conditional on the available data. The simulated values are backtransformed. Each simulated map is then used to compute the variance of the simulated values within the geostrata $S^2_h$. These stratum variances are used to compute the sampling variance of the estimator of the mean. Plugging $w_h = 1/n$ (all strata have equal size) and $n_h=1$ into Equation \@ref(eq:EstVarMeanSTSI), yields (compare with Equation \@ref(eq:MBdesignvarSTSI2))
 
 \begin{equation}
-    V(\hat{\bar{z}}) = \frac{1}{H^2}\sum_{h=1}^H S^2_h \;.
+    V(\hat{\bar{z}}) = \frac{1}{n^2}\sum_{h=1}^H S^2_h \;.
     (\#eq:VarSTSIMelles)
 \end{equation}
-
-This variance estimator follows from Equation \@ref(eq:EstVarMeanSTSI). Plugging $w_h = 1/H$ (all strata have equal size) and $n_h=1$ into this variance estimator yields Equation \@ref(eq:VarSTSIMelles).
 
 I used the first 100 sampled semivariograms, and with each semivariogram I simulated 100 maps.
 
@@ -546,9 +568,9 @@ P50_V_STSI <- quantile(V, 0.5)
 P90_V_STSI <- quantile(V, 0.9)
 ```
 
-As a model-based prediction of the sampling variance we can take the average or the median of the sampling variances over all $100 \times 100$ simulated maps, which are equal to `r round(Exi_V_STSI,3)` and `r round(P50_V_STSI,3)`, respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r round(P90_V_STSI,3)`
+As a model-based prediction of the sampling variance we can take the mean or the median of the sampling variances over all $100 \times 100$ simulated maps, which are equal to `r round(Exi_V_STSI,3)` and `r round(P50_V_STSI,3)`, respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r round(P90_V_STSI,3)`
 
-Above I used the 30 data as conditioning data in geostatistical simulation, Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data were observed. For NO3-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model mean $\mu$ to the argument `beta` of function `krige`. The estimated model mean depends on the semivariogram parameters. The next code chunk shows how this model mean can be estimated (see also function `ll` above).
+I used the 30 data as conditioning data in geostatistical simulation. Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data were observed. For NO3-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model mean $\mu$ to the argument `beta` of function `krige`. The estimated model mean depends on the semivariogram parameters. The next code chunk shows how this model mean can be estimated (see also function `ll` above).
 
 ```{r, eval=FALSE}
 C <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
@@ -564,7 +586,7 @@ beta <- XCXinv %*% XCz
 
 The **Julia** package **Ospats** is an implementation of the stratification method. In **Ospats**\index{Optimal spatial stratification} the stratification is optimised through iterative reallocation of the raster cells to the strata. Recently, this stratification method was implemented in the package **SamplingStrata** (@Barcaroli2014, @Barcaroli2020). However, the algorithm used to optimise the strata differs from that in **Ospats**.  In `SamplingStrata` the stratification is optimised by optimising the breaks\index{Stratum breaks} (splitting points) on the stratification variable with a genetic algorithm\index{Genetic algorithm}. Optimisation of the strata through optimisation of the breaks on the stratification variable necessarily leads to non-overlapping strata, while with iterative reallocation\index{Iterative reallocation} the strata may overlap, i.e. when the strata are sorted on the mean of the stratification variable, the upper bound of a stratum can be larger than the lower bound of the next stratum. As argued by @deGruijter2015 optimisation of strata through optimisation of the stratum breaks can be suboptimal. On the other hand, optimisation through optimisation of the breaks needs fewer computations, and therefore is quicker.
 
-The situation considered in this section is that prior data are available, either from the study area itself or from another similar area, that can be used to fit a statistical model for the study variable, using one or more quantitative covariates and/or factors as predictors. We wish to collect (more) data by stratified simple random sampling, to be used in design-based estimation of the population mean or total of the study variable. The central research question then is how to construct these strata.
+The situation considered in this section is that prior data are available, either from the study area itself or from another similar area, that can be used to fit a linear regression model for the study variable, using one or more quantitative covariates and/or factors as predictors. These predictors must be available in the study area so that the fitted model can be used to map the study variable in the study area. We wish to collect (more) data by stratified simple random sampling, to be used in design-based estimation of the population mean or total of the study variable. The central research question then is how to construct these strata.
 
 Recall the formula for the variance of the estimator of the mean for stratified simple random sampling (see Equations \@ref(eq:EstVarMeanSTSI) and \@ref(eq:EstVarstratummean)),
 
@@ -573,7 +595,7 @@ V\!\left(\hat{\bar{z}}\right)=\sum\limits_{h=1}^{H}w_{h}^{2} \frac{S^2_h(z)}{n_h
 (\#eq:VarMeanSTSI2)
 \end{equation}
 
-Plugging the stratum sample sizes under optimal allocation (Equation \@ref(eq:optallocation)) into Equation \@ref(eq:VarMeanSTSI2), gives for the variance of the estimator of the mean,
+Plugging the stratum sample sizes under optimal allocation (Equation \@ref(eq:optallocation)) into Equation \@ref(eq:VarMeanSTSI2), gives for the variance of the estimator of the mean
 
 \begin{equation}
 V\!\left(\hat{\bar{z}}\right)=\frac{1}{n}\left(\sum\limits_{h=1}^{H}w_h S_h(z) \sqrt{c_h} \sum_{h=1}^H \frac{w_h S_h(z)}{\sqrt{c_h}}\right)\;.
@@ -589,22 +611,23 @@ O = \sum\limits_{h=1}^{H}w_h S_h(z) \sqrt{c_h} \sum_{h=1}^H \frac{w_h S_h(z)}{\s
 
 is minimised. 
 
-@deGruijter2015 assume that the costs are equal for all population units, so that the mean costs are the same for all strata. In this case the minimisation criterion reduces to
+Assuming that the costs are equal for all population units, so that the mean costs are the same for all strata, the minimisation criterion reduces to
+
 \begin{equation}
 O = \left(\sum\limits_{h=1}^H w_h S_h(z)\right)^2\;.
 (\#eq:EOconstantch)
 \end{equation}
 
-In practice we do not know the values of the study variable $z$. @deGruijter2015 consider the situation where we have predictions of the study variable from a statistical model: $\hat{z} = z + \epsilon$, with $\epsilon$ the prediction error. So this implies that we do not know the stratum standard deviations $S_h(z)$ of Equation \@ref(eq:VSTSINeyman). What we do have are the stratum standard deviations of the predictions of $z$: $S_h(\hat{z})$. With many statistical models, such as regression and kriging models, the standard deviation of the predictions are smaller than that of the study variable: $S_h(\hat{z}) < S_h(z)$. This is known as the smoothing or leveling effect. 
+In practice we do not know the values of the study variable $z$. @deGruijter2015 consider the situation where we have predictions of the study variable from a linear regression model: $\hat{z} = z + \epsilon$, with $\epsilon$ the prediction error. So this implies that we do not know the stratum standard deviations $S_h(z)$ of Equation \@ref(eq:VSTSINeyman). What we do have are the stratum standard deviations of the predictions of $z$: $S_h(\hat{z})$. With many statistical models, such as regression and kriging models, the standard deviation of the predictions are smaller than that of the study variable: $S_h(\hat{z}) < S_h(z)$. This is known as the smoothing or leveling effect. 
 
-@deGruijter2015 replaced the stratum standard deviations in the minimisation criterion by model-expectations of these stratum standard deviations, i.e. by model-based predictions of the stratum standard deviations), $E[S_h(z)]$. This leads to the following minimisation criterion,
+The stratum standard deviations in the minimisation criterion are replaced by model-expectations of these stratum standard deviations, i.e. by model-based predictions of the stratum standard deviations), $E[S_h(z)]$. This leads to the following minimisation criterion,
 
 \begin{equation}
 E_{\xi}[O] = \left(\sum\limits_{h=1}^H w_h E_{\xi}[S_h(z)]\right)^2\;.
 (\#eq:EOconstantch2)
 \end{equation}
 
-@deGruijter2015 predicted the stratum variances by
+The stratum variances are predicted by
 
 \begin{equation}
 E_{\xi}[S^2_h(z)]=\frac{1}{N^2_h}\sum_{i=1}^{N_h-1}\sum_{j=i+1}^{N_h}E_{\xi}[d^2_{ij}]\;,
@@ -642,13 +665,7 @@ mysample <- rbind(sample_grid, sample_iPSM, sample_test[,-c(13,14,15)])
 lm_SOM <- lm(SOM_A_hori~dem, data=mysample)
 ```
 
-In fitting a linear regression model we assume that:  
-
-1. the relation is linear.  
-2. the residual variance is constant (independent of the fitted value).  
-3. the residuals have a normal distribution.  
-
-These assumptions are checked with a scatter plot of the residuals against the fitted value and a Q-Q plot\index{Q-Q plot}, respectively.
+In fitting a linear regression model we assume that the relation is linear, that the residual variance is constant (independent of the fitted value) and the residuals have a normal distribution. These assumptions are checked with a scatter plot of the residuals against the fitted value and a Q-Q plot\index{Q-Q plot}, respectively.
 
 ```{r checkassumptions, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap = "Scatter plot of residuals against fitted value, and Q-Q plot of residuals, for a simple linear regression model of soil organic matter concentration in Xuancheng, with elevation as a predictor."}
 fit <- fitted(lm_SOM)
@@ -667,7 +684,7 @@ plt2 <- ggplot(df, aes(sample=e)) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-The scatter plot shows that the first assumption is realistic. No pattern can be seen, at all fitted values the residuals are scattered around the horizontal line. However, the second and third assumptions are questionable: the residual variance clearly increases with the fitted value, and the distribution of the residuals has positive skew, i.e. it has a long upper tail. There clearly is some evidence that these two assumptions are violated. Possibly these problems can be solved by fitting a model for the natural logarithm of SOM.
+The scatter plot shows that the first assumption is realistic. No pattern can be seen: at all fitted values the residuals are scattered around the horizontal line. However, the second and thirds assumptions are questionable: the residual variance clearly increases with the fitted value, and the distribution of the residuals has positive skew, i.e. it has a long upper tail. There clearly is some evidence that these two assumptions are violated. Possibly these problems can be solved by fitting a model for the natural logarithm of SOM.
 
 ```{r checkassumptions2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap = "Scatter plot of residuals against fitted value, and Q-Q plot of residuals, for a simple linear regression model of natural logarithm of soil organic matter concentration in Xuancheng, with elevation as a predictor."}
 mysample$lnSOM <- log(mysample$SOM_A_hori)
@@ -688,9 +705,35 @@ plt2 <- ggplot(df, aes(sample=e)) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-The variance of the residuals is more constant, and the Q-Q plot is improved, although we now have too many strong negative residuals for a normal distribution. I proceed with the model for natural log-transformed SOM (lnSOM).
+The variance of the residuals is more constant, and the Q-Q plot is improved, although we now have too many strong negative residuals for a normal distribution. I proceed with the model for natural log-transformed SOM (lnSOM). The fitted linear regression model is used to predict lnSOM at the nodes of a 200 m $\times$ 200 m discretisation grid.
 
-Another assumption in linear regression is that the residuals are independent. This assumption can be checked by computing a semivariogram. If the residual semivariance is not constant with the distance but increases, the assumption is violated. For details I refer to Chapter \@ref(Introkriging). Figure \@ref(fig:residualvariogramSOM) shows the semivariogram of the residuals computed with function `variogram` of package **gstat**.
+```{r}
+load("data/Xuancheng.RData")
+res <- predict(lm_lnSOM, newdata=as(grd,"data.frame"), se.fit=TRUE)
+grd <- within(as(grd,"data.frame"), 
+              {lnSOMpred <- res$fit; varpred <- res$se.fit^2})
+```
+
+The predictions and their standard errors are shown in Figure \@ref(fig:predictedlnSOM).
+
+```{r predictedlnSOM, echo=FALSE, out.width="100%", fig.cap = "Predicted natural logarithm of soil organic matter concentration (g/kg) in the topsoil, and its  standard error in Xuancheng, obtained with a linear regression model with elevation as predictor."}
+plt1 <- ggplot(grd) +
+  geom_raster(mapping=aes(x=x1, y=x2, fill=lnSOMpred)) +
+  scale_fill_continuous(name="lnSOM",type="viridis") + 
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()
+
+plt2 <- ggplot(grd) +
+  geom_raster(mapping=aes(x=x1, y=x2, fill=sqrt(varpred))) +
+  scale_fill_continuous(name="se",type="viridis") +
+  scale_x_continuous(name="Easting (km)") +
+  scale_y_continuous(name="Northing (km)") +
+  coord_fixed()
+grid.arrange(plt1, plt2, ncol=1)
+```
+
+Let us check now whether the spatial structure of the study variable lnSOM is fully captured by the mean, modelled as a linear function of the covariate elevation. This can be checked by estimating the semivariogram of the model residuals. If the semivariogram of the residuals is pure nugget (the semivariance does not increase with distance), then we can assume that the prediction errors are independent. In that case we do not need to account for a covariance of the prediction errors in optimisation of the spatial strata. However, if the semivariogram does show spatial structure, we must account for a covariance of the prediction errors. Figure \@ref(fig:residualvariogramSOM) shows the semivariogram of the residuals computed with function `variogram` of package **gstat**.
 
 ```{r residualvariogramSOM, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram of residuals of simple linear regression model for natural logarithm of soil organic matter concentration in Xuancheng."}
 library(gstat)
@@ -701,19 +744,7 @@ vg <- variogram(lnSOM~dem, data=mysample)
 plot(vg, plot.numbers=TRUE)
 ```
 
-The first two points in the semivariogram have somewhat smaller values. This indicates that the residuals at two close points, say $< \pm 5$ km are not independent, whereas if the distance between the two points $> \pm 5$ km, they are independent. This spatial dependency of the residuals can be modelled, e.g. by an exponential function,
-
-\begin{equation}
-\gamma(h)=\left \{
-\begin{array}{ll}
-0      &\,\,\,\text{if}\,\,\, h=0 \\
-c_0+c_1\; \mathrm{exp}(-h/\phi) &\,\,\,\text{if}\,\,\, h > 0 \\
-\end{array}
-\right.
-(\#eq:ExponVariogram)
-\end{equation}
-
-This exponential semivariogram has three parameters, the nugget\index{Nugget} variance $c_0$, the partial sill\index{Partial sill} variance $c_1$ and the distance parameter\index{Distance parameter} $\phi$. The total number of model parameters now is five: two regression coefficients (intercept and slope for elevation), and three semivariogram parameters. All five parameters can best be estimated by restricted maximum likelihood\index{Restricted maximum likelihood estimation}, see Section \@ref(REML). Table \@ref(tab:TableModelXuancheng) shows the estimated regression coefficients and semivariogram parameters. Up to a distance of about three times the estimated distance parameter $\phi$, which is about 8 km, the residuals are spatially correlated, beyond that distance, they are hardly correlated anymore. 
+The sample semivariogram does not show much spatial structure, but the first two points in the semivariogram have somewhat smaller values. This indicates that the residuals at two close points, say $< \pm 5$ km are not independent, whereas if the distance between the two points $> \pm 5$ km, they are independent. This spatial dependency of the residuals can be modelled, e.g. by an exponential function. The exponential semivariogram has three parameters, the nugget\index{Nugget} variance $c_0$, the partial sill\index{Partial sill} $c_1$ and the distance parameter\index{Distance parameter} $\phi$. The total number of model parameters now is five: two regression coefficients (intercept and slope for elevation), and three semivariogram parameters. All five parameters can best be estimated by restricted maximum likelihood\index{Restricted maximum likelihood estimation}, see Section \@ref(REML). Table \@ref(tab:TableModelXuancheng) shows the estimated regression coefficients and semivariogram parameters. Up to a distance of about three times the estimated distance parameter $\phi$, which is about 8 km, the residuals are spatially correlated; beyond that distance, they are hardly correlated anymore.
 
 ```{r, echo=FALSE}
 library(geoR)
@@ -743,33 +774,7 @@ knitr::kable(
   kable_classic()
 ```
 
-The fitted model is used to predict lnSOM at the nodes of a 200 m $\times$ 200 m discretisation grid.
-
-```{r}
-load("data/Xuancheng.RData")
-res <- predict(lm_lnSOM, newdata=as(grd,"data.frame"), se.fit=TRUE)
-grd <- within(as(grd,"data.frame"), 
-              {lnSOMpred <- res$fit; varpred <- res$se.fit^2})
-```
-
-The predictions and their standard errors are shown in Figure \@ref(fig:predictedlnSOM).
-
-```{r predictedlnSOM, echo=FALSE, out.width="100%", fig.cap = "Predicted natural logarithm of soil organic matter concentration (g/kg) in the topsoil, and its  standard error in Xuancheng, obtained with a linear regression model with elevation as predictor."}
-plt1 <- ggplot(grd) +
-  geom_raster(mapping=aes(x=x1, y=x2, fill=lnSOMpred)) +
-  scale_fill_continuous(name="lnSOM",type="viridis") + 
-  scale_x_continuous(name="Easting /km") +
-  scale_y_continuous(name="Northing /km") +
-  coord_fixed()
-
-plt2 <- ggplot(grd) +
-  geom_raster(mapping=aes(x=x1, y=x2, fill=sqrt(varpred))) +
-  scale_fill_continuous(name="se",type="viridis") +
-  scale_x_continuous(name="Easting /km") +
-  scale_y_continuous(name="Northing /km") +
-  coord_fixed()
-grid.arrange(plt1, plt2, ncol=1)
-```
+We conclude that the errors in the regression model predictions are not independent, although the correlation will be weak in this case, and that we must account for this correlation in optimising the spatial strata.
 
 The discretisation grid with predicted lnSOM consists of 115,526 nodes. These are too many for function `optimStrata`. The grid is therefore thinned to a grid with a spacing of 800 m $\times$ 800 m, resulting in 7257 nodes.
 
@@ -793,7 +798,13 @@ frame <-buildFrameSpatial(df=subgrd, id="id",X=c("lnSOMpred"), Y=c("lnSOMpred"),
 cv <- as.data.frame(list(DOM="DOM1",CV1=0.005,domainvalue=1))
 ```
 
-The optimal spatial stratification can be computed with function `optimStrata`, with argument `method="spatial"`. The $R^2$ value of the linear regression model, used in the minimisation criterion (Equation \@ref(eq:minicritospatsDeGruijter)), can be assigned to argument `fitting`. I used an $R^2$ value of one, because I believe the smoothing effect is already accounted for by the variance and covariance of the prediction errors (Equation \@ref(eq:Exid2ij)). Arguments `range` and `kappa` are parameters of an exponential semivariogram, needed for computing the covariance of the prediction errors. Function `optimiStrata` uses an extra parameter in the exponential semivariogram (Equation \@ref(eq:ExponVariogram)), $c_0+c_1\; \mathrm{exp}(-\kappa h/\phi)$, so for the usual exponential semivariogram `kappa` equals 1.
+The optimal spatial stratification can be computed with function `optimStrata`, with argument `method="spatial"`. The $R^2$ value of the linear regression model, used in the minimisation criterion (Equation \@ref(eq:minicritospatsDeGruijter)), can be assigned to argument `fitting`.
+
+```{block2, type= 'rmdnote'}
+I am not sure that the correction factor $R^2$ in Equation \@ref(eq:Exid2ij) is really needed. I believe that the smoothing effect is already accounted for by the variance and covariance of the prediction errors. I used an $R^2$ value of 1.
+```
+
+Arguments `range` and `kappa` are parameters of an exponential semivariogram, needed for computing the covariance of the prediction errors. Function `optimiStrata` uses an extra parameter in the exponential semivariogram (Equation \@ref(eq:exponential)), $c_0+c_1\; \mathrm{exp}(-\kappa h/\phi)$, so for the usual exponential semivariogram `kappa` equals 1.
 
 ```{r, eval=FALSE}
 res <- optimStrata(framesamp=frame, method="spatial", errors=cv, nStrata=5,

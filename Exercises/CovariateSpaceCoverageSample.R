@@ -1,4 +1,5 @@
 library(fields)
+library(ggplot2)
 
 # read data
 load(file="../data/HunterValley.RData")
@@ -13,8 +14,6 @@ grdHunterValley$cluster <- myClusters$cluster
 res <- fields::rdist(x1=myClusters$centers, x2=scale(grdHunterValley[,covars]))
 units <- apply(res, MARGIN=1, FUN=which.min)
 myCSCsample <- grdHunterValley[units, covars]
-
-library(ggplot2)
 
 ggplot(grdHunterValley) +
   geom_point(mapping=aes(x=ndvi,y=cti, colour=as.character(cluster)),alpha=0.5) +
@@ -44,4 +43,4 @@ ggplot(grdHunterValley) +
   scale_y_continuous(name = "cti") +
   theme(legend.position="none")
 
-save(myCSCsample,myCSCsample2, grdHunterValley, file="results/CSCsampling_HunterValley.RData")
+#save(myCSCsample,myCSCsample2, grdHunterValley, file="results/CSCsampling_HunterValley.RData")

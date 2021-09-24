@@ -1,4 +1,5 @@
 load(file="../data/Voorst.RData")
+load(file="data/Voorst.RData")
 
 n <- 40
 N <- nrow(grdVoorst)

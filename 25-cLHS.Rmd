@@ -16,7 +16,9 @@ The minimisation criterion proposed by @Minasny2006 is a weighted sum of three c
 
 With cLH sampling the marginal distributions of the covariates in the sample are close to these distributions in the population. This can be advantageous for mapping methods that do not rely on linear relations, for instance in machine learning techniques like classification and regression trees (CART), and random forests. In addition, criterion O3 ensures that the correlations between predictors are respected in the sample set.
 
-cLH samples can be selected with package **clhs** [@Roudier2011]. With this package the criterion is minimised by simulated annealing, see Section \@ref(SSA) for an explanation of this optimisation method.
+cLH samples can be selected with package **clhs** [@Roudier2011]. With this package the criterion is minimised by simulated annealing, see Section \@ref(SSA) for an explanation of this optimisation method. Arguments `iter`, `temp`, `tdecrease`, and ` length.cycle` are control parameters of the simulated annealing algorithm. I used default values. With argument `weights` the weights of the components of the minimisation criterion can be set. Default weights are 1.
+
+Argument `cost` is for cost-constrained cLH sampling [@Roudier2012], and argument `eta` can be used to control the sampling intensities of the marginal strata [@Minasny2010]. This argument is of interest if we would like to oversample the marginal strata near the edge of the multivariate distribution.
 
 cLH sampling is illustrated with the five covariates of Eastern Amazonia that were used before in covariate space coverage sampling (Chapter \@ref(kmeans)). 
 
@@ -25,8 +27,8 @@ library(clhs)
 load("data/Amazonia_5km.RData")
 covs <- names(gridAmazonia)[c(4,5,6,7,8)]
 set.seed(314)
-res <- clhs(gridAmazonia[,covs], size=20, tdecrease=0.95,
-  iter=10000, progress=FALSE, simple=FALSE)
+res <- clhs(gridAmazonia[,covs], size=20, iter=1000, temp=1, tdecrease=0.95,
+  length.cycle=10, progress=FALSE, simple=FALSE)
 index <- res$index_samples
 myCLHsample <- gridAmazonia[index, ]
 ```
@@ -71,13 +73,12 @@ ggplot(data=gridAmazonia) +
 
 Figure \@ref(fig:StratumSampleSizes) shows the sample sizes for all 100 marginal strata.
 
-For all marginal strata\index{Marginal strata} with one sampling unit the contribution to component O1 of the criterion is zero. For marginal strata with zero or two sampling units, the contribution is 1, for marginal strata with three sampling units the contribution equals 2.
-
-```{r StratumSampleSizes, echo=FALSE, out.width='100%', fig.asp=0.4, fig.cap="Sample sizes of marginal strata for the conditioned Latin hypercube sample of size twenty from Eastern Amazonia."}
+```{r StratumSampleSizes, out.width='100%', fig.asp=0.4, fig.cap="Sample sizes of marginal strata for the conditioned Latin hypercube sample of size twenty from Eastern Amazonia."}
+probs <- seq(from=0, to=1, length.out=nrow(myCLHsample)+1)
+breaks <- apply(gridAmazonia[,covs], MARGIN=2, 
+  FUN=function(x) quantile(x, probs=probs))
 counts <- lapply(1:5, function (i) 
-  hist(myCLHsample[, i+3], breaks[,i], plot=FALSE)$counts
-)
-
+  hist(myCLHsample[, i+3], breaks[,i], plot=FALSE)$counts)
 countslf <- data.frame(counts=unlist(counts))
 countslf$covariate <- rep(names(gridAmazonia)[c(4,5,6,7,8)], each=20)
 countslf$stratum <- rep(1:20, times=5)
@@ -87,11 +88,13 @@ ggplot(countslf) +
   scale_x_continuous(name="Stratum") +
   scale_y_continuous(name="Sample size", breaks=c(0,1,2,3))
 ```
+For all marginal strata\index{Marginal strata} with one sampling unit the contribution to component O1 of the criterion is zero. For marginal strata with zero or two sampling units, the contribution is 1, for marginal strata with three sampling units the contribution equals 2. In Figure \@ref(fig:StratumSampleSizes) there are nine marginal strata with zero units and nine marginal strata with two units, so O1 equals 18 in this case.
 
 Figure \@ref(fig:tracecLHS) shows the trace of the objective function, i.e. the values of the minimisation criterion during the optimisation.
 
 ```{r}
 trace <- res$obj
+tail(trace,1)
 ```
 
 ```{r tracecLHS, echo=FALSE, fig.asp=0.6, fig.cap="Trace of minimisation criterion during optimisation of conditioned Latin hypercube sampling from Eastern Amazonia."}
@@ -101,8 +104,16 @@ ggplot(tracedf) +
   scale_x_continuous(name="Iteration") +
   scale_y_continuous(name="Criterion")
 ```
+In the next code chunk the minimized value of the criterion is computed "by hand".
 
-cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann**, and can handle larger data sets. The function `clhs` of this package has alos other interesting argument, such as the argument cost for cost-constrained cLH sampling [@Roudier2012], and `eta` to control the sampling intensities of the marginal strata [@Minasny2010]. The argument `eta` is of interest if we would like to oversample the marginal strata near the edge of the multivariate distribution.
+```{r}
+O1 <- sum(abs(countslf$counts-1))
+rho <- cor(gridAmazonia[,c(4,5,6,7,8)])
+r <- cor(myCLHsample[,c(4,5,6,7,8)])
+O3 <- sum(abs(rho-r))
+print(O1+O3)
+```
+cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann**, and can handle larger data sets. 
 
 #### Exercises {-}
 
