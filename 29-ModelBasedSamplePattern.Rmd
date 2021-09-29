@@ -137,13 +137,13 @@ The **R** code for optimising the sampling pattern is as follows.
 
 ```{r, eval=FALSE}
 set.seed(314)
-rslt <- optimMKV(
+res <- optimMKV(
   points=50, candi=candi,
   vgm=vgm_lnECe, eqn=z~1,
   schedule=schedule,
   plotit=FALSE, track=TRUE)
-mysample <- candi[rslt$points$id,]
-trace <- rslt$objective$energy
+mysample <- candi[res$points$id,]
+trace <- res$objective$energy
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
@@ -221,7 +221,7 @@ The next code chunk shows how this objective function can be minimised.
 myevalsample <- candi
 coordinates(myevalsample) <- ~x+y
 set.seed(314)
-rslt <- optimUSER(
+res <- optimUSER(
   points=50, candi=candi,
   fun=QOKV,
   esample=myevalsample,
@@ -230,7 +230,7 @@ rslt <- optimUSER(
   schedule=schedule)
 ```
 
-Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Chapter \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sampling pattern\index{Sampling pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
+Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Section \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sampling pattern\index{Sampling pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
 
 #### Exercises {-}
 
@@ -305,7 +305,7 @@ To optimise the sampling pattern for KED, using the mean KED variance as a minim
 
 ```{r, eval=FALSE}
 set.seed(314)
-rslt <- optimMKV(
+res <- optimMKV(
   points=50, candi=candi, covars=EM_CRF,
   vgm=vgm_REML_gstat, eqn=z~lnEM100cm,
   schedule=schedule,
@@ -313,10 +313,10 @@ rslt <- optimMKV(
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
-mysample <- candi[rslt$points$id,]
+mysample <- candi[res$points$id,]
 ids <- as.integer(rownames(mysample))
 mysample$lnEM100cm <- covars[ids,3]
-trace <- rslt$objective$energy
+trace <- res$objective$energy
 save(mysample,trace,file="results/MBSample_KED_Uzbekistan.RData")
 ```
 
@@ -405,16 +405,16 @@ With numerous legacy points computing time can be reduced with argument `nmax`, 
 set.seed(314)
 vgm_ML_gstat <- vgm(model="Sph", psill=vgm_ML$sigmasq,
   range=vgm_ML$phi, nugget=vgm_ML$nugget)
-rslt <- optimMKV(
+res <- optimMKV(
   points=pnts, candi=candi,
   vgm=vgm_ML_gstat, eqn=z~1,
   nmax=20, schedule=schedule, track=FALSE)
-ids <- which(rslt$points$free==1)
-infillSample <- rslt$points[ids,]
+ids <- which(res$points$free==1)
+infillSample <- res$points[ids,]
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(rslt, file="results/MBInfillSample_OK_Ethiopia.RData")
+save(res, file="results/MBInfillSample_OK_Ethiopia.RData")
 ```
 
 Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for ordinary kriging of SOM across the three woredas in Ethiopia. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range of `r round(vgm_ML$phi,1)` km of the semivariogram.
@@ -422,7 +422,7 @@ Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 poin
 ```{r ModelBasedInfill, echo=FALSE, fig.cap="Model-based infill sample for ordinary kriging of SOM across three woredas of Ethiopia."}
 load("results/MBInfillSample_OK_Ethiopia.RData")
 load(file="data/CovariatesThreeWoredasEthiopia.RData")
-df <- data.frame(x=rslt$points$x, y=rslt$points$y, free=rslt$points$free)
+df <- data.frame(x=res$points$x, y=res$points$y, free=res$points$free)
 df$free <- as.factor(df$free)
 ggplot() +
   geom_raster(grdEthiopia, mapping=aes(x=s1,y=s2), fill="grey") +
@@ -459,7 +459,7 @@ covars <- grdEthiopia[,c("dem","rfl_NIR","rfl_red","lst")]
 vgm_REML_gstat <- vgm(model="Sph", psill=vgm_REML$sigmasq, 
   range=vgm_REML$phi, nugget=vgm_REML$nugget)
 set.seed(314)
-rslt <- optimMKV(
+res <- optimMKV(
   points=pnts, candi=candi, covars=covars,
   vgm=vgm_REML_gstat,
   eqn=z~dem+rfl_NIR+rfl_red+lst,
@@ -467,14 +467,14 @@ rslt <- optimMKV(
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(rslt, file="results/MBInfillSample_KED_Ethiopia.RData")
+save(res, file="results/MBInfillSample_KED_Ethiopia.RData")
 ```
 
 Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample for KED using as covariates elevation, NIR-reflectance, red-reflectance and land surface temperature. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with ordinary kriging because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with ordinary kriging, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated model mean.
 
 ```{r ModelBasedInfillKED, echo=FALSE, fig.cap="Model-based infill sample for kriging with an external drift of SOM across three woredas of Ethiopia, plotted on a map of one of the covariates."}
 load("results/MBInfillSample_KED_Ethiopia.RData")
-df <- data.frame(x=rslt$points$x, y=rslt$points$y, free=rslt$points$free)
+df <- data.frame(x=res$points$x, y=res$points$y, free=res$points$free)
 df$free <- as.factor(df$free)
 
 ggplot() +
@@ -486,12 +486,12 @@ ggplot() +
 
 ```{r, echo=FALSE}
 load("results/MBInfillSample_KED_Ethiopia.RData")
-MKV_KED_opt <- as.numeric(tail(rslt$objective$energy,1))
+MKV_KED_opt <- as.numeric(tail(res$objective$energy,1))
 
 #compute KED variance for model-based infill sample for ordinary kriging
 load("results/MBInfillSample_OK_Ethiopia.RData")
-ids <- which(rslt$points$free==1)
-infillSampleOK <- rslt$points[ids,]
+ids <- which(res$points$free==1)
+infillSampleOK <- res$points[ids,]
 coordinates(infillSampleOK) <- ~x+y
 
 #add covariates

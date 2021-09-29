@@ -426,7 +426,7 @@ gridAmazonia %>%
 
 The space-time designs of Chapter \@ref(RepeatedSurveys) are illustrated with the annual mean air temperature at two metres above the earth surface in degrees Celsius, in Spain and Portugal (islands excluded) for the years 2004, 2009, 2014 and 2019. These data are part of the data set [CHELSA](https://chelsa-climate.org/wp-admin/download-page/CHELSA_tech_specification_V2.pdf) [@Karger2017].
 
-```{r TASofSpainPortugal, echo=FALSE, out.width='100%', fig.cap="Annual mean air temperature in Spain and Portugal ifor the years 2004, 2009, 2014 and 2019."}
+```{r TASofSpainPortugal, echo=FALSE, out.width='100%', fig.cap="Annual mean air temperature in Spain and Portugal for the years 2004, 2009, 2014 and 2019."}
 load(file="data/SpainPortugal_TAS.RData")
 df_lf <- df %>% pivot_longer(cols=c("TAS2004","TAS2009","TAS2014","TAS2019"))
 ggplot(df_lf) +
@@ -512,7 +512,7 @@ w_k = \frac{1}{\pi_k}\;,
 with $\pi_k$ the inclusion probability of unit $k$. The estimator\index{Estimator} of Equation \@ref(eq:HTTotal) is referred to as the Horvitz-Thompson estimator\index{Horvitz-Thompson estimator|see {$\pi$ estimator}} or $\pi$ estimator\index{$\pi$ estimator}. The $z_k/\pi_k$ values are referred to as the  $\pi$-expanded values\index{$\pi$-expanded value}. The $z$ value of unit $k$ in the sample is multiplied by the reciprocal of the inclusion probability of that unit, and the sample sum of these $\pi$-expanded values is used as an estimator of the population total\index{Population total}. The inclusion probabilities are determined by the type of sampling design and the sample size.
 
 ```{block2, type='rmdnote'}
-An *estimator* is not the same as an *estimate*. An estimate is a single value calculated from the data of a selected sample, whereas an estimator is a *random variable* that is a function of the sample data, and has a probability distribution. 
+An *estimator* is not the same as an *estimate*. An estimate is a single value calculated from the data of a selected sample, whereas an estimator is a *random variable* that is a function of the sample data, and has a probability distribution. Therefore it is not correct, although very common, to say 'the variance (standard error) of the estimated population mean equals ...'. It is (more) correct to say 'the variance (standard error) of the estimator of the population mean equals ...'.
 ```
 
 For infinite populations\index{Population!infinite population}, think of points in a continuous population, the same estimator for the population total can be used, but special attention must then be paid to the inclusion probabilities. Suppose the infinite population is discretised by a fine grid of $N$ nodes, and a simple random sample of $n$ nodes is selected. The inclusion probabilities of the grid nodes is then $n/N$. However, constraining the sampling points to the nodes of the discretisation grid is not needed, and even undesirable. To account for the infinite number of points in the population we may adopt a two-step approach, see Figure \@ref(fig:SamplingFromInfinitePopulation). In the first step $n$ grid nodes are selected by simple random sampling *with replacement*. In the second step one point is selected fully randomly from the grid cells with the grid nodes selected in the first step at their centers. If a grid cell is selected more than once, more points are selected in that grid cell. With this selection procedure the inclusion probability density\index{Inclusion probability density} is $n/A$, with $A$ the area of the study area. This inclusion probability density equals the expected number of sampling points per unit area, e.g. the expected number of points per ha or per m$^2$. The inclusion probability density can be interpreted as the sampling intensity\index{Sampling intensity}.
@@ -4919,7 +4919,7 @@ mysample_cal <- calibrate(design_si, formula=~lnSWIR2,
 The calibrated weights\index{Calibrated weights} can be extracted with function `weights`.
 
 ```{block2, type= 'rmdcaution'}
-These weights are divided by the inclusion probabilities $\pi=n/N$, so that the sample sum of the weights equals $N$, and not the sample size $n$ (as in the code chunk above). 
+The calibrated weights are divided by the inclusion probabilities $\pi=n/N$, so that the sample sum of the weights equals $N$, and not the sample size $n$ (as in the code chunk above). 
 ```
 
 ```{r}
@@ -7681,7 +7681,7 @@ The optimal spatial stratification can be computed with function `optimStrata`, 
 I am not sure that the correction factor $R^2$ in Equation \@ref(eq:Exid2ij) is really needed. I believe that the smoothing effect is already accounted for by the variance and covariance of the prediction errors. I used an $R^2$ value of 1.
 ```
 
-Arguments `range` and `kappa` are parameters of an exponential semivariogram, needed for computing the covariance of the prediction errors. Function `optimiStrata` uses an extra parameter in the exponential semivariogram (Equation \@ref(eq:ExponVariogram)), $c_0+c_1\; \mathrm{exp}(-\kappa h/\phi)$, so for the usual exponential semivariogram `kappa` equals 1.
+Arguments `range` and `kappa` are parameters of an exponential semivariogram, needed for computing the covariance of the prediction errors. Function `optimiStrata` uses an extra parameter in the exponential semivariogram (Equation \@ref(eq:exponential)), $c_0+c_1\; \mathrm{exp}(-\kappa h/\phi)$, so for the usual exponential semivariogram `kappa` equals 1.
 
 ```{r, eval=FALSE}
 res <- optimStrata(framesamp=frame, method="spatial", errors=cv, nStrata=5,
@@ -7755,9 +7755,9 @@ rm(list=ls())
 
 This chapter is about probability sampling and estimation of means or totals of subpopulations (subareas, subregions). In the sampling literature these subpopulations are referred to as domains of interest\index{Domains of interest}, or shortly domains. Ideally at the stage of designing a sample these domains are known, and of every population unit we know to which domain it belongs. In that situation it is most convenient to use these domains as strata in random sampling, so that we can control the sample size in each domain (Chapter \@ref(STSI)). 
 
-If we have multiple maps with domains, think for instance of a soil class map, a map with land cover classes, and a map with countries, we can make an overlay of these maps to construct the cross-tabulation strata. However, this may result in numerous strata, in some cases even more than the sample size. In this situation an attractive solution is multi-way stratification (Section \@ref(Multiwaystratification)). With this design the domains of interest are used as strata, not their cross-classification, and the sample sizes of these marginal strata are controlled.
+If we have multiple maps with domains, think for instance of a soil class map, a map with land cover classes and a map with countries, we can make an overlay of these maps to construct the cross-tabulation strata. However, this may result in numerous strata, in some cases even more than the sample size. In this situation an attractive solution is multi-way stratification (Section \@ref(Multiwaystratification)). With this design the domains of interest are used as strata, not their cross-classification, and the sample sizes of these marginal strata are controlled.
 
-Even with a multi-way stratified sample, resulting in controlled sample sizes for each domain, the sample size of a domain can be too small for a reliable estimate of the total or mean when using the data of that domain only. In that case we may use model-assisted estimators. In Chapter \@ref(Modelassisted) model-assisted estimation of the population mean or total is explained, using all data collected from the population are used. In this chapter (Section \@ref(SmallDomainsModelAssisted)) also data outside the domain are used, more specifically to estimate the population regression coefficients (@cha94, @Rao2003, @Falorsi2008).
+Even with a multi-way stratified sample, resulting in controlled sample sizes for each domain, the sample size of a domain can be too small for a reliable estimate of the mean or total when using the data of that domain only. In that case we may use model-assisted estimators to increase the precision. In Chapter \@ref(Modelassisted) model-assisted estimation of the population mean or total is explained, using all data collected from the population. In this chapter (Section \@ref(SmallDomainsModelAssisted)) also data outside the domain are used, more specifically to estimate the population regression coefficients (@cha94, @Rao2003, @Falorsi2008).
 
 We may also wish to estimate the mean or total of domains that are not used as (marginal) strata. The sample size in these domains is then not controlled, and varies among samples selected with the sampling design. As before with multi-way stratified sampling, the mean can either be estimated with the direct estimator, using the data from the domain only (Section \@ref(LargeDomainsDirectEstimator)), or a model-assisted estimator, also using data from outside the domain for estimating regression coefficients (Section \@ref(SmallDomainsModelAssisted)).
 
@@ -7772,7 +7772,7 @@ If the sample size of a domain $d$ is considered large enough to obtain a reliab
 
 where $N_{d}$ is the size of the domain, $z_{dk}$ is the value for unit $k$ of domain $d$, and $\pi _{dk}$ is the inclusion probability of this point.
 
-When the domain is not used as a (marginal) stratum, so that the sample size of the domain is random, the mean of the domain can best be estimated by
+When the domain is not used as a (marginal) stratum, so that the sample size of the domain is random, the mean of the domain can best be estimated by the ratio estimator
 
 \begin{equation}
 \hat{\bar{z}}_{\text{ratio},d}= \frac{\hat{t}_d(z)}{\widehat{N}_d}=
@@ -7780,16 +7780,11 @@ When the domain is not used as a (marginal) stratum, so that the sample size of 
 (\#eq:generalratiodomain)
 \end{equation}
 
-with $\widehat{N}_{d}$ the estimated size of the domain,
+```{block2, type='rmdnote'}
+The ratio estimator\index{Ratio estimator} can also be used when the size of the domain is unknown. An example of this is estimating the mean of soil classes *as observed in the field*, and not *as depicted on a soil map*. A soil map is impure, i.e. the map units contain patches with other soil classes than as indicated on the map. The area of a given true soil class is not known. 
+```
 
-\begin{equation}
-\widehat{N}_{d}=\sum_{k \in \mathcal{S}_d}\frac{1}{\pi _{i}} \;.
-(\#eq:piestimatorpopulationsize)
-\end{equation}
-
-This ratio estimator\index{Ratio estimator} can also be used when the size of the domain is unknown. An example of this is estimating the mean of soil classes *as observed in the field*, and not *as depicted on a soil map*. A soil map is impure, i.e. the map units contain patches with other soil classes than as indicated on the map. The area of a given true soil class is not known. 
-
-For simple random sampling $\pi_{dk} = n/N$. Inserting this in Equation \@ref(eq:generalratiodomain) gives
+For simple random sampling without replacement $\pi_{dk} = n/N$. Inserting this in Equation \@ref(eq:generalratiodomain) gives
 
 \begin{equation}
 \hat{\bar{z}}_{\text{ratio},d}=\frac{1}{n_{d}}\sum_{k \in \mathcal{S}_d}z_{dk} \;.
@@ -7831,19 +7826,19 @@ design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
 ```
 
-The ratio estimates are shown in Table \@ref(tab:TableRatioEstimatesEcoregions).
+The ratio estimates are shown in Table \@ref(tab:TableRatioEstimatesEcoregions). There are three ecoregions with an estimated standard error of 0.0. These ecoregions have less than two sampling units only, so that the standard error cannot be estimated.
 
 ```{r TableRatioEstimatesEcoregions, echo=FALSE}
 rownames(res) <- NULL
 res[,c(2,3)] <- round(res[,c(2,3)],1)
 knitr::kable(
-  res, caption = 'Ratio estimates of mean aboveground biomass (AGB) and their standard errors of ecoregions in Eastern Amazonia. The ecoregions with an estimated standard error of 0.0 have one sampling unit only, and actually are non-availables.',
+  res, caption = 'Ratio estimates of mean aboveground biomass (AGB) and their standard errors of ecoregions in Eastern Amazonia. The estimated standard errors of 0.0 are non-availables.',
   booktabs = TRUE
 ) %>%
   kable_classic()
 ```
 
-The sampling is repeated 1,000 times, and every sample is used to estimate the mean AGB of the ecoregions both with the $\pi$ estimator and the ratio estimator. As can be seen below the standard error of the ratio estimator is much smaller than the standard deviation of the $\pi$ estimator. The reason is that the number of sampling units in a ecoregion varies among samples, i.e. the sample size of an ecoregion is random. When many units are selected from an ecoregion, the estimated total of that ecoregion is large. The estimated mean as obtained with the $\pi$ estimator then is large too, because the estimated total is divided by the fixed size (total number of population units, $N_d$) of the ecoregion. However, in the ratio estimator the size of an ecoregion is estimated from the same sample, despite that we know its size, see Equation \@ref(eq:generalratiodomain). With many units selected from an ecoregion, the estimated size of that ecoregion, $\widehat{N}_d$ is also large. By dividing the large estimated total by the large estimated size, a more stable estimate of the mean of the domain is obtained. For quite a few ecoregions the standard errors are very large, especially of the $\pi$ estimator. These are the ecoregions with very small average sample sizes. With simple random sampling the expected sample size can simply be computed by $E[n] = n \; N_d/N$. In the following section alternative estimators are described for these ecoregions with small expected sample sizes. To speed up the computations I used a 5 km $\times$ 5 km subgrid in this sampling experiment.
+The simple random sampling is repeated 1,000 times, and every sample is used to estimate the mean AGB of the ecoregions both with the $\pi$ estimator and the ratio estimator. As can be in Table \@refTtab:TableRatiovsHTEstimatesEcoregions) the standard deviation of the ratio estimates is much smaller than that of the $\pi$ estimates. The reason is that the number of sampling units in a ecoregion varies among samples, i.e. the sample size of an ecoregion is random. When many units are selected from an ecoregion, the estimated total of that ecoregion is large. The estimated mean as obtained with the $\pi$ estimator then is large too, because the estimated total is divided by the fixed size (total number of population units, $N_d$) of the ecoregion. However, in the ratio estimator the size of an ecoregion is estimated from the same sample, despite that we know its size, see Equation \@ref(eq:generalratiodomain). With many units selected from an ecoregion, the estimated size of that ecoregion, $\widehat{N}_d$ is also large. By dividing the large estimated total by the large estimated size, a more stable estimate of the mean of the domain is obtained. For quite a few ecoregions the standard deviations are very large, especially of the $\pi$ estimator. These are the ecoregions with very small average sample sizes. With simple random sampling the expected sample size can simply be computed by $E[n] = n \; N_d/N$. In the following section alternative estimators are described for these ecoregions with small expected sample sizes. To speed up the computations I used a 5 km $\times$ 5 km subgrid in this sampling experiment.
 
 ```{r, echo=FALSE, eval=FALSE}
 load(file="data/Amazonia_5km.RData")
@@ -7901,21 +7896,40 @@ for (i in 1:number_of_samples) {
 save(mz_eco_HT, mz_eco_ratio, mz_eco_regr, mz_eco_synt, mz_eco_extsynt, file="results/MeanAGB_ecoregions.RData")
 ```
 
-No covariates are used in the ratio estimator. If we wish to exploit covariates, the mean of a domain can best be estimated by the ratio of the regression estimate of the domain total (Chapter \@ref(Modelassisted)) and the estimated size of the domain,
+```{r TableRatiovsHTEstimatesEcoregions, echo=FALSE}
+load(file="results/MeanAGB_ecoregions.RData")
+sd_mz_HT <- apply(mz_eco_HT, MARGIN=1, FUN=var, na.rm=TRUE) %>% sqrt(.) %>% round(.,1)
+sd_mz_ratio <- apply(mz_eco_ratio, MARGIN=1, FUN=var, na.rm=TRUE) %>% sqrt(.) %>% round(.,1)
+notNA <- apply(mz_eco_HT, MARGIN=1, FUN=function(x) {sum(!is.na(x))})
+N_eco <- tapply(gridAmazonia$AGB, INDEX=gridAmazonia$Ecoregion, FUN=length)
+N <- nrow(gridAmazonia)
+En <- round(n*N_eco/N,2)
+res <- data.frame(sd_mz_HT,sd_mz_ratio,En)
+knitr::kable(
+  res, caption = 'Standard deviations of repeated Horvitz-Thompson (HT) and ratio estimates (ratio) of mean aboveground biomass (AGB) of ecoregions, with simple random sampling without replacement of size 200 from Eastern Amazonia.',
+  col.names=c("HT","ratio","Exp. sample size"),
+  booktabs = TRUE
+) %>%
+  kable_classic()
+```
+
+No covariates are used in the ratio estimator. If we wish to exploit covariates, the mean of a domain can best be estimated by the ratio of the regression estimate of the domain total and the estimated size of the domain,
 
 \begin{equation}
 \hat{\bar{z}}_{\text{ratio},d}= \frac{\hat{t}_{\text{regr},d}(z)}{\widehat{N}_d}\;.
 \end{equation}
 
+For a large domain with a reasonable sample size, the regression estimate can computed from the data of that domain (Chapter \@ref(Modelassisted)). For small domains, also the data from outside these domains can be used to estimate the population regression coefficients. This is explained in Section \@ref(RegressionestimatorSmallDomain). 
+
 ## Model-assisted estimators for small domains {#SmallDomainsModelAssisted}
 
 When the domains are not well represented in the sample, the direct estimators from the previous section lead to large standard errors. In this situation we may try to increase the precision by also using observations from outside the domain. If we have covariates related to the study variable, we may exploit this ancillary information by fitting a regression model relating the study variable to the covariates, and using the fitted model to predict the study variable for all population units (nodes of discretisation grid), see Chapter \@ref(Modelassisted)\index{Model-assisted approach}. However, for small domains\index{Small domain} we may have too few sampled units in that domain to fit a separate regression model. The alternative then is to use the entire sample to estimate the regression coefficients and to use this global regression model to estimate the means of the domains. This introduces a systematic error, a design-bias, in the estimator. However, this extra error is potentially outweighed by the reduction of the random error due to the use of the globally estimated regression coefficients. If one or more units are selected from a domain, the observations of the study variable on these units can be used to correct for the bias. This leads to the regression estimator for small domains\index{Regression estimator!for small domains}. In the absence of such data, the mean of the domain can still be estimated by the so-called synthetic estimator\index{Synthetic estimator}.
 
-There are quite a few packages for model-assisted estimation of means of small areas, the **maSAE** package [@maSAE], the **JoSAE** package [@JoSAE], the **rsae** package [@rsae], and the **forestinventory** package [@Hill2021]. I use package **forestinventory** for model-assisted estimation, and package **JoSAE** for model-based prediction of the means of small areas.
+There are quite a few packages for model-assisted estimation of means of small areas, the **maSAE** package [@maSAE], the **JoSAE** package [@JoSAE], the **rsae** package [@rsae], and the **forestinventory** package [@Hill2021]. I use package **forestinventory** for model-assisted estimation (Sections \@ref(RegressionestimatorSmallDomain) and \@ref(SyntheticestimatorSmallDomain)), and package **JoSAE** for model-based prediction of the means of small areas (Section \@ref(SmallAreaModelBased)).
 
 ### Regression estimator {#RegressionestimatorSmallDomain}
 
-In the regression estimator the potential bias due to the globally estimated regression coefficients, can be eliminated by adding the $\pi$ estimator of the mean of the regression residuals to the mean of the predictions in the domain(compare with Equation \@ref(eq:GREG)) (@Mandallaz2007, @Mandallaz2013),
+In the regression estimator the potential bias due to the globally estimated regression coefficients, can be eliminated by adding the $\pi$ estimator of the mean of the regression residuals to the mean of the predictions in the domain (compare with Equation \@ref(eq:GREG)) (@Mandallaz2007, @Mandallaz2013),
 
 \begin{equation}
 \hat{\bar{z}}_{\text{regr},d} = \frac{1}{N_d} \sum_{k=1}^{N_d} \mathbf{x}^{\mathrm{T}}_{dk} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{\epsilon_{dk}}{\pi_{dk}} \;,
@@ -7929,7 +7943,7 @@ with $\mathbf{x}_{dk}$ the vector with covariate values for unit $k$ in domain $
 (\#eq:regressionestimatorsmalldomainratio)
 \end{equation}
 
-with $\widehat{N}_d$ the estimated size of domain $d$, see Equation \@ref(eq:generalratiodomain). The regression coefficients can be estimated by Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). With simple random sampling the second term in this estimator is equal to the sample mean of the residuals, so that the estimator reduces to 
+with $\widehat{N}_d$ the estimated size of domain $d$, see Equation \@ref(eq:generalratiodomain). The regression coefficients can be estimated by Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). With simple random sampling the second term in Equation \@ref(eq:regressionestimatorsmalldomainratio) is equal to the sample mean of the residuals, so that the estimator reduces to 
 
 \begin{equation}
 \hat{\bar{z}}_{\text{regr},d}=\bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \bar{\epsilon}_{\mathcal{S}_d}\;,
@@ -7945,17 +7959,11 @@ A regression estimate can only be computed if we have at least one observation o
 (\#eq:Varregressionestimatorsmalldomain)
 \end{equation}
 
-with $\widehat{\mathbf{C}}(\hat{\mathbf{b}})$ the matrix with estimated sampling variances and sampling covariances of the regression coefficients. The first variance component is the contribution due to uncertainty about the regression coefficients, the second component accounts for the uncertainty about the mean of the residuals in the domain. For simple random sampling the sampling variance of the $\pi$ estimator of the mean of the residuals in a domain can be estimated by the sample variance of the residuals in that domain divided by the sample size $n_d$. This variance estimator is presented in @Hill2021. If the domain is not used as a stratum, and the domain mean of the residuals is estimated by the ratio estimator, the second variance component can be estimated by
+with $\widehat{\mathbf{C}}(\hat{\mathbf{b}})$ the matrix with estimated sampling variances and covariances of the regression coefficients. The first variance component is the contribution due to uncertainty about the regression coefficients, the second component accounts for the uncertainty about the mean of the residuals in the domain. For simple random sampling the sampling variance of the $\pi$ estimator of the mean of the residuals in a domain can be estimated by the sample variance of the residuals in that domain divided by the sample size $n_d$. This variance estimator is presented in @Hill2021. If the domain is not used as a stratum, and the domain mean of the residuals is estimated by the ratio estimator, the second variance component can be estimated by
 
 \begin{equation}
-\widehat{V}\!\left(\hat{\bar{e}}_{\text{ratio},d}\right) = \frac{1}{\hat{a}_{d}^{2}}\cdot\frac{1}{n\,(n-1)}\sum_{k \in \mathcal{S}_d}(\epsilon_{dk}-\bar{\epsilon}_{\mathcal{S}_d})^{2} \;,
+\widehat{V}\!\left(\hat{\bar{e}}_{\text{ratio},d}\right) = \left(\frac{n}{n_{d}}\right)^{2}\cdot\frac{1}{n\,(n-1)}\sum_{k \in \mathcal{S}_d}(\epsilon_{dk}-\bar{\epsilon}_{\mathcal{S}_d})^{2} \;.
 (\#eq:Varratioestimatorofmeanresidual)
-\end{equation}
-
-where $\hat{a}_{d}$ is the estimated relative size of domain $d$,
-
-\begin{equation}
-\hat{a}_{d}=\frac{n_{d}}{n} \;.
 \end{equation}
 
 With simple random sampling the sampling variances and covariances of the estimated regression coefficients can be estimated by (see Equation 2 in @Hill2021)
@@ -7965,9 +7973,15 @@ With simple random sampling the sampling variances and covariances of the estima
 (\#eq:samplingVarregressioncoefficients)
 \end{equation}
 
-Note that these sampling variances and covariances are not equal to the model variances and covariances of the estimated regression coefficients as obtained with multiple linear regression, using functions `lm` and `vcov`, see Chapter \@ref(Approaches).
+The sampling variances and covariances of the estimators of the population regression coeffcients are not equal to the model variances and covariances as obtained with multiple linear regression, using functions `lm` and `vcov`, see Section \@ref(GREG) and Chapter \@ref(Approaches).
 
-Function `twophase` of package **forestinventory** [@Hill2021] can be used to compute the regression estimator for small domains and its standard error. The name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, @Hill2021 considers infinite populations, and they treat the grid that discretises this infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large. This can be done by assigning the domain means of the covariates to argument `exhaustive` of function `twophase`.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package `survey` also a function `twophase` is defined, for that reason the  name of the package is made explicit by `forestinventory::twophase`. With arguments `psmall=TRUE` and element `unbiased=TRUE` in the list `small_area` the regression estimate is computed.
+Function `twophase` of package **forestinventory** [@Hill2021] can be used to compute the regression estimate for small domains and its standard error. 
+
+```{block2, type='rmdnote'}
+The name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, @Hill2021 considers infinite populations, and they treat the grid that discretises this infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large.
+```
+
+By assigning the domain means of the covariates to argument `exhaustive` of function `twophase` the sampling error of the first phase is ignored.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package `survey` also a function `twophase` is defined, for that reason the  name of the package is made explicit by `forestinventory::twophase`. With arguments `psmall=TRUE` and element `unbiased=TRUE` in the list `small_area` the regression estimate is computed.
 
 ```{r, echo=FALSE}
 load(file="data/Amazonia_1km.RData")
@@ -7999,8 +8013,9 @@ df <- regr[c("area","estimate","ext_variance","g_variance","n2G")]
 df[,c(2,3,4)] <- round(df[,c(2,3,4)],1)
 
 knitr::kable(
-  df, caption = 'Regression estimates of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia, using lnSWIR2 as a predictor. For explanation of variances of regression estimator, see text. In the final column the number of sampling units per ecoregion is listed.',
-  booktabs = TRUE, col.names=c("Ecoregion","AGB","ext_var","g_var","n2G")
+  df, caption = 'Regression estimates of mean aboveground biomass (AGB) of ecoregions for simple random sample without replacement of size 200 from Eastern Amazonia, using lnSWIR2 as a predictor. For explanation of variances of regression estimator, see text. In the final column the number of sampling units per ecoregion is listed.',
+  booktabs = TRUE,
+  col.names=c("Ecoregion","AGB","ext_var","g_var","n2G")
 ) %>%
   kable_classic()
 ```
@@ -8009,9 +8024,9 @@ The alternative is to save the selected units (the sample) in a `data.frame`, as
 
 For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:TableRegressionEstimatesEcoregions)). No units are selected from these domains. The variance of the estimated domain mean is in the column `g_variance`. The column `ext_variance` ignores the first variance component  of Equation \@ref(eq:Varregressionestimatorsmalldomain). Note that for the ecoregions with a sample size of one unit (the sample sizes per domain are in column `n2G`) no estimate of the variance is available, because the variance of the estimated mean of the residuals cannot be estimated from one unit.
 
-Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates. The variation of the regression estimates is smaller than those of the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
+Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates (Equation \@ref(eq:ratiodomainSI)). The variation of the regression estimates among the ecoregions is smaller than those of the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
 
-```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatter plot of ratio estimate and regression estimate of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
+```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatter plot of ratio and regression estimates of mean aboveground biomass (AGB) of ecoregions for simple random sample of size 200 from Eastern Amazonia. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
 mysample$N <- nrow(gridAmazonia)
 design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
@@ -8029,7 +8044,7 @@ ggplot(data=df) +
         coord_fixed()
 ```
 
-I quantified the gain in the precision due to the use of the regression model by the variance of the ratio estimator divided by the variance of the regression estimator (Table \@ref(tab:TableGainRegressionestimator)). For ratios larger than 1 there is a gain in precision. Both variances are estimated from the 1,000 repeated ratio and regression estimates. For all but two small ecoregions there is a gain. For quite a few ecoregions the gain is quite large. These are the ecoregions where the globally fitted regression model explains a large part of the spatial variation of AGB.
+I quantified the gain in precision due to the use of the regression model by the variance of the ratio estimator divided by the variance of the regression estimator (Table \@ref(tab:TableGainRegressionestimator)). For ratios larger than one there is a gain in precision. Both variances are estimated from 1,000 repeated ratio and regression estimates obtained with simple random sampling without replacement of size 200. For all but two small ecoregions there is a gain. For quite a few ecoregions the gain is quite large. These are the ecoregions where the globally fitted regression model explains a large part of the spatial variation of AGB.
 
 ```{r TableGainRegressionestimator, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -8040,23 +8055,24 @@ gain <- round(v_ratio/v_regr,2)
 df <- data.frame(ecoregions, gain=gain)
 rownames(df) <- NULL
 knitr::kable(
-  df, caption = 'Gain in precision of estimated mean of AGB of ecoregions in Eastern Amazonia, as quantified by the estimated variance of the ratio estimator (no covariate used) divided by the estimated variance of the regression estimator (using lnSWIR2 as a predictor).',
-  booktabs = TRUE,col.names=c("Ecoregions","Gain")
+  df, caption = 'Estimated gain in precision of estimated mean of AGB of ecoregions in Eastern Amazonia, as quantified by the estimated variance of the ratio estimator (no covariate used) divided by the estimated variance of the regression estimator (using lnSWIR2 as a predictor), for simple random sampling without replacement of size 200.',
+  booktabs = TRUE,
+  col.names=c("Ecoregions","Gain")
 ) %>%
   kable_classic()
 ```
 
 
-### Synthetic estimator
+### Synthetic estimator {#SyntheticestimatorSmallDomain}
 
-For small domains from which no units are selected, the mean can still be estimated by the synthetic estimator\index{Synthetic estimator}, also referred to as the synthetic regression estimator,
+For small domains from which no units are selected, the mean can still be estimated by the synthetic estimator\index{Synthetic estimator}, also referred to as the synthetic regression estimator, by dropping the second term in Equation \@ref(eq:regressionestimatorsmalldomain), 
 
 \begin{equation}
 \hat{\bar{z}}_{\text{syn},d}=\bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}}\;.
 (\#eq:syntheticestimatorsmalldomain)
 \end{equation}
 
-So the second term in Equation \@ref(eq:regressionestimatorsmalldomain) is dropped. The variance can be estimated by
+The variance can be estimated by
 
 \begin{equation}
 \widehat{V}\!\left(\hat{\bar{z}}_{\text{syn},d}\right) = \bar{\mathbf{x}}_d^{\mathrm{T}} \widehat{\mathbf{C}}(\hat{\mathbf{b}}) \bar{\mathbf{x}}_d \;.
@@ -8079,7 +8095,7 @@ df <- synt[c("area","estimate","g_variance","n2G")]
 df[,c(2,3)] <- round(df[,c(2,3)],1)
 
 knitr::kable(
-  df, caption = 'Synthetic estimates of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia, using lnSWIR2 as a predictor. In the final column the number of sampling units per ecoregion is listed.',
+  df, caption = 'Synthetic estimates of mean aboveground biomass (AGB) of ecoregions for simple random sample without replacement of size 200 from Eastern amazonia, using lnSWIR2 as a predictor. In the final column the number of sampling units per ecoregion is listed.',
   booktabs = TRUE, col.names=c("Ecoregion","AGB","g_var","n2G")
 ) %>%
   kable_classic()
@@ -8094,7 +8110,7 @@ md <- mean(d_estimates)
 d_vars <- df$g_variance.x-df$g_variance.y
 ```
 
-For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)`. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimated domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (Table \@ref(tab:tableRMSEs)).
+For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)`. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error.
 
 ```{r, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -8113,8 +8129,9 @@ ecoregions_short[c(1,16)] <- c("Amazon-Orinoco Carib. mangroves","Xingu-Toc.-Ara
 df <- data.frame(Ecoregion=ecoregions_short, se.reg=round(sqrt(v_mz_eco_regr),1), se.syn=round(sqrt(v_mz_eco_synt),1), bias.syn=round(bias_synt,1), RMSE.syn=round(RMSE_synt,1))
 rownames(df) <- NULL
 knitr::kable(
-  df, caption = 'Standard error (se), bias, and root mean squared error (RMSE) of the regression estimator (reg) and synthetic estimator (syn). The regression estimator is design-unbiased, so the RMSE of the regression estimator is equal to its standard error.',
-  booktabs = TRUE
+  df, caption = 'Estimated standard error (se), bias, and root mean squared error (RMSE) of the regression estimator (reg) and synthetic estimator (syn). The regression estimator is design-unbiased, so the RMSE of the regression estimator is equal to its standard error.',
+  booktabs = TRUE,
+  col.names=c("Ecoregion", "RMSE reg","se syn","bias syn", "RMSE syn")
 ) %>%
   kable_classic()
 ```
@@ -8124,11 +8141,11 @@ In the synthetic estimator and the regression estimator both quantitative covari
 
 ## Model-based prediction {#SmallAreaModelBased}
 
-The alternative for design-based and model-assisted estimation of the means or totals of small domains is model-based prediction. The model describes the spatial variation of the study variable. An example of such a model is a linear regression model. Such model is used in the model-assisted estimator of the previous sections. A more advanced model is a linear mixed model\index{Linear mixed model}. In a linear mixed model the mean of the study variable is modelled as a linear combination of covariates, similar to a linear regression model. The difference with a linear regression model is that also the variance of the residuals is modelled. 
+The alternative for design-based and model-assisted estimation of the means or totals of small domains is model-based prediction. The fundamental difference between model-assisted estimation and model-based prediction is explained in Chapter \@ref(Approaches). The models used in this section are linear mixed models\index{Linear mixed model}. In a linear mixed model the mean of the study variable is modelled as a linear combination of covariates, similar to a linear regression model. The difference with a linear regression model is that the residuals of the mean are not assumed independent. The dependency of the residuals is also modelled. Two types of linear mixed models are described, a random intercept model and a geostatistical model. 
 
 ### Random intercept model
 
-A basic linear mixed model for model-based prediction of means of small domains is the random intercept model\index{Random intercept model},
+A basic linear mixed model that can be used for model-based prediction of means of small domains is the random intercept model\index{Random intercept model},
 
 \begin{equation}
 \begin{split}
@@ -8143,14 +8160,14 @@ v_d &\sim \mathcal{N}(0,\sigma^2_v) \\
 Two random variables are now involved, both with a normal distribution with mean zero: $v_d$ a random intercept at the domain level with variance $\sigma^2_v$, and the residuals $\epsilon_{dk}$ at the unit level with variance $\sigma^2_{\epsilon}$. The variance $\sigma^2_v$ can be interpreted as a measure of the heterogeneity among the domains after accounting for the fixed effect [@Breidenbach2012]. With this model the mean of a domain can be predicted by
 
 \begin{equation}
-\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \hat{v}_d \;,
+\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\pmb{\beta}} + \hat{v}_d \;,
 (\#eq:mbpredictordomainmeanrandomintercept)
 \end{equation}
 
 with $\hat{\pmb{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients, and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
 
 \begin{equation}
-\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
+\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\pmb{\beta}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
 (\#eq:mbpredictordomainmeanrandomintercept2)
 \end{equation}
 
@@ -8161,9 +8178,9 @@ with $\lambda_d$ a weight for the second term that corrects for the bias of the 
 (\#eq:weightrandomintercept)
 \end{equation}
 
-This equation shows that the larger the estimated residual variance $\hat{\sigma}^2_{\epsilon}$, the smaller the weight for the bias correction factor, and the larger the sample size $n_d$, the larger the weight. Comparing Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept) shows that the random intercept of a domain is predicted by the sample mean of the residuals of that domain, multiplied by a weight factor computed by Equation \@ref(eq:weightrandomintercept).  
+This equation shows that the larger the estimated residual variance $\hat{\sigma}^2_{\epsilon}$, the smaller the weight for the bias correction factor, and the larger the sample size $n_d$, the larger the weight. Comparing Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2) shows that the random intercept of a domain is predicted by the sample mean of the residuals of that domain, multiplied by a weight factor computed by Equation \@ref(eq:weightrandomintercept).  
 
-The means of the small domains can be computed with function `eblup.mse.f.wrap` of package **JoSAE** [@JoSAE]. It requires as input a linear mixed model generated with function `lme` of package **nlme** [@nlme]. The simple random sample of size 200 is used to fit the linear mixed model, with lnSWIR2 as a fixed effect, i.e. the effect of SWIR2 on the mean of AGB. The random effect is added by assigning another formula to the argument `random`. The formula, `~1|Ecoregions` means that the intercept is treated as a random variable, and that it varies among the Ecoregions. This linear mixed model is referred to as a random intercept model: the intercepts are allowed to differ among the small domains, whereas the effects of the covariates, lnSWIR2 in our case, is equal for all domains.
+The means of the small domains can be computed with function `eblup.mse.f.wrap` of package **JoSAE** [@JoSAE]. It requires as input a linear mixed model generated with function `lme` of package **nlme** [@nlme]. The simple random sample of size 200 selected before is used to fit the linear mixed model, with lnSWIR2 as a fixed effect, i.e. the effect of SWIR2 on the mean of AGB. The random effect is added by assigning another formula to the argument `random`. The formula, `~1|Ecoregions` means that the intercept is treated as a random variable, and that it varies among the Ecoregions. This linear mixed model is referred to as a random intercept model: the intercepts are allowed to differ among the small domains, whereas the effects of the covariates, lnSWIR2 in our case, is equal for all domains.
 
 ```{r, echo=FALSE}
 load("data/Amazonia_1km.RData")
@@ -8220,55 +8237,37 @@ df <- data.frame(Ecoregion=res$domain.ID, mb=res$EBLUP,
 df[,c(2,3,4)] <- round(df[,c(2,3,4)],1)
 
 knitr::kable(
-  df, caption = 'Model-based predictions of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia, obtained with random intercept model and lnSWIR2 as a predictor.',
-  booktabs = TRUE,col.names=c("Ecoregion","AGB","se.1","se.2")
+  df, caption = 'Model-based predictions of mean aboveground biomass (AGB) of ecoregions for simple random sample without replacement of size 200 from Eastern Amazonia, obtained with random intercept model and lnSWIR2 as a predictor. se.1 and se.2: standard errors, see text.',
+  booktabs = TRUE,
+  col.names=c("Ecoregion","AGB","se.1","se.2")
 ) %>%
   kable_classic()
 ```
 
-Note that with this model no predictions are obtained for the unsampled ecoregions. For the unsampled ecoregions no prediction is obtained of the random intercept $v_d$, see Equation \@ref(eq:mbpredictordomainmeanrandomintercept2).
+Note that with this model no predictions are obtained for the unsampled ecoregions. For the unsampled ecoregions no prediction is obtained of the random intercept $v_d$, see Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2).
 
 ### Geostatistical model 
 
-In the random intercept model (Equation \@ref(eq:RandomInterceptModel)) it is assumed that the residuals $\epsilon_{ij}$ are independent. In a geostatistical model\index{Geostatistical model} this assumption is relaxed, and the spatial correlation of the residuals is modelled. For details about geostatistical modelling, I refer to Chapter \@ref(Introkriging).
+In a geostatistical model there is only one random variable, the residual of the model mean, not two as in the random intercept model, see Equation \@ref(eq:OKmodel) for a geostatistical model with a constant mean and Equation \@ref(eq:KEDmodel2) for a model with a mean that is a linear combination of covariates. In a geostatistical model the covariance of the residuals of the mean at two locations is modelled as a function of the distance (and direction) of the points. Instead of the covariance often the semivariance is modelled, i.e. half the variance of the difference of the residuals at two locations, see Chapter \@ref(Introkriging) for details.
 
-A simple random sample of size 200 is used to compute the sample semivariogram\index{Sample semivariogram} of the residuals of the simple linear regression model, using lnSWIR2 as a single predictor. Figure \@ref(fig:ResidualVariogramAGB) shows that the larger the distance, the larger half the expected squared difference. This shows that the residuals of units with a separation distance smaller than about 300 km are correlated. A spherical model with nugget is fitted to model the spatial correlation of the residuals $e$.
-
-The residual semivariogram\index{Residual semivariogram} is computed with function `variogram` of package **gstat** [@peb04]. A spherical model is fitted with function `fit.variogram`. The coordinates are shifted to a random point within a 5 km $\times$ 5 km grid cell. This is only done to avoid an error message when the geostatistical model is used to predict AGB at the nodes of the grid hereafter. 
-
-```{r ResidualVariogramAGB, echo=FALSE, fig.asp=0.7, fig.cap="Semivariogram of residuals of simple linear regression model for AGB, using lnSWIR2 as a predictor."}
-library(gstat)
-mysample$x1 <- jitter(mysample$x1, amount=2.5)
-mysample$x2 <- jitter(mysample$x2, amount=2.5)
-coordinates(mysample) <- ~x1+x2
-vg_resi <- variogram(AGB~lnSWIR2, data=mysample)
-vgm_resi <- fit.variogram(vg_resi, model=vgm(psill=1000,  model="Sph", range=300, nugget=1500))
-plot(vg_resi,vgm_resi, plot.numbers=TRUE)
-```
-
-The semivariogram parameters and the regression coefficients can best be estimated by restricted maximum likelihood (REML), see Section \@ref(REML). This estimation procedure is also used in function `lme` to fit the random intercept model. Here I use function `likfit` of package **geoR** [@geoR]. First a geoR object must be generated with function `as.geodata`.
+The simple random sample of size 200 selected before is used to estimate the regression coefficients for the mean, an intercept and a slope coefficient for lnSWIR2, and the parameters of a spherical semivariogram model for the residuals of the mean. The two regression coefficients and the three semivariogram parameters are estimated by restricted maximum likelihood (REML), see Section \@ref(REML). This estimation procedure is also used in function `lme` to fit the random intercept model. Here function `likfit` of package **geoR** [@geoR] is used to estimate the model parameters. First a geoR object must be generated with function `as.geodata`.
 
 ```{r}
 library(geoR)
-mysample <- as(mysample,"data.frame")
 dGeoR <- as.geodata(mysample, header=TRUE,
   coords.col=1:2, data.col=3, covar.col=4)
-```
-
-The model parameters can then be estimated with function `likfit`.
-
-```{r}
 vgm_REML <- likfit(geodata=dGeoR, trend=~lnSWIR2, cov.model="spherical",
   ini.cov.pars=c(1000,300), nugget=1500, lik.method="REML", messages=FALSE)
 ```
 
-The estimated semivariogram parameters are `r round(vgm_REML$nugget,0)` for the nugget (intercept of the semivariogram), `r round(vgm_REML$sigmasq,0)` for the partial sill (maximum semivariance minus the nugget), and `r round(vgm_REML$phi,1)` for the range (distance at which the semivariance reaches its maximum). The estimated regression coefficients and parameters of the semivariogram can then be used to predict AGB for all units in the population.
+The estimated intercept and slope are `r round(vgm_REML$beta[1],0)` and `r round(vgm_REML$beta[2],1)`, respectively. The estimated semivariogram parameters are `r round(vgm_REML$nugget,0)`, `r round(vgm_REML$sigmasq,0)` and `r round(vgm_REML$phi,0)` for the nugget, partial sill and range (in km), respectively. These model parameters are used to predict AGB for all units in the population, using function `krige` of package **gstat** [@peb04]. The REML estimates of the semivariogram parameters are assigned to the arguments `nugget`, `psill` and `range` of the function `vgm` of this package. The coordinates of the sample are shifted to a random point within a 1 km $\times$ 1 km grid cell. This is done to avoid that a sampling point coincides with a prediction point, which leads to an error message when predicting AGB at the nodes of the grid.
 
 ```{r, eval=FALSE}
+mysample$x1 <- jitter(mysample$x1, amount=0.5)
+mysample$x2 <- jitter(mysample$x2, amount=0.5)
 coordinates(mysample) <- ~x1+x2
-vgm_REML_gstat <- vgm(nugget=vgm_REML$nugget, psill=vgm_REML$sigmasq,
-  range=vgm_REML$phi, model="Sph")
-coordinates(mysample) <- ~x1+x2
+vgm_REML_gstat <- vgm(model="Sph",
+  nugget=vgm_REML$nugget, psill=vgm_REML$sigmasq, range=vgm_REML$phi)
 coordinates(gridAmazonia) <- ~x1+x2
 predictions  <- krige(
   formula=AGB~lnSWIR2,
@@ -8298,7 +8297,7 @@ mz_eco_mb <- tapply(AGBpred_unit, INDEX=gridAmazonia$Ecoregion,
                     FUN=mean) %>% round(.,1)
 ```
 
-A difficulty is the computation of the standard error of these model-based predictions of the ecoregion mean. We cannot simply sum the unit-wise variances and divide the sum by the squared number of units because the prediction errors of units with a mutual distance smaller than about 450 km (the estimated range of the semivariogram) are correlated. A straightforward approach to obtain the standard error of the predicted mean is geostatistical simulation\index{Geostatistical simulation}. A large number of maps is simulated, conditional on the selected sample. For an infinite number of maps, the "average map", i.e. the map obtained by averaging for each unit all simulated values of that unit, is equal to the map with predicted AGB. For each simulated map, the average of the simulated values across all units of an ecoregion is computed. This results in as many averages as we have simulated maps. The variance of the averages of an ecoregion is an estimate of the variance of the predicted mean of that ecoregion. To reduce computing time the 5 km $\times$ 5 km subgrid is used in geostatistical simulation  
+A difficulty is the computation of the standard error of these model-based predictions of the ecoregion mean. We cannot simply sum the unit-wise variances and divide the sum by the squared number of units because the prediction errors of units with a mutual distance smaller than the estimated range of the spherical semivariogram are correlated. A straightforward approach to obtain the standard error of the predicted mean is geostatistical simulation\index{Geostatistical simulation}. A large number of maps is simulated, conditional on the selected sample. For an infinite number of maps, the "average map", i.e. the map obtained by averaging for each unit all simulated values of that unit, is equal to the map with predicted AGB. For each simulated map, the average of the simulated values across all units of an ecoregion is computed. This results in as many averages as we have simulated maps. The variance of the averages of an ecoregion is an estimate of the variance of the predicted mean of that ecoregion. To reduce computing time the 5 km $\times$ 5 km subgrid is used in geostatistical simulation  
 
 ```{r, eval=FALSE}
 load(file="data/Amazonia_5km.RData")
@@ -8333,8 +8332,9 @@ df <- data.frame(Ecoregion=ecoregions, mz_eco_mb, se_mz_eco_mb)
 df[,c(2,3)] <- round(df[,c(2,3)],1)
 rownames(df) <- NULL
 knitr::kable(
-  df, caption = 'Model-based predictions of mean aboveground biomass (AGB) of ecoregions in Eastern Amazonia, obtained with geostatistical model and lnSWIR2 as a predictor for the mean. se: standard error of predicted mean.',
-  booktabs = TRUE, col.names=c("Ecoregion","AGB","se")
+  df, caption = 'Model-based predictions of mean aboveground biomass (AGB) of ecoregions using a simple random sample without replacement of size from Eastern Amazonia, obtained with geostatistical model and lnSWIR2 as a predictor for the mean. se: standard error of predicted mean.',
+  booktabs = TRUE,
+  col.names=c("Ecoregion","AGB","se")
 ) %>%
   kable_classic()
 ```
@@ -8370,7 +8370,7 @@ ggplot(data=df) +
 
 For four ecoregions the standard errors of the geostatistical model predictions are much smaller than those of the random intercept model predictions (Figure \@ref(fig:MBvsMBse)). These are ecoregions with small sample sizes.
 
-```{r MBvsMBse, echo=FALSE,  fig.cap="Scatter plot of standard error of model-based predictions of the mean AGB of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
+```{r MBvsMBse, echo=FALSE,  fig.cap="Scatter plot of standard error of model-based predictions of the mean AGB of ecoregions obtained with the random intercept model and the geostatistical model, using a simple random sample without replacement of size 200 from Eastern Amazonia. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
 ggplot(data=df) +
         geom_point(mapping=aes(x=semb.rint, y=semb.geo), size=2) +
         geom_text(mapping=aes(x=semb.rint, y=semb.geo, label=n_eco), hjust=1, vjust=1)+
@@ -8381,13 +8381,15 @@ ggplot(data=df) +
 
 ```
 
-Note that if a different semivariogram model were used, both the predicted means per ecoregion and the standard errors would be different. Especially the variance is sensitive to the semivariogram. For that reason the model-based predictions are also referred to as model-dependent predictions\index{Model-dependent predictor}.
+```{block2, type='rmdnote'}
+If a different semivariogram model were used, both the predicted means per ecoregion and the standard errors would be different. Especially the variance is sensitive to the semivariogram. For that reason the model-based predictions are also referred to as model-dependent predictions\index{Model-dependent predictor}, see Chapter \@ref(Approaches).
+```
 
 ## Supplemental probability sampling of small domains
 
 The sample size in small domains of interest can be so small that no reliable statistical estimate of the mean or total of these domains can be obtained. In that case we may decide to collect a supplemental sample\index{Supplemental sample} from these domains. It is convenient to use these domains as strata in supplemental probability sampling, so that we can control the sample sizes in the strata. If we can safely assume that the study variable at the units of the first sample are not changed, there is no need to revisit these units, otherwise we must revisit them to observe the current values.
 
-There are two approaches for using the two samples to estimate the population mean or total of a small domain [@Grafstrom2019]. In the first approach the two samples are combined, and then the merged sample is used to estimate the population mean or total. In the second approach not the samples are combined, but the two estimates from the separate samples. In this section only the first approach is illustrated with a simple situation in which the two samples are easily combined. I refer to @Grafstrom2019 for a more general approach of how multiple probability samples can be combined.
+There are two approaches for using the two probability samples to estimate the population mean or total of a small domain [@Grafstrom2019]. In the first approach the two samples are combined, and then the merged sample is used to estimate the population mean or total. In the second approach not the samples are combined, but the two estimates from the separate samples. In this section only the first approach is illustrated with a simple situation in which the two samples are easily combined. I refer to @Grafstrom2019 for a more general approach of how multiple probability samples can be combined.
 
 Suppose that the original sample is a simple random sample from the entire study area. A supplemental sample is selected from small domains, i.e. domains that have few selected units only. For a given small domain, the first sample is supplemented by selecting a simple random sample from the units not yet selected in the first sample. The size of the supplemental sample of a domain depends on the number of units of that domain in the first sample. The first sample is supplemented so that the total sample size of that domain is fixed. In this case the combined sample of a domain is a simple random sample from that domain, so that the usual estimators for simple random sampling can be used to estimate the domain mean or total, and its standard error.
 
@@ -8405,7 +8407,7 @@ mysample_1 <- gridAmazonia[units_1, c("AGB","Biome")]
 print(n1_biome <- table(mysample_1$Biome))
 ```
 
-The selected units are removed from the sampling frame. For each of the three small biomes, Mangrove, Forest.dry and Grassland, the size of the supplemental sample is computed so that the total sample size becomes 40. The supplemental sample is selected by stratified simple random sampling without replacement, using the small biomes as strata.
+The selected units are removed from the sampling frame. For each of the three small biomes, Mangrove, Forest.dry and Grassland, the size of the supplemental sample is computed so that the total sample size becomes 40. The supplemental sample is selected by stratified simple random sampling without replacement, using the small biomes as strata (Chapter \@ref(STSI).
 
 ```{r}
 units_notselected <- gridAmazonia[-units_1,]
@@ -8470,7 +8472,7 @@ save(mz_biome,v_mz_biome,file="results/SupplementalSampleEstimates_Amazonia.RDat
 load(file="results/SupplementalSampleEstimates_Amazonia.RData")
 nas <- apply(mz_biome,MARGIN=2, FUN=mean, na.rm=TRUE)
 
-Ep_mz_biome <- apply(mz_biome,MARGIN=2, FUN=mean,na.rm=TRUE)
+Ep_mz_biome <- apply(mz_biome,MARGIN=2, FUN=mean, na.rm=TRUE)
 Vp_mz_biome <- apply(mz_biome,MARGIN=2, FUN=var, na.rm=TRUE)
 se_mz_biome <- sqrt(v_mz_biome)
 Ep_se_mz_biome <- apply(se_mz_biome, MARGIN=2, FUN=mean, na.rm=TRUE)
@@ -8511,11 +8513,11 @@ for (i in 1:3) {
 }
 ```
 
-This sampling approach and estimation is repeated 10,000 times, i.e. 10,000 times a simple random sample of size 400 is selected from Eastern Amazonia, and the samples from the three small domains are supplemented so that the total sample sizes in these domains become 40. In two out of the 10,000 samples the size of the first sample in one of the domains exceeded 40 units. These two samples are discarded. Ideally, these samples are not discarded, but their sizes in the small domains are reduced to 40 units, which are then used to estimate the means of the domains.
+This sampling approach and estimation is repeated 10,000 times, i.e. 10,000 times a simple random sample without replacement of size 400 is selected from Eastern Amazonia, and the samples from the three small domains are supplemented so that the total sample sizes in these domains become 40. In two out of the 10,000 samples the size of the first sample in one of the domains exceeded 40 units. These two samples are discarded. Ideally, these samples are not discarded, but their sizes in the small domains are reduced to 40 units, which are then used to estimate the means of the domains.
 
 ```{r SmalldomainEstimates, echo=FALSE}
 knitr::kable(
-  dom, caption = 'Summary statistics of 10,000 estimated means of small domains (biomes) in Eastern Amazonia, estimated by combining a simple random sample of size 400 from Eastern Amazonia, and a supplemental sample from the domains. The total sample size per small domain is 40.',
+  dom, caption = 'Summary statistics of 10,000 estimated means of small domains (biomes) in Eastern Amazonia, estimated by combining a simple random sample without replacement of size 400 from all four domains in Eastern Amazonia and a supplemental stratified simple random sample without replacement from the units in the small domains not selected by simple random sampling. The total sample size per small domain is 40.',
   col.names = c("Mangrove","Dry forest","Grassland"),
   row.names = TRUE,
   booktabs = TRUE
@@ -8535,15 +8537,15 @@ rm(list=ls())
 
 # Repeated sample surveys for monitoring population parameters {#RepeatedSurveys}
 
-The previous chapters are all about sampling to estimate population parameters *at a given time*. The survey is done in a relatively short period of time, so that we can safely assume that the study variable did not change during that period. This chapter is about repeating the sample survey two or more times, to estimate a temporal change in a population parameter\index{Repeated surveys for monitoring}. Sampling locations are selected by probability sampling, by any design type. Sampling times are not selected randomly, but purposively. For instance, to monitor the carbon stock in the soil of a country, we may decide to repeat the survey after five years, in the same season of the year as the first sampling round.
+The previous chapters are all about sampling to estimate population parameters *at a given time*. The survey is done in a relatively short period of time, so that we can safely assume that the study variable did not change during that period. This chapter is about repeating the sample survey two or more times, to estimate a temporal change in a population parameter\index{Repeated surveys for monitoring}. Sampling locations are selected by probability sampling, by any design type. Sampling times are not selected randomly, but purposively. For instance, to monitor the carbon stock in the soil of a country, we may decide to repeat the survey after five years, in the same season of the year as the first survey.
 
 ## Space-time designs
 
-@gru06 present an overview of space-time designs\index{Space-time design}. Five of these designs are schematically shown in Figure \@ref(fig:SpaceTimeDesigns). With repeated sampling in two-dimensional space there are three dimensions: two spatial and one time dimension. In Figure  \@ref(fig:SpaceTimeDesigns) the sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. In Figure \@ref(fig:SpaceTimeDesigns) in each space-time design twenty sampling locations are selected by simple random sampling.
+An overview of space-time designs\index{Space-time design} is presented by @gru06. Five of these designs are schematically shown in Figure \@ref(fig:SpaceTimeDesigns). With repeated sampling in two-dimensional space there are three dimensions: two spatial and one time dimension. The sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. Sampling locations are selected by simple random sampling, but this is not essential for the space-time designs.
 
-In the static-synchronous (SS) design\index{Space-time design!static-synchronous design}, referred to as a pure panel\index{Pure panel} by @ful99, all sampling locations selected in the first survey are revisited in the subsequent surveys. On the contrary, in an independent synchronous (IS) design\index{Space-time design!independent-synchronous design}, in each survey a probability sample is selected independent from the samples selected in the previous surveys. The serially alternating (SA) design\index{Space-time design!serially alternating design} is a compromise between a SS and an IS design. The sample selected in the first survey is revisited in the third survey. The sample of the second survey is selected independently from the sample of the first survey, and these locations are revisited in the fourth survey. In this case the period of revisits is two, i.e. two sampling intervals between consecutive surveys, but this can also be increased. For instance with a period of three, three samples are selected independently from each other for the first three surveys, and these samples are revisited in subsequent surveys.
+In the static-synchronous (SS) design\index{Space-time design!static-synchronous design}, referred to as a pure panel\index{Pure panel} by @ful99, all sampling locations selected in the first survey are revisited in all subsequent surveys. On the contrary, in an independent synchronous (IS) design\index{Space-time design!independent-synchronous design} in each survey a probability sample is selected independently from the samples selected in the previous surveys. The serially alternating (SA) design\index{Space-time design!serially alternating design} is a compromise between a SS and an IS design. The sample selected in the first survey is revisited in the third survey. The sample of the second survey is selected independently from the sample of the first survey, and these locations are revisited in the fourth survey. In this case the period of revisits is two, i.e. two sampling intervals between consecutive surveys, but this can also be increased. For instance with a period of three, three samples are selected independently from each other for the first three surveys, and these samples are revisited in subsequent surveys.
 
-Two other compromise designs are a supplemented panel (SP) design\index{Space-time design!supplemented panel design} and a rotating panel (RP) design\index{Space-time design!rotating panel design}. In a SP design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. These are the permanent sampling locations observed in all subsequent surveys. These permanent sampling locations are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \@ref(fig:SpaceTimeDesigns), one-half of the sampling locations (ten locations) is permanent, i.e. revisited in all surveys, but the proportion of permanent sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even can be optimised for estimating the current mean. Also in an RP design sampling units of the previous survey are partially replaced by new units. The difference with a SP panel design is that there are no permanent sampling units, observed in all surveys. All sampling units are sequentially rotated out and in again at the subsequent sampling times.
+Two other compromise designs are a supplemented panel (SP) design\index{Space-time design!supplemented panel design} and a rotating panel (RP) design\index{Space-time design!rotating panel design}. In a SP design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. These are the permanent sampling locations observed in all subsequent surveys. These permanent sampling locations are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \@ref(fig:SpaceTimeDesigns), one-half of the sampling locations (ten locations) is permanent, i.e. revisited in all surveys, but the proportion of permanent sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even can be optimised for estimating the current mean. Also in an RP design sampling units of the previous survey are partially replaced by new units. The difference with a SP design is that there are no permanent sampling units, observed in all surveys. All sampling units are sequentially rotated out and in again at the subsequent sampling times.
 
 ```{r SpaceTimeDesigns, echo=FALSE, out.width="100%", fig.asp=1, fig.cap="Space-time designs for monitoring population parameters. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemeneted panel design; RP: rotating panel design."}
 
@@ -8638,13 +8640,20 @@ ggplot(data=mysample) +
             scale_colour_viridis_d(name="panel")+
             facet_wrap(~design, nrow=3, ncol=2)
 ```
-In Figure \@ref(fig:SpaceTimeDesigns) the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the SS design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the IS design there are as many panels as there ar surveys. In the SA design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS and SA) all sampling locations of a given survey are in the same panel. This is not the case in the SP and RP designs. In Figure \@ref(fig:SpaceTimeDesigns) in each survey two panels are observed. In the SP sample there is one panel of permanent sampling locations (pure panel part of sample), and another panel of swarming sampling locations. In the RP sample of Figure \@ref(fig:SpaceTimeDesigns) the sampling locations are observed in two consecutive surveys, however this number can be increased. For instance, in an 'in-for-three' rotational sample [@McLaren2001] the sampling locations stay in the sample for three consecutive surveys. The number of panels per sampling time is then three. Also, similar to a serially alternating design, in an independent synchronous, supplemented panel and rotating panel design we may decide after several surveys to stop selecting new sampling locations and to revisit existing locations. The concept of panels is needed hereafter in estimating space-time population parameters.  
+In Figure \@ref(fig:SpaceTimeDesigns) the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the SS design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the IS design there are as many panels as there are surveys. In the SA design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS and SA) all sampling locations of a given survey are in the same panel. This is not the case in the SP and RP designs. In Figure \@ref(fig:SpaceTimeDesigns) in each survey two panels are observed. In the SP sample there is one panel of permanent sampling locations (pure panel part of sample), and another panel of swarming sampling locations observed in one survey only. In the RP sample of Figure \@ref(fig:SpaceTimeDesigns) the sampling locations are observed in two consecutive surveys, however this number can be increased. For instance, in an 'in-for-three' rotational sample [@McLaren2001] the sampling locations stay in the sample for three consecutive surveys. The number of panels per sampling time is then three. Also, similar to a serially alternating design, in an independent synchronous, supplemented panel and rotating panel design we may decide after several surveys to stop selecting new sampling locations and to revisit existing locations. The concept of panels is needed hereafter in estimating space-time population parameters.  
 
 ## Space-time population parameters {#SpaceTimeparameters}
 
 The data of repeated surveys can be used to estimate various parameters of the space-time universe. I will focus on the mean as a parameter, but estimation of a total, think for instance of the total amount of greenhouse gas emissions from the soil in a given study area during some period,  or proportion is straightforward. In this chapter I show how to estimate the current mean, i.e. the population mean (spatial mean) in the last survey, the change of the mean between two surveys, the temporal trend of the mean and the space-time mean. The current mean need not be defined here as only one survey (one sampling time) is involved in this parameter, so that the definition in Section \@ref(PopulationParameters) is also relevant here.
 
-The change of the mean is defined as the spatial mean at a given survey minus this mean at an earlier survey\index{Change of spatial mean (total)}. For infinite populations the definition is
+The change of the mean is defined as the spatial mean at a given survey minus this mean at an earlier survey\index{Change of spatial mean (total)}. For finite populations the definition is
+
+\begin{equation}
+\bar{d}_{ab}=\frac{1}{N}\left(\sum_{k=1}^N z_k(t_b) -\sum_{k=1}^N z_k(t_a) \right)=\frac{1}{N}\sum_{k=1}^N d_{abk}\;,
+(\#eq:ChangePopMeanFinite)
+\end{equation}
+
+with $d_{abk}$ the change of the study variable in the period between time $t_a$ and $t_b$ for unit $k$. For infinite populations the sums are replaced by integrals,
 
 \begin{equation}
 \bar{d}_{ab}=\frac{1}{A}\left(\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_b) \;\mathrm{d}\mathbf{s}-\int_{\mathbf{s} \in \mathcal{U}} z(\mathbf{s},t_a) \;\mathrm{d}\mathbf{s}\right)=\frac{1}{A}\int_{\mathbf{s} \in \mathcal{U}}d_{ab}(\mathbf{s})\;,
@@ -8653,46 +8662,41 @@ The change of the mean is defined as the spatial mean at a given survey minus th
 
 with $d_{ab}(\mathbf{s})$ the change of the study variable in the period between time $t_a$ and $t_b$ at location $\mathbf{s}$.
 
-For finite populations the integrals are replaced by finite sums over all population units,
-
-\begin{equation}
-\bar{d}_{ab}=\frac{1}{N}\left(\sum_{k=1}^N z_k(t_b) -\sum_{k=1}^N z_k(t_a) \right)=\frac{1}{N}\sum_{k=1}^N d_{abk}\;,
-(\#eq:ChangePopMeanFinite)
-\end{equation}
-
-with $d_{a,b,k}$ the change of the study variable in the period between time $t_a$ and $t_b$ for unit $k$.
-
 With more than two surveys an interesting population parameter is the *average change per time unit* of the mean, referred to as the temporal trend of the spatial mean\index{Temporal trend of spatial mean}. It is defined as a linear combination of the spatial means at the sampling times [@Breidt99],
 
 \begin{equation}
-b=\sum_{j=1}^r w_j \bar{z}_j \;,
+b=\sum_{j=1}^R w_j \bar{z}_j \;,
 (\#eq:TrendofMean)
 \end{equation}
 
-with $r$ the number of sampling times and $\bar{z}_j$ the spatial mean at time $t_j$, and weights $w_j$ equal to
+with $R$ the number of sampling times and $\bar{z}_j$ the spatial mean at time $t_j$, and weights $w_j$ equal to
 
 \begin{equation}
-w_j = \frac{t_j-\bar{t}}{\sum_{j=1}^r(t_j-\bar{t})^2} \;,
+w_j = \frac{t_j-\bar{t}}{\sum_{j=1}^R(t_j-\bar{t})^2} \;,
 (\#eq:weightsTrendofMean)
 \end{equation}
 
-with $\bar{t}$ the mean of the sampling times. Note that the temporal trend is defined as a parameter of a space-time population, not as a parameter of a time-series model.
+with $\bar{t}$ the mean of the sampling times.
+
+```{block2, type='rmdnote'}
+The temporal trend is defined as a parameter of a space-time population, not as a parameter of a time-series model.
+```
 
 A space-time mean can be defined as the average of the spatial means at the sampling times. In this definition the temporal universe is discrete and restricted to the sampling times. The target universe consists of a finite set of spatial populations,
 
 \begin{equation}
-\bar{\bar{z}}_{\mathcal{U}}=\frac{1}{r} \sum_{j=1}^r \bar{z_j}
+\bar{\bar{z}}_{\mathcal{U}}=\frac{1}{R} \sum_{j=1}^R \bar{z_j}\;.
 (\#eq:SpacetimeMeanDiscrete)
 \end{equation}
 
-Alternatively, a space-time mean for a continuous temporal universe is defined as
+Alternatively, a space-time mean for a continuous temporal universe $\mathcal{T}$ is defined as
 
 \begin{equation}
 \bar{\bar{z}}_{\mathcal{U}} = \frac{1}{T}\int_{t \in \mathcal{T}}\bar{z}_t\;,
 (\#eq:SpacetimeMeanContinuous)
 \end{equation}
 
-with $\mathcal{T}$ and $\mathcal{A}$ the temporal and spatial universe, respectively, $T$ the length of the monitoring period, $A$ the area of the study region, $z_{\mathbf{s},t}$ the study variable at location $\mathbf{s}$ and time $t$, and $\bar{z}_t$ the spatial mean at time $t$.
+with $T$ the length of the monitoring period, and $\bar{z}_t$ the spatial mean at time $t$.
 
 ## Design-based generalised least squares estimation of spatial means
 
@@ -8707,9 +8711,9 @@ The essence of the estimation method described in this section is to estimate th
 (\#eq:zbf)
 \end{equation}
 
-with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_r)$ at the $r$ sampling times, $\mathbf{X}$ the ($P \times r$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\pmb{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\pmb{\epsilon}$ is a vector with zeroes.  
+with $\mathbf{z}$ the vector of true spatial means $\bar{z}(t_1) \cdots \bar{z}(t_R)$ at the $R$ sampling times, $\mathbf{X}$ the ($P \times R$) design matrix with 0's and 1's that selects the appropriate elements from $\mathbf{z}$, ($P$ is the total number of elementary estimates), and $\pmb{\epsilon}$ the $P$-vector of sampling errors with sampling variance-covariance matrix $\mathbf{C}$. With unbiased elementary estimators the expectation of $\pmb{\epsilon}$ is a vector with zeroes.  
 
-With an SS, IS and SA design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. For the supplemented panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix $\mathbf{X}$ is
+With an SS, IS and SA design the design matrix $\mathbf{X}$ is the identity matrix of size $R$, i.e a $R \times R$ square matrix with ones on the diagonal and zeroes in all off-diagonal entries. For the supplemented panel design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix $\mathbf{X}$ is
 
 \begin{equation*}
 \mathbf{X}=
@@ -8726,7 +8730,7 @@ With an SS, IS and SA design the design matrix $\mathbf{X}$ is the identity matr
 \;.
 \end{equation*}
 
-The first four rows of this matrix are associated with the elementary estimates from panel a (the panel with permanent sampling locations), the remaining rows with the elementary estimates from the other four panels (independent synchronous subsamples). For the RP design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix equals
+The first four rows of this matrix are associated with the elementary estimates of the spatial means at the four times from panel a, the panel with permanent sampling locations, hereafter referred to as the static-synchronous subsample. The remaining rows correspond with the elementary estimates from the other four panels, the swarming locations, hereafter referred to as the independent-synchronous subsamples. For the RP design of Figure \@ref(fig:SpaceTimeDesigns) the design matrix equals
 
 \begin{equation*}
 \mathbf{X}=
@@ -8743,7 +8747,9 @@ The first four rows of this matrix are associated with the elementary estimates 
 \;.
 \end{equation*}
 
-The first two rows correspond with the two elementary estimates at time $t_1$ from panel a and b, the third and fourth row correspond with the elementary estimate of the mean at time $t_2$ from panels b and c respectively, et cetera. The minimum variance linear unbiased estimator (MVLUE) of the spatial means is the design-based generalized least squares (GLS) estimator \index{Design-based generalised least squares estimator of spatial means} [@bin88]
+The first two rows correspond with the two elementary estimates at time $t_1$ from panel a and b, the third and fourth row correspond with the elementary estimate of the mean at time $t_2$ from panels b and c respectively, et cetera.
+
+The minimum variance linear unbiased estimator (MVLUE) of the spatial means at the different times is the design-based generalized least squares (GLS) estimator \index{Design-based generalised least squares estimator of spatial means} [@bin88]
 
 \begin{equation}
 \hat{\mathbf{z}}_{\mathrm{GLS}}=(\mathbf{X}^{\text{T}}\mathbf{C}^{-1}\mathbf{X})^{-1} \mathbf{X}^{\text{T}} \mathbf{C}^{-1} \hat{\mathbf{z}}\;.
@@ -8788,9 +8794,9 @@ V_{1a} &0 &0 &0 &0 &0 &0 &0 \\
 (\#eq:CmatrixRP)
 \end{equation}
 
-Only the elementary estimates estimated from the same panel are correlated, for instance the elementary estimates of the spatial means at times $t_1$ and $t_2$), estimated from panel b.
+Only the elementary estimates estimated from the same panel are correlated, for instance the elementary estimates of the spatial means at times $t_1$ and $t_2$, estimated from panel b.
 
-For the SA design of Figure \@ref(fig:SpaceTimeDesigns) the sampling variance-covariance matrix of the elementary estimates equals (there is only one elementary estimate per time)
+For the SA design of Figure \@ref(fig:SpaceTimeDesigns) the sampling variance-covariance matrix equals (there is only one estimate per time)
 
 \begin{equation*}
 \mathbf{C}=
@@ -8820,7 +8826,7 @@ with $m$ the number of sampling locations in the panel, and $\widehat{S^2}_{ab}$
 
 with $z_{apk}$ the study variable of unit $k$ in panel $p$ at time $t_a$, and $\hat{\bar{z}}_{ap}$ the spatial mean at time $t_a$ as estimated from panel $p$.
 
-The sampling variances and covariances of the GLS estimated spatial means at the $r$ sampling times can be estimated by
+The sampling variances and covariances of the GLS estimated spatial means at the $R$ sampling times can be estimated by
 
 \begin{equation}
 \mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}}) = (\mathbf{X}^{\text{T}}\widehat{\mathbf{C}}^{-1}\mathbf{X})^{-1}
@@ -8831,13 +8837,13 @@ Given the design-based GLS estimates of the spatial means at the different times
 
 ### Current mean
 
-As explained above, with the SS, IS and SA design the design matrix $\mathbf{X}$ is the identity matrix of size $r$. From this it follows that for these space-time designs $\hat{\mathbf{z}}_{\mathrm{GLS}}=\hat{\mathbf{z}}$, see Equation \@ref(eq:DBGLS), and $\mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}})=\mbox{Cov}(\hat{\mathbf{z}})=\mathbf{C}$. In words, the GLS estimator of the spatial mean at a given time equals the elementary estimator (the usual design-based estimator) of the mean at that time, and the variance-covariance matrix of the GLS estimators of the spatial means equals the variance-covariance matrix of the elementary estimators.
+As explained above, with the SS, IS and SA design the design matrix $\mathbf{X}$ is the identity matrix of size $R$. From this it follows that for these space-time designs $\hat{\mathbf{z}}_{\mathrm{GLS}}=\hat{\mathbf{z}}$, see Equation \@ref(eq:DBGLS), and $\mbox{Cov}(\hat{\mathbf{z}}_{\mathrm{GLS}})=\mbox{Cov}(\hat{\mathbf{z}})=\mathbf{C}$. In words, the GLS estimator of the spatial mean at a given time equals the usual $\pi$ estimator of the mean at that time, and the variance-covariance matrix of the GLS estimators of the spatial means equals the variance-covariance matrix of these $\pi$ estimators.
 
 With SP and RP sampling in space-time there is partial overlap between the samples at the different times, and so the samples at the previous times can be used to increase the precision of the estimated mean at the last time (current mean). The estimated current mean is simply the last element in $\hat{\mathbf{z}}_{\mathrm{GLS}}$. The estimated sampling variance of the estimated current mean is the element in the final row and final column of the sampling variance-covariance matrix of the estimated spatial means (Equation \@ref(eq:CovGLS)). These two space-time designs with partial replacement of sampling locations may yield a more precise estimate of the current mean than the other three space-time designs. @coc77 presents a formula for the optimal matching proportion, but this formula is not for the GLS estimator of the current mean and for two sampling times, see also Equation (15.15) in @gru06.
 
 ### Change of the spatial mean
 
-The change of the spatial mean between two sampling times can simply be estimated by subtracting the estimated spatial means at these two times. with the SS, IS and SA design these means are estimated by the usual design-based estimators. With the SP and RP  design the two spatial means are estimated by the GLS estimators. The variance of the estimator of the change can be estimated by the sum of the estimated variances of the spatial means at the two sampling times, minus two times the estimated covariance of the two estimated spatial means. The covariance is maximal when all sampling locations are revisited, leading to the most precise estimate of the change of the spatial mean. With SP and RP sampling the covariance of the two estimated spatial means is smaller, and so the variance of the estimated change is larger.
+The change of the spatial mean between two sampling times can simply be estimated by subtracting the estimated spatial means at these two times. With the SS, IS and SA design these means are estimated by the $\pi$ estimators. With the SP and RP  design the two spatial means are estimated by the GLS estimators. The variance of the estimator of the change can be estimated by the sum of the estimated variances of the spatial mean estimators at the two sampling times, minus two times the estimated covariance of the two estimators. The covariance is maximal when all sampling locations are revisited, leading to the most precise estimate of the change of the spatial mean. With SP and RP sampling the covariance of the two spatial mean estimators is smaller, and so the variance of the change estimator is larger.
 
 <!-- 
 Derivation of the covariance of the difference of two $\pi$ estimators of the mean from two SI samples with partial overlap. Let $\mathcal{S}_{1u}}$ and $\mathcal{S}_{2u}}$ be the unmatched sample of size $n-m$ at time 1 and 2, respectively, and $\mathcal{S}_{m}}$ the matched sample of size $m$ with observations at both times.
@@ -8853,24 +8859,24 @@ $$
 The trend of the mean is estimated by the weighted average of the (GLS) estimated means at $t_1,\cdots t_r$, with weights equal to Equation \@ref(eq:weightsTrendofMean),
 
 \begin{equation}
-\hat{b}=\sum_{j=1}^r w_j \hat{\bar{z}}_{\mathrm{GLS},j}
+\hat{b}=\sum_{j=1}^R w_j \hat{\bar{z}}_{\mathrm{GLS},j}
 (\#eq:EstimatorTrendofMean) \;.
 \end{equation}
 
-The sampling variance of the estimated trend can be estimated by
+The sampling variance of the estimator of the trend can be estimated by
 
 \begin{equation}
 \widehat{V}(\hat{b}) = \mathbf{w}^{\prime}\widehat{\mathbf{C}}(\hat{\mathbf{z}}_{\mathrm{GLS}}) \mathbf{w}\;.
 (\#eq:VarEstimatorTrendofMean) \;.
 \end{equation}
 
-@Brus2011 compared the space-time designs for estimating the temporal trend of the spatial means, under a first order autoregressive time-series model of the spatial means. The static-synchronous design performed best when the correlation is strong, $> 0.8$. What is the best design depends amongst others on the strength of the correlation and the number of sampling times. A safe choice is a SA design. With strong positive correlation, say $>0.9$ the SS design can be a good choice, but remarkably for weak positive correlation this design performed relatively poor.
+@Brus2011 compared the space-time designs for estimating the temporal trend of the spatial means, under a first order autoregressive time-series model of the spatial means. The static-synchronous design performed best when the correlation is strong, say $> 0.8$. What is the best design depends amongst others on the strength of the correlation and the number of sampling times. A safe choice is a SA design. With strong positive correlation, say $>0.9$, the SS design can be a good choice, but remarkably for weak positive correlation this design performed relatively poor.
 
 For an application of a SP design to estimate the trend of the areal fractions of several vegetation types, see @Brus2014c. Sampling locations are selected by a design that spreads the locations evenly over the study area (systematic unaligned sampling, which is a modified version of systematic sampling). 
 
 ### Space-time mean
 
-The space-time mean as defined in Equation \@ref(eq:SpacetimeMeanDiscrete) can be estimated by the average of the (GLS) estimated spatial means at the $r$ sampling times. The variance of this estimator can be estimated by Equation \@ref(eq:VarEstimatorTrendofMean) using constant weights, equal to $1/r$, for the $r$ estimators of the mean. An IS design yields the most precise estimate of the space-time mean compared to the other space-time designs when the correlation of collocated measurements of the study variable is positive [@coc77]. With the other space-time designs there is some redundant information due to the revisits, 
+The space-time mean as defined in Equation \@ref(eq:SpacetimeMeanDiscrete) can be estimated by the average of the (GLS) estimated spatial means at the $R$ sampling times. The variance of this estimator can be estimated by Equation \@ref(eq:VarEstimatorTrendofMean) using constant weights, equal to $1/R$, for the $R$ estimators of the mean. An IS design yields the most precise estimate of the space-time mean compared to the other space-time designs when the correlation of collocated measurements of the study variable is positive [@coc77]. With the other space-time designs there is redundant information due to the revisits, 
 
 For design-based estimation of the space-time mean of a continuous temporal universe as defined in Equation \@ref(eq:SpacetimeMeanContinuous) both the sampling locations and the sampling times must be selected by probability sampling. Figure \@ref(fig:SpaceTimeDesignProb) shows a SS sample and an IS sample of twenty locations and six times, both selected by simple random sampling.
 
@@ -8910,9 +8916,9 @@ ggplot(data=mysample) +
             facet_wrap(~design, nrow=3, ncol=2)
 ```
 
-An IS sample in which bot locations and times are selected by probability sampling can be considered as a two-stage cluster random sample from a space-time universe (Chapter \@ref(Twostage)). The primary units are the spatial sections of that universe (horizontal lines in Figure \@ref(fig:SpaceTimeDesignProb)), the secondary units are the sampling locations. The space-time mean can therefore be estimated by Equation \@ref(eq:EstMeanTwostage), and its sampling variance by Equation \@ref(eq:VarEstMeanTwostage). For simple random sampling both in space and in time and a linear cost model $C = c_0 + c_1n + c_2n\;m$ Equations \@ref(eq:nopt) and \@ref(eq:mopt) can be used to optimise the number of sampling times (primary units, $n$) and number of sampling locations (secondary units, $m$) per time. The pooled within-unit variance $S^2_w$ is in this case the time-averaged spatial variance of the study variable at a given time, and the between-unit variance is the variance of the spatial means over time.
+An IS sample in which both locations and times are selected by probability sampling can be considered as a two-stage cluster random sample from a space-time universe (Chapter \@ref(Twostage)). The primary units are the spatial sections of that universe (horizontal lines in Figure \@ref(fig:SpaceTimeDesignProb)), the secondary units are the sampling locations. The space-time mean can therefore be estimated by Equation \@ref(eq:EstMeanTwostage), and its sampling variance by Equation \@ref(eq:VarEstMeanTwostage). For simple random sampling both in space and in time and a linear cost model $C = c_0 + c_1n + c_2n\;m$ Equations \@ref(eq:nopt) and \@ref(eq:mopt) can be used to optimise the number of sampling times (primary units, $n$) and number of sampling locations (secondary units, $m$) per time. The pooled within-unit variance $S^2_w$ is in this case the time-averaged spatial variance of the study variable at a given time, and the between-unit variance is the variance of the spatial means over time.
 
-Estimation of the space-time mean from a SS sample is as for an IS sample. However, estimation of the sampling variance of the space-time mean estimator is more complicated. @gru06 translated the formula  of @Koop1990 for the SS design to estimate the space-time mean (@gru06, Equation (15.8)). Due to the two-fold alignment of the sampling units no unbiased estimator of the sampling variance is available. The variance estimator of two-stage cluster sampling can be used to approximate the variance, but this variance estimator does not account for a possible temporal correlation of the estimated spatial means, resulting in an underestimation of the variance.
+Estimation of the space-time mean from a SS sample in which both locations and times are selected by probability sampling is as for an IS sample. However, estimation of the sampling variance of the space-time mean estimator is more complicated. For the variance of the estimator of the space-time mean with a SS space-time design and simple random sampling of both locations and times, see Equation (15.8) in @gru06. Due to the two-fold alignment of the sampling units no unbiased estimator of the sampling variance is available. The variance estimator of two-stage cluster sampling can be used to approximate the variance, but this variance estimator does not account for a possible temporal correlation of the estimated spatial means, resulting in an underestimation of the variance.
 
 For an application of an IS design, to estimate the space-time mean of nutrients (nitrogen and phosphorous) in surface waters, see @bru08b and @Knotters2010d. In both applications sampling times are selected by stratified simple random sampling, with periods of two months as strata. In @bru08b sampling locations are selected by stratified simple random sampling as well.
 
@@ -8920,11 +8926,11 @@ For an application of an IS design, to estimate the space-time mean of nutrients
 
 The space-time designs are illustrated with the annual mean air temperature in Spain and Portugal for the years 2004, 2009, 2014 and 2019 (Section \@ref(TASSpainPortugal)).
 
-Sampling locations are selected by simple random sampling. The sample size is 100 locations per survey, so with four surveys we have 400 observations in total. In the next sections I show how a space-time sample with a given space-time design can be selected, and how the population parameters described in Section \@ref(SpaceTimeparameters) can be estimated.
+Sampling locations are selected by simple random sampling with replacement. The sample size is 100 locations per survey, so with four surveys we have 400 observations in total, but not with all space-time designs at 400 different sampling locations. In the next sections I show how a space-time sample with a given space-time design can be selected, and how the population parameters described in Section \@ref(SpaceTimeparameters) can be estimated.
 
 ### Static-synchronous design
 
-Selecting a static-synchronous space-time sample, using simple random sampling as a spatial design, is very straightforward. We can simply select a single simple random sample, and the locations of this sample are observed at all times (Figure \@ref(fig:sampleSpainPortugalSS)).
+Selecting a static-synchronous space-time sample, using simple random sampling as a spatial design, is straightforward. We can simply select a single simple random sample of size $n=100$, and the locations of this sample are observed at all times (Figure \@ref(fig:sampleSpainPortugalSS)).
 
 ```{r}
 load(file="data/SpainPortugal_TAS.RData")
@@ -8946,7 +8952,7 @@ ggplot(df_lf) +
   coord_fixed()
 ```
 
-The spatial means at the four times can be estimated by the sample means (Equation \@ref(eq:HTMeanSI)), the variances of the mean estimators by Equation \@ref(eq:EstVarMeanSIR). The covariances of the estimators of the means at two different times can be estimated by Equation \@ref(eq:covartwoelementaryestimates) with $m$ equal to the sample size $n$. The estimated current mean (mean at the fourth survey) and the estimated standard error of the estimator of the current mean can be simply extracted from the vector with estimated means and matrix with estimated variances and covariances.
+The spatial means at the four times can be estimated by the sample means (Equation \@ref(eq:HTMeanSI)), the variances of the mean estimators by Equation \@ref(eq:EstVarMeanSIR). The covariances of the estimators of the means at two different times can be estimated by Equation \@ref(eq:covartwoelementaryestimates) with $m$ equal to the sample size $n$. The estimated current mean (spatial mean at the fourth survey) and the estimated standard error of the estimator of the current mean can be simply extracted from the vector with estimated means and from the matrix with estimated variances and covariances.
 
 ```{r}
 mz <- apply(mysample_SS[,-c(1,2)], MARGIN=2, FUN=mean)
@@ -8956,7 +8962,7 @@ mz_cur_SS <- mz[4]
 se_mz_cur_SS <- sqrt(C[4,4])
 ```
 
-The change of the spatial mean from the first to the fourth survey can simply be estimated by subtracting the estimated spatial mean of the first survey from the estimated mean of the fourth survey. The standard error of this estimator can be estimated by the sum of the estimated variances of the two mean estimators, minus two times the estimated covariance of the two mean estimators, and finally taking the square root.
+The change of the spatial mean from the first to the fourth survey can simply be estimated by subtracting the estimated spatial mean of the first survey from the estimated mean of the fourth survey. The standard error of this estimator can be estimated by the sum of the estimated variances of the two spatial mean estimators, minus two times the estimated covariance of the two mean estimators, and finally taking the square root.
 
 ```{r}
 d_mz_SS <- mz[4] - mz[1]
@@ -8971,7 +8977,7 @@ d_mz_SS <- t(w)%*%mz
 se_d_mz_SS <- sqrt(t(w)%*%C%*%w)
 ```
 
-<!--The estimated change equals `r d_mz_SS` and the estimated standard error equals `r se_d_mz_SS`.-->
+<!--The estimated change equals `r round(d_mz_SS,3)` degrees Celsius, and the estimated standard error equals `r round(se_d_mz_SS,4)`.-->
 
 The trend of the spatial means can be estimated much in the same way, but using a different vector with weights (Equation \@ref(eq:weightsTrendofMean)). 
 
@@ -8982,7 +8988,7 @@ mz_trend_SS <- t(w)%*%mz
 se_mz_trend_SS <- sqrt(t(w)%*%C%*%w)
 ```
 
-The estimated trend equals `r mz_trend_SS` and the estimated standard error equals `r se_mz_trend_SS`. Using `t = 1:4` yields the estimated average change in annual mean temperature *per five years*.
+The estimated trend equals `r round(mz_trend_SS,4)` degrees Celsius per year, and the estimated standard error equals `r se_mz_trend_SS`. Using `t = 1:4` yields the estimated average change in annual mean temperature *per five years*.
 
 ```{r}
 t <- 1:4
@@ -9002,7 +9008,7 @@ se_mz_st_SS <- sqrt(t(w)%*%C%*%w)
 
 ### Independent synchonous design
 
-To select an IS space-time sample with four sampling times, we simply select $4n$ sampling locations. Figure \@ref(fig:sampleSpainPortugalIS) shows the selected IS space-time sample. A variable identifying the panel of the selected sampling units is added to the data frame.
+To select an IS space-time sample with four sampling times, we simply select $4n=400$ sampling locations. Figure \@ref(fig:sampleSpainPortugalIS) shows the selected IS space-time sample. A variable identifying the panel of the selected sampling units is added to the data frame.
 
 ```{r}
 units <- sample.int(nrow(df), size=4*n, replace=TRUE)
@@ -9045,6 +9051,7 @@ plt4 <- ggplot(df) +
 
 grid.arrange(plt1, plt2, plt3, plt4, nrow=2)
 ```
+
 The spatial means are estimated with the $\pi$ estimator as there is no partial overlap of the spatial samples. All covariances of the mean estimators are zero. Estimation of the space-time parameters is as before with the SS space-time sample. Four data frames of $n$ rows are first made with the data observed in a specific panel. The columns of these four data frame are then joined into a single data frame. The spatial means at the four times are then estimated by the sample means, computed with function `apply`.
 
 ```{r}
@@ -9075,7 +9082,7 @@ se_mz_st_IS <- sqrt(t(w)%*%C%*%w)
 
 ### Serially alternating design
 
-To select a SA space-time sample with a period of two $2n$ sampling locations are selected. A column is added indicating the panel of the sampling locations. Figure \@ref(fig:sampleSpainPortugalSA) shows the selected SA space-time sample.
+To select a SA space-time sample with a period of two $2n=200$ sampling locations are selected. A variable is added to the data frame `mysample_SA` indicating the panel of the sampling locations. Figure \@ref(fig:sampleSpainPortugalSA) shows the selected SA space-time sample.
 
 ```{r}
 units <- sample.int(nrow(df), size=2*n, replace=TRUE)
@@ -9129,7 +9136,7 @@ panel_ab <- cbind(panel_a[1],panel_b[1],panel_a[2],panel_b[2])
 mz <- apply(panel_ab, MARGIN=2, FUN=mean)
 ```
 
-To compute the matrix with estimated variances and covariances of the spatial mean estimators first the full matrix is computed. Then the estimated covariances of spatial means of consecutive surveys are replaced by zeroes as the samples of consecutive surveys are selected independently from each other, so that the two estimators are independent.  Estimation of the space-time parameters is as before with the SS space-time sample.
+To compute the matrix with estimated variances and covariances of the spatial mean estimators, first the full matrix is computed. Then the estimated covariances of spatial means of consecutive surveys are replaced by zeroes as the samples of these consecutive surveys are selected independently from each other, so that the two estimators are independent. Estimation of the space-time parameters is as before with the SS space-time sample.
 
 ```{r}
 C <- var(panel_ab)/n
@@ -9156,7 +9163,7 @@ se_mz_st_SA <- sqrt(t(w)%*%C%*%w)
 
 ### Supplemented panel design
 
-With SP sampling and four sampling times we have five panels, one panel with fixed sampling locations and four panels with swarming locations (Figure \@ref(fig:SpaceTimeDesigns)). Each panel consists of $n/2$ sampling locations, so in total $5n/2=250$ locations are selected. A column indicating the panel is added to the data frame. Figure \@ref(fig:sampleSpainPortugalSP) shows the selected SP sample. 
+With SP sampling and four sampling times we have five panels, one panel with fixed sampling locations and four panels with swarming locations (Figure \@ref(fig:SpaceTimeDesigns)). Each panel consists of $n/2$ sampling locations, so in total $5n/2=250$ locations are selected. A variable indicating the panel is added to the data frame with the selected sampling locations. Figure \@ref(fig:sampleSpainPortugalSP) shows the selected SP sample. 
 
 ```{r}
 units <- sample.int(nrow(df), size=5*n/2, replace=TRUE)
@@ -9164,7 +9171,7 @@ mysample_SP <- df[units,]
 mysample_SP$panel <- rep(c("a","b","c","d","e"), each=n/2)
 ```
 
-```{r sampleSpainPortugalSP, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="Supplemented panel space-time sample from Spain and Portugal, using simple random sampling as a spatial design."}
+```{r sampleSpainPortugalSP, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="Supplemented panel space-time sample from Spain and Portugal, using simple random sampling as a spatial design. The permanent sampling locations are indicated by the filled dots, the swarming locartions by the other symbols."}
 plt1 <- ggplot(df) +
   geom_raster(mapping = aes(x = x, y = y, fill=TAS2004)) +
   geom_point(mysample_SP[mysample_SP$panel=="a",], mapping=aes(x=x,y=y)) +
@@ -9204,7 +9211,11 @@ plt4 <- ggplot(df) +
 grid.arrange(plt1, plt2, plt3, plt4, nrow=2)
 ```
 
-With SP sampling the spatial means are estimated by the design-based GLS estimator (Equation \@ref(eq:DBGLS)). As a first step the eight (two per sampling time) elementary estimates are computed, and collected in a vector. Note the order of the elementary estimates: first the estimated spatial means of 2004, 2009, 2014 and 2019 estimated from the panel with fixed sampling locations, then the estimated spatial means estimated from the panels with swarming locations. The design-matrix $\mathbf{X}$ corresponding with this order of elementary estimates is constructed. Ordering the elementary estimates by sampling time is also fine, but then the design matrix $\mathbf{X}$ should be adapted to this order.
+With SP sampling the spatial means are estimated by the design-based GLS estimator (Equation \@ref(eq:DBGLS)). As a first step the eight elementary estimates (two per sampling time) are computed, and collected in a vector. Note the order of the elementary estimates: first the estimated spatial means of 2004, 2009, 2014 and 2019 estimated from the panel with fixed sampling locations, then the estimated spatial means estimated from the panels with swarming locations. The design-matrix $\mathbf{X}$ corresponding with this order of elementary estimates is constructed.
+
+```{block2, type='rmdnote'}
+Ordering the elementary estimates by sampling time is also fine, but then the design matrix $\mathbf{X}$ should be adapted to this order.
+```
 
 ```{r}
 mz_1 <- tapply(mysample_SP$TAS2004, INDEX=mysample_SP$panel, FUN=mean)[c(1,2)]
@@ -9240,7 +9251,7 @@ XCz <- crossprod(X, Cinv)%*%mz_el
 mz_GLS <- XCXinv%*%XCz
 ```
 
-Given the estimated spatial means, computing the estimated space-time parameters is straightforward.
+Computing the estimated space-time parameters from the design-based GLS estimated spatial means is straightforward.
 
 ```{r}
 #current mean
@@ -9262,7 +9273,7 @@ se_mz_st_SP <- sqrt(t(w)%*%XCXinv%*%w)
 
 ### Rotating panel design
 
-Similar to the SP design, with an in-for-two rotating panel design and four sampling times we have five panels, each consisting of $n/2$ sampling locations. Figure \@ref(fig:sampleSpainPortugalRP) shows the selected space-time sample.
+Similar to the SP design, with an in-for-two rotating panel design and four sampling times we have five panels, each consisting of $n/2$ sampling locations, so that in total $5n/2=250$ locations are selected. Figure \@ref(fig:sampleSpainPortugalRP) shows the selected space-time sample.
 
 ```{r}
 units <- sample.int(nrow(df), size=5*n/2, replace=TRUE)
@@ -9270,7 +9281,7 @@ mysample_RP <- df[units,]
 mysample_RP$panel <- rep(c("a","b","c","d","e"), each=n/2)
 ```
 
-```{r sampleSpainPortugalRP, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="Rotating panel space-time sample from Spain and Portugal, using simple random sampling as a spatial design."}
+```{r sampleSpainPortugalRP, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="In-for-two rotating panel space-time sample from Spain and Portugal, using simple random sampling as a spatial design. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
 
 plt1 <- ggplot(df) +
   geom_raster(mapping = aes(x = x, y = y, fill=TAS2004)) +
@@ -9325,7 +9336,7 @@ X <- matrix(c(rep(c(1,0,0,0),2),
               rep(c(0,0,0,1),2)), nrow=8, ncol=4, byrow=TRUE)
 ```
 
-To construct the variance-covariance matrix of the eight elementary estimates, first the $2 \times 2$ matrices with estimated variances and covariances are computed for panels b, c and d. These three panels are used to estimate the spatial means of two consecutive year: the locations of panel b are used to estimate the spatial means of the years 2004 and 2009, panel c for the years 2009 and 2014, and panel d for the years 2014 and 2019 (Figure \@ref(fig:SpaceTimeDesigns)). These three matrices are copied into the $8 \times 8$ matrix, see matrix \@ref(eq:CmatrixRP). Finally, the estimated variances of the estimated spatial means in 2004 and 2019 are computed, and copied to the upper-left and bottom-right entry of the variance-covariance matrix, respectively.
+To construct the variance-covariance matrix of the eight elementary estimates, first the $2 \times 2$ matrices with estimated variances and covariances are computed for panels b, c and d. These three panels are used to estimate the spatial means of two consecutive year: the locations of panel b are used to estimate the spatial means of the years 2004 and 2009, panel c for the years 2009 and 2014, and panel d for the years 2014 and 2019 (Figure \@ref(fig:SpaceTimeDesigns)). These three matrices are copied into the $8 \times 8$ matrix, see matrix \@ref(eq:CmatrixRP). Finally, the estimated variances of the estimators of the spatial means in 2004 and 2019 are computed, and copied to the upper-left and bottom-right entry of the variance-covariance matrix, respectively.
 
 ```{r}
 mysubsample <- mysample_RP[mysample_RP$panel=="b",c("TAS2004","TAS2009")] 
@@ -9342,7 +9353,7 @@ C[1,1] <- var(mysample_RP[mysample_RP$panel=="a","TAS2004"])/(n/2)
 C[8,8] <- var(mysample_RP[mysample_RP$panel=="e","TAS2019"])/(n/2)
 ```
 
-The design-based GLS estimates of the spatial means for the four sampling times are computed as before, followed by computing the space-time parameters.
+The design-based GLS estimates of the spatial means for the four sampling times are computed as before, followed by computing the estimated space-time parameters.
 
 ```{r}
 Cinv <- solve(C)
@@ -9376,14 +9387,15 @@ mz_trend_pop <- t(w)%*%mz
 mz_st <- mean(mz)
 ```
 
-The random sampling with the five space-time designs and estimation of the four space-time parameters is now repeated 10,000 times. The standard deviations of the 10,000 estimates of a space-time parameter are shown in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters). Note that to determine the standard errors of the space-time parameters for the SS, IS and SA design a sampling experiment is not really needed. These can be computed without error because we have exhaustive knowledge of the study variable at all sampling times. However, for the SP and RP design a sampling experiment is needed to derive the true standard error of the space-time parameters. This is because the space-time parameters are derived from the GLS estimator of the spatial means, and the GLS estimator is a function of the *estimated* covariances of the elementary estimates (Equation \@ref(eq:DBGLS)). Using the true covariance of the elementary estimates in the GLS estimator, instead of the estimated covariance, leads to an underestimation of the standard error. Computing the true standard errors of the space-time parameters for the various space-time designs is left as an exercise.
+#### Sampling experiment
 
-As a reference for the standard errors in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters): the current mean (spatial mean air temperature in 2019) equals `r round(mz_2019_pop,4)`, the change of the mean from 2004 to 2019 equals `r round(d_mz_pop,4)`, the temporal trend (average change of mean per five years) equals `r round(mz_trend_pop,4)`, and the space-time mean equals `r round(mz_st,4)`.
+The random sampling with the five space-time designs and estimation of the four space-time parameters is repeated 10,000 times. The standard deviations of the 10,000 estimates of a space-time parameter are shown in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters). Note that to determine the standard errors of the estimators of the space-time parameters for the SS, IS and SA design a sampling experiment is not really needed. These can be computed without error because we have exhaustive knowledge of the study variable at all sampling times. However, for the SP and RP design a sampling experiment is needed to approximate the design-expectation of the standard error of the estimators of the space-time parameters. This is because the space-time parameters are derived from the GLS estimator of the spatial means, and the GLS estimator is a function of the *estimated* covariances of the elementary estimates (Equation \@ref(eq:DBGLS)). Using the true covariance of the elementary estimates in the GLS estimator, instead of the estimated covariance, leads to an underestimation of the standard error. Computing the true standard errors of the estimators of the space-time parameters for the various space-time designs is left as an exercise.
 
-```{r}
+As a reference for the standard errors in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters): the current mean (spatial mean air temperature in 2019) equals `r round(mz_2019_pop,4)` degrees Celsius, the change of the mean from 2004 to 2019 equals `r round(d_mz_pop,4)` degrees Celsius, the temporal trend equals `r round(mz_trend_pop,4)` degrees Celsius *per five years*, and the space-time mean equals `r round(mz_st,4)` degrees Celsius.
+
+```{r, echo=FALSE, eval=FALSE}
 R <- 10000
 mz_cur_SS <- d_mz_SS <- mz_trend_SS <- mz_st_SS <- mz_cur_SA <- d_mz_SA <- mz_trend_SA <- mz_st_SA <- mz_cur_SP <- d_mz_SP <- mz_trend_SP <- mz_st_SP <- mz_cur_RP <- d_mz_RP <- mz_trend_RP <- mz_st_RP <- mz_cur_IS <- d_mz_IS <- mz_trend_IS <- mz_st_IS <- d_mz_SP_HT <- numeric(length=R)
-
 
 set.seed(314)
 n <- 100
@@ -9557,12 +9569,13 @@ se_pars <- sqrt(v_pars)
 estimates <- data.frame(c("SS","IS","SA","SP","RP"),round(se_pars[c(1,5,9,13,17)],4), round(se_pars[c(2,6,10,14,18)],4), round(se_pars[c(3,7,11,15,19)],4), round(se_pars[c(4,8,12,16,20)],4),row.names=NULL)
 
 knitr::kable(
-  estimates, caption = 'Standard deviations of 10,000 repeated estimates of space-time parameters of annual mean temperature in Spain and Prtugal, with static-synchronous (SS), independent synchronous (IS), serially alternating (SA), supplemented panel (SP) and rotating panel space-time sampling, and simple random sampling of 100 locations per sampling time.',
+  estimates, caption = 'Standard deviations of 10,000 repeated estimates of space-time parameters of annual mean temperature in Spain and Prtugal, with static-synchronous (SS), independent synchronous (IS), serially alternating (SA), supplemented panel (SP) and rotating panel (RP) space-time sampling, with simple random sampling with replacement of 100 locations per sampling time.',
   col.names = c("","Current mean","Change of mean","Trend of mean","Space-time mean"),
   booktabs = TRUE
 ) %>%
   kable_classic()
 ```
+
 Estimates of the current mean with the SP and RP designs are much more precise than with the SS, IS and SA designs. This is because with designs SP and RP there is partial overlap with the samples of the other years. If the study variable at different years is correlated, we can profit from the data of previous years. In our case this correlation is very strong:
 
 ```{r}
@@ -9571,25 +9584,34 @@ cor(df[,-c(1,2)])
 
 The small differences in standard deviations of the estimated current means among the SS, IS and SA design are due to random variation: the true standard errors of the current mean estimator are equal for these three space-time designs.
 
-The strong correlation also explains that the estimated change of the spatial mean from 2004 to 2019 with the SS design is much more precise than with the IS and SA  design. With the IS and SA design the sample of 2019 is selected independently from the sample of 2004, so that the covariance of the two spatial mean estimators is zero. With the SS design two times this covariance is subtracted from the sum of the variances of the spatial mean estimators. The standard error of the change of the spatial mean from 2009 to 2019 with the SA design is much smaller than that of the change from 2004 to 2019 because the spatial means at these two times are estimated from the same sample, so that we profit from the strong positive correlation. The standard error of the change estimator with the SP design is slightly larger than the standard error with the SS design, because with this design there is only partial overlap, so that we profit less from the correlation. The standard error of the RP design is larger than that of the SP design because with the RP design there is no overlap of the samples of 2004 and 2019 (Figure \@ref(fig:SpaceTimeDesigns). Despite the absence of overlap, the standard error is still considerably smaller than those of IS and SA design because the spatial means of 2004 and 2019 are estimated by the GLS estimator that uses the data of all years, and so still profits from the correlation.
+The strong correlation also explains that the estimated change of the spatial mean from 2004 to 2019 with the SS design is much more precise than with the IS and SA  design. With the IS and SA design the sample of 2019 is selected independently from the sample of 2004, so that the covariance of the two spatial mean estimators is zero. With the SS design two times this covariance is subtracted from the sum of the variances of the spatial mean estimators. The standard error of the estimator of the change of the spatial mean from 2009 to 2019 with the SA design (not shown in the Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters)) is much smaller than that of the change from 2004 to 2019 because the spatial means at these two times are estimated from the same sample, so that we profit from the strong positive correlation. The standard error of the change estimator with the SP design is slightly larger than the standard error with the SS design, because with this design there is only partial overlap, so that we profit less from the correlation. The standard error with the RP design is larger than that of the SP design because with the RP design there is no overlap of the samples of 2004 and 2019 (Figure \@ref(fig:SpaceTimeDesigns). Despite the absence of overlap, the standard error is still considerably smaller than those with the IS and SA design because the spatial means of 2004 and 2019 are estimated by the GLS estimator that uses the data of all years, and so still profits from the correlation.
 
-Estimation of the trend of the spatial mean is most precise with the SS design, closely followed by the SP design, and least precise with the IS design. This is in agreement with the results of @Brus2011 and @Brus2013. On the contrary, estimation of the space-time mean is most precise with the IS design and least precise with the SS design. With strong persistence of the spatial patterns, as in our case, it is not efficient to observe the same sampling locations at all times when interest is in the space-time mean. In our case with very strong correlation, the larger the total number of sampling locations over all sampling times is, the smaller the standard error of the space-time mean estimator. The total number of sampling locations. The total number of sampling locations in this case study are $n$ with SS, $4n$ with IS, $2n$ with SA, and $5n/2$ with SP and RP.  
+Estimation of the trend of the spatial mean is most precise with the SS design, closely followed by the SP design, and least precise with the IS design. This is in agreement with the results of @Brus2011 and @Brus2013. On the contrary, estimation of the space-time mean is most precise with the IS design and least precise with the SS design. With strong persistence of the spatial patterns, as in our case, it is not efficient to observe the same sampling locations at all times when interest is in the space-time mean. In our case with very strong correlation, the larger the total number of sampling locations over all sampling times is, the smaller the standard error of the space-time mean estimator. The total number of sampling locations in this case study are $n$ with SS, $4n$ with IS, $2n$ with SA, and $5n/2$ with SP and RP.  
+
 
 ## Space-time sampling with stratified random sampling in space
 
-In real-world applications one will often use more efficient sampling designs than simple random sampling for selecting spatial sampling units. For instance, in the case study of the previous section stratified simple random sampling using climate zones is most likely more efficient than simple random sampling. For instance, with SS sampling in space-time the population is stratified to select the units of the first survey. The stratification determine the inclusion probabilities of the spatial population units, and these inclusion probabilities are also used to estimate the spatial means in subsequent surveys.
+In real-world applications one will often use more efficient sampling designs than simple random sampling for selecting spatial sampling units. For instance, in the case study of the previous section stratified simple random sampling using climate zones is most likely more efficient than simple random sampling.
 
+To select a space-time sample with stratified simple random sampling as a spatial design, the selection procedures described above for the five basic types of space-time design are applied at the level of the strata. Estimation of the space-time parameters goes along the same lines, using the $\pi$ estimator of the spatial mean and that of the standard error of the $\pi$ estimator of the mean presented in Chapter \@ref(STSI). The covariance of the elementary estimators of the spatial means at two sampling times using the data of the same panel, can be estimated by 
+
+\begin{equation}
+\widehat{C}_{ab} =  \sum_{h=1}^H w^2_h \frac{\widehat{S^2}_{abh}}{m_h} \;,
+(\#eq:covartwoelementaryestimatesSTSI)
+\end{equation}
+
+with $\widehat{S^2}_{abh}$ the estimated covariance of the study variable at times $t_a$ and $t_b$ in stratum $h$, and $m_h$ the number of sampling locations in the panel in stratum $h$. 
 
 #### Exercises {-}
 
-1. Compute for the annual mean temperature data of Spain and Portugal the true standard errors of the spatial mean in 2019, the change of the spatial mean from 2004 to 2019, the trend of the spatial mean (average change per five years in the period 2004 - 2019), and the space-time mean, for all five space-time designs and simple random sampling with replacement of 100 units per time. Use for the designs RP and SP the true covariances of the elementary estimates in the GLS estimator of the spatial means.
-    + Compare the standard errors with the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters). Explain why for the designs SP and RP the true standard errors of all space-time parameters are slightly smaller than the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters).  
+1. Compute for the annual mean temperature data of Spain and Portugal the true standard errors of the estimator of the spatial mean in 2019, the change of the spatial mean from 2004 to 2019, the trend of the spatial mean (average change per five years in the period 2004 - 2019), and the space-time mean, for all five space-time designs and simple random sampling with replacement of 100 units per time. Use for the designs RP and SP the true covariances of the elementary estimates in the GLS estimator of the spatial means.
+    + Compare the standard errors with the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters). Explain why for the designs SP and RP the true standard errors of the estimators of all space-time parameters are slightly smaller than the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters).  
 2. With a supplemented and rotating panel design the change of the mean can also be estimated by the difference of the $\pi$ estimates of the spatial means at the two times, instead of the difference of the two GLS estimates. The variance of the difference of the $\pi$ estimators of two simple random samples at different times with partial overlap equals
-$$
+\begin{equation}
 V(\bar{d}_{ab})=\frac{S^2_a}{n} + \frac{S^2_b}{n} - 2\frac{m\;S^2_{ab}}{n^2}\;,
 (\#eq:varChangeofMeanHT)
-$$
-with $S^2_a$ and $S^2_b$ the spatial variance at time $t_a$ and $t_b$, respectively, $S^2_{ab}$ the spatial covariance of the study variable at times $t_a$ and $t_b$, $n$ the size of the simple random samples, and $m$ the number of units observed at both times. Compute for Spain and Portugal the standard error of the estimator of the change of the mean with Equation \@ref(eq:varChangeofMeanHT), using the *true* spatial variances and covariances for the years 2004 and 2019, for simple random samples of size 100 ($n=100$), and a matching proportion of 0.5 ($m=50$). Compare with the true standard error of the change of the mean using the GLS estimators computed in the previous exercise. Explain that the standard error of the $\pi$ estimators is larger than the standard error with the GLS estimators.
+\end{equation}
+with $S^2_a$ and $S^2_b$ the spatial variance at time $t_a$ and $t_b$, respectively, $S^2_{ab}$ the spatial covariance of the study variable at times $t_a$ and $t_b$, $n$ the size of the simple random samples, and $m$ the number of units observed at both times. Compute for Spain and Portugal the standard error of the estimator of the change of the mean with Equation \@ref(eq:varChangeofMeanHT), using the *true* spatial variances and covariances for the years 2004 and 2019, for simple random samples of size 100 ($n=100$), and a matching proportion of 0.5 ($m=50$). Compare with the true standard error of the estimator of the change of the mean using the GLS estimators computed in the previous exercise. Explain that the standard error of the $\pi$ estimators is larger than the standard error with the GLS estimators.
 
 
 <!--chapter:end:15-RepeatedSurveys.Rmd-->
@@ -9598,18 +9620,19 @@ with $S^2_a$ and $S^2_b$ the spatial variance at time $t_a$ and $t_b$, respectiv
 
 # Introduction to sampling for mapping {#IntroSamplingforMapping}
 
+
 ## When is probability sampling not required?
 
 This second part of the book deals with sampling for mapping, i.e. for predicting the study variable at the nodes of a fine discretisation grid. For mapping a model-based sampling approach is the most natural option. When a statistical model, i.e. a model containing an error term modelled by a probability distribution, is used to map the study variable from the sample data, selection of the sampling units by probability sampling is not strictly needed anymore in order to make statistical statements about the population, i.e. statements with quantified uncertainty, see Section \@ref(DBvsMB). In a model-based approach we assume the model is correct, possibly after we have managed to verify the model assumptions. As a consequence there is room for optimising the sampling units, i.e. searching for those units that lead to the most accurate map in some operational sense related to map quality, for instance, the smallest squared prediction error averaged over all locations in the mapped study area, see Chapter \@ref(Validation). 
 
-As an illustration, consider the following statistical model to be used for mapping: a simple linear regression model for the target variable to be mapped:
+As an illustration, consider the following statistical model to be used for mapping: a simple linear regression model for the study variable to be mapped:
 
 \begin{equation}
 Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
 (\#eq:simplelinearregressionmodel)
 \end{equation}
 
-with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $Cov(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate. 
+with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $\text{Cov}(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate $x$. 
 
 ```{r, echo=FALSE}
 library(gstat)
@@ -9681,30 +9704,30 @@ ggplot(data = grid) +
   coord_fixed()
 ```
 
-The optimal sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, this spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the estimated regression coefficients is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ for at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option if we are willing to rely on the assumption that there is a linear relation between $z$ and $x$.  
+The optimal sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, this spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the regression coefficients estimators is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option.
 
 ```{r sebetas, echo=FALSE}
-tbl <- data.frame(x=c("SI","Optimised"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
+tbl <- data.frame(x=c("SI","Optimal"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
 
 knitr::kable(
-  tbl, caption = 'Standard errors and determinant of variance-covariance matrix of estimated regression coefficients for simple random sample (SI) and optimised sample.',
+  tbl, caption = 'Standard errors and determinant of variance-covariance matrix of estimators of regression coefficients for simple random sample (SI) and optimal sample.',
   col.names=c("Sampling design", "se intercept","se slope","Determinant"),
   booktabs = TRUE
 ) %>%
 kable_classic()
 ```
 
-Of course, this simple example would only be applicable if we have evidence of the linear relation between covariate and target variable and independence of the residuals.
+Of course, this simple example would only be applicable if we have evidence of a linear relation between study variable $z$ and covariate $x$ and  if we are willing to rely on the assumption that the residulas are not spatially correlated.  
 
 ## Sampling for simultaneously mapping and estimating means
 
-Although probability sampling is not strictly needed for mapping with a statistical model, in some situations, when feasible, it can still be advantageous to select a probability sample. If the aim of the survey is to map the study variable, as well as to estimate the mean or total for the entire study area or for several subareas, probability sampling can be a good option. Think, for instance, of sampling for the dual objectives of mapping and at the same time estimating soil carbon stocks. Although the statistical model used for mapping can also be used for model-based prediction of the total carbon stocks in the study area and subareas (Section \@ref(SmallAreaModelBased)), we may prefer to estimate these totals by design-based (Section \@ref(LargeDomainsDirectEstimator)) or model-assisted inference (\@ref(SmallDomainsModelAssisted)). The advantage of design-based and model-assisted estimates of these totals is their validity\index{Validity}. Validity means that an objective assessment of the uncertainty of the estimated  mean or total is warranted, and that the coverage of confidence intervals is (almost) correct, provided that the sample is large enough to assume an approximately normal distribution of the estimator and design-unbiasedness of the variance estimator, see Chapter \@ref(Approaches). In design-based estimation no model of the spatial variation is used. Discussions about how realistic modelling assumptions are, therefore are avoided.  In model-assisted estimation these discussions are irrelevant as well, because we do not rely on these assumptions. A poor model results in large variances of the estimated mean or total, and as a consequence a wide confidence interval, so that the coverage of the confidence interval is in agreement with the nominal coverage, see Section \@ref(ModelassistedvsModeldependent) for more details.
+Although probability sampling is not strictly needed for mapping with a statistical model, in some situations, when feasible, it can still be advantageous to select a probability sample. If the aim of the survey is to map the study variable, as well as to estimate the mean or total for the entire study area or for several subareas, probability sampling can be a good option. Think, for instance, of sampling for the dual objectives of mapping and at the same time estimating soil carbon stocks. Although the statistical model used for mapping can also be used for model-based prediction of the total carbon stocks in the study area and subareas (Section \@ref(SmallAreaModelBased)), we may prefer to estimate these totals by design-based or model-assisted inference. The advantage of design-based and model-assisted estimation of these totals is their validity\index{Validity}. Validity means that an objective assessment of the uncertainty of the estimated  mean or total is warranted, and that the coverage of confidence intervals is (almost) correct, provided that the sample is large enough to assume an approximately normal distribution of the estimator and design-unbiasedness of the variance estimator, see Chapter \@ref(Approaches). In design-based estimation no model of the spatial variation is used. Discussions about how realistic modelling assumptions are, therefore are avoided.  In model-assisted estimation these discussions are irrelevant as well, because we do not rely on these assumptions. A poor model results in large variances of the estimated mean or total, and as a consequence a wide confidence interval, so that the coverage of the confidence interval is in agreement with the nominal coverage, see Section \@ref(ModelassistedvsModeldependent) for more details.
 
 The question then is: what is a suitable probability sampling design for both aims? First, I would recommend a sampling design with equal inclusion probabilities. This is because in standard model-based inference unequal inclusion probabilities are not accounted for, which may lead to systematic prediction errors when small or large values are overrepresented in the sample (Section \@ref(BiasandVariance)).
 
 In case we have subareas of which we would like to estimate the mean or total (domains of interest), using these subareas as strata in stratified random sampling makes sense, unless there are too many. This requires that of all population units (nodes of discretisation grid) we must know to which subarea it belongs, so that this information can be added to the sampling frame.
 
-A sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)), or sampling with the local pivotal method (Section \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. The alternative is to exploit these covariates explicitly in the sampling design, for instance through stratified random sampling from strata constructed by k-means, using the covariates and the spatial coordinates in  clustering the population units (Section \@ref(kmeansstratification)), or through balanced sampling with (geographical) spreading (Section \@ref(BalancedandSpreaded)).
+A sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)), or sampling with the local pivotal method (Section \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. Spreading in covariate space can also be explicitly accounted for by using the covarates as spreading variables in the local pivotal method.
 
 As an illustration I selected a single sample of 500 units from Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
 
@@ -9798,7 +9821,7 @@ In this example I used one quantitative covariate, lnSWIR2, for balancing the sa
 
 The non-probability sampling designs for mapping described in the following chapters can be grouped into three categories:  
 
-1. Geometric designs\index{Geometric design} (Chapters \@ref(Regulargrid), \@ref(SpatialCoverage) and \@ref(kmeans))    
+1. Geometric designs\index{Geometric design} (Sections \@ref(Regulargrid), \@ref(SpatialCoverage) and \@ref(kmeans))    
 2. Adapted experimental designs\index{Adapted experimental design} (Chapters \@ref(cLHS) and \@ref(SpatialResponseSurface))  
 3. Model-based designs\index{Model-based design} (Chapters \@ref(MBgridspacing), \@ref(MBSamplePattern))
 
@@ -9818,9 +9841,13 @@ rm(list=ls())
 
 <!--chapter:end:21-IntroSampling4Mapping.Rmd-->
 
-# Regular grid sampling {#Regulargrid}
+# Regular grid and spatial coverage sampling {#RegularSpatialCoverage}
 
-Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid-points are not used for design-based estimation of the population mean or total, and for that reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square, triangular and hexagonal. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
+This chapter describes and illustrates two sampling designs by which the sampling locations are well-spread throughout the study area: regular grid sampling and spatial coverage sampling. In a final section the spatial coverage sampling design is used to fill in the empty spaces of an existing sample.
+
+## Regular grid sampling {#Regulargrid}
+
+Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid-points are not used for design-based estimation of the population mean or total, and for that reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
 
 Besides the shape of the grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation, and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per point, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m$^2$, and $n$ is the number of sampling units (sample size).
 
@@ -9863,10 +9890,7 @@ rm(list=ls())
 ```
 
 
-
-<!--chapter:end:22-RegularGrid.Rmd-->
-
-# Spatial coverage sampling {#SpatialCoverage}
+## Spatial coverage sampling {#SpatialCoverage}
 
 Local undersampling with regular grids can be avoided by relaxing the constraint that the sampling units are restricted to the nodes of a regular grid. This is what is done in *spatial coverage sampling*\index{Spatial coverage sampling} or, in case of a sample that is added to an existing sample, in *spatial infill sampling*\index{Spatial infill sampling}. Spatial coverage and infill samples cover the area or fill in the empty space as uniformly as possible. The sampling units are obtained by minimising a criterion that is defined in terms of the geographic distances between the nodes of a fine discretisation grid and the sampling units. @bru07c proposed to minimise the mean of the squared distances of the grid nodes to their nearest sampling unit (mean squared shortest distance, MSSD\index{Mean squared shortest distance}):
 
@@ -10038,7 +10062,7 @@ rm(list=ls())
 ```
 
 
-<!--chapter:end:23-SpatialCoverage.Rmd-->
+<!--chapter:end:22-RegularGrid-SpatialCoverage.Rmd-->
 
 # Covariate space coverage sampling {#kmeans}
 
@@ -11923,7 +11947,7 @@ rm(list=ls())
 
 This is the first chapter on model-based sampling\index{Model-based sampling}^[Spatial response surface sampling can also be considered as model-based sampling, especially when a model-based criterion is used, see Chapter \@ref(SpatialResponseSurface.]. In Chapters \@ref(SpatialCoverage) and \@ref(kmeans) a geometric criterion was minimised, i.e. a criterion defined in terms of distances, either in geographic space (Chapter \@ref(SpatialCoverage)), or in covariate space (Chapter \@ref(kmeans)). In model-based sampling the minimisation criterion is a function of the variance of the prediction errors.
 
-This first chapter on model-based sampling is about optimisation of the spacing of a square grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Chapter \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
+This first chapter on model-based sampling is about optimisation of the spacing of a square grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Section \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
 
 ## Optimal grid spacing for ordinary kriging {#GridspacingOK}
 
@@ -12576,7 +12600,7 @@ rslt <- optimUSER(
   schedule=schedule)
 ```
 
-Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Chapter \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sampling pattern\index{Sampling pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
+Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Here I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points, see Section \@ref(Regulargrid). Argument `nmax` specifies the number of points used in kriging, and `prob` is the cumulative probability of the kriging variance quantile. As we will see in the next exercise, the nugget of the residual semivariogram has a strong effect on the optimised sampling pattern\index{Sampling pattern}, stressing the importance of a reliable prior estimate this semivariogram parameter. 
 
 #### Exercises {-}
 

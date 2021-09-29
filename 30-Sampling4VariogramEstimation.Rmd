@@ -259,7 +259,7 @@ for (i in 1:length(h)){
 }
 ```
 
-The data frame file `allpairs` has four columns: the spatial coordinates of the first and of the second point of a pair. An overlay is made of the selected points with the `SpatialPixelsDataFrame` and the cti values are extracted.
+The data frame file `allpairs` has four columns: the spatial coordinates of the first and of the second point of a pair. An overlay is made of the selected points with the `SpatialPixelsDataFrame` and the cti (compound topographic index, which is the same as topographic wetness index) values are extracted.
 
 ```{r Allpairs}
 pnt1 <- allpairs[,c(1,2)]
@@ -300,7 +300,7 @@ print(pars <- signif(coef(fit.var),3))
 
 Figure \@ref(fig:variogramCTI) shows the sample semivariogram and the fitted model.
 
-```{r variogramCTI, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram obtained by independent sampling of pairs of points, and fitted spherical model of cti in Hunter Valley."}
+```{r variogramCTI, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram obtained by independent sampling of pairs of points, and fitted spherical model of compount topographic index in Hunter Valley."}
 #Compute fitted values
 dist <- seq(from=0.1, to=1000, by=0.1)
 fitted <- SphNug(h=dist, range=pars["range"], psill=pars["psill"], nugget=pars["nugget"])
@@ -341,7 +341,7 @@ signif(var(allpars),3)
 
 Note the large variance for the range parameter (standard deviation is 215 m), and the negative covariance of the nugget and partial sill parameter (Pearson correlation coefficient is -0.62). Histograms of the three estimated semivariogram parameters are shown in Figure \@ref(fig:histogramsvariogramparameters)\index{Simple random sampling of point-pairs|}.
 
-```{r histogramsvariogramparameters, echo=FALSE, out.width='100%', fig.asp=0.6, fig.cap="Sampling distribution of the estimators of the parameters of a spherical semivariogram with nugget of cti in Hunter Valley.", }
+```{r histogramsvariogramparameters, echo=FALSE, out.width='100%', fig.asp=0.6, fig.cap="Sampling distribution of the estimators of the parameters of a spherical semivariogram with nugget of compound topographic index in Hunter Valley.", }
 df <- as.data.frame(allpars)
 names(df) <- c("PartialSill","Range","Nugget")
 
@@ -456,7 +456,7 @@ schedule <- scheduleSPSANN(
   chains=500, chain.length=2, stopping=5,
   x.min=0, y.min=0, cellsize=50)
 set.seed(314)
-rslt <- optimUSER(
+res <- optimUSER(
   points=100, candi=candi,
   fun=logdet,
   model="Exp", thetas=thetas, perturbation=0.01,
@@ -464,12 +464,12 @@ rslt <- optimUSER(
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(rslt, file="results/MBSample_logdet_phi200nug02_HunterValley.RData")
+save(res, file="results/MBSample_logdet_phi200nug02_HunterValley.RData")
 ```
 
 ```{r, echo=FALSE}
 load(file="results/MBSample_logdet_phi200nug02_HunterValley.RData")
-logdetopt <- tail(rslt$objective$energy$obj,1)
+logdetopt <- tail(res$objective$energy$obj,1)
 ```
 
 Figure \@ref(fig:MBVariogram) shows the optimised sample of 100 points.  The logdet of the optimised sample equals `r round(logdetopt,3)` which is `r round(100*logdetopt/logdet0,0)`\% of the value of the simple random sample used above to illustrate the computations. The optimised sample shows strong spatial clustering. Connecting neighbouring points of the sample by lines results in  a sort of mycelium.
@@ -581,7 +581,7 @@ schedule <- scheduleSPSANN(
   chains=500, chain.length=2, stopping=5,
   x.min=0, y.min=0, cellsize=50)
 set.seed(314)
-rslt <- optimUSER(
+res <- optimUSER(
   points=100, candi=candi,
   fun=varkrigvar,
   psample=mySCsample, esample=myevalsample,
@@ -590,22 +590,22 @@ rslt <- optimUSER(
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(rslt,file="results/MBSample_VV_phi200nug02_HunterValley.RData")
+save(res,file="results/MBSample_VV_phi200nug02_HunterValley.RData")
 ```
 
 ```{r, echo=FALSE}
 load(file="results/MBSample_VV_phi200nug02_HunterValley.RData")
-MVKVopt <- tail(rslt$objective$energy$obj,1)
+MVKVopt <- tail(res$objective$energy$obj,1)
 ```
 
 Figure \@ref(fig:MBVariogram) shows the optimised sample. The minimised value of MVKV is `r round(100*MVKVopt/MVKV0,0)` \% of the value of the simple random sample used to illustrate the computations. As for logdet the optimised sample shows strong spatial clustering. However, the shape is quite different. The sample minimised for MVKV is more a spatial coverage sample of an ellipse.
 
 ```{r MBVariogram, echo=FALSE, out.width='100%', fig.cap="Optimised pattern of 100 sampling points for semivariogram estimation, using the logarithm of the determinant of the inverse Fisher information matrix (logdet) or the mean estimation variance of the kriging variance (MVKV) as minimisation criterion."}
 load(file="results/MBSample_logdet_phi200nug02_HunterValley.RData")
-mysample_logdet <- rslt$points
+mysample_logdet <- res$points
 
 load(file="results/MBSample_VV_phi200nug02_HunterValley.RData")
-mysample_MVKV <- rslt$points
+mysample_MVKV <- res$points
 
 mysamples <- rbind(mysample_logdet,mysample_MVKV)
 mysamples$criterion <- rep(c("logdet","MVKV"),each=100)
@@ -816,7 +816,7 @@ fixed <- coordinates(mySCsample)
 names(fixed) <- c("x","y")
 pnts <- list(fixed=fixed, free=10)
 set.seed(314)
-rslt <- optimUSER(
+res <- optimUSER(
   points=pnts, candi=candi,
   fun=augvar,
   esample=myevalsample,
@@ -825,7 +825,7 @@ rslt <- optimUSER(
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(rslt,mySCsample,myStrata,file="results/MBSample_augvar_phi200nug02_HunterValley.RData")
+save(res,mySCsample,myStrata,file="results/MBSample_augvar_phi200nug02_HunterValley.RData")
 ```
 
 
@@ -841,7 +841,7 @@ schedule <- scheduleSPSANN(
   x.min=0,y.min=0,
   cellsize=50)
 set.seed(314)
-rslt <- optimUSER(
+res <- optimUSER(
   points=pnts,
   candi=candi,
   fun=EAC,
@@ -851,15 +851,15 @@ rslt <- optimUSER(
   perturbation=0.01,
   schedule=schedule,
   track=TRUE)
-save(rslt,mySCsample,myStrata,file="results/MBSample_EAC_phi200nug02_HunterValley.RData")
+save(res,mySCsample,myStrata,file="results/MBSample_EAC_phi200nug02_HunterValley.RData")
 ```
 
 Figure \@ref(fig:FigMBEK) shows for the Hunter Valley spatial coverage samples of 90 points, supplemented by ten points optimised by SSA, using MAKV and MEAC as a minimisation criterion.
 
 ```{r FigMBEK, echo=FALSE, out.width='100%', fig.cap="Optimised sample of ten points supplemented to spatial coverage sample, for semivariogram estimation and prediction, using the mean augmented kriging variance (MAKV) or the mean estimation adjusted criterion (MEAC) as minimisation criterion."}
 load(file="results/MBSample_augvar_phi200nug02_HunterValley.RData")
-mysample <- rslt$points
-MAKVopt <- tail(rslt$objective$energy$obj,1)
+mysample <- res$points
+MAKVopt <- tail(res$objective$energy$obj,1)
 
 units <-which(mysample$free==1)
 mysupsample_AKV <- mysample[units,c("x","y")]
@@ -876,8 +876,8 @@ DSCmin <- apply(DSC,MARGIN=1, FUN=min, na.rm=T)
 mDSCmin <- mean(DSCmin)
 
 load(file="results/MBSample_EAC_phi200nug02_HunterValley.RData")
-mysample <- rslt$points
-MEACopt <- tail(rslt$objective$energy$obj,1)
+mysample <- res$points
+MEACopt <- tail(res$objective$energy$obj,1)
 
 units <-which(mysample$free==1)
 mysupsample_EAC <- mysample[units,c("x","y")]

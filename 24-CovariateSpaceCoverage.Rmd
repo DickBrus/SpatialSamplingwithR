@@ -2,9 +2,9 @@
 
 Regular grid sampling and spatial coverage sampling are pure spatial sampling designs. Covariates possibly related to the study variable are not accounted for in selecting sampling units. This can be suboptimal when the study variable is related to covariates of which maps are available, think for instance of remote sensing imagery or digital elevation models related to soil properties. Maps of these covariate can be used in mapping the study variable by, for instance, a multiple linear regression model or a random forest. This chapter describes a simple, straightforward method for selecting sampling units on the basis of the covariate values of the grid cells. This is a pure feature (attribute) space design.
 
-The simplest option for covariate space coverage sampling\index{Covariate space coverage sampling} (CSC sampling) is to cluster the grid cells by the $k$-means clustering algorithm in multivariate covariate space. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)) the mean squared shortest distance (MSSD) is minimised, but now the distance is not measured in geographical space but in a $p$-dimensional space spanned by the $p$ covariates (think of it as a multidimensional scatter plot with the covariates along the axes). The covariates are centered and scaled, so that their means become 0 and standard deviations become 1. This is needed because, contrary to the spatial coordinates used as clustering variables in spatial coverage sampling, the dimensions of the covariates used as clustering variables generally differ, and the ranges of the covariates in the population can differ greatly. In the clustering of the grid cells the mean squared shortest *scaled* distance (MSS*S*D)^[The name 'scaled distance' can be confusing. Not the geographic distances are scaled, rather, the distances are computed in a space spanned by the scaled covariates] is minimised.
+The simplest option for covariate space coverage sampling\index{Covariate space coverage sampling} (CSC sampling) is to cluster the grid cells by the $k$-means clustering algorithm in multivariate covariate space. Similar to spatial coverage sampling (Section \@ref(SpatialCoverage)) the mean squared shortest distance (MSSD) is minimised, but now the distance is not measured in geographical space but in a $p$-dimensional space spanned by the $p$ covariates. Think of this space as a multidimensional scatter plot with the covariates along the axes. The covariates are centered and scaled, so that their means become zero and standard deviations become one. This is needed because, contrary to the spatial coordinates used as clustering variables in spatial coverage sampling, the ranges of the covariates in the population can differ greatly. In the clustering of the grid cells the mean squared shortest *scaled* distance (MSS*S*D) is minimised. The name 'scaled distance' can be confusing. Not the distances are scaled, rather, the distances are computed in a space spanned by the scaled covariates.
 
-In the next code chunk a CSC sample of size 20 is selected from Eastern Amazonia. To speed up the computations a subgrid with a spacing of 5000 m is selected, using function `spsample` of package **sp**. All five quantitative covariates, SWIR2, Terra_PP, Prec_dm, Elevation and Clay, are used as covariates. To select twenty points, twenty clusters are constructed using function `kmeans` of the **stats** package [@R2020]. The number of clusters is specified with argument `centers`. Note that the number of clusters is not based, as usual in cluster analysis, on the expected number of subregions with a high density of points in the multivariate distribution, but rather on the number of observation points to be sampled. The $k$-means clustering algorithm is a deterministic algorithm, i.e. the final optimised clustering is fully determined by the initial clustering. This final clustering can be suboptimal, i.e. the minimised MSSSD value is somewhat larger than the global minimum. Therefore the clustering should be repeated many times, every time starting with a different random initial clustering. The number of repeats is specified with argument `nstart`.
+In the next code chunk a CSC sample of twenty units is selected from Eastern Amazonia. To speed up the computations a subgrid with a spacing of 5000 m is selected, using function `spsample` of package **sp**. All five quantitative covariates, SWIR2, Terra_PP, Prec_dm, Elevation and Clay, are used as covariates. To select twenty units, twenty clusters are constructed using function `kmeans` of the **stats** package [@R2020]. The number of clusters is specified with argument `centers`. Note that the number of clusters is not based, as usual in cluster analysis, on the expected number of subregions with a high density of units in the multivariate distribution, but rather on the number of sampling units. The $k$-means clustering algorithm is a deterministic algorithm, i.e. the final optimised clustering is fully determined by the initial clustering. This final clustering can be suboptimal, i.e. the minimised MSSSD value is somewhat larger than the global minimum. Therefore the clustering should be repeated many times, every time starting with a different random initial clustering. The number of repeats is specified with argument `nstart`.
 
 ```{r}
 load("data/Amazonia_5km.RData")
@@ -16,7 +16,7 @@ myclusters <- kmeans(
 gridAmazonia$cluster <- myclusters$cluster
 ```
 
-Grid cells with the shortest scaled Euclidean distance in covariate-space to the centers of the clusters are selected as the sampling points. To this end first a matrix with the distances of all the grid cells to the cluster centers is computed with function `rdist` of package **fields** [@fields]. The grid cells closest to the centers are computed with function `apply`, using argument `FUN=which.min`. 
+Grid cells with the shortest scaled Euclidean distance in covariate-space to the centers of the clusters are selected as the sampling units. To this end first a matrix with the distances of all the grid cells to the cluster centers is computed with function `rdist` of package **fields** [@fields]. The grid cells closest to the centers are computed with function `apply`, using argument `FUN=which.min`. 
 
 ```{r}
 library(fields)
@@ -25,7 +25,7 @@ units <- apply(D, MARGIN=1, FUN=which.min)
 myCSCsample <- gridAmazonia[units,]
 ```
 
-Figure \@ref(fig:CSCsample) shows the clustering of the grid cells and the grid cells closest in covariate space to the centers,  used as the selected sample. In Figure \@ref(fig:CSCsampleinscatter) the selected sample is plotted in scatter diagrams of some pairs of covariates. In the scatter diagrams some sampling points are clearly clustered. However, this is misleading, as actually we must look in five-dimensional space to see whether the points are clustered. Two points with a large separation distance in a five-dimensional space can look quite close when these two points are projected on a two-dimensional plane, see also Exercise 2 of this chapter.
+Figure \@ref(fig:CSCsample) shows the clustering of the grid cells and the grid cells closest in covariate space to the centers, used as the selected sample. In Figure \@ref(fig:CSCsampleinscatter) the selected sample is plotted in scatter diagrams of some pairs of covariates. In the scatter diagrams some sampling units are clearly clustered. However, this is misleading, as actually we must look in five-dimensional space to see whether the units are clustered. Two units with a large separation distance in a five-dimensional space can look quite close when these two units are projected on a two-dimensional plane, see also Exercise 2 of this chapter.
 
 The next code chunk shows how the MSSSD of the selected sample can be computed.
 
@@ -40,7 +40,7 @@ MSSSD <- mean(dmin^2)
 
 Note that to center and scale the covariate values in the CSC sample, the population means and population standard deviations are used, as specified with arguments `center` and `scale` of function `scale`. If these means and standard deviations are unspecified, the *sample* means and *sample* standard deviations are used, resulting in an incorrect value of the minimised MSSSD value. The MSSSD of the selected sample equals `r as.character(round(MSSSD,3))`.
 
-```{r CSCsample, echo=FALSE, out.width="100%", fig.cap="Covariate space coverage sample of twenty points obtained with $k$-means, from Eastern Amazonia using five covariates in clustering. The map shows the spatial distribution of the twenty clusters."}
+```{r CSCsample, echo=FALSE, out.width="100%", fig.cap="Covariate space coverage sample of twenty units obtained with $k$-means, from Eastern Amazonia using five covariates in clustering. The map shows the spatial distribution of the twenty clusters."}
 ggplot(gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=as.character(cluster))) +
   geom_point(data=myCSCsample,mapping=aes(x=x1/1000,y=x2/1000), size=2, colour="red") +
@@ -79,8 +79,8 @@ grid.arrange(plt1, plt2, nrow=1)
 Instead of function `kmeans` we may use function `kmeanspp` of package **LICORS** [@Goerg2013]. This function is an implementation of the  $k$-means++ algorithm [@Arthur2007]. This algorithm consists of two parts, namely the selection of an optimised initial sample, followed by the standard $k$-means. The algorithm is as follows:  
 
 1. Select one unit (raster cell) at random.  
-2. For each unit $j$, compute $d_{ij}$, the distance in standardised covariate-space between $j$ and the nearest unit $i$ that has already been selected.  
-3. Choose one new raster cell at random as a new sampling unit with probabilities proportional to $d^2_{ij}$, and add the selected raster cell to the set of selected cells.    
+2. For each unsampled unit $j$, compute $d_{kj}$, the distance in standardised covariate-space between $j$ and the nearest unit $k$ that has already been selected.  
+3. Choose one new raster cell at random as a new sampling unit with probabilities proportional to $d^2_{kj}$, and add the selected raster cell to the set of selected cells.    
 4. Repeat Steps 2 and 3 until $n$ centers have been selected.  
 5. Now that the initial centers have been selected, proceed using standard $k$-means.  
 
@@ -197,17 +197,17 @@ plt2 <- ggplot(grd) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-## Performance of covariate space coverage sampling in random forest prediction
+## Performance of covariate space coverage sampling in random forest prediction {#PerformanceCSC}
 
 Covariate space coverage sampling can be a good candidate sampling design if we have multiple maps of covariates and we do not want to rely on a linear relation between the study variable and the covariates. In this situation we may consider mapping with machine learning algorithms\index{Machine learning technique}, such as neural networks and random forests\index{Random forest}.
 
-I used the Eastern Amazonia data set to evaluate CSC sampling for mapping the aboveground biomass (AGB). The five covariates are used as predictors in random forest modelling. The calibrated models are used to predict AGB at the units of a validation sample of size 25000, selected by simple random sampling without replacement from the 1 km $\times$ 1 km grid, excluding the cells of the 10 km $\times$ 10 km grid from which the calibration samples are selected. The predicted AGB values at the validation units are compared with the true AGB values, and the prediction errors computed. The sample mean of the (squared) prediction error is a design-unbiased estimator of the population mean (squared) error, i.e. the mean of the (squared) errors at all population units (excluding the units of the 10 km $\times$ 10 km grid), see Chapter \@ref(Validation). Besides, the Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC) is estimated.
+I used the Eastern Amazonia data set to evaluate CSC sampling for mapping the aboveground biomass (AGB). The five covariates are used as predictors in random forest modelling. The calibrated models are used to predict AGB at the units of a validation sample of size 25,000, selected by simple random sampling without replacement from the 1 km $\times$ 1 km grid, excluding the cells of the 10 km $\times$ 10 km grid from which the calibration samples are selected. The predicted AGB values at the validation units are compared with the true AGB values, and the prediction errors computed. The sample mean of the (squared) prediction error is a design-unbiased estimator of the population mean (squared) error, i.e. the mean of the (squared) errors at all population units (excluding the units of the 10 km $\times$ 10 km grid), see Chapter \@ref(Validation).
 
-Three sample sizes are used, $n=$ 25, 50, 100. Of each sample size 500 CSC samples are selected using the $k$-means algorithm, leading to 1500 CSC samples in total.  The number of starts are 500, 350 and 200 for $n=$ 25, 50, 100, respectively. With these number of starts the computing time was about equal to conditioned Latin hypercube sampling, see next chapter. Each sample is used to calibrate a random forest model. Simple random sampling (SI) is used as a reference strategy. The results are described in detail in the next chapter. In short: for $n=25$ and $50$ CSC performs on average somewhat better than SI, for $n=100$ they perform about equal. Most striking is the smaller spread in the map quality indices with CSC as compared to SI.  
+Three sample sizes are used, $n=$ 25, 50, 100. Of each sample size 500 CSC samples are selected using the $k$-means algorithm, leading to 1,500 CSC samples in total.  The number of starts are 500, 350 and 200 for $n=$ 25, 50, 100, respectively. With these number of starts the computing time was about equal to conditioned Latin hypercube sampling, see next chapter. Each sample is used to calibrate a random forest model. Simple random sampling (SI) is used as a reference strategy. The results are described in detail in the next chapter. In short: for $n=25$ and $50$ CSC performs on average somewhat better than SI, for $n=100$ they perform about equal. Most striking is the smaller spread in the map quality indices with CSC as compared to SI.  
 
-In Figure \@ref(fig:RelationMSSSDRMSE) the RMSE is plotted against the minimised MSSSD, both for the $3 \times 500$ CSC samples, and for the $3 \times 500$ simple random samples. The vertical strings of points in the scatter plots are the points for the CSC samples. For all three sample sizes the minimised MSSSD values of the CSC samples is substantially smaller than those of the SI samples. For $n=25$ and $50$ the slope of the fitted line is positive: the smaller the MSSSD the smaller the expected RMSE. For $n=100$ the estimated slope parameter is slightly negative. So for this sample size we do not profit from spreading the sampling units in multivariate covariate space through $k$-means clustering.
+In Figure \@ref(fig:RelationMSSSDRMSE) the RMSE is plotted against the minimised MSSSD, both for the $3 \times 500$ CSC samples, and for the $3 \times 500$ simple random samples. It is no surprise that for all three sample sizes the minimised MSSSD values of the CSC samples is substantially smaller than those of the SI samples. However, despite the substantial smaller MSSSD values, the RMSE values for the CSC samples are not much smaller than those of the SI samples. Only for $n=50$ a moderately strong positive correlation can be seen: $r=0.513$. For $n=25$ the correlation is 0.264 only, and for $n=100$ it is even negative: $r=-0.183$. On average in this case study CSC and SI perform about equal (Table \@ref(tab:TableRMSE4CSCandSI)). However, especially with $n=25$ and 50 the distribution of RMSE with SI has a long right tail. This implies that with SI there is a serious risk that a sample will be selected resulting in poor RF predictions of AGB, .
 
-```{r RelationMSSSDRMSE, echo=FALSE, fig.asp=0.7, fig.cap="Relation between minimisation criterion MSSSD and the root mean squared error (RMSE) of random forest predictions of aboveground biomass in Eastern Amazonia for three sample sizes. Solid lines are the fitted simple linear regression models for RMSE with MSSSD as a predictor."}
+```{r RelationMSSSDRMSE, echo=FALSE, fig.asp=0.7, fig.cap="Relation between minimisation criterion MSSSD and the root mean squared error (RMSE) of random forest predictions of aboveground biomass in Eastern Amazonia for covarate space coverage sampling and simple random sampling of three sample sizes. Solid lines are the fitted simple linear regression models for RMSE with MSSSD as a predictor."}
 load("results/CSCversusCLH_Amazonia_n25.RData")
 df.25 <- data.frame(RMSE=c(RMSE.SI,RMSE.CSC), MSSSD=c(MSSSD.SI,MSSSD.CSC), Design=rep(c("SI","CSC"), each=500),Samplesize=25)
 
@@ -219,16 +219,31 @@ df.100 <- data.frame(RMSE=c(RMSE.SI,RMSE.CSC), MSSSD=c(MSSSD.SI,MSSSD.CSC), Desi
 
 df <- rbind(df.25, df.50, df.100)
 df$Samplesize <- as.factor(df$Samplesize)
-RMSE.lm <- lm(RMSE~MSSSD*Samplesize, data=df)
-ggplot(df, mapping=aes(x=MSSSD, y=RMSE, shape=Samplesize))+
+df$Design <- as.factor(df$Design)
+mRMSE <- tapply(df$RMSE,INDEX=list(df$Samplesize,df$Design), FUN=mean)
+S2RMSE <- tapply(df$RMSE,INDEX=list(df$Samplesize,df$Design), FUN=var)
+seRMSE <- sqrt(S2RMSE/500)
+ggplot(df, mapping=aes(x=MSSSD, y=RMSE, shape=Samplesize, colour=Design))+
   geom_point(alpha=0.5) +
   scale_shape_manual(values=c(1,0,2), name="Sample size") +
-  geom_line(mapping=aes(x=MSSSD, y=RMSE.lm$fitted))
+  scale_colour_discrete()
+```
+
+```{r TableRMSE4CSCandSI, echo=FALSE}
+df <- data.frame(c(25,50,100), mRMSE[,1], mRMSE[,2])
+df[,c(2,3)] <- round(df[,c(2,3)],2)
+rownames(df) <- NULL
+knitr::kable(
+  df, caption = 'Mean RMSE of random forest predictions of aboveground biomass in Eastern Amazonia of 500 covariate space coverage (CSC) samples and 500 simple random (SI) samples, for three sample sizes.',
+  booktabs = TRUE,
+  col.names=c("Sample size","CSC","SI")
+) %>%
+  kable_classic()
 ```
 
 #### Exercises {-}
 
-1. Write an **R** script to select a covariate space coverage (CSC) sample of size 20 from Hunter Valley. The data are in `data/HunterValley.RData`. Use the covariates cti (compound topographic index) and ndvi (normalized difference vegetation index) in $k$-means clustering of the grid cells. Plot the clusters and the sample in a scatter diagram of cti against ndvi.  
+1. Write an **R** script to select a covariate space coverage (CSC) sample of size 20 from Hunter Valley. The data are in `data/HunterValley.RData`. Use the covariates cti (compound topographic index, which is the same as topographic wetness index) and ndvi (normalized difference vegetation index) in $k$-means clustering of the grid cells. Plot the clusters and the sample in a scatter diagram of cti against ndvi.  
 2. Repeat this, but now with covariates cti, ndvi *and* elevation_m as covariates. Plot the clusters and the sample again in a scatter diagram of cti against ndvi. Explain that in this case a sampling location (cluster center) can be quite close to another sampling location in the 2D-scatter diagram, and that a cluster in the diagram may also contain units of a different cluster.   
   
 ```{r, echo=FALSE}
