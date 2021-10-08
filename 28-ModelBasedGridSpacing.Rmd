@@ -1,12 +1,12 @@
 # Model-based optimisation of the grid spacing {#MBgridspacing}
 
-This is the first chapter on model-based sampling\index{Model-based sampling}^[Spatial response surface sampling can also be considered as model-based sampling, especially when a model-based criterion is used, see Chapter \@ref(SpatialResponseSurface.]. In Chapters \@ref(SpatialCoverage) and \@ref(kmeans) a geometric criterion was minimised, i.e. a criterion defined in terms of distances, either in geographic space (Chapter \@ref(SpatialCoverage)), or in covariate space (Chapter \@ref(kmeans)). In model-based sampling the minimisation criterion is a function of the variance of the prediction errors.
+This is the first chapter on model-based sampling\index{Model-based sampling}^[Spatial response surface sampling can also be considered as model-based sampling, especially when a model-based criterion is used, see Chapter \@ref(SpatialResponseSurface).]. In Chapters \@ref(SpatialCoverage) and \@ref(kmeans) a geometric criterion was minimised, i.e. a criterion defined in terms of distances, either in geographic space (Chapter \@ref(SpatialCoverage)), or in covariate space (Chapter \@ref(kmeans)). In model-based sampling the minimisation criterion is a function of the variance of the prediction errors.
 
-This first chapter on model-based sampling is about optimisation of the spacing of a square grid, i.e. the distance between neighbouring points in the grid. In case the budget for the survey may not exceed a given amount, and the total costs can be approximated by the costs per point multiplied by the sample size, this spacing can be derived from the affordable sample size (Section \@ref(Regulargrid)). The larger the affordable sample size, the smaller the grid spacing. The alternative is to derive the grid spacing from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. 
+This first chapter on model-based sampling is about optimisation of the spacing of a square grid, i.e. the distance between neighbouring points in the grid. In this chapter the grid spacing  is derived from a requirement on the accuracy of the map. Here and in following chapters I assume that the map is constructed by kriging, see Chapter \@ref(Introkriging) for an introduction. As we have seen in Chapter \@ref(Introkriging) a kriging prediction of the study variable at an unobserved location is accompanied by a variance of the prediction error, referred to as the kriging variance. The requirement is a population parameter of this kriging variance, e.g. the population mean of the kriging variance.
 
 ## Optimal grid spacing for ordinary kriging {#GridspacingOK}
 
-Suppose that we require the mean kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing\index{Tolerable grid spacing} one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the model mean of the study variable is constant throughout the study area, but unknown. With the model mean unknown, this implies that ordinary kriging is used for mapping.  Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.
+Suppose that we require the  population mean of the kriging variance not to exceed a given threshold. The question then is what is the tolerable or maximum possible grid spacing given this requirement. For finding this tolerable grid spacing\index{Tolerable grid spacing} one must have prior knowledge of the spatial variation. I first consider the situation in which it is reasonable to assume that the model mean of the study variable is constant throughout the study area, but unknown. With the model mean unknown, this implies that ordinary kriging (OK) is used for mapping.  Further, we need a semivariogram of the study variable. In practice we often do not have a reliable estimate of the semivariogram. In the best case scenario we have some existing data, of sufficient quantity and suitable spatial distribution, that can be used to estimate the semivariogram. In other cases such data are lacking, and a best guess of the semivariogram must be made, for instance using data for the same study variable from other, similar areas.
 
 There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean kriging variance for a range of grid spacings, plot the mean kriging variances against the grid spacing, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean ordinary kriging variance.
 
@@ -55,7 +55,7 @@ knitr::kable(
 
 ## Controlling the mean or a quantile of the ordinary kriging variance
 
-To decide on the grid spacing we may require that the population mean of the kriging variance (MKV) not exceeds a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the spatial cumulative distribution function of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.
+To decide on the grid spacing we may require the population mean of the kriging variance (MKV) not to exceed a given threshold. Instead of the population mean, we may use the population median or any other quantile, for instance the 0.90 quantile (P90) of the spatial cumulative distribution function of the kriging variance as a quality criterion. Hereafter the ML semivariogram is used to optimise the grid spacing given a requirement on the mean, median and P90 of the kriging variance.
 
 As a first step a series of spacings of the square grid with observations are specified. Only spacings are considered which would result in expected sample sizes that are reasonable for kriging. With a spacing of 5 km the expected sample size is 434 points, with a spacing of 12 km these are 75 points. 
 
@@ -63,7 +63,11 @@ As a first step a series of spacings of the square grid with observations are sp
 spacing <- 5:12
 ```
 
-The next step is to select a simple random sample of evaluation points. It is important to select a large sample, so that the precision of the estimated population mean or quantile of the kriging variance will be high. The standard error of the estimated MKV can be estimated, see Chapter \@ref(SI), substituting the kriging variance at the sampling points for the study variable values.
+The next step is to select a simple random sample of evaluation points. It is important to select a large sample, so that the precision of the estimated population mean or quantile of the kriging variance will be high.
+
+```{block2, type='rmdnote'}
+To check whether the size of the simple random sample of evaluation points is large enough, we may estimate the standard error of the estimator of the MKV, see Chapter \@ref(SI), substituting the kriging variance at the sampling points for the study variable values.
+```
 
 ```{r}
 load(file="data/CovariatesThreeWoredasEthiopia.RData")
@@ -130,7 +134,7 @@ For a mean kriging variance of 0.8 the tolerable grid spacing is `r round(spacin
 
 #### Exercises {-}
 
-1. Write an **R** script to determine the tolerable grid spacing so that the 0.50, 0.80 and 0.95 quantiles of the variance of ordinary kriging predictions of SOM in the three woredas of Ethiopia do not exceed 0.8. Estimate the semivariogram by the method-of-moments.   
+1. Write an **R** script to determine the tolerable grid spacing so that the 0.50, 0.80 and 0.95 quantiles of the variance of OK predictions of SOM in the three woredas of Ethiopia do not exceed 0.8. Estimate the semivariogram by the method-of-moments.   
 2. In practice we are uncertain about the semivariogram. For that reason it can be wise to explore the sensitivity of the tolerable grid spacing for the semivariogram parameters. Increase the nugget parameter of the method-of-moments semivariogram by 5\%, and change the partial sill parameter so that the sill (nugget + partial sill) is unchanged. Compute the mean kriging variance for grid spacings of $5, 6, \dots, 12$ km.   
     +  Do the same by reducing the range of the method-of-moments semivariogram by 5\%. Reset the nugget and partial sill to their original values.  
     +  Plot the mean kriging variance with the original semivariogram, semivariogram with increased nugget and semivariogram with smaller range against the grid spacing. Explain the difference in tolerable grid spacings obtained with the three semivariograms.    
@@ -264,7 +268,7 @@ The tolerable grid spacing for a mean kriging variance of 0.8, using KED, equals
 #### Exercises {-}
 
 3. Given a grid spacing the mean kriging variance varies among randomly selected grids, especially for large spacings. Explain why.   
-4. Write an **R** script to compute the tolerable grid spacing for KED of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate (these covariate data are in `data/CottonResearchFarm.RData`). Use the estimated parameters of an exponential semivariogram of the residuals, as shown  in Table \@ref(tab:TableVariogramsCRF4). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv100cm values to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centers of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, $\dots$, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
+4. Write an **R** script to compute the tolerable grid spacing for KED of natural logarithms of the electrical conductivity of the soil (ECe150) in the Cotton Research Farm of Uzbekistan, using natural logarithms of EMv100cm measurements as a covariate (these covariate data are in `data/CottonResearchFarm.RData`). Use the estimated parameters of an exponential semivariogram of the residuals, as shown  in Table \@ref(tab:TableVariogramsCRF4). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEMv100cm values to compute the mean kriging variance. Do this by selecting 100 grid cells by simple random sampling with replacement, and jittering the centres of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings 70, 75, $\dots$, 100 m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
 
 ## Bayesian approach {#BayesianGridSpacing}
 
@@ -391,7 +395,7 @@ for (i in 1:ncol(MKV)) {
 }
 ```
 
-For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that the grid spacing with the largest number of MCMC samples equals 8 km, which corresponds with the tolerable grid spacing derived above for ordinary kriging. For `r as.character(sum(is.na(spacing_tol)))` units in the MCMC sample the tolerable grid spacing exceeds 12 km. However this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
+For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that the grid spacing with the largest number of MCMC samples equals 8 km, which corresponds with the tolerable grid spacing derived above for OK. For `r as.character(sum(is.na(spacing_tol)))` units in the MCMC sample the tolerable grid spacing exceeds 12 km. However this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
 
 ```{r HistogramTolerableSpacing, echo=FALSE, fig.asp=0.7, fig.cap="Histogram of tolerable grid spacings for a targeted MKV of 0.8."}
 spacing_tol <- spacing_tol[!is.na(spacing_tol)]

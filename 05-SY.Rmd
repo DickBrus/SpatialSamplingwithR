@@ -182,7 +182,7 @@ load(file="results/SYVoorst_rectangular.RData")
 summary(sampleSizes)
 ```
 
-An alternative shape for the grid is triangular\index{Triangular grid}. Triangular grids can be selected with the argument `type = "hexagonal"`. The centers of hexagonal grid cells form a triangular grid. The triangular grid  was shown to be yield most precise estimates of the population mean given the expected sample size [@mat86]. Given the spacing of a triangular grid, the expected sample size can be computed by the area $A$ of the study area divided by the area of hexagonal grid cells with the sampling points at their centers. The area of a hexagon equals $6\sqrt{3}/4\;r^2$, with $r$ the radius of the circle circumscribing the hexagon (distance from center to a corner of the hexagon). So by choosing a radius of $\sqrt{A/(6\sqrt{3}/4)\;n}$ the expected sample equals $n$. The distance between neighbouring points of the triangular grid in the East-West direction then  equals $r \sqrt{3}$. The North-South distance equals $\sqrt{3}/2 \; dx$.
+An alternative shape for the grid is triangular\index{Triangular grid}. Triangular grids can be selected with the argument `type = "hexagonal"`. The centres of hexagonal grid cells form a triangular grid. The triangular grid  was shown to be yield most precise estimates of the population mean given the expected sample size [@mat86]. Given the spacing of a triangular grid, the expected sample size can be computed by the area $A$ of the study area divided by the area of hexagonal grid cells with the sampling points at their centres. The area of a hexagon equals $6\sqrt{3}/4\;r^2$, with $r$ the radius of the circle circumscribing the hexagon (distance from centre to a corner of the hexagon). So by choosing a radius of $\sqrt{A/(6\sqrt{3}/4)\;n}$ the expected sample equals $n$. The distance between neighbouring points of the triangular grid in the East-West direction then  equals $r \sqrt{3}$. The North-South distance equals $\sqrt{3}/2 \; dx$.
 
 ```{r}
 cnst <- 6*sqrt(3)/4
@@ -279,7 +279,7 @@ With systematic random sampling all units have an equal inclusion probability, e
 (\#eq:HTTotalSY)
 \end{equation}
 
-The population mean can be estimated by dividing this $\pi$ estimator of the population total by the population size,
+The population mean can be estimated by dividing this $\pi$ estimator of the population total by the population size:
 
 \begin{equation}
 \hat{\bar{z}}=\sum_{k \in \mathcal{S}}\frac{z_k}{E[n]} \;.
@@ -288,14 +288,14 @@ The population mean can be estimated by dividing this $\pi$ estimator of the pop
 
 In this $\pi$ estimator of the population mean the sample sum of the observations is not divided by the number of selected units, but by the expected number of units.
 
-An alternative estimator is obtained by dividing the $\pi$ estimator of the population total by the $\pi$ estimator of the population size,
+An alternative estimator is obtained by dividing the $\pi$ estimator of the population total by the $\pi$ estimator of the population size:
 
 \begin{equation}
 \hat{N}=\sum_{k \in \mathcal{S}}\frac{1}{\pi_k} = n \frac{N}{E[n]} \;.
 (\#eq:EstimatorNSY)
 \end{equation}
 
-This yields the ratio estimator\index{Ratio estimator} of the population mean,
+This yields the ratio estimator\index{Ratio estimator} of the population mean:
 
 \begin{equation}
 \hat{\bar{z}}_{\text{ratio}}=\frac{1}{n}\sum_{k \in \mathcal{S}}z_k \;.
@@ -328,7 +328,7 @@ av_SI_mz <- var(mySYsample$z)/nrow(mySYsample)
 
 The approximated variance equals `r round(av_SI_mz,3)`.
 
-Alternatively, the sampling variance can be estimated by treating the systematic random sample as if it were a stratified simple random sample (Equation \@ref(eq:HTMeanSTSI)). The sampling units are clustered on the basis of their spatial coordinates into $H=n/2$ clusters ($n$ even) or $H=(n-1)/2$ clusters ($n$ odd). In the next code chunk a simple $k$-means function is defined to cluster the sampling units of the grid into equal sized clusters\index{\emph{k}-means clustering}. Arguments `s1` and `s2` are the spatial coordinates of the sampling units, `k` is the number of clusters. As a first step in the function the ids of equal-sized clusters are randomly assigned to the sampling units on the nodes of the grid (initial clustering), and the centers of the clusters are computed, i.e. the means of the spatial coordinates of the clusters are computed (initial cluster centers). There are two for-loops. In the inner-loop it is determined whether the cluster id of the unit selected in the outer-loop should be swopped with that of the next unit. If both units have the same cluster id the next unit is selected, until a unit of a different cluster is found. The cluster ids of the two units are swopped when the sum of the squared distances of the two units to their corresponding cluster centers is reduced. When the cluster ids are swopped, the centers are recomputed. The two loops are repeated until no swops are made anymore.
+Alternatively, the sampling variance can be estimated by treating the systematic random sample as if it were a stratified simple random sample (Equation \@ref(eq:HTMeanSTSI)). The sampling units are clustered on the basis of their spatial coordinates into $H=n/2$ clusters ($n$ even) or $H=(n-1)/2$ clusters ($n$ odd). In the next code chunk a simple $k$-means function is defined to cluster the sampling units of the grid into equal sized clusters\index{\emph{k}-means clustering}. Arguments `s1` and `s2` are the spatial coordinates of the sampling units, `k` is the number of clusters. As a first step in the function the ids of equal-sized clusters are randomly assigned to the sampling units on the nodes of the grid (initial clustering), and the centres of the clusters are computed, i.e. the means of the spatial coordinates of the clusters are computed (initial cluster centres). There are two for-loops. In the inner-loop it is determined whether the cluster id of the unit selected in the outer-loop should be swopped with that of the next unit. If both units have the same cluster id the next unit is selected, until a unit of a different cluster is found. The cluster ids of the two units are swopped when the sum of the squared distances of the two units to their corresponding cluster centres is reduced. When the cluster ids are swopped, the centres are recomputed. The two loops are repeated until no swops are made anymore.
 
 ```{r}
 .kmeans_equal_size <- function(s1, s2, k) {
@@ -350,7 +350,7 @@ Alternatively, the sampling variance can be estimated by treating the systematic
         d2 <- (s1[i] - s1_c[cj])^2 + (s2[i] - s2_c[cj])^2 +
           (s1[j] - s1_c[ci])^2 + (s2[j] - s2_c[ci])^2
         if (d1 > d2) {
-          #swop cluster ids and recompute cluster centers
+          #swop cluster ids and recompute cluster centres
           cluster_id[i] <- cj; cluster_id[j] <- ci
           s1_c <- tapply(s1, cluster_id, mean)
           s2_c <- tapply(s2, cluster_id, mean)
@@ -368,7 +368,7 @@ Alternatively, the sampling variance can be estimated by treating the systematic
 }
 ```
 
-The clustering is repeated 100 times (`ntry=100`). The clustering with the smallest sum of the squared distances of the sampling units to their cluster centers (MSSD) is selected. 
+The clustering is repeated 100 times (`ntry=100`). The clustering with the smallest sum of the squared distances of the sampling units to their cluster centres (MSSD) is selected. 
 
 ```{r, cache=TRUE}
 kmeans_equal_size <- function(s1, s2, k, ntry) {
@@ -390,7 +390,7 @@ res <- kmeans_equal_size(s1=mySYsample$x1/1000, s2=mySYsample$x2/1000,
 mySYsample$cluster <- res$clusters
 ```
 
-Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are then treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. The weights are computed as $w_h=n_h/n$. With $n$ even the stratum weights are $1/H$ for all strata. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
+Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are then treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. The weights are computed by $w_h=n_h/n$. With $n$ even the stratum weights are $1/H$ for all strata. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
 
 ```{r}
 S2z_h <- tapply(mySYsample$z, INDEX=mySYsample$cluster, FUN=var)
@@ -424,7 +424,7 @@ d^2_{r,s} & = \left(\frac{z_{r,s}+z_{r+1,s+1}}{2}-\frac{z_{r+1,s}+z_{r,s+1}}{2}\
 (\#eq:sqdiflocalmean)
 \end{equation}
 
-with $r = 0,1, \dots ,R$ an index for the column-number and $s=0,1, \dots, S$ an index for the row-number of the extended grid. The variance of the estimator of the mean (sample mean) is then approximated by the sum of the squared differences divided by the squared sample size,
+with $r = 0,1, \dots ,R$ an index for the column number and $s=0,1, \dots, S$ an index for the row number of the extended grid. The variance of the estimator of the mean (sample mean) is then approximated by the sum of the squared differences divided by the squared sample size:
 
 \begin{equation}
 \widehat{V}(\bar{z}_{\mathcal{S}}) = \frac{\sum_{g=1}^G d^2_g}{n^2}\;,
@@ -459,7 +459,7 @@ matern(mySYsample)
  
 Figure \@ref(fig:SamplingDistributionSY) shows the sampling distributions of the estimator of the population mean for systematic random sampling, using a randomly placed square grid with fixed orientation and an expected sample size of 40, and simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. To estimate the population mean from the systematic random samples both the $\pi$ estimator and the ratio estimator are used.
 
-```{r SamplingDistributionSY,  echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of estimators of the population mean of SOM (g per kg) in Voorst, with systematic random sampling (square grid) and simple random sampling and an (expected) sample size of 40. With systematic random sampling both the $\\pi$ estimator (SY.HT) and the ratio estimator (SY.ratio) are used in estimation."}
+```{r SamplingDistributionSY,  echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of estimators of the population mean of SOM (g/kg) in Voorst, with systematic random sampling (square grid) and simple random sampling and an (expected) sample size of 40. With systematic random sampling both the $\\pi$ estimator (SY.HT) and the ratio estimator (SY.ratio) are used in estimation."}
 load(file="results/SYVoorst_square.RData")
 estimates <- data.frame(mz_SY_HT, mz_SY_ratio, mz_SI)
 names(estimates) <- c("SY.HT","SY.ratio","SI")
@@ -480,7 +480,7 @@ The mean of the 10,000 ratio estimates is `r round(mean(mz_SY_ratio),3)`, which 
 
 The average of the 10,000 approximated variances treating the systematic sample as a simple random sample equals `r round(mean(av_SI_mz),3)`. This is larger than the variance of the ratio estimator (`r round(var(mz_SY_ratio),3)`). The stratified simple random sample approximation of the variance is somewhat better: the mean of this variance approximation equals `r round(mean(av_STSI_mz),3)`. The average of the 10,000 variances approximated with $\text{Mat{\'e}rn}$'s method equals `r round(mean(av_Matern_mz),3)`. Figure \@ref(fig:SamplingDistributionApproxVarSY) shows boxplots of the approximated standard error of the estimated population mean. The horizontal red line is at the standard deviation of the 10,000 ratio estimates of the population mean. Differences between the three approximation methods are small in this case. 
 
-```{r SamplingDistributionApproxVarSY,  echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of approximated standard error of the ratio estimator of the population mean of SOM (g per kg) in Voorst, with systematic random sampling (square grid) and an expected sample size of 40. Approximations are obtained by treating the systematic sample as a simple random sample (SI), stratified simple random sample (STSI), and with  Matern's method (Mat)."}
+```{r SamplingDistributionApproxVarSY,  echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of approximated standard error of the ratio estimator of the population mean of SOM (g/kg) in Voorst, with systematic random sampling (square grid) and an expected sample size of 40. Approximations are obtained by treating the systematic sample as a simple random sample (SI), stratified simple random sample (STSI), and with  Matern's method (Mat)."}
 estimates <- data.frame(SI=sqrt(av_SI_mz),STSI=sqrt(av_STSI_mz),
                         Mat=sqrt(av_Matern_mz))
 df <- estimates %>% pivot_longer(.,cols=c("SI","STSI","Mat"))

@@ -10,7 +10,7 @@ covars <- c("cti","ndvi")
 myClusters <- kmeans(scale(grdHunterValley[,covars]), centers=n, iter.max=1000, nstart=40)
 grdHunterValley$cluster <- myClusters$cluster
 
-#Select locations closest to the centers of the clusters
+#Select locations closest to the centres of the clusters
 res <- fields::rdist(x1=myClusters$centers, x2=scale(grdHunterValley[,covars]))
 units <- apply(res, MARGIN=1, FUN=which.min)
 myCSCsample <- grdHunterValley[units, covars]
@@ -30,7 +30,7 @@ covars <- c("cti","ndvi","elevation_m")
 myClusters <- kmeans(scale(grdHunterValley[,covars]), centers=n, iter.max=1000, nstart=40)
 grdHunterValley$cluster2 <- myClusters$cluster
 
-#Select locations closest to the centers of the clusters
+#Select locations closest to the centres of the clusters
 res <- fields::rdist(x1=myClusters$centers, x2=scale(grdHunterValley[,covars]))
 units <- apply(res,MARGIN=1, FUN=which.min)
 myCSCsample2 <- grdHunterValley[units, c("cti","ndvi")]

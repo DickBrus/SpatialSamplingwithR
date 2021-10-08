@@ -16,7 +16,7 @@ s <- 0.5 #ratio of spatial dependence c1/(c0+c1)
 range <- 200
 thetas <- c(s,range)
 
-# Select spatial coverage sample for prediction. These locations are fixed, i.e. their locations are not optimized in simulated annealing
+# Select spatial coverage sample for prediction. These locations are fixed, i.e. their locations are not optimised in simulated annealing
 # Note that a spatial coverage sample is not strictly needed! The alternative is to optimise the coordinates of all points in SSA
 
 # Choose number of units of spatial coverage sample

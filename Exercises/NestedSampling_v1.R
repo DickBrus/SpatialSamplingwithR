@@ -71,7 +71,7 @@ res <- (over(nestedsample, grd))[4]
 nestedsample <- as(nestedsample,"data.frame")
 nestedsample$cti <- res$cti
 
-#Once data are collected, data can be analyzed as follows
+#Once data are collected, data can be analysed as follows
 library(nlme)
 lmodel <- lme(cti~1, data=nestedsample, random=~1|f1/f2/f3/f4)
 res <- as.matrix(VarCorr(lmodel))

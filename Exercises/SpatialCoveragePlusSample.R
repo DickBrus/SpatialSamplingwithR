@@ -13,7 +13,7 @@ N <- nrow(grd)
 
 n<-90
 
-#Compute clusters (geostrata) and select centers
+#Compute clusters (geostrata) and select centres
 
 coordinates(grd) <- ~Easting+Northing
 gridded(grd) <- TRUE
