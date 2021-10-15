@@ -27,7 +27,7 @@ Use of the model for prediction of the sampling variance of a design-based estim
 
 In Chapter \@ref(RequiredSampleSize) I presented methods and formulas for computing the required sample size given various measures to quantify the quality of the survey result. These required sample sizes are for simple random sampling. For other types of sampling design, the required sample size can be approximated by multiplying the required sample size for simple random sampling with the design effect, see Section \@ref(DesignEffect). An alternative is to use a model of the spatial variation to predict the sampling variance of the estimator of the mean for the type of sampling design under study and a range of sample sizes, plotting the predicted variance (or standard error) against the sample size, and using this plot inversely to derive the required sample size given a constraint on the sampling variance (standard error).
 
-The computed required sample size applies to several given parameters of the sampling design. For instance, for stratified random sampling the sample size is computed for a given stratification and sample size allocation scheme, for cluster random sampling for given clusters, and for two-stage cluster random sampling for given primary sampling units (psu's) and number of secondary sampling units selected per psu draw. However, the model can also be used to optimise these sampling design parameters. For stratified random sampling the optimal allocation can be computed by predicting the population variances within strata and using the predicted population variances per stratum in Equation \@ref(eq:optallocation), and even the stratification can be optimised (Section \@ref(Ospats))). If we have a cost model, for cluster random sampling the size and shape of the clusters can be optimised, and for two-stage cluster random sampling the number of psu draws and number of ssu's per psu draw can be optimised.  
+The computed required sample size applies to several given parameters of the sampling design. For instance, for stratified random sampling the sample size is computed for a given stratification and sample size allocation scheme, for cluster random sampling for given clusters, and for two-stage cluster random sampling for given primary sampling units (psu's) and number of secondary sampling units selected per PSU draw. However, the model can also be used to optimise these sampling design parameters. For stratified random sampling the optimal allocation can be computed by predicting the population variances within strata and using the predicted population variances per stratum in Equation \@ref(eq:optallocation), and even the stratification can be optimised (Section \@ref(Ospats))). If we have a cost model, for cluster random sampling the size and shape of the clusters can be optimised, and for two-stage cluster random sampling the number of PSU draws and number of SSUs per PSU draw can be optimised.  
 
 Model-based prediction of the sampling variance can also be useful to compare alternative types of sampling design at equal total costs or equal variances of the estimated population mean or total. For instance, to compare systematic random sampling, leading to good spatial coverage, and two-stage cluster random sampling, resulting in spatial clusters of observations.
 
@@ -170,7 +170,7 @@ If the soil aliqouts collected at the points of the stratified random sample are
 
 1. Write an **R** script to predict the sampling variance of the estimator of the mean of NO3-N of agricultural field Leest, for simple random random sampling and a sample size of 25 points. Use in prediction a spherical semivariogram with a nugget of 483, a partial sill of 483 and a range of 44.6 m. The sum of the nugget and partial sill (966) is equal to the sill of the semivariogram used above in predicting sampling variances. Compare the predicted sampling variance with the predicted sampling variance for the same sampling design, obtained with the semivariogram without nugget. Explain the difference.  
 2. Write an **R** script to compute the required sample size for simple random random sampling of agricultural field Leest, for a maximum length of a 95\% confidence interval of 20. Use the semivariogram without nugget in predicting the sampling variance. See Section \@ref(ReqSampleSizeLengthCI) (Equation \@ref(eq:nreqwidthCI)) for how to compute this required sample size given a prior estimate of the standard deviation of the study variable in the population.  
-3. Do the same for systematic random sampling. Note that for this sampling design no such formula is available. Predict for a series of *expected* sample sizes, $n = 5,6,\dots , 40$, the sampling variance of the estimator of the mean, using Equation \@ref(eq:MBdesignvarSY). Approximate $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ from ten repeated selections. Compute the length of the confidence interval from the predicted sampling variances, and plot the interval length against the sample size. Finally determine the required sample size for a maximum length of 20. What is the design effect for an expected sample size of 34 points (the required sample size for simple random sampling), see Equation \@ref(eq:designeffect)? Also compute the design effect for expected sample sizes of $5,6,\dots , 40$. Explain why the design effect is not constant.  
+3. Do the same for systematic random sampling. Note that for this sampling design no such formula is available. Predict for a series of *expected* sample sizes, $n = 5,6,\dots , 40$, the sampling variance of the estimator of the mean, using Equation \@ref(eq:MBdesignvarSY). Approximate $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ from ten repeated selections. Compute the length of the confidence interval from the predicted sampling variances, and plot the interval length against the sample size. Finally, determine the required sample size for a maximum length of 20. What is the design effect for an expected sample size of 34 points (the required sample size for simple random sampling), see Equation \@ref(eq:designeffect)? Also compute the design effect for expected sample sizes of $5,6,\dots , 40$. Explain why the design effect is not constant.  
 
 ### Geostatistical simulation approach {#GeostatisticalSimulationApproach}
 
@@ -207,7 +207,7 @@ vgm_REML_gstat <- vgm(model="Sph", nugget=vgm_REML$tausq,
   psill=vgm_REML$sigmasq, range=vgm_REML$phi)
 ```
 
-The fitted model of the spatial variation of SOM is used to compare systematic random sampling and two-stage cluster random sampling at equal variances of the estimator of the mean. First the sampling variance with systematic random sampling is predicted. One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grd` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim = 1` of package **gstat**. The argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}.
+The fitted model of the spatial variation of SOM is used to compare systematic random sampling and two-stage cluster random sampling at equal variances of the estimator of the mean. First the sampling variance with systematic random sampling is predicted. One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grd` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim=1` of package **gstat**. The argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}.
 
 ```{block2, type='rmdnote'}
 The alternative is conditional simulation\index{Geostatistical simulation!conditional}, using the data of the convenience sample as conditioning data. Conditional simulation is only recommended if the quality of these legacy data is sufficient, and we may trust that the study variable at the legacy points is not changed since these legacy data are collected.
@@ -264,7 +264,7 @@ The mean of the 100 conditional variances equals `r round(Exi_vmz_SY,3)`. This i
 
 Due to the geographical spreading of the sampling points with systematic random sampling, the accuracy of the estimated mean is expected to be high compared to that of other sampling designs of the same size. However, with large areas the time needed for travelling to the sampling points can become substantial, lowering the sampling efficiency. With large areas, sampling designs leading to spatial clusters of sampling points can be an attractive alternative. One option then is two-stage cluster random sampling, see Chapter \@ref(Twostage). The question is whether this alternative design is more efficient than systematic random sampling.
 
-For the three woredas in Ethiopia 100 compact geostrata (see Section \@ref(geostrata)) are computed. Here these geostrata are not used as strata in stratified random sampling, but as primary sampling units (psu's) in two-stage cluster random sampling. The difference is that in stratified random sampling from each geostratum at least one sampling unit is selected, whereas in two-stage cluster random sampling only a randomly selected subset of the geostrata is sampled. The compact geostrata, used as psu's, are computed with function `kmeans`, and as a consequence the psu's do not have equal size. This is not needed in two-stage cluster random sampling, see Chapter \@ref(Twostage). If psu's of equal size are preferred, then these can be computed with function `stratify` of package **spcosa** with argument `equalArea=TRUE`, see Section \@ref(geostrata).
+For the three woredas in Ethiopia 100 compact geostrata (see Section \@ref(geostrata)) are computed. Here these geostrata are not used as strata in stratified random sampling, but as primary sampling units (psu's) in two-stage cluster random sampling. The difference is that in stratified random sampling from each geostratum at least one sampling unit is selected, whereas in two-stage cluster random sampling only a randomly selected subset of the geostrata is sampled. The compact geostrata, used as PSUs, are computed with function `kmeans`, and as a consequence the PSUs do not have equal size. This is not needed in two-stage cluster random sampling, see Chapter \@ref(Twostage). If PSUs of equal size are preferred, then these can be computed with function `stratify` of package **spcosa** with argument `equalArea=TRUE`, see Section \@ref(geostrata).
 
 ```{r}
 load(file="data/CovariatesThreeWoredasEthiopia.RData")
@@ -276,11 +276,11 @@ psusize <- as.numeric(table(mypsus))
 summary(psusize)
 ```
 
-To keep the estimation of the population mean simple, the psu's are selected with probabilities proportional to their size and with replacement (ppswr sampling), see Chapter \@ref(Twostage).
+To keep the estimation of the population mean simple, the PSUs are selected with probabilities proportional to their size and with replacement (ppswr sampling), see Chapter \@ref(Twostage).
 
 #### Optimisation of sample sizes for two-stage cluster random sampling
 
-In Section \@ref(twostagesamplingestimators) formulas are presented for computing the optimal number of psu draws and ssu draws per psu draw. The optimal sample sizes are a function of the pooled variance of primary unit means, $S^2_{\mathrm{b}}$, and the pooled variance of secondary units (points) within the primary units, $S^2_{\mathrm{b}}$. In this section these variance components are predicted with the geostatistical model.
+In Section \@ref(twostagesamplingestimators) formulas are presented for computing the optimal number of PSU draws and SSU draws per PSU draw. The optimal sample sizes are a function of the pooled variance of primary unit means, $S^2_{\mathrm{b}}$, and the pooled variance of secondary units (points) within the primary units, $S^2_{\mathrm{b}}$. In this section these variance components are predicted with the geostatistical model.
 
 As a first step a large number of fields is simulated.
 
@@ -297,7 +297,7 @@ zsim <- krige(
 zsim <- zsim[,-c(1,2)]
 ```
 
-For each simulated field the means of the psu's and the variances within the psu's are computed using function `tapply` in function `apply`.
+For each simulated field the means of the PSUs and the variances within the PSUs are computed using function `tapply` in function `apply`.
 
 ```{r}
 m_zsim_psu <- apply(zsim, MARGIN=2, FUN=function(x)
@@ -306,7 +306,7 @@ v_zsim_psu <- apply(zsim, MARGIN=2, FUN=function(x)
   tapply(x, INDEX=grd$psu, FUN=var))
 ```
 
-Next for each simulated field the pooled variance of psu means and pooled variance within psu's is computed, and finally these pooled variances are averaged over all simulated fields. These averages are approximations of the model-expectations of the pooled between unit and within unit variances, $E_{\xi}[S^2_{\mathrm{b}}]$ and $E_{\xi}[S^2_{\mathrm{w}}]$.
+Next, for each simulated field the pooled variance of PSU means and pooled variance within PSUs is computed, and finally these pooled variances are averaged over all simulated fields. These averages are approximations of the model-expectations of the pooled between unit and within unit variances, $E_{\xi}[S^2_{\mathrm{b}}]$ and $E_{\xi}[S^2_{\mathrm{w}}]$.
 
 ```{r}
 p_psu <- psusize/sum(psusize)
@@ -318,9 +318,9 @@ Exi_S2b <- mean(S2b)
 Exi_S2w <- mean(S2w)
 ```
 
-The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1\;n + c_2n\;m$, with $c_0$ the fixed costs, $c_1$ the access costs per primary unit, including the access costs of the ssu's (points) within a given psu, and $c_2$ the observation costs per ssu. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
+The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1\;n + c_2n\;m$, with $c_0$ the fixed costs, $c_1$ the access costs per primary unit, including the access costs of the SSUs (points) within a given PSU, and $c_2$ the observation costs per SSU. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
 
-Given values for $c_1$ and $c_2$, the optimal number of psu draws $n$, and optimal number of ssu draws per psu draw $m$ is computed, required for a sampling variance of the estimator of the mean equal to the sampling variance with systematic random sampling of 50 points, see Equations \@ref(eq:nopt) and \@ref(eq:mopt). 
+Given values for $c_1$ and $c_2$, the optimal number of PSU draws $n$, and optimal number of SSU draws per PSU draw $m$ is computed, required for a sampling variance of the estimator of the mean equal to the sampling variance with systematic random sampling of 50 points, see Equations \@ref(eq:nopt) and \@ref(eq:mopt). 
 
 ```{r}
 c1 <- 2; c2 <- 1
@@ -328,7 +328,7 @@ nopt <- 1/Exi_vmz_SY*(sqrt(Exi_S2w*Exi_S2b)*sqrt(c2/c1)+Exi_S2b)
 mopt <- sqrt(Exi_S2w/Exi_S2b)*sqrt(c1/c2)
 ```
 
-The optimised number of psu draws is `r ceiling(nopt)`, and the optimal number of points per psu draw equals `r ceiling(mopt)`. The total number of sampling points is `r ceiling(nopt)` $\times$ `r ceiling(mopt)` $=96$. This is much larger than the sample size of 50 obtained with systematic random sampling. The total observation costs therefore are substantially larger. However, the access time can be substantially smaller due to the spatial clustering of sampling points. To answer the question whether the costs saved by this reduced access time outweighs the extra costs of observation, the model for the access costs and observation costs must be further developed.
+The optimised number of PSU draws is `r ceiling(nopt)`, and the optimal number of points per PSU draw equals `r ceiling(mopt)`. The total number of sampling points is `r ceiling(nopt)` $\times$ `r ceiling(mopt)` $=96$. This is much larger than the sample size of 50 obtained with systematic random sampling. The total observation costs therefore are substantially larger. However, the access time can be substantially smaller due to the spatial clustering of sampling points. To answer the question whether the costs saved by this reduced access time outweighs the extra costs of observation, the model for the access costs and observation costs must be further developed.
 
 ### Bayesian approach {#MBpredSamplingVarBayes}
 
@@ -660,7 +660,7 @@ Optimal spatial stratification with package **SamplingStrata** is illustrated wi
 ```{r}
 sample_grid <- read.csv("data/Xuancheng_gridsample.csv")
 sample_iPSM <- read.csv("data/Xuancheng_iPSMsample.csv")
-sample_test <- read.csv("data/Xuancheng_Stratifiedrandomsample.csv")
+sample_test <- read.csv("data/Xuancheng_STSIsample.csv")
 mysample <- rbind(sample_grid, sample_iPSM, sample_test[,-c(13,14,15)])
 lm_SOM <- lm(SOM_A_hori~dem, data=mysample)
 ```
@@ -733,7 +733,7 @@ plt2 <- ggplot(grd) +
 grid.arrange(plt1, plt2, ncol=1)
 ```
 
-Let us check now whether the spatial structure of the study variable lnSOM is fully captured by the mean, modelled as a linear function of the covariate elevation. This can be checked by estimating the semivariogram of the model residuals. If the semivariogram of the residuals is pure nugget (the semivariance does not increase with distance), then we can assume that the prediction errors are independent. In that case we do not need to account for a covariance of the prediction errors in optimisation of the spatial strata. However, if the semivariogram does show spatial structure, we must account for a covariance of the prediction errors. Figure \@ref(fig:residualvariogramSOM) shows the semivariogram of the residuals computed with function `variogram` of package **gstat**.
+Let us check now whether the spatial structure of the study variable lnSOM is fully captured by the mean, modelled as a linear function of elevation. This can be checked by estimating the semivariogram of the model residuals. If the semivariogram of the residuals is pure nugget (the semivariance does not increase with distance), then we can assume that the prediction errors are independent. In that case we do not need to account for a covariance of the prediction errors in optimisation of the spatial strata. However, if the semivariogram does show spatial structure, we must account for a covariance of the prediction errors. Figure \@ref(fig:residualvariogramSOM) shows the sample semivariogram of the residuals computed with function `variogram` of package **gstat**.
 
 ```{r residualvariogramSOM, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram of residuals of simple linear regression model for natural logarithm of soil organic matter concentration in Xuancheng."}
 library(gstat)
@@ -801,7 +801,7 @@ cv <- as.data.frame(list(DOM="DOM1",CV1=0.005,domainvalue=1))
 The optimal spatial stratification can be computed with function `optimStrata`, with argument `method="spatial"`. The $R^2$ value of the linear regression model, used in the minimisation criterion (Equation \@ref(eq:minicritospatsDeGruijter)), can be assigned to argument `fitting`.
 
 ```{block2, type= 'rmdnote'}
-I am not sure that the correction factor $R^2$ in Equation \@ref(eq:Exid2ij) is really needed. I believe that the smoothing effect is already accounted for by the variance and covariance of the prediction errors. I used an $R^2$ value of 1.
+I am not sure that the correction factor $R^2$ in Equation \@ref(eq:Exid2ij) is really needed. I believe that the smoothing effect is already accounted for by the variances and covariances of the prediction errors. I used an $R^2$ value of 1.
 ```
 
 Arguments `range` and `kappa` are parameters of an exponential semivariogram, needed for computing the covariance of the prediction errors. Function `optimiStrata` uses an extra parameter in the exponential semivariogram (Equation \@ref(eq:exponential)), $c_0+c_1\; \mathrm{exp}(-\kappa h/\phi)$, so for the usual exponential semivariogram `kappa` equals 1.

@@ -47,21 +47,23 @@ print(vgm_MoM)
 
 ### Select random sample of evaluation points
 
-Select a simple random sample with replacement of size 1,000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively. This can be done with function `jitter`.
+Select a simple random sample with replacement of size 1,000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively. This can be done with function `jitter`. The cell size is 1 km x 1 km
 
 ```{r}
 set.seed(314)
 units <- sample.int(nrow(grdEthiopia), size=1000, replace=TRUE)
 mysample <- grdEthiopia[units,]
 
-#Shift the randomly selected points to random points within the cells (cellsize is 1 km x 1 km)
+#Shift the randomly selected points to random points within the cells
 mysample$s1 <- jitter(mysample$s1, amount=0.5)
 mysample$s2 <- jitter(mysample$s2, amount=0.5)
 ```
 
 ### Kriging
 
-Specify the grid spacings to be evaluated. Specify the cumulative probabilities from which the corresponding quantiles of the ordinary kriging variance at the 1,000 evaluation points are computed. Save these quantiles in a numeric. Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the evaluation points by ordinary kriging.  Repeat this for the other spacings (for-loop). Finally plot the quantiles of the kriging variance against the grid spacing.
+Specify the grid spacings to be evaluated, and the cumulative probabilities from which the corresponding quantiles of the ordinary kriging variance at the 1,000 evaluation points are computed.
+
+Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the evaluation points by ordinary kriging.  Repeat this for the other spacings (construct a for-loop). Finally plot the quantiles of the kriging variance against the grid spacing.
 
 ```{r}
 coordinates(mysample) <- ~s1+s2
@@ -99,5 +101,14 @@ ggplot(data=df)+
   scale_shape_manual(values=c(0,1,2), labels=c("P50","P80","P95"), name="Criterion") +
   scale_x_continuous(name="Spacing (km)")+
   scale_y_continuous(name="Quantile kriging Variance")
+```
+Finally, compute the tolerable grid-spacing so that P50, P80 and P95 of the ordinary kriging variance do not exceed 0.85
+
+```{r}
+names(result)[c(2,3,4)] <- c("P50","P80","P95")
+(spacing_tol_P50 <- approx(x=result$P50, y=result$spacing, xout=0.85)$y)
+(spacing_tol_P80 <- approx(x=result$P80, y=result$spacing, xout=0.85)$y)
+(spacing_tol_P95 <- approx(x=result$P95, y=result$spacing, xout=0.85)$y)
+
 ```
 

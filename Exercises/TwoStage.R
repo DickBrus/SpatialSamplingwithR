@@ -1,7 +1,7 @@
 load("../data/Voorst.RData")
 
-#construct psu's
-w <- 500 #width of psu's
+#construct PSUs
+w <- 500 #width of PSUs
 s1bnd <- seq(min(grdVoorst$s1)+w, min(grdVoorst$s1)+11*w,w)+12.5
 s1f <- findInterval(grdVoorst$s1, s1bnd)
 s2bnd <- min(grdVoorst$s2)+w+12.5
@@ -21,7 +21,7 @@ mz_psu <- tapply(grdVoorst$z,INDEX=grdVoorst$psu,FUN=mean)
 tz_psu <- tapply(grdVoorst$z,INDEX=grdVoorst$psu,FUN=sum)
 M_psu <- tapply(grdVoorst$z,INDEX=grdVoorst$psu,FUN=length)
 p <- M_psu/M
-S2z_psu <- tapply(grdVoorst$z,INDEX=grdVoorst$psu,FUN=var) #NB this is the variance of ssu's within the psu's
+S2z_psu <- tapply(grdVoorst$z,INDEX=grdVoorst$psu,FUN=var) #NB this is the variance of SSUs within the PSUs
 S2z_within <- sum(p*S2z_psu) #pooled within primary unit variance
 S2mz_between <- sum(p*(mz_psu-mz_pop)^2)
 

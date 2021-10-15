@@ -14,7 +14,7 @@ library(ggplot2)
 
 ## Discretisation grid
 
-Create a grid that discretises the population. Add column with covariate (which is equal to the s1 coordinate)
+Create a discretisation grid of 20 x 20 nodes. Add a covariate, which is equal to the s1 coordinate.
 
 ```{r}
 s1 <- s2 <- 1:20 - 0.5
@@ -25,7 +25,7 @@ grid$x <- grid$s1
 
 ## Residual variogram
 
-We will optimise the coordinates of sampling points for KED in which Easting is used as a covariate. First define residual variogram.
+Define residual semivariogram.
 
 ```{r}
 sill <- 2
@@ -35,7 +35,7 @@ partial_sill <- sill - nugget
 vgm_gstat <- vgm(model="Exp", psill=partial_sill, range=range, nugget=nugget)
 ```
 
-Specify the candidate sampling points. Note that not the grid points themselves are used as candidate points, but all points within the grid cells with the grid points at their centres. So the set of candidate points is not finite but infinite. In the optimisation a new candidate point is selected in two steps. First a grid cell is randomly selected. Secondly, a random point within the selected grid cell is selected.
+Specify the candidate sampling points. Note that not the grid nodes themselves are used as candidate points, but all points within the grid cells. So the set of candidate points is not finite but infinite. In the optimisation a new candidate point is selected in two steps. First a grid cell is randomly selected. Second, a random point within the selected grid cell is selected.
 
 ```{r}
 candi <- grid[,c(1,2)]
@@ -63,7 +63,7 @@ schedule <- scheduleSPSANN(initial.acceptance = 0.8,
 
 ### Optimisation of sampling locations
 
-Now start the simulated annealing algorithm.
+Start the simulated annealing algorithm.
 
 ```{r}
 set.seed(314)
@@ -81,7 +81,7 @@ save(res,file="../results/MBSampleSquare_KED_NoNugget_16pnts.RData")
 
 ## Optimisation using semivariogram with nugget
 
-Repeat the optimisation with semivariogram with large nugget, and with pure nugget semivariogram. The sill parameter and the range parameter are kept constant.
+Repeat the optimisation using a semivariogram with large nugget, and with a pure nugget semivariogram. The sill parameter and the range parameter are kept constant.
 
 ```{r}
 # Semivariogram with large nugget

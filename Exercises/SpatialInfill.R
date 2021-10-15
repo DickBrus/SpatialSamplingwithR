@@ -1,15 +1,16 @@
 library(sp)
 library(spcosa)
 library(ggplot2)
-library(raster)
+library(terra)
 
 #load data.frame with coordinates (and other attributes) of fine grid (discretisation of study area)
-rmap <- raster("../data/Xuancheng_elevation.tif")
+rmap <- rast("../data/Xuancheng_elevation.tif")
 rmap
-grid <- as(rmap,"SpatialPixelsDataFrame")
+rmap <- as.data.frame(rmap, xy=TRUE, na.rm=TRUE)
+gridded(rmap) <- ~x+y
 
 #subsample grid; grid is too large for computing spatial infill sample
-subgrid <- spsample(grid, type="regular", cellsize=c(900,900), offset=c(0.5,0.5))
+subgrid <- spsample(rmap, type="regular", cellsize=c(900,900), offset=c(0.5,0.5))
 length(subgrid)
 subgrid <- as(subgrid, "data.frame")
 

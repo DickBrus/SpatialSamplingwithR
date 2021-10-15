@@ -4,7 +4,7 @@ This chapter describes and illustrates two sampling designs by which the samplin
 
 ## Regular grid sampling {#Regulargrid}
 
-Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid-points are not used for design-based estimation of the population mean or total, and for that reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
+Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid-points are not used for design-based estimation of the population mean or total, and for this reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
 
 Besides the shape of the grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation, and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per point, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m$^2$, and $n$ is the number of sampling units (sample size).
 
@@ -37,9 +37,9 @@ The number of grid points in this example equals `r n`. Nodes of the square grid
 #### Exercises {-}
 
 1. Write an **R** script to select a square grid of size 100 from the three woredas in Ethiopia. The data.frame `grdEthiopia` is stored in `data/CovariatesThreeWoredasEthiopia.RData`. Use argument `offset=c(0.5,0.5)` so that the starting point of the grid is not selected randomly.   
-    +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?  
-    +  Select a square grid with a spacing of 10.2 distance units (km), and compute the sample size.   
-    +  Write a for-loop to select 200 times a square grid of on average 100 points with random starting point. Set a seed so that results can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size and plot a histogram.  
+    +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?
+    +  Select a square grid with a spacing of 10.2 distance units (km), and compute the sample size.
+    +  Write a for-loop to select 200 times a square grid of on average 100 points with random starting point. Set a seed so that results can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size and plot a histogram.
     +  Select a square grid of exactly 100 points.  
   
 ```{r, echo=FALSE}
@@ -149,7 +149,7 @@ mysample_kmeans <- mystrata_kmeans$centers %>% data.frame(.)
 
 When function `kmeans` is used to compute the spatial coverage sample, there is no guarantee that the computed centres of the clusters, used as sampling points, are inside the study area. In Figure \@ref(fig:kmeanscenters) there are eight such centres.
 
-```{r kmeanscenters, echo=FALSE, out.width='100%', fig.cap="Centers of spatial clusters computed with kmeans."}
+```{r kmeanscenters, echo=FALSE, out.width='100%', fig.cap="Centres of spatial clusters computed with kmeans."}
 gridded(grdVoorst) <- ~s1+s2
 coordinates(mysample_kmeans) <- ~s1+s2
 res <- over(mysample_kmeans, grdVoorst)
@@ -180,10 +180,10 @@ mysample_kmeans[units_out,] <- grdVoorst[units_close,c("s1","s2")]
 
 #### Exercises {-}
 
-1. In forestry and vegetation surveys square circular plots are often used as sampling units, for instance squares of 2 m $\times$ 2 m, or circles with a diameter of 2 m. To study the relation between the vegetation and the soil, soil samples must be collected from the vegetation plots. Suppose we want to collect four soil samples from a square plot. Where would you locate the four sampling points, so that they optimally cover the plot?  
-2. Suppose  we are also interested in the accuracy of the estimated plot means of the soil properties, not just the means. In that case the soil samples should not be bulked into a composite sample, but analysed separately. How would you select the sampling points in this case?  
-3. For circular vegetation plots it is less clear where the sampling points with smallest MSSD are. Write an **R** script to compute a spatial coverage sample of five points from a circular plot discretised by the nodes of a fine square grid.  Use argument `equalArea=FALSE`. Check the size (number of grid nodes) of the strata.  Repeat this for six sampling points.  
-4. Consider the case of six strata. The strata are not of equal size. If the soil samples are bulked into a composite sample, the measurement on this single sample is a biased estimator of the plot mean. How can this bias be avoided?  
+2. In forestry and vegetation surveys square circular plots are often used as sampling units, for instance squares of 2 m $\times$ 2 m, or circles with a diameter of 2 m. To study the relation between the vegetation and the soil, soil samples must be collected from the vegetation plots. Suppose we want to collect four soil samples from a square plot. Where would you locate the four sampling points, so that they optimally cover the plot?  
+3. Suppose  we are also interested in the accuracy of the estimated plot means of the soil properties, not just the means. In that case the soil samples should not be bulked into a composite sample, but analysed separately. How would you select the sampling points in this case?  
+4. For circular vegetation plots it is less clear where the sampling points with smallest MSSD are. Write an **R** script to compute a spatial coverage sample of five points from a circular plot discretised by the nodes of a fine square grid.  Use argument `equalArea=FALSE`. Check the size (number of grid nodes) of the strata.  Repeat this for six sampling points.  
+5. Consider the case of six strata. The strata are not of equal size. If the soil samples are bulked into a composite sample, the measurement on this single sample is a biased estimator of the plot mean. How can this bias be avoided?  
 
 ## Spatial infill sampling {#SpatialInfill}
 
@@ -215,8 +215,8 @@ mysample_new <- mysample[units,]
 ```
 
 #### Exercises {-}
-5. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on soil organic matter (SOM, g/kg) in the topsoil at 60 sampling points are in the data.frame `data/Xuancheng_iPSMsample.csv`. To map SOM we want to measure SOM at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif`  as a discretisation of the study area. This file can be read with function `raster` of package **raster**. 
-    +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type=regular`.  
+6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on soil organic matter (SOM, g/kg) in the topsoil at 60 sampling points are in the data.frame `data/Xuancheng_iPSMsample.csv`. To map SOM we want to measure SOM at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif`  as a discretisation of the study area. This file can be read with function `rast` of package **terra**. 
+    +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type="regular"`.
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
   
 ```{r, echo=FALSE}

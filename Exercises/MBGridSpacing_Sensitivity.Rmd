@@ -29,7 +29,7 @@ load(file="../data/CovariatesThreeWoredasEthiopia.RData")
 
 ## Estimation of the semivariogram
 
-Use the data to compute a sample semivariogram and to fit a spherical model with nugget.
+Use the data to compute a sample semivariogram and to fit a spherical model with nugget by the method-of-moments.
 
 ```{r}
 #compute sample semivariogram
@@ -42,21 +42,23 @@ print(vgm_MoM)
 
 ## Select random sample of evaluation points
 
-Select a simple random sample of size 1,000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively. This can be done with function jitter.
+Select a simple random sample of size 1,000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively. This can be done with function jitter. The cell size is 1 km x 1 km.
 
 ```{r}
 set.seed(314)
 units <- sample.int(nrow(grdEthiopia),size=1000,replace=TRUE)
 mysample <- grdEthiopia[units,]
 
-#Shift the randomly selected points to random points within the cells (cellsize is 1 km x 1 km)
+#Shift the randomly selected points to random points within the cells
 mysample$s1 <- jitter(mysample$s1, amount=0.5)
 mysample$s2 <- jitter(mysample$s2, amount=0.5)
 ```
 
 ## Kriging
 
-Specify the grid spacings to be evaluated. Specify the cumulative probabilities from which the corresponding quantiles of the ordinary kriging variance at the 1,000 evaluation points are computed. Save these quantiles in a numeric. Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the evaluation points by ordinary kriging.  Repeat this for the other spacings (for-loop). Finally plot the quantiles of the kriging variance against the grid spacing.
+Specify the grid spacings to be evaluated and the cumulative probabilities from which the corresponding quantiles of the ordinary kriging variance at the 1,000 evaluation points are computed. 
+
+Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the evaluation points by ordinary kriging.  Repeat this for the other spacings (for-loop).
 
 ```{r}
 coordinates(mysample) <- ~s1+s2
@@ -92,11 +94,11 @@ In practice we are uncertain about the semivariogram. For that reason it can be 
 
 ### Sensitivity for nugget parameter
 
-Change the nugget parameter to 0.6, and change the partial sill parameter so that the sill (nugget + partial sill) is unchanged. Determine the tolerable grid spacing. Explain the difference in determined grid spacing.
+Increase the nugget by 5\%, and change the partial sill parameter so that the sill (nugget + partial sill) is equal to the original sill. 
 
 ```{r}
 nugget <- vgm_MoM$psill[1] + 0.05*vgm_MoM$psill[1]
-psill <- vgm_MoM$psill[1]+vgm_MoM$psill[2]-nugget
+psill <- vgm_MoM$psill[1] + vgm_MoM$psill[2] - nugget
 vgm_MoM_morenugget <- vgm(psill = psill, model = "Sph", range = vgm_MoM$range[2], nugget = nugget)
 
 MKV_morenugget <- NULL
@@ -118,7 +120,7 @@ for (i in 1:length(spacing)) {
 
 ### Sensitivity for range parameter
 
-Do the same for a smaller range. Change the range to 10 km. Explain the difference in grid spacing.
+Do the same for a smaller range. Decrease the range by 5\%. Use the original values for nugget and partial sill.
 
 ```{r}
 range <- vgm_MoM$range[2] - 0.05*vgm_MoM$range[2]
@@ -138,8 +140,15 @@ for (i in 1:length(spacing)) {
     )
     MKV_smallerrange[i] <- mean(predictions$var1.var)
 }
+```
 
-df <- data.frame(spacing,MKV,MKV_morenugget,MKV_smallerrange)
+
+### Tolerable grid spacing and required expected sample size
+
+Plot the MKV's obtained  with the three semivariograms against the grid spacing. 
+
+```{r}
+df <- data.frame(spacing, MKV, MKV_morenugget, MKV_smallerrange)
 #save(df,file="../results/MBGridSpacing_Ethiopia_Sensitivity.RData")
 
 df_lf <- df %>% pivot_longer(.,cols=c("MKV","MKV_morenugget","MKV_smallerrange"))
@@ -149,18 +158,17 @@ ggplot(data=df_lf)+
   scale_x_continuous(name="Spacing (km)")+
   scale_y_continuous(name="Mean kriging variance")
 ```
-### Tolerable grid spacing and required expected sample size
 
-The relation between the mean kriging variance and the grid spacing obtained with the three variograms is used to compute the tolerable grid spacing for a MKV value of 0.85.
+Compute the tolerable grid spacing and the corresponding expected sample size for a MKV value of 0.85.
 
 ```{r}
-res1 <- lapply(1:3, function (i) approx(x=df[,i+1], y=df$spacing, xout=0.85)$y) %>% as.numeric(.)
+(spacings_tol <- lapply(1:3, function (i) approx(x=df[,i+1], y=df$spacing, xout=0.85)$y) %>% as.numeric(.))
 #compute size of pixels
 res2 <- getGridTopology(grdEthiopia) %>% data.frame(.)
 #compute total area in km2
 A <- length(grdEthiopia) * res2$cellsize[1] * res2$cellsize[2]
 #compute required expected sample size
-nreq <- A/res1^2
+(nreq <- A/spacings_tol^2)
 
 ```
 

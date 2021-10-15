@@ -1,8 +1,9 @@
-# load relevant packages
+#Load relevant packages
+
 library(sp)
 library(ggplot2)
 
-#Define fucntion for simple random sampling of pairs of points with separation distance h
+#Define function for simple random sampling of pairs of points with separation distance h
 
 SIpairs <- function(h,n,area){
   topo <- as(getGridTopology(area),"data.frame")
@@ -34,6 +35,7 @@ SIpairs <- function(h,n,area){
 }
 
 #Read simulated field
+
 load(file="../data/HunterValley.RData")
 
 grd <- grdHunterValley
@@ -45,6 +47,7 @@ gridded(grd) <- TRUE
 h <- c(25, 50, 100, 200, 400)
 
 #Select all point-pairs
+
 set.seed(314)
 samplesize <- 100
 
@@ -55,6 +58,7 @@ for (i in 1:length(h)){
 }
 
 #Overlay with grid
+
 p1 <- allpairs[,c(1,2)]
 p2 <- allpairs[,c(3,4)]
 coordinates(p1) <- ~s1+s2

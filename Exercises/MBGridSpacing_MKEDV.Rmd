@@ -20,7 +20,7 @@ library(ggplot2)
 
 ## Residual semivariogram
 
-Define residual variogram (see Table 23.1).
+Define residual semivariogram.
 
 ```{r}
 vgmresi_REML <- vgm(model = "Exp", psill = 0.083, range = 230, nugget = 0.126)
@@ -31,16 +31,18 @@ vgmresi_REML <- vgm(model = "Exp", psill = 0.083, range = 230, nugget = 0.126)
 
 ### Select random sample of prediction points
 
-Select a simple random sample of size 1000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively.
+Select a simple random sample with replacement of size 1000 for evaluating the square grids. Add a small number to the x1-coordinates and x2-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively. The cell size is 25 m x 25 m.
 
 ```{r}
 #read discretisation grid with interpolated natural log-transformed EM values
-load(file="data/CottonResearchFarm.RData")
+load(file="../data/CottonResearchFarm.RData")
+
+#select simple random sample with replacement of size 1000 
 set.seed(314)
 units <- sample.int(nrow(EM_CRF), size=1000, replace=TRUE)
 mysample <- EM_CRF[units,]
 
-#Shift the randomly selected grid points to random points within the cells (the cellsize is 25 m x 25 m)
+#Shift the randomly selected grid points to random points within the cells
 mysample$x1 <- jitter(mysample$x1, amount=25/2)
 mysample$x2 <- jitter(mysample$x2, amount=25/2)
 
@@ -49,7 +51,9 @@ coordinates(mysample) <- ~x1+x2
 
 ### Kriging with an external drift
 
-Choose grid spacings to be evaluated. Take 100 m as the largest spacing. The farm is about 100 ha, so with this spacing the number of grid points is on average about 100. Take 70 m as the smallest spacing. Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the prediction points by kriging with an external drift. Compute the average of the kriging variances at the 1,000 prediction points, and save it in a matrix. Repeat this several times (inner for-loop), and repeat this for the other spacings (outer for-loop).
+Choose grid spacings to be evaluated. Take 100 m as the largest spacing. The farm is about 100 ha, so with this spacing the number of grid points is on average about 100. Take 70 m as the smallest spacing.
+
+Select a randomly placed square grid of the first spacing, add a dummy variable and predict the dummy variable at the prediction points by kriging with an external drift, using lnEM100cm as a predictor. Compute the average of the kriging variances at the 1,000 prediction points, and save it in a matrix. Repeat this ten times (inner for-loop), and repeat this for the other spacings (outer for-loop).
 
 ```{r kriging}
 #specify spacings
@@ -59,15 +63,15 @@ spacing <- seq(from=70, to=100, by=5)
 r <- 10
 
 gridded(EM_CRF) <- ~x1+x2
-
 MKV <- matrix(nrow=length(spacing),ncol=r)
+
 for (i in 1:length(spacing)) {
     for (j in 1:r) {
-        mygridxy <- spsample(x=EM_CRF,cellsize=spacing[i],type="regular")
+        mygridxy <- spsample(x=EM_CRF, cellsize=spacing[i], type="regular")
         #add a dummy variable for interpolation
-        mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
+        mygrid <- data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
         coordinates(mygrid) <- ~s1+s2
-        mygrd <- data.frame(over(mygrid, EM_CRF),mygrid)
+        mygrd <- data.frame(over(mygrid, EM_CRF), mygrid)
         coordinates(mygrd) <- ~s1+s2
         #Use gstat for KED predictions
         predictions  <- krige(

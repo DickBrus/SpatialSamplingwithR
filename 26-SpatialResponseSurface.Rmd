@@ -6,25 +6,24 @@ The response surface sampling approach is an example of a model-based sampling d
 
 @lesch95 adapted the response surface methodology for observational studies. Several problems needed to be tackled. First, when multiple covariates are used, the covariates must be decorrelated. Second, when sampling units are spatially clustered, the assumption in linear regression modelling of spatially uncorrelated model residuals can be violated. To address these two problems @lesch95 proposed the following procedure; see also @lesch2005:   
 
-1. Transform the covariate matrix into a scaled, centered, de-correlated matrix by principal components analysis (PCA).   
+1. Transform the covariate matrix into a scaled, centred, de-correlated matrix by principal components analysis (PCA).   
 2. Choose the response surface design type.   
 3. Select candidate sampling units based on the distance from the design points in PC-space and then select multiple units per design point.   
 4. Select the combination of candidate sampling units with the highest value for a criterion that quantifies how uniform the sample is spread across the study area.   
 
 This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010 and @Fitzgerald2010.
 
-Spatial response surface sampling  is illustrated with the electromagnetic induction (EM) measurements (mS/m) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section \@ref(Datasets)). The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). As a first step the natural logarithm of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
+Spatial response surface sampling  is illustrated with the electromagnetic induction (EM) measurements (mS/m) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section \@ref(Datasets)). The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural logarithm of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
 ```{r EMdataUzbekistan, echo=FALSE, out.width='100%', fig.cap="Natural logarithm of EM38 measurements on the Cotton Research Farm in Uzbekistan (with transmitter at 1 m and 0.5 m from receiver)."}
 dat <- read.csv(file="data/TransectsData_EM_CRF.csv")
-dat$lnEMv1m <- log(dat$EMv1mt)
-dat$lnEMv0.5m <- log(dat$EMv05mt)
+dat$lnEM100cm <- log(dat$EMv1mt)
+dat$lnEM50cm <- log(dat$EMv05mt)
 dat <- na.omit(dat)
-coordinates(dat) <- ~ x * y
+coordinates(dat) <- ~ x+y
 proj4string(dat) <- CRS("+proj=longlat +datum=WGS84") #=  +init=epsg:4326
 dat <- spTransform(dat, CRS = CRS("+proj=tmerc +lat_0=0.000000000 +lon_0=63.000000000 +k=1.000000 +x_0=500000.000 +y_0=0.000 +ellps=krass +units=m"))
 dat <- as(dat,"data.frame")
-names(dat)[c(9,10)] <- c("lnEM100cm","lnEM50cm")
 df <- dat %>% pivot_longer(cols=c("lnEM100cm","lnEM50cm"))
 
 ggplot(data = df) +
@@ -106,7 +105,7 @@ ggplot(data = df) +
   facet_grid(~ name)
 ```
 
-Function `prcomp` of the **stats** package [@R2020] is used to compute the principal component scores\index{Principal component score} for all units in the population (grid cells). The two covariates are centered and scaled, i.e. standardised principal components are computed. 
+Function `prcomp` of the **stats** package [@R2020] is used to compute the principal component scores\index{Principal component score} for all units in the population (grid cells). The two covariates are centred and scaled, i.e. standardised principal components are computed. 
 
 ```{r}
 grdsub <- subset(EM_CRF, select=c(lnEM100cm,lnEM50cm))

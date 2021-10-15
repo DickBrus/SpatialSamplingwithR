@@ -11,7 +11,7 @@ gridded(grdEthiopia) <- ~s1+s2
 
 #set required sample size (number of grid points)
 n <- 100
-mysample <- spsample(x=grdEthiopia,n=n,type="regular",offset=c(0.5,0.5))
+mysample <- spsample(x=grdEthiopia, n=n, type="regular",offset=c(0.5,0.5))
 
 mysample <- as(mysample,"data.frame")
 
@@ -20,7 +20,7 @@ mysample <- as(mysample,"data.frame")
 
 #alternative: set spacing
 spacing <- 10.2
-mysample2 <- spsample(x=grdEthiopia,cellsize=spacing,type="regular",offset=c(0.5,0.5))
+mysample2 <- spsample(x=grdEthiopia, cellsize=spacing, type="regular",offset=c(0.5,0.5))
 mysample2 <- as(mysample2,"data.frame")
 
 #compute sample size
@@ -30,7 +30,7 @@ mysample2 <- as(mysample2,"data.frame")
 set.seed(314)
 samplesize <- numeric(length=200)
 for (i in 1:200) {
-  mysample <- spsample(x=grdEthiopia,n=n,type="regular")
+  mysample <- spsample(x=grdEthiopia, n=n, type="regular")
   samplesize[i] <- length(mysample)
 }
 
@@ -40,7 +40,7 @@ hist(samplesize)
 #Now select a square grid of exactly 100 points.
 
 for (i in 1:50) {
-  mysample <- spsample(x=grdEthiopia,n=n,type="regular")
+  mysample <- spsample(x=grdEthiopia, n=n, type="regular")
   if(length(mysample)==n) {break}
 }
 plot(mysample)

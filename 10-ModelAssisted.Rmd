@@ -303,7 +303,7 @@ for (i in 1:number_of_samples) {
 save(mz_HT,mz_regr,v_mz_regr, file="results/SimpleRegressionEstimatesAGB_Amazonia.RData")
 ```
 
-```{r SamplingDistributionRegression, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of simple regression estimator, using lnSWIR2 as a predictor, and $\\pi$ estimator of mean aboveground biomass (AGB) in Eastern Amazonia, for simple random sampling without replacement of size 100."}
+```{r SamplingDistributionRegression, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of simple regression estimator using lnSWIR2 as a predictor, and $\\pi$ estimator of mean aboveground biomass (AGB) in Eastern Amazonia, for simple random sampling without replacement of size 100."}
 load(file="results/SimpleRegressionEstimatesAGB_Amazonia.RData")
 estimates <- data.frame(mz_regr,mz_HT)
 names(estimates) <- c("Regression","HT")
@@ -409,14 +409,12 @@ sqrt(res$pop_mean_var)
 
 #### Exercises {-}
 
-1. Write an **R** script to
-    + Select a simple random sample without replacement of size 50 from Eastern Amazonia. Compute the regression estimator of the population mean of AGB and its standard error "by hand", using lnSWIR2 as a covariate (so do not not use package **survey**). Use Equation \@ref(eq:VarianceRegressionEstimatorSI) to estimate the standard error.   
+1. Write an **R** script to select a simple random sample without replacement of size 50 from Eastern Amazonia. Compute the regression estimator of the population mean of AGB and its standard error "by hand", i.e. without using package **survey**, using lnSWIR2 as a covariate. Use Equation \@ref(eq:VarianceRegressionEstimatorSI) to estimate the standard error.
     + Use the same sample to compute the regression estimator with functions `calibrate` and `svymean` of package **survey**. The regression estimate and its standard error can be extracted from the output object of `svymean` with methods `coef` and `SE`, respectively.
-    + Repeat both estimation procedures 1000 times (write a for-loop). Check that the 2 $\times$ 1000 estimated population means obtained with both estimators are all equal (use function `all.equal`), and compute summary statistics of the two approximated standard errors. Which approximate standard error estimator has the largest mean value?  
-2. Write an **R** script to
-    + Compute the sampling variance of the simple regression estimator of the mean of AGB, using lnSWIR2 as a covariate, for simple random sampling and sample sizes of 10, 25 and 100, assuming that the population regression coefficients are perfectly known. Hint: fit a simple linear regression model on all data, and compute the population variance of the residuals.  
-    + Select 10,000 times a simple random sample with replacement of size 10 (use a for-loop). Use each sample to estimate the population mean of AGB with the simple regression estimator (using sample estimates of the population regression coefficients), and estimate the approximate variance of the estimator of the mean.  Compute the variance of the 10,000 regression estimates and the average of the 10,000 approximate variance estimates. Repeat this for sample sizes 25, 100.   
-    + Compute for each sample size the difference between the experimental variance (variance of the 10,000 regression estimates) and the variance obtained with the population fit of the regression model as a proportion of the experimental variance. Explain what you see.   
+    + Repeat both estimation procedures 1000 times (for-loop). Check that the 2 $\times$ 1000 estimated population means obtained with both estimators are all equal (use function `all.equal`), and compute summary statistics of the two approximated standard errors. Which approximate standard error estimator has the largest mean value?  
+2. Write an **R** script to compute the sampling variance of the simple regression estimator of the mean of AGB, using lnSWIR2 as a covariate, for simple random sampling and sample sizes of 10, 25 and 100, assuming that the population regression coefficients are perfectly known. Hint: fit a simple linear regression model on all data, and compute the population variance of the residuals.  
+    + Next, select 10,000 times a simple random sample with replacement of size 10 (for-loop). Use each sample to estimate the population mean of AGB with the simple regression estimator (using sample estimates of the population regression coefficients), and estimate the approximate variance of the estimator of the mean.  Compute the variance of the 10,000 regression estimates and the average of the 10,000 approximate variance estimates. Repeat this for sample sizes 25, 100.
+    + Compute for each sample size the difference between the experimental variance (variance of the 10,000 regression estimates) and the variance obtained with the population fit of the regression model as a proportion of the experimental variance. Explain what you see.
     + Compute for each sample size the difference between the average of the 10,000 approximated variances and the experimental variance, as a proportion of the experimental variance. Explain what you see.  
 
 ### Regression estimator with stratified simple random sampling {#RegressionEstimatorSTSI}
@@ -500,7 +498,7 @@ The standard error of the separate regression estimator is computed by the squar
 sum(w_h^2*v_mz_h_regr) %>% sqrt(.)
 ```
 
-The separate regression estimator can be computed with package **survey**. The computation of the population totals merits special attention. For the simple regression estimator using *simple random sampling* these totals are the total number of populations units and the population total of the covariate lnSWIR2. These are the population totals associated with the columns of the design matrix that is constructed with function `lm` to estimate the regression coefficients. The column with ones results in an estimated intercept, the column with lnSWIR2 values in an estimated slope.
+The separate regression estimator can be computed with package **survey**. The computation of the population totals merits special attention. For the simple regression estimator using *simple random sampling* these totals are the total number of population units and the population total of the covariate lnSWIR2. These are the population totals associated with the columns of the design matrix that is constructed with function `lm` to estimate the regression coefficients. The column with ones results in an estimated intercept, the column with lnSWIR2 values in an estimated slope.
 
 We do not have a simple random sample, but a stratified simple random sample. The model that is fitted now is an ANCOVA model\index{ANCOVA model} with factor Biome and covariate lnSWIR2.
 
@@ -625,7 +623,7 @@ coef(lm_wls)
 In model-based estimation the weights differ among the units because of assumed differences in the variance of the residuals, whereas in design-based estimation we assign different weights to the observations because the units have different inclusion  probabilities [@loh99].
 ```
 
-Finally the combined regression estimate is computed.
+Finally, the combined regression estimate is computed.
 
 ```{r}
 print(mz_combreg <- mz_HT+ab[2]*(mx_pop-mx_HT))
@@ -846,7 +844,7 @@ mysample_cal <- calibrate(design_stsi, ~agri-1, population=tx_pop, variance=1)
 svytotal(~poppy, mysample_cal)
 ```
 
-Computing the separate ratio estimator goes along the same lines. Function `svyratio` with argument `separate = TRUE` estimates the ratio and its variance for each stratum separately. To predict the population total the stratum totals of the covariate must be assigned to argument `total` of function ` predict`.
+Computing the separate ratio estimator goes along the same lines. Function `svyratio` with argument `separate=TRUE` estimates the ratio and its variance for each stratum separately. To predict the population total the stratum totals of the covariate must be assigned to argument `total` of function ` predict`.
 
 ```{r}
 separate <- svyratio(~poppy, ~agri, design_stsi, separate=TRUE)
@@ -1050,7 +1048,7 @@ V(\hat{\bar{z}}_{\mathrm{dif}})=V(\hat{\bar{d}}_{\pi})\;,
 
 with $\hat{\bar{d}}_{\pi}$ the $\pi$ estimator of the population mean of the differences $d_k=z_k-m(\mathbf{x}_k)$. An estimator is obtained by substituting $\hat{m}(\mathbf{x}_k)$ for $m(\mathbf{x}_k)$ to compute the differences.
 
-The data of Eastern Amazonia are used to illustrate model-assisted estimation of AGB, using five environmental covariates in predicting AGB. First a regression tree\index{Regression tree} is used as a machine learning technique for prediction, after that a random forest\index{Random forest}. For an introduction to regression trees and random forest modelling, see this [blog](https://victorzhou.com/blog/intro-to-random-forests/). In this blog the study variable is a categorical variable, whereas in our example the study variable is quantitative (continuous). This is not essential. The only difference is the measure for quantifying how good a split is. With a quantitative study variable this is quantified by the following sum of squares:
+The data of Eastern Amazonia are used to illustrate model-assisted estimation of AGB, using five environmental covariates in predicting AGB. First, a regression tree\index{Regression tree} is used as a machine learning technique for prediction, after that a random forest\index{Random forest}. For an introduction to regression trees and random forest modelling, see this [blog](https://victorzhou.com/blog/intro-to-random-forests/). In this blog the study variable is a categorical variable, whereas in our example the study variable is quantitative (continuous). This is not essential. The only difference is the measure for quantifying how good a split is. With a quantitative study variable this is quantified by the following sum of squares:
 
 \begin{equation}
 SS=\sum_{k=1}^2\sum_{k=1}^{N_k}(z_{ki}-\bar{z}_k)^2 \;,
@@ -1202,8 +1200,8 @@ save(AGBpred_OOB, AGBpred, file="results/RandomForestSingleSample_Amazonia.RData
 
 Finally, the model-calibration estimate and the generalised difference estimate are computed. Both estimators and their variances are computed in two ways. They differ in how the study variable AGB is predicted for the sampling units:  
 
-1. Using all trees of the forest (the predictions obtained with function `predict`).  
-2. Using only the trees calibrated on bootstrap samples\index{Bootstrap sample} that do not include the sampling unit used as a prediction unit. These out-of-bag predictions are stored in the element `predictions` of the output object of function `ranger`.  
+1. using all trees of the forest (the predictions obtained with function `predict`); or  
+2. using only the trees calibrated on bootstrap samples\index{Bootstrap sample} that do not include the sampling unit used as a prediction unit. These out-of-bag predictions are stored in the element `predictions` of the output object of function `ranger`.  
 
 The next code chunk shows how the model-calibration estimate can be computed with the AGB data of the simple random sample and the random forest predictions of AGB. First use all trees.
 
@@ -1465,7 +1463,7 @@ In the past decades numerous large data sets became available, and this number w
 
 Another interesting source of information are the geographic data collected by volunteers. These data typically are from non-probability samples\index{Non-probability sampling}. Despite this, there can be valuable information in these data about the global or local means of the study variable.
 
-When the volunteer data\index{Volunteer data} are supplemented by a probability sample with observations on the study variable, the volunteer data can be used at the design stage and/or at the estimation stage. As an example of the first approach, the volunteer data are used to predict the study variable at a fine discretisation grid. These predictions are then used to construct strata for supplemental sampling, for instance by the *cum-root-f* method (Section \@ref(cumrootf)), or using the approach described in Section \@ref(Ospats).
+When the volunteer data\index{Volunteer data} are supplemented by a probability sample with observations of the study variable, the volunteer data can be used at the design stage and/or at the estimation stage. As an example of the first approach, the volunteer data are used to predict the study variable at a fine discretisation grid. These predictions are then used to construct strata for supplemental sampling, for instance by the *cum-root-f* method (Section \@ref(cumrootf)), or using the approach described in Section \@ref(Ospats).
 
 At the estimation stage the volunteer data are used to predict the study variable at points of the supplemental probability sample and at the nodes of a discretisation grid. These predictions are then used in model-assisted estimation, using the generalised difference or regression estimator, as explained in this chapter. For more details and a simulation study, see @bru03a.
 

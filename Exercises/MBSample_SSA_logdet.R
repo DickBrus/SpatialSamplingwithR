@@ -1,10 +1,9 @@
 library(spsann)
 library(sp)
-library(raster)
 library(matrixcalc)
 library(ggplot2)
 
-source ("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
+source ("../Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 
 load(file="../data/HunterValley.RData")
 
@@ -19,25 +18,25 @@ phi <- 200
 thetas <- c(xi,phi)
 
 schedule <- scheduleSPSANN(
-  initial.acceptance = 0.8,
-  initial.temperature = 0.025,
-  temperature.decrease = 0.9,
-  chains = 300,
-  chain.length = 2,
-  stopping = 10,
+  initial.acceptance=0.8,
+  initial.temperature=0.025,
+  temperature.decrease=0.9,
+  chains=300,
+  chain.length=2,
+  stopping=10,
   x.min=50, y.min=50,
   cellsize = 50)
 
 set.seed(314)
 rslt <- optimUSER(
-  points = 100,
-  candi = candi,
-  fun = logdet,
-  model = "Exp",
-  thetas = thetas,
-  perturbation = 0.01,
-  schedule = schedule,
-  track = TRUE)
+  points=100,
+  candi=candi,
+  fun=logdet,
+  model="Exp",
+  thetas=thetas,
+  perturbation=0.01,
+  schedule=schedule,
+  track=TRUE)
 
 mysample <- candi[rslt$points$id,]
 
@@ -45,7 +44,7 @@ mysample <- candi[rslt$points$id,]
 
 ggplot(data=grdHunterValley) +
   geom_raster(mapping = aes(x = Easting/1000, y = Northing/1000),fill="grey")+
-  geom_point(data = mysample, mapping = aes(x = x/1000, y = y/1000), shape = 2,size= 2)+
+  geom_point(data = mysample, mapping = aes(x = x/1000, y = y/1000), shape = 2, size= 2)+
   scale_x_continuous(name = "Easting (km)")+
   scale_y_continuous(name = "Northing (km)")+
   coord_fixed() 
