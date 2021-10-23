@@ -11,7 +11,7 @@ set.seed(314)
 
 for (i in 1:10000) {
   #select large simple random sample
-  units <- sample.int(nrow(gridAmazonia), size = n1, replace = FALSE)
+  units <- sample(nrow(gridAmazonia), size = n1, replace = FALSE)
   mysample <- gridAmazonia[units,]
   
   #fit simple linear model
@@ -21,7 +21,7 @@ for (i in 1:10000) {
   mz_regr[i] <- mean(mysample$AGB)+coef(lm_sam)[2]*(mean(gridAmazonia$lnSWIR2)-mean(mysample$lnSWIR2))
   
   #subsample the selected sample
-  units_subsam <- sample.int(nrow(mysample), size = n2, replace = FALSE)
+  units_subsam <- sample(nrow(mysample), size = n2, replace = FALSE)
   mysubsample <- mysample[units_subsam,]
   
   #fit simple linear model on subsample

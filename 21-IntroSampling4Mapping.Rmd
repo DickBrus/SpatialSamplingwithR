@@ -14,7 +14,7 @@ Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
 (\#eq:simplelinearregressionmodel)
 \end{equation}
 
-with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $\text{Cov}(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate $x$. 
+with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $\text{Cov}(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate $x$. 
 
 ```{r, echo=FALSE}
 library(gstat)
@@ -60,7 +60,7 @@ grid$z <- 2 + 0.5*grid$x + rnorm(n=nrow(grid), mean=0, sd=sigma_resid)
 
 #select simple random sample without replacement
 n<-16
-idsrandom <- sample.int(400,n)
+idsrandom <- sample(400,n)
 randomsample <- grid[idsrandom,]
 
 model.random <- lm(z~x, data=randomsample)
@@ -72,7 +72,7 @@ model.opt <- lm(z~x, data=optsample)
 det.opt <- det(vcov(model.opt))
 ```
 
-```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample, and optimal sample for mapping with simple linear regression model, plotted in a map of the covariate."}
+```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample and optimal sample for mapping with simple linear regression model, plotted on a map of the covariate."}
 mysamples <- rbind(randomsample,optsample)
 mysamples$design <- factor(rep(c("Random","Optimal"),each=16), levels=c("Random","Optimal"), ordered=TRUE)
 
@@ -99,17 +99,17 @@ knitr::kable(
 kable_classic()
 ```
 
-Of course, this simple example would only be applicable if we have evidence of a linear relation between study variable $z$ and covariate $x$ and  if we are willing to rely on the assumption that the residulas are not spatially correlated.  
+Of course, this simple example would only be applicable if we have evidence of a linear relation between study variable $z$ and covariate $x$ and  if we are willing to rely on the assumption that the residuals are not spatially correlated.  
 
 ## Sampling for simultaneously mapping and estimating means
 
-Although probability sampling is not strictly needed for mapping with a statistical model, in some situations, when feasible, it can still be advantageous to select a probability sample. If the aim of the survey is to map the study variable, as well as to estimate the mean or total for the entire study area or for several subareas, probability sampling can be a good option. Think, for instance, of sampling for the dual objectives of mapping and at the same time estimating soil carbon stocks. Although the statistical model used for mapping can also be used for model-based prediction of the total carbon stocks in the study area and subareas (Section \@ref(SmallAreaModelBased)), we may prefer to estimate these totals by design-based or model-assisted inference. The advantage of design-based and model-assisted estimation of these totals is their validity\index{Validity}. Validity means that an objective assessment of the uncertainty of the estimated  mean or total is warranted, and that the coverage of confidence intervals is (almost) correct, provided that the sample is large enough to assume an approximately normal distribution of the estimator and design-unbiasedness of the variance estimator, see Chapter \@ref(Approaches). In design-based estimation no model of the spatial variation is used. Discussions about how realistic modelling assumptions are, therefore are avoided.  In model-assisted estimation these discussions are irrelevant as well, because we do not rely on these assumptions. A poor model results in large variances of the estimated mean or total, and as a consequence a wide confidence interval, so that the coverage of the confidence interval is in agreement with the nominal coverage, see Section \@ref(ModelassistedvsModeldependent) for more details.
+Although probability sampling is not strictly needed for mapping with a statistical model, in some situations, when feasible, it can still be advantageous to select a probability sample. If the aim of the survey is to map the study variable, as well as to estimate the mean or total for the entire study area or for several subareas, probability sampling can be a good option. Think, for instance, of sampling for the dual objectives of mapping and at the same time estimating soil carbon stocks. Although the statistical model used for mapping can also be used for model-based prediction of the total carbon stocks in the study area and subareas (Section \@ref(SmallAreaModelBased)), we may prefer to estimate these totals by design-based or model-assisted inference. The advantage of design-based and model-assisted estimation of these totals is their validity\index{Validity}. Validity means that an objective assessment of the uncertainty of the estimated  mean or total is warranted and that the coverage of confidence intervals is (almost) correct, provided that the sample is large enough to assume an approximately normal distribution of the estimator and design-unbiasedness of the variance estimator, see Chapter \@ref(Approaches). In design-based estimation no model of the spatial variation is used. Discussions about how realistic modelling assumptions are, therefore are avoided.  In model-assisted estimation these discussions are irrelevant as well, because we do not rely on these assumptions. A poor model results in large variances of the estimated mean or total and, as a consequence, a wide confidence interval, so that the coverage of the confidence interval is in agreement with the nominal coverage, see Section \@ref(ModelassistedvsModeldependent) for more details.
 
 The question then is: what is a suitable probability sampling design for both aims? First, I would recommend a sampling design with equal inclusion probabilities. This is because in standard model-based inference unequal inclusion probabilities are not accounted for, which may lead to systematic prediction errors when small or large values are overrepresented in the sample (Section \@ref(BiasandVariance)).
 
 Second, In case we have subareas of which we would like to estimate the mean or total (domains of interest), using these subareas as strata in stratified random sampling makes sense, unless there are too many. This requires that of all population units (nodes of discretisation grid) we must know to which subarea it belongs, so that this information can be added to the sampling frame.
 
-Thord, a sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)), or sampling with the local pivotal method (Section \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. Spreading in covariate space can also be explicitly accounted for by using the covarates as spreading variables in the local pivotal method.
+Third, a sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)), or sampling with the local pivotal method (Section \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. Spreading in covariate space can also be explicitly accounted for using the covariates as spreading variables in the local pivotal method.
 
 As an illustration I selected a single sample of 500 units from Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
 
@@ -151,7 +151,7 @@ mysample_NFM <- getdata(Biomes_NFM, units)
 
 Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
 
-```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample with geographical spreading from biome moist tropical forest, balanced on lnSWIR, and stratified simple random sample from other three biomes,  Eastern Amazonia (Brazil)."}
+```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample with geographical spreading from biome moist tropical forest, balanced on lnSWIR, and stratified simple random sample from other three biomes,  Eastern Amazonia."}
 mysample <- rbind(mysample_FM[,c("x1","x2")], mysample_NFM[,c("x1","x2")])
 library(ggnewscale)
 
@@ -184,7 +184,7 @@ units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=gridAmazonia$pi)
 mysample <- gridAmazonia[units,]
 ```
 
-```{r Sample4MappingandEstimationAmazonia2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced stratified sample with geographical spreading, balanced on lnSWIR2 and stratum sample sizes (biomes used as strata),  Eastern Amazonia (Brazil)."}
+```{r Sample4MappingandEstimationAmazonia2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced stratified sample with geographical spreading, balanced on lnSWIR2 and stratum sample sizes (biomes used as strata),  Eastern Amazonia."}
 ggplot(data=gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
   scale_fill_viridis_c(name="lnSWIR2") +

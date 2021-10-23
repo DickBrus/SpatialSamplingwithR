@@ -4,9 +4,9 @@ This chapter and the next on response surface sampling are about experimental de
 
 In a full factorial design\index{Full factorial design} all combinations of factor levels\index{Factor level} are observed. With $k$ factors and $l$ levels per factor the total number of observations is $l^k$. With numerous factors and/or numerous levels per factor observing $l^k$ experimental units becomes unfeasible in practice. Alternative experimental designs have been developed that need fewer observations but still provide detailed information about how the study variable responds to changes in the factor levels. In this chapter I describe and illustrate the survey sampling analogue of Latin hypercube sampling\index{Latin hypercube sampling}. Response surface sampling will follow in the next chapter.
 
-Latin hypercube sampling (LHS) is used in designing industrial process, agricultural and computer experiments, with numerous covariates and/or factors of which we want to study the effect on the output [@McKay1979]. With numerous covariates and/or levels per covariate a full factorial design becomes unfeasible. A much cheaper alternative then is an experiment with, for all covariates, exactly one observation per level. So in the agricultural experiment described in Chapter \@ref(IntroSamplingforMapping) with the application rates of N and of P as factors, and four levels for each factor, this would entail four observations only, distributed in a square in such way that we have in all rows and in all columns one observation. This is referred to as a Latin square. The generalisation of a Latin square to a higher number of dimensions is a Latin hypercube (LH).
+Latin hypercube sampling (LHS) is used in designing industrial process, agricultural and computer experiments, with numerous covariates and/or factors of which we want to study the effect on the output [@McKay1979]. With numerous covariates and/or levels per covariate a full factorial design becomes unfeasible. A much cheaper alternative then is an experiment with, for all covariates, exactly one observation per level. So, in the agricultural experiment described in Chapter \@ref(IntroSamplingforMapping) with the application rates of N and of P as factors and four levels for each factor, this would entail four observations only, distributed in a square in such way that we have in all rows and in all columns one observation. This is referred to as a Latin square. The generalisation of a Latin square to a higher number of dimensions is a Latin hypercube (LH).
 
-@Minasny2006 adapted LH sampling for observational studies; this adaptation is referred to as conditioned Latin hypercube sampling\index{Conditioned Latin hypercube sampling} (cLH sampling). For each covariate a series of intervals (marginal strata) is defined. The breaks of the marginal strata are chosen such that the numbers of grid cells in these marginal strata are equal. This can be done by using the quantiles corresponding to evenly spaced cumulative probabilities as stratum breaks. For instance, for five marginal strata we use the quantiles corresponding with the cumulative probabilities 0.2, 0.4, 0.6 and 0.8.
+@Minasny2006 adapted LH sampling for observational studies; this adaptation is referred to as conditioned Latin hypercube sampling\index{Conditioned Latin hypercube sampling} (cLH sampling). For each covariate a series of intervals (marginal strata) is defined. The breaks of the marginal strata are chosen such that the numbers of grid cells in these marginal strata are equal. This can be done using the quantiles corresponding to evenly spaced cumulative probabilities as stratum breaks. For instance, for five marginal strata we use the quantiles corresponding with the cumulative probabilities 0.2, 0.4, 0.6 and 0.8.
 
 The minimisation criterion proposed by @Minasny2006 is a weighted sum of three components:   
 
@@ -14,11 +14,11 @@ The minimisation criterion proposed by @Minasny2006 is a weighted sum of three c
 2.  O2: the sum over all classes of categorical covariates of the absolute deviations of the sample proportion of a given class from the population proportion of that class; and
 3.  O3: the sum over all entries of the correlation matrix of the absolute deviation of the correlation in the sample from the correlation in the population.  
 
-With cLH sampling the marginal distributions of the covariates in the sample are close to these distributions in the population. This can be advantageous for mapping methods that do not rely on linear relations, for instance in machine learning techniques like classification and regression trees (CART), and random forests. In addition, criterion O3 ensures that the correlations between predictors are respected in the sample set.
+With cLH sampling the marginal distributions of the covariates in the sample are close to these distributions in the population. This can be advantageous for mapping methods that do not rely on linear relations, for instance in machine learning techniques like classification and regression trees (CART) and random forests. In addition, criterion O3 ensures that the correlations between predictors are respected in the sample set.
 
-cLH samples can be selected with package **clhs** [@Roudier2011]. With this package the criterion is minimised by simulated annealing, see Section \@ref(SSA) for an explanation of this optimisation method. Arguments `iter`, `temp`, `tdecrease`, and ` length.cycle` are control parameters of the simulated annealing algorithm. I used default values. With argument `weights` the weights of the components of the minimisation criterion can be set. Default weights are 1.
+cLH samples can be selected with package **clhs** [@Roudier2011]. With this package the criterion is minimised by simulated annealing, see Section \@ref(SSA) for an explanation of this optimisation method. Arguments `iter`, `temp`, `tdecrease` and ` length.cycle` are control parameters of the simulated annealing algorithm. I used default values. With argument `weights` the weights of the components of the minimisation criterion can be set. Default weights are 1.
 
-Argument `cost` is for cost-constrained cLH sampling [@Roudier2012], and argument `eta` can be used to control the sampling intensities of the marginal strata [@Minasny2010]. This argument is of interest if we would like to oversample the marginal strata near the edge of the multivariate distribution.
+Argument `cost` is for cost-constrained cLH sampling [@Roudier2012] and argument `eta` can be used to control the sampling intensities of the marginal strata [@Minasny2010]. This argument is of interest if we would like to oversample the marginal strata near the edge of the multivariate distribution.
 
 cLH sampling is illustrated with the five covariates of Eastern Amazonia that were used before in covariate space coverage sampling (Chapter \@ref(kmeans)). 
 
@@ -41,7 +41,7 @@ save(res, file="results/cLHS_Amazonia.RData")
 load(file="results/cLHS_Amazonia.RData")
 ```
 
-Figure \@ref(fig:cLHS) shows the selected sample in a map of SWIR2. Figure \@ref(fig:cLHSscat) shows the sample plotted in a scatter diagram of Precipitation Dryest Month against SWIR2. Each black dot represents one grid cell in the population. The horizontal and vertical lines in this scatter diagram are at the breaks of the marginal strata of SWIR2 and Precipitation Dryest Month, respectively. The number of black dots in between two consecutive vertical lines and in between two consecutive horizontal lines is constant (i.e. marginal strata have equal size). The intervals therefore are the narrowest where the density of black dots in the plot is highest. Ideally in each column and each row there is exactly one sampling unit.
+Figure \@ref(fig:cLHS) shows the selected sample in a map of SWIR2. Figure \@ref(fig:cLHSscat) shows the sample plotted in a scatter plot of Precipitation Dryest Month against SWIR2. Each black dot represents one grid cell in the population. The horizontal and vertical lines in this scatter plot are at the breaks of the marginal strata of SWIR2 and Precipitation Dryest Month, respectively. The number of black dots in between two consecutive vertical lines and in between two consecutive horizontal lines is constant (i.e. marginal strata have equal size). The intervals therefore are the narrowest where the density of black dots in the plot is highest. Ideally, in each column and each row there is exactly one sampling unit.
 
 ```{r cLHS, echo=FALSE, out.width="100%", fig.cap="Conditioned Latin hypercube sample from Eastern Amazonia in a map of SWIR2."}
 load("data/Amazonia_5km.RData")
@@ -57,7 +57,7 @@ ggplot(data=gridAmazonia) +
   coord_fixed()
 ```
 
-```{r cLHSscat, echo=FALSE, fig.cap="Conditioned Latin hypercube sample plotted in a scatter diagram of SWIR2 against precipitation in dryest month. The horizontal and vertical lines are at the breaks of the marginal strata of the covariates SWIR2 and precipitation dryest month, respectively."}
+```{r cLHSscat, echo=FALSE, fig.cap="Conditioned Latin hypercube sample plotted in a scatter plot of SWIR2 against precipitation in the dryest month. The horizontal and vertical lines are at the breaks of the marginal strata of the covariates SWIR2 and precipitation dryest month, respectively."}
 probs <- seq(from=0, to=1, length.out=nrow(myCLHsample)+1)
 breaks <- apply(gridAmazonia[,covs], MARGIN=2, FUN=function(x) quantile(x, probs=probs, type=3))
 ggplot(data=gridAmazonia) +
@@ -117,15 +117,15 @@ O3 <- sum(abs(rho-r))
 print(O1+O3)
 ```
 
-cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann**, and can handle larger data sets. 
+cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann** and can handle larger data sets. 
 
 #### Exercises {-}
 
-1. Load the data of Hunter Valley (`data/HunterValley.RData`) to select a Latin hypercube sample of size 50, using elevation_m, slope_deg, cos_aspect, cti and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a 2D-scatter diagram of cti against elevation_m. In which part of the scatter diagram are most units selected, and which part is undersampled?   
-2. Load the simulated data of Figure \@ref(fig:twosamples) (`data/SimulatedSquare.RData`), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
+1. Load the data of Hunter Valley (`data/HunterValley.RData`) to select a Latin hypercube sample of size 50, using elevation_m, slope_deg, cos_aspect, cti and ndvi as covariates. Plot the selected sample in a map of covariate cti and plot the selected sample in a 2D-scatter plot of cti against elevation_m. In which part of the scatter plot are most units selected and which part is undersampled?   
+2. Load the simulated data of Figure \@ref(fig:twosamples) (`data/SimulatedSquare.RData`) and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
     +  What do you think of the geographical spreading of the sampling units (spatial coverage)? Is it optimal?
     +  Compute the number of sampling units in the marginal strata of $s1$, $s2$ and the covariate $x$. First compute the breaks of these marginal strata.  Are all marginal strata of $s1$ and $s2$ sampled?  Suppose that all marginal strata of $s1$ and $s2$ are sampled (contain one sampling point), does this guarantee good spatial coverage?
-    +  Plot the trace of the minimisation criterion, and retrieve the minimised value. Is this minimised value in agreement with the marginal stratum sample sizes?
+    +  Plot the trace of the minimisation criterion and retrieve the minimised value. Is this minimised value in agreement with the marginal stratum sample sizes?
 
 ## Conditioned Latin hypercube infill sampling {#cLHIS}
 
@@ -135,7 +135,7 @@ To illustrate conditioned Latin hypercube *infill* sampling (cLHIS), I selected 
 
 ```{r, eval=FALSE}
 set.seed(314)
-units <- sample.int(nrow(gridAmazonia), 10, replace=FALSE)
+units <- sample(nrow(gridAmazonia), 10, replace=FALSE)
 res <- clhs(gridAmazonia[,covs], size=30, include=units,
   tdecrease=0.95, iter=10000, progress=FALSE, simple=FALSE)
 index <- res$index_samples
@@ -151,7 +151,7 @@ save(myCLHIsample, file="results/cLHIS_Amazonia.RData")
 load(file="results/cLHIS_Amazonia.RData")
 ```
 
-Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a map of SWIR2, and in Figure \@ref(fig:cLHISscat) the sample is plotted in a scatter diagram of SWIR2 against Prec_dm. The marginal strata already covered by the legacy sample are mostly avoided by the additional sample.
+Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a map of SWIR2. In Figure \@ref(fig:cLHISscat) the sample is plotted in a scatter plot of SWIR2 against Prec_dm. The marginal strata already covered by the legacy sample are mostly avoided by the additional sample.
 
 ```{r cLHIS, echo=FALSE, out.width="100%", fig.cap="Conditioned Latin hypercube infill sample from Eastern Amazonia in a map of SWIR2. Legacy units have free-value 0, infill units have free-value 1."}
 ggplot(data=gridAmazonia) +
@@ -163,7 +163,7 @@ ggplot(data=gridAmazonia) +
   coord_fixed()
 ```
 
-```{r cLHISscat, echo=FALSE, fig.asp=0.7, fig.cap="Conditioned Latin hypercube infill sample plotted in scatter diagram of SWIR2 against precipitation in dryest month. Legacy units have free-value 0, infill units have free-value 1."}
+```{r cLHISscat, echo=FALSE, fig.asp=0.7, fig.cap="Conditioned Latin hypercube infill sample plotted in scatter plot of SWIR2 against precipitation in the dryest month. Legacy units have free-value 0, infill units have free-value 1."}
 #recompute stratum breaks as we have now 10+20 units
 probs <- seq(from=0, to=1, length.out=31)
 breaks <- apply(gridAmazonia[,covs], MARGIN=2, FUN=function(x) quantile(x, probs=probs, type=3))
@@ -180,7 +180,7 @@ ggplot(data=gridAmazonia) +
 
 ## Performance of conditioned Latin hypercube sampling in random forest prediction
 
-The performance of conditioned Latin hypercube sampling is studied in the same experiment as covariate space coverage sampling of the previous chapter. For this, 500 cLH samples of size 25, and an equal number of samples of size 50 and 100 are selected. Each sample is used to calibrate a random forest model for aboveground biomass (AGB), using five covariates as predictors. The calibrated models are used to predict AGB at the 25,000 validation units, selected by simple random sampling without replacement. The same procedure is used for a simple random sample (SI), as a prediction model that ignores covariates. The prediction errors are used to estimate three map quality indices\index{Map quality indices}, the population mean error\index{Population mean error} (ME), population mean squared error\index{Population mean squared error} (MSE) and the population Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC), see Chapter \@ref(Validation).
+The performance of conditioned Latin hypercube sampling is studied in the same experiment as covariate space coverage sampling of the previous chapter. For this 500 cLH samples of size 25, and an equal number of samples of size 50 and 100 are selected. Each sample is used to calibrate a random forest model for aboveground biomass (AGB), using five covariates as predictors. The calibrated models are used to predict AGB at the 25,000 validation units, selected by simple random sampling without replacement. The same procedure is used for a simple random sample (SI), as a prediction model that ignores covariates. The prediction errors are used to estimate three map quality indices\index{Map quality indices}, the population mean error\index{Population mean error} (ME), population mean squared error\index{Population mean squared error} (MSE) and the population Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC), see Chapter \@ref(Validation).
 
 ```{r repeatedCSCandcLHS, echo=FALSE, eval=FALSE}
 library(LICORS)
@@ -199,7 +199,7 @@ gridAmazonia <- as(gridAmazonia,"data.frame")
 grdmincalibration <- gridAmazonia[-subgrid$id,]
 nval<-25000
 set.seed(314)
-units <- sample.int(nrow(grdmincalibration), size=nval, replace=FALSE)
+units <- sample(nrow(grdmincalibration), size=nval, replace=FALSE)
 myvalidationsample <- grdmincalibration[units,]
 
 populationmeans <- apply(gridAmazonia[,covs], MARGIN=2, FUN=mean)
@@ -260,7 +260,7 @@ for (i in 1:S) {
 
 #select SI sample
   
-  units <- sample.int(nrow(subgrid), size=n, replace=FALSE)
+  units <- sample(nrow(subgrid), size=n, replace=FALSE)
   mySIsample <- subgrid[units,]
 #compute MSSSD
   res <- rdist(x1=scale(mySIsample[,covs], center=populationmeans, scale=populationsds),
@@ -321,7 +321,7 @@ save(ME.CSC, ME.CLH, ME.SI, RMSE.CSC, RMSE.CLH, RMSE.SI, MSSSD.CSC, MSSSD.CLH, M
 
 Figure \@ref(fig:boxplotsval) shows the results as boxplots, each based on 500 estimates. For $n=25$ and $100$ cLH sampling performs best in terms of RMSE and MEC, whereas for $n=50$ CSC sampling performs best. For $n=25$ and $50$ the boxplots of cLH and simple random sampling show quite a few outliers with large values of RMSE, resulting in small values of MEC. For CSC these map quality indices are more stable. Remarkably, for $n=100$ SI sampling performs about equal to CSC and cLH sampling.
 
-```{r boxplotsval, echo=FALSE, out.width="100%", fig.asp=0.7, fig.cap ="Boxplots of ME, RMSE and MEC of predictions with random forest models calibrated on conditioned Latin hypercube (cLH), covariate space coverage (CSC) and simple random (SI) samples of Eastern Amazonia, for sample sizes of 25, 50 and 100 units."}
+```{r boxplotsval, echo=FALSE, out.width="100%", fig.asp=0.7, fig.cap ="Boxplots of ME, RMSE and MEC of predictions with random forest models calibrated on conditioned Latin hypercube (cLH), covariate space coverage (CSC), and simple random (SI) samples from Eastern Amazonia, for sample sizes of 25, 50 and 100 units."}
 load("data/Amazonia_1km.RData")
 #select subgrid to be used as master sample for selecting calibration samples
 gridAmazonia$id <- 1:nrow(gridAmazonia)
@@ -335,7 +335,7 @@ gridAmazonia <- as(gridAmazonia,"data.frame")
 grdmincalibration <- gridAmazonia[-subgrid$id,]
 nval <- 25000
 set.seed(314)
-units <- sample.int(nrow(grdmincalibration),size=nval,replace=FALSE)
+units <- sample(nrow(grdmincalibration),size=nval,replace=FALSE)
 myvalidationsample <- grdmincalibration[units,]
 
 #ME
@@ -413,10 +413,10 @@ plt3 <- ggplot(d, aes(x=n, y=MEC)) +
 grid.arrange(plt1, plt2, plt3, ncol=2)
 ```
 
-In Figure \@ref(fig:RelationO1O3RMSE) the RMSE is plotted against the minimised O1 + O3 criterion for the cLH and the SI samples. For all three sample sizes there is a weak positive correlation of the minimisation criterion and the RMSE: for $n=25$, 50 and 100 this correlation is 0.363, 0.225, and 0.163, respectively. On average cLH performs slightly better than SI for $n=25$; for $n=50$ and 100, they perform about equal (Table \@ref(tab:TableRMSE4cLHandSI)). Similar to covariate space coverage sampling (Section \@ref(PerformanceCSC)), especially for $n=25$ and 50 the distribution of RMSE with SI has a long right tail. For these small sample sizes the risk of selecting an SI sample leading to a poor map with large RMSE is much larger than with cLH sampling.
+In Figure \@ref(fig:RelationO1O3RMSE) the RMSE is plotted against the minimised O1 + O3 criterion for the cLH and the SI samples. For all three sample sizes there is a weak positive correlation of the minimisation criterion and the RMSE: for $n=25$, 50 and 100 this correlation is 0.363, 0.225 and 0.163, respectively. On average cLH performs slightly better than SI for $n=25$; for $n=50$ and 100, they perform about equal (Table \@ref(tab:TableRMSE4cLHandSI)). Similar to covariate space coverage sampling (Section \@ref(PerformanceCSC)), especially for $n=25$ and 50 the distribution of RMSE with SI has a long right tail. For these small sample sizes the risk of selecting an SI sample leading to a poor map with large RMSE is much larger than with cLH sampling.
 
 
-```{r RelationO1O3RMSE, echo=FALSE, fig.asp=0.7, fig.cap="Relation between minimisation criterion O1 + O3 and the root mean squared error (RMSE) of random forest predictions of aboveground biomass in Eastern Amazonia for conditioned Latin hypercube (cLH)  sampling and simple random (SI) sampling of three sample sizes."}
+```{r RelationO1O3RMSE, echo=FALSE, fig.asp=0.7, fig.cap="Scatter plot of the minimisation criterion (O1 + O3) and the root mean squared error (RMSE) of random forest predictions of aboveground biomass in Eastern Amazonia for conditioned Latin hypercube (cLH)  sampling and simple random (SI) sampling, and three sample sizes."}
 load("results/CSCversusCLH_Amazonia_n25.RData")
 df.25 <- data.frame(RMSE=c(RMSE.SI,RMSE.CLH), O1O3=c(O1O3.SI,O1O3.CLH), Design=rep(c("SI","cLH"), each=500),Samplesize=25)
 
@@ -452,9 +452,9 @@ knitr::kable(
   kable_classic()
 ```
 
-These results are somewhat different from the results of @Wadoux2019 and @Ma2020. In these case studies cLH sampling appeared to be an inefficient design for selecting a calibration sample that is subsequently used for mapping. @Wadoux2019 compared cLH sampling, CSC sampling, spatial coverage sampling (SCS) (Chapter \@ref(SpatialCoverage)), and simple random sampling for mapping soil organic carbon in France with a random forest model. The latter two sampling designs do not exploit the covariates in selecting the calibration units. Sample sizes were 100, 200, 500 and 1000. cLH sampling of calibration units performed worse (larger RMSE) than CSC sampling, and not significantly better than SI sampling for all sample sizes. For sample sizes 500 and 1000, SCS performed the best. 
+These results are somewhat different from the results of @Wadoux2019 and @Ma2020. In these case studies cLH sampling appeared to be an inefficient design for selecting a calibration sample that is subsequently used for mapping. @Wadoux2019 compared cLH sampling, CSC sampling, spatial coverage sampling (SCS) (Chapter \@ref(SpatialCoverage)) and simple random sampling for mapping soil organic carbon in France with a random forest model. The latter two sampling designs do not exploit the covariates in selecting the calibration units. Sample sizes were 100, 200, 500 and 1000. cLH sampling of calibration units performed worse (larger RMSE) than CSC sampling and not significantly better than SI sampling for all sample sizes. For sample sizes 500 and 1000, SCS performed the best. 
 
-@Ma2020 compared cLH, CSC and simple random sampling for mapping soil classes by various models, among which a random forest model, in a study area in Germany. Sample sizes were 20, 30, 40, 50, 75, and 100 points. They found no relation between the minimisation criterion of cLH sampling and the overall accuracy of the map with predicted soil classes. Models calibrated on CSC samples performed better on average, i.e. on average the overall accuracy of the maps obtained by calibrating the models on these CSC samples had higher overall accuracy. cLH sampling was hardly better than simple random sampling.
+@Ma2020 compared cLH, CSC and simple random sampling for mapping soil classes by various models, among which a random forest model, in a study area in Germany. Sample sizes were 20, 30, 40, 50, 75 and 100 points. They found no relation between the minimisation criterion of cLH sampling and the overall accuracy of the map with predicted soil classes. Models calibrated on CSC samples performed better on average, i.e. on average the overall accuracy of the maps obtained by calibrating the models on these CSC samples had higher overall accuracy. cLH sampling was hardly better than simple random sampling.
 
 ```{r, echo=FALSE}
 rm(list=ls())

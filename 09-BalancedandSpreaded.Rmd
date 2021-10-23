@@ -1,14 +1,16 @@
 # Balanced and well-spread sampling {#BalancedSpreaded}
 
-In this chapter two sampling designs are described and illustrated that are related but also fundamentally different. The similarities and difference are shortly described, but will become more clear in following sections. Roughly speaking, a balanced sample is a sample of which the sample mean of one or more covariates is equal to the population means of these covariates. When the covariates are linearly related to the study variable this may yield a more precise estimate of the population mean or total.
+In this chapter two related but fundamentally different sampling designs are described and illustrated. The similarity and difference are shortly outlined below, but will become more clear in following sections.
 
-A well-spread sample\index{Well-spread sample} is a sample with a large range of values for the covariates, from small to large values, but also intermediate values. In more technical terms: the sampling units are well-spread along the axes spanned by the covariates. If the spatial coordinates are used as covariates (spreading variables), this results in samples that are well-spread in geographical space. Such samples are commonly referred to as spatially balanced samples, which is somewhat confusing, as the geographical spreading is not implemented through balancing on the geographical coordinates. On the other hand, the averages of the spatial coordinates of a sample well-spread in geographical space will be close to the population means of the coordinates, and therefore will be approximately balanced on the spatial coordinates [@Grafstrom2014]. The reverse is not true: with balanced sampling\index{Balanced sampling} the spreading of the sampling units in the space spanned by the balancing variables can be poor. A sample with all values of a covariate used in balancing near the population mean of that variable has a poor spreading along the covariate axis, but can still be perfectly balanced.  
+Roughly speaking, for a balanced sample the sample means of covariates are equal to the population means of these covariate. When the covariates are linearly related to the study variable, this may yield a more precise estimate of the population mean or total of the study variable.
+
+A well-spread sample\index{Well-spread sample} is a sample with a large range of values for the covariates, from small to large values, but also including intermediate values. In more technical terms: the sampling units are well-spread along the axes spanned by the covariates. If the spatial coordinates are used as covariates (spreading variables), this results in samples that are well-spread in geographical space. Such samples are commonly referred to as spatially balanced samples, which is somewhat confusing, as the geographical spreading is not implemented through balancing on the geographical coordinates. On the other hand, the averages of the spatial coordinates of a sample well-spread in geographical space will be close to the population means of the coordinates. Therefore, the sample will be approximately balanced on the spatial coordinates [@Grafstrom2014]. The reverse is not true: with balanced sampling\index{Balanced sampling} the spreading of the sampling units in the space spanned by the balancing variables can be poor. A sample with all values of a covariate used in balancing near the population mean of that variable has a poor spreading along the covariate axis, but can still be perfectly balanced.  
 
 ## Balanced sampling {#Balanced}
 
 Balanced sampling is a sampling method that exploits one or more quantitative covariates that are related to the study variable. The idea behind balanced sampling is that, if we know the mean of the covariates, then the sampling efficiency can be increased by selecting a sample whose averages of the covariates must be equal to the population means of the covariates.
 
-Let me illustrate balanced sampling with a small simulation study. The simulated population shown in Figure \@ref(fig:simpleexample) shows a linear trend from West to East, and also a trend from South to North. Due to the West-East trend the simulated study variable $z$ is correlated with the covariate Easting, and due to the South-North trend also with the covariate Northing. To estimate the population mean of the simulated study variable, intuitively it is attractive to select a sample with an average of the Easting coordinate that is equal to the population mean of Easting (which is 10). Figure \@ref(fig:simpleexample) (subfigure on the left) shows such a sample; we say that the sample is `balanced' on the covariate Easting. The sample in the subfigure on the right is balanced on Easting as well as on Northing.  
+Let me illustrate balanced sampling with a small simulation study. The simulated population shown in Figure \@ref(fig:simpleexample) shows a linear trend from West to East and besides a trend from South to North. Due to the West-East trend the simulated study variable $z$ is correlated with the covariate Easting and, due to the South-North trend, also with the covariate Northing. To estimate the population mean of the simulated study variable, intuitively  it is attractive to select a sample with an average of the Easting coordinate that is equal to the population mean of Easting (which is 10). Figure \@ref(fig:simpleexample) (subfigure on the left) shows such a sample; we say that the sample is `balanced' on the covariate Easting. The sample in the subfigure on the right is balanced on Easting as well as on Northing.  
 
 ```{r simpleexample, echo=FALSE, out.width='100%', fig.cap = "Sample balanced on Easting (E) and on Easting and Northing (E and N)."}
 library(sampling)
@@ -96,16 +98,16 @@ We must distinguish a balanced *sample* from a balanced sampling *design*. A sam
 Simple random sampling is not a balanced sampling design, because for many simple random samples the sample mean of the balancing variable $x$ is not equal to the population mean of $x$. Only the *expectation* of the sample mean of $x$, i.e. the mean of the sample means obtained by selecting an infinite number of simple random samples, equals the population mean of $x$.
 ```
 
-Figure \@ref(fig:scatterplotsqerror) shows for one thousand simple random samples the squared error of the estimated population mean of the study variable $z$ against the difference between the sample mean of covariate balancing variable Easting and the population mean of Easting. Clearly, the larger the absolute value of the difference, the larger on average the squared error. So to obtain a precise and accurate estimate of the population mean of $z$, we better select samples with a difference close to 0.
+Figure \@ref(fig:scatterplotsqerror) shows for 1,000 simple random samples the squared error of the estimated population mean of the study variable $z$ against the difference between the sample mean of balancing variable Easting and the population mean of Easting. Clearly, the larger the absolute value of the difference, the larger on average the squared error. So, to obtain a precise and accurate estimate of the population mean of $z$, we better select samples with a difference close to 0.
 
-```{r scatterplotsqerror, echo=FALSE, fig.cap="Squared error in estimated mean of $z$ against difference between population and sample mean of Easting, for simple random sampling of size 4 from population shown in Figure 9.1."}
+```{r scatterplotsqerror, echo=FALSE, fig.cap="Squared error in estimated population mean of $z$ against difference between sample mean and population mean of Easting, for 1,000 simple random samples of size 4 selected from population shown in Figure 9.1."}
 nsam <- 1000
 n <- 4
 mz_sample <- mx_sample <- numeric(length=nsam)
 set.seed(31415)
 for (i in 1:nsam) {
   #select simple random sample from the data
-  sample_ind <- sample.int(nrow(grid), size=n)
+  sample_ind <- sample(nrow(grid), size=n)
   mz_sample[i] <- mean(grid$z[sample_ind])
   mx_sample[i] <- mean(grid$x1[sample_ind])
 }
@@ -119,13 +121,13 @@ ggplot(data=df) +
   scale_y_continuous(name="Squared error")
 ```
 
-Using only Easting as a balancing variable reduced the sampling variance of the estimator of the mean substantially, see Table \@ref(tab:tablebalanced). Using Northing as a second balancing variable further reduced the sampling variance.  
+Using only Easting as a balancing variable reduces the sampling variance of the estimator of the mean substantially. Using Easting and Northing as balancing variables further reduced the sampling variance, see Table \@ref(tab:tablebalanced).  
 
 ```{r tablebalanced, echo=FALSE}
 tbl <- data.frame(x=c("SI","Balanced","Balanced"),y=c("-","Easting","Easting and Northing"),z=c(39.7,14.4,9.77))
 
 knitr::kable(
-  tbl, caption = 'Sampling variances of estimated mean for simple random sampling and balanced sampling of four units.',
+  tbl, caption = 'Sampling variances of estimated mean for simple random sampling (SI) and balanced sampling of four units.',
   col.names=c("Sampling design","Balancing variables","Sampling variance"),
   booktabs = TRUE
 ) %>%
@@ -134,14 +136,14 @@ knitr::kable(
 
 ### Unequal inclusion probabilities
 
-Until now we assumed that the inclusion probabilities of the population units are equal, but this is not a requirement for balanced sampling designs. A more general definition of a balanced sampling design is as follows. A sampling design is balanced on variable $x$ when for all samples generated by the design the $\pi$ estimator of the population total of $x$ equals the population total of $x$:  
+Until now we have assumed that the inclusion probabilities of the population units are equal, but this is not a requirement for balanced sampling designs. A more general definition of a balanced sampling design is as follows. A sampling design is balanced on variable $x$ when for all samples generated by the design the $\pi$ estimator of the population total of $x$ equals the population total of $x$:  
 
 \begin{equation}
 \sum_{k \in \mathcal{S}} \frac{x_k}{\pi_k}= \sum_{k=1}^{N} x_k \;.
 (\#eq:generaldefinitionbalanced)
 \end{equation}
 
-Similar to the regression estimator\index{Regression estimator} explained in the next chapter (Section \@ref(RegressionEstimator)), balanced sampling exploits the linear relation between the study variable and one or more covariates. In the regression estimator this is done at the estimation stage. Balanced sampling does so at the sampling stage. For a single covariate the regression estimator of the population total equals (see Equation \@ref(eq:SimpleRegressionEstimatorSI))
+Similarly to the regression estimator\index{Regression estimator} explained in the next chapter (Section \@ref(RegressionEstimator)), balanced sampling exploits the linear relation between the study variable and one or more covariates. When using the regression estimator this is done at the estimation stage. Balanced sampling does so at the sampling stage. For a single covariate the regression estimator of the population total equals (see Equation \@ref(eq:SimpleRegressionEstimatorSI))
 
 \begin{equation}
 \hat{t}_{\mathrm{regr}}(z) = \hat{t}_{\pi}(z) + \hat{b}\left(t(x) - \hat{t}_{\pi}(x)\right) \;,
@@ -171,7 +173,7 @@ with $\mathbf{x}_k$ a vector of length $p$ with the balancing variables for unit
 (\#eq:betasbalanced)
 \end{equation}
 
-Working this out for balanced sampling without replacement with equal inclusion probabilities, $\pi_k = n/N, k = 1, \dots , N$, yields
+Working this out for balanced sampling without replacement with equal inclusion probabilities, $\pi_k = n/N,\; k = 1, \cdots , N$, yields
 
 \begin{equation}
 \widehat{V}(\hat{\bar{z}}) = \frac{1}{n(n-p)} \sum_{k \in \mathcal{S}} c_k \epsilon_k^2 \;.
@@ -180,10 +182,10 @@ Working this out for balanced sampling without replacement with equal inclusion 
 
 @Deville2005 give several formulas for computing the weights $c_k$, one of which is $c_k = (1-\pi_k)$.
 
-Balanced sampling is now illustrated with the aboveground biomass (AGB) data of Eastern Amazonia, see Figure \@ref(fig:mapsAmazonia). Log-transformed short-wave infrared radiation (lnSWIR2) is used as a balancing variable. The `samplecube` function of the **sampling** package [@Tille2016] implements the cube algorithm. Argument `X` of this function specifies the matrix of ancillary variables on which the sample must be balanced. The first column of this matrix is filled with ones, so that the sample size is fixed.
+Balanced sampling is now illustrated with aboveground biomass (AGB) data of Eastern Amazonia, see Figure \@ref(fig:mapsAmazonia). Log-transformed short-wave infrared radiation (lnSWIR2) is used as a balancing variable. The `samplecube` function of the **sampling** package [@Tille2016] implements the cube algorithm. Argument `X` of this function specifies the matrix of ancillary variables on which the sample must be balanced. The first column of this matrix is filled with ones, so that the sample size is fixed.
 
 ```{block2, type='rmdnote'}
-Recall that a sample is balanced on a covariate $x$ if the $\pi$ estimate of the population total of $x$ is equal to the known true population total of $x$ (Equation \@ref(eq:generaldefinitionbalanced). If we know the total number of units in a population, $N$, we can balance the sample on this known total by using as a balancing variable a constant with value 1. Only for samples of size $n$ the $\pi$ estimate of the total number of population units equals $N$: $\sum_{k \in \mathcal{S}} 1/\pi_k = N$ for samples of size $n$.
+Recall that a sample is balanced on a covariate $x$ if the $\pi$ estimate of the population total of $x$ is equal to the known true population total of $x$ (Equation \@ref(eq:generaldefinitionbalanced)). If we know the total number of units in a population, $N$, we can balance the sample on this known total using a constant with value 1 as a balancing variable. Only for samples of size $n$ the $\pi$ estimate of the total number of population units equals $N$: $\sum_{k \in \mathcal{S}} 1/\pi_k = N$ for samples of size $n$.
 ```
 
 Equal inclusion probabilities are used, i.e. for all population units the inclusion probability equals $n/N$.
@@ -238,9 +240,9 @@ v_tz <- n/(n-ncol(X))*sum(c*(e/pi)^2)
 v_mz <- v_tz/N^2
 ```
 
-Figure \@ref(fig:BalancedSampleAmazonia) shows the selected balanced sample. Note the spatial clustering of some units. The estimated population mean (as estimated by the sample mean) of AGB equals `r as.character(round(mz,1))`. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))`. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))`.
+Figure \@ref(fig:BalancedSampleAmazonia) shows the selected balanced sample. Note the spatial clustering of some units. The estimated population mean (as estimated by the sample mean) of AGB equals `r as.character(round(mz,1))` kg $10^9$ ha$^{-1}$. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))` kg $10^9$ ha$^{-1}$. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))` kg $10^9$ ha$^{-1}$.
 
-```{r BalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample from Eastern Amazonia (Brazil), balanced on covariate lnSWIR2."}
+```{r BalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Sample balanced on lnSWIR2 from Eastern Amazonia."}
 ggplot(data=gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
   geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=2)+
@@ -250,7 +252,7 @@ ggplot(data=gridAmazonia) +
   coord_fixed()
 ```
 
-Figure \@ref(fig:SamplingDistributionBalanced) shows the sampling distributions of the $\pi$ estimator of the mean of AGB with balanced sampling and simple random sampling, obtained by repeating the random sampling with both designs and estimation 1,000 times.
+Figure \@ref(fig:SamplingDistributionBalanced) shows the sampling distribution of the $\pi$ estimator of the mean AGB with balanced sampling and simple random sampling, obtained by repeating the random sampling with both designs and estimation 1,000 times.
 
 ```{r, echo=FALSE, eval=FALSE}
 mz <- v_mz <- mx_sample <- mz_SI <- numeric(length=1000)
@@ -274,13 +276,13 @@ for (i in 1:1000) {
 
   mx_sample[i] <- mean(mysample$lnSWIR2)
   
-  units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
+  units <- sample(nrow(gridAmazonia), size=n, replace=FALSE)
   mz_SI[i] <- mean(gridAmazonia$AGB[units])
 }
 save(mz, mz_SI, v_mz, mx_sample, file="results/Balanced_Amazonia.RData")
 ```
 
-```{r SamplingDistributionBalanced, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of $\\pi$ estimator of the mean aboveground biomass in Eastern Amazonia, with balanced sampling (balanced on lnSWIR2) and simple random sampling, bot designs with a sample size of 100 units."}
+```{r SamplingDistributionBalanced, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of the $\\pi$ estimator of the mean of AGB in Eastern Amazonia, with balanced sampling, balanced on lnSWIR2 and using equal inclusion probabilities, and simple random sampling without replacement (SI) of 100 units."}
 load(file="results/Balanced_Amazonia.RData")
 estimates <- data.frame(mz, mz_SI, v_mz, mx_sample)
 names(estimates)[c(1,2)] <- c("Balanced","SI")
@@ -293,9 +295,9 @@ ggplot(data=df) +
     scale_y_continuous(name="Estimated mean AGB")
 ```
 
-The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r as.character(round(var(estimates$Bal),1))`. The gain in precision compared to simple random sampling, equals `r as.character(round(var(estimates$SI)/var(estimates$Bal),1))`, so with simple random sampling three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r as.character(round(mean(estimates$v_mz),1))`, indicating that the approximate variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r round(mean(gridAmazonia$lnSWIR2),3)`. The sample mean of lnSWIR2 varies a bit among the samples (Figure \@ref(fig:histSampleMeanSWIR)). In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
+The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r as.character(round(var(estimates$Bal),1))`. The gain in precision compared to simple random sampling, equals `r as.character(round(var(estimates$SI)/var(estimates$Bal),3))`, so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r as.character(round(mean(estimates$v_mz),1))`, indicating that the approximate variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r round(mean(gridAmazonia$lnSWIR2),3)`. The sample mean of lnSWIR2 varies a bit among the samples (Figure \@ref(fig:histSampleMeanSWIR)). In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
 
-```{r histSampleMeanSWIR, echo=FALSE, fig.cap="Sampling distribution of the estimated population mean (sample mean) of balancing variable lnSWIR2."}
+```{r histSampleMeanSWIR, echo=FALSE, fig.cap="Sampling distribution of the sample mean of balancing variable lnSWIR2 with balanced sampling of size 100 and equal inclusion probabilities."}
 ggplot(data=estimates) +
   geom_histogram(aes(x=mx_sample), binwidth=0.0025, fill="black", alpha=0.5, color="black") +
   scale_y_continuous(name="Frequency") +
@@ -304,9 +306,9 @@ ggplot(data=estimates) +
 
 #### Exercises {-}
 
-1. Load the data of Amazonia (Amazonia\_5km.RData) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
+1. Load the data of Amazonia (`data/Amazonia_5km.RData`) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
     + Estimate the population mean.
-    + Estimate the standard error of the $\pi$ estimator. First estimate the regression coefficients, using function `estimate\_b` defined above, then compute the residuals, and finally compute the variance.    
+    + Estimate the standard error of the $\pi$ estimator. First estimate the regression coefficients, using function `estimate_b` defined above, then compute the residuals and finally compute the variance.    
 2. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
 
 ### Stratified random sampling {#StratifiedsamplingasBalancedsampling}
@@ -358,7 +360,7 @@ ggplot(data=mypop) +
   coord_fixed()
 ```
 
-In the next code chunk inclusion probabilities are computed by $\pi_{hk}=n_h/N_h, k=1, \dots , N_h$, with $n_h=5$ for all four strata. The stratum sample sizes are equal, but the number of population units of a stratum differ among the strata, so the inclusion probabilities also differ among the strata.
+In the next code chunk inclusion probabilities are computed by $\pi_{hk}=n_h/N_h,\; k=1, \cdots , N_h$, with $n_h=5$ for all four strata. The stratum sample sizes are equal, but the number of population units of a stratum differ among the strata, so the inclusion probabilities also differ among the strata.
 
 ```{r, echo=FALSE}
 mypop <- mypop[,-4]
@@ -400,9 +402,9 @@ The columns in the design matrix with dummy variables are multiplied by the vect
 \end{bmatrix}  \;.
 \end{equation*}
 
-This multiplication with the inclusion probabilities is not strictly needed. Using the design matrix with dummy variables implies that we balance the sample on the known total number of population units in the strata, $N_h$. For samples with stratum sample sizes equal to $n_h$, the sample sums of the dummy variables used in balancing, divided by the inclusion probability are equal to $N_h$.
+The multiplication by the inclusion probabilities is not strictly needed. Using the design matrix with dummy variables implies that we balance the sample on the known total number of population units in the strata, $N_h$. For samples with stratum sample sizes equal to $n_h$, the sample sums of the dummy variables used in balancing, divided by the inclusion probability, are equal to $N_h$.
 
-Multiplication of the dummy variables with the vector with inclusion probabilities implies that we balance the sample on the population totals of the inclusion probabilities, which are equal to the targeted stratum sample sizes. For samples with stratum sample sizes $n_h$ equal to these targeted sample sizes, the sample sums of the balancing variable divided by the inclusion probability (having value $\pi_{hk}/\pi_{hk}=1$ or 0), are equal to targeted sample sizes.
+Multiplication of the dummy variables by the vector with inclusion probabilities implies that we balance the sample on the population totals of the inclusion probabilities, which are equal to the targeted stratum sample sizes. For samples with stratum sample sizes $n_h$ equal to these targeted sample sizes, the sample sums of the balancing variable, divided by the inclusion probability (having value $\pi_{hk}/\pi_{hk}=1$ or 0), are equal to the targeted sample sizes.
 
 ```{r }
 X <- model.matrix(~ stratum-1, data=mypop)
@@ -412,15 +414,15 @@ sample_ind <- samplecube(X=X, pik=mypop$pi, comment=FALSE, method=1)
 mysample <- mypop[sample_ind>(1-eps),]
 ```
 
-In this case all units in a stratum have the same inclusion probability, yielding a stratified simple random sample. We may also use variable inclusion probabilities, for instance proportional to a size measure of the units, yielding a stratified ppswor random sample.
+In the above example all units in a stratum have the same inclusion probability, yielding a stratified simple random sample. We may also use variable inclusion probabilities, for instance proportional to a size measure of the units, yielding a stratified ppswor random sample (Section \@ref(ppswor)).
 
 The advantage of selecting a stratified random sample by balancing the sample on a categorical variable becomes clear in case we have multiple classifications that we would like to use in stratification, and we cannot afford to use all cross-classifications as strata. This is the topic of the next section.
 
 ### Multi-way stratification {#Multiwaystratification}
 
-@Falorsi2008 describe how a multi-way stratified sample\index{Multi-way stratification} can be selected as a balanced sample. Multi-way stratification is of interest when one has multiple stratification variables, each stratification variable leading to several strata, so that the total number of cross-classification strata\index{Cross-classification strata} becomes so large that the stratum sample sizes are strongly disproportional to their size, or even exceed the total sample size. For instance, suppose we have three maps with 4, 3 and 5 map units. Further, suppose that all combinations of map units are nonempty, so that we have $4 \times 3 \times 5=60$ combinations. We may not like to use all combinations (cross-classifications) as strata. The alternative is then to use the $4+3+5=12$ map units as strata.
+@Falorsi2008 describe how a multi-way stratified sample\index{Multi-way stratification} can be selected as a balanced sample. Multi-way stratification is of interest when one has multiple stratification variables, each stratification variable leading to several strata, so that the total number of cross-classification strata\index{Cross-classification strata} becomes so large that the stratum sample sizes are strongly disproportional to their size, or even exceed the total sample size. For instance, suppose we have three maps with 4, 3, and 5 map units. Further, suppose that all combinations of map units are nonempty, so that we have $4 \times 3 \times 5=60$ combinations. We may not like to use all combinations (cross-classifications) as strata. The alternative is then to use the $4+3+5=12$ map units as strata.
 
-The sample sizes of the marginal strata can be controlled by using a design matrix with as many columns as there are strata. The units of an individual map used for stratification are referred to as marginal strata\index{Marginal strata}. Each row $k = 1, \dots, N$ in the design matrix  $\mathbf{X}$ has as many non-zero values as we have maps, in entries corresponding to the cross-classification map unit of population unit $k$, and zeroes in the remaining entries. The non-zero value is the inclusion probability of that unit. Each column of the design matrix has non-zero values at entries corresponding to the population units in that marginal stratum, and zeroes at all other entries.
+The sample sizes of the marginal strata can be controlled using a design matrix with as many columns as there are strata. The units of an individual map used for stratification are referred to as marginal strata\index{Marginal strata}. Each row $k = 1, \cdots, N$ in the design matrix  $\mathbf{X}$ has as many non-zero values as we have maps, in entries corresponding to the cross-classification map unit of population unit $k$, and zeroes in the remaining entries. The non-zero value is the inclusion probability of that unit. Each column of the design matrix has non-zero values at entries corresponding to the population units in that marginal stratum and zeroes at all other entries.
 
 Two-way stratified random sampling is illustrated with a simulated population of 400 units (Figure \@ref(fig:TwowaystratifiedPopulation)). Figure \@ref(fig:Twowaystratifiedsample) shows two classifications of the population units. Classification A consists of four classes (map units), classification B of three classes. Instead of using $4 \times 3 = 12$ cross-classifications as strata in random sampling, only $4+3=7$ marginal strata are used in two-way stratified random sampling.
 
@@ -456,7 +458,7 @@ ggplot(data=mypop) +
   coord_fixed()
 ```
 
-As a first step the inclusion probabilities are added to the data frame `mypop` with the spatial coordinates and simulated values. To keep it simple I computed inclusion probabilities equal to two divided by the number of population units in a cross-classification stratum. Note that this does not imply that a sample is selected with two units per cross-stratum. As we will see later it is possible that in some  cross-classification stratum no units are selected at all, while in other cross-classification strata more than two units are selected. In multi-way stratified sampling the marginal stratum sample sizes are controlled. The inclusion probabilities  should result in six selected units for all four units of map A, and eight selected units for all three units of map B.   
+As a first step the inclusion probabilities are added to the data frame `mypop` with the spatial coordinates and simulated values. To keep it simple I computed inclusion probabilities equal to two divided by the number of population units in a cross-classification stratum. Note that this does not imply that a sample is selected with two units per cross-stratum. As we will see later it is possible that in some  cross-classification stratum no units are selected at all, while in other cross-classification strata more than two units are selected. In multi-way stratified sampling the marginal stratum sample sizes are controlled. The inclusion probabilities  should result in six selected units for all four units of map A and eight selected units for all three units of map B.   
 
 ```{r}
 mypop <- mypop %>%
@@ -475,7 +477,7 @@ X <- cbind(XA,XB)
 X <- sweep(X, MARGIN= 1, mypop$pih, `*`)
 ```
 
-Matrix $\mathbf{X}$ can be reduced by one column if in the first column the inclusion probabilities of *all* population units are inserted. This first column contains no zeroes. Balancing on this variable implies that the total sample size is controlled. Now there is no need anymore to control the sample sizes of all marginal strata. It is sufficient to control the sample sizes of three marginal strata of map A (A2, A3 and A4) and two marginal strata of map B (B2 and B3). Given the total sample size, the sample sizes of map units A1 and B1 then cannot be chosen freely anymore.
+Matrix $\mathbf{X}$ can be reduced by one column if in the first column the inclusion probabilities of *all* population units are inserted. This first column contains no zeroes. Balancing on this variable implies that the total sample size is controlled. Now there is no need anymore to control the sample sizes of all marginal strata. It is sufficient to control the sample sizes of three marginal strata of map A (A2, A3, and A4) and two marginal strata of map B (B2 and B3). Given the total sample size, the sample sizes of map units A1 and B1 then cannot be chosen freely anymore.
 
 ```{r}
 X <- model.matrix(~A+B, mypop)
@@ -483,7 +485,7 @@ colnames(X)
 X <- sweep(X, MARGIN= 1, mypop$pih, `*`)
 ```
 
-This reduced design matrix is not strictly needed for selecting a multi-way stratified sample, but must be used in estimation. If in estimation as many balancing variables are used as we have marginal strata, the matrix with the sum of squares of balancing variables in Equation \@ref(eq:betasbalanced) cannot be inverted (matrix is singular), and as a consequence the population regression coefficients cannot be estimated.
+This reduced design matrix is not strictly needed for selecting a multi-way stratified sample, but must be used in estimation. If in estimation as many balancing variables are used as we have marginal strata, the matrix with the sum of squares of the balancing variables in Equation \@ref(eq:betasbalanced) (first sum in Equation \@ref(eq:betasbalanced)) cannot be inverted (the matrix is singular), and as a consequence the population regression coefficients cannot be estimated.
 
 Finally, the two-way stratified random sample is selected with function `samplecube` of package **sampling**. 
 
@@ -516,7 +518,7 @@ plt2 <- ggplot(data=mypop) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-All marginal sample sizes\index{Marginal sample size} of map A are six, and all marginal sample sizes of map B are eight, as expected. The sample sizes of the cross-classification strata vary from zero to four.
+All marginal sample sizes\index{Marginal sample size} of map A are six and all marginal sample sizes of map B are eight, as expected. The sample sizes of the cross-classification strata vary from zero to four.
 
 ```{r}
 addmargins(table(mysample$A, mysample$B))
@@ -543,19 +545,19 @@ print(v_mz <- v_tz/N^2)
 
 ## Well-spread sampling {#Spreaded}
 
-With balanced sampling the spreading of the sampling units in the space spanned by the balancing variables can be poor. For instance, in Figure \@ref(fig:simpleexample) the Easting coordinates of all units of a sample balanced on Easting can be equal or close to the population mean of 10. So, in this example balancing does not guarantee a good geographical spreading. A balanced sample can be selected that shows strong clustering in the space spanned by the balancing variables. This clustering may inflate the standard error of the estimated population total and mean. The clustering in geographical or covariate space can be avoided by the local pivotal method [@Grafstrom2012], and the spatially correlated Poisson sampling method\index{Spatially correlated Poisson sampling} [@Grafstrom2012b]. 
+With balanced sampling the spreading of the sampling units in the space spanned by the balancing variables can be poor. For instance, in Figure \@ref(fig:simpleexample) the Easting coordinates of all units of a sample balanced on Easting can be equal or close to the population mean of 10. So, in this example balancing does not guarantee a good geographical spreading. Stated more generally, a balanced sample can be selected that shows strong clustering in the space spanned by the balancing variables. This clustering may inflate the standard error of the estimated population total and mean. The clustering in geographical or covariate space can be avoided by the local pivotal method [@Grafstrom2012] and the spatially correlated Poisson sampling method\index{Spatially correlated Poisson sampling} [@Grafstrom2012b]. 
 
 ```{block2, type='rmdnote'}
-For spreading in *geographical* space various other designs are available. A simple design is stratified random sampling from compact geographical strata, see Section \@ref(geostrata). Alternative designs are generalised random-tessellation stratified sampling [@stevens2004], see Section \@ref(GRTS), and balanced acceptance sampling\index{Balanced acceptance sampling} [@Robertson2013].
+For spreading in *geographical* space various other designs are available. A simple design is stratified random sampling from compact geographical strata, see Section \@ref(geostrata). Alternative designs are generalised random-tessellation stratified sampling [@stevens2004], see Subsection \@ref(GRTS), and balanced acceptance sampling\index{Balanced acceptance sampling} [@Robertson2013].
 ```
 
 ### Local pivotal method {#LPM}
 
-The local pivotal method (LPM) is a modification of the pivotal method explained in Section \@ref(ppswor)\index{Local pivotal method for well-spread sampling}. The only difference with the pivotal method is the selection of the pairs of units. In the pivotal method at each step two units are selected, for instance, the first two units in the vector with inclusion probabilities after randomising the order of the units. In the local pivotal method the first unit is selected fully randomly and the nearest neighbour of this unit is used as its counterpart. Recall that when one unit of a pair is included in the sample, the inclusion probability of its counterpart is decreased. This leads to a better spreading of the sampling units in the space spanned by the spreading variables.
+The local pivotal method (LPM) is a modification of the pivotal method explained in Subsection \@ref(pivotalmethod)\index{Local pivotal method for well-spread sampling}. The only difference with the pivotal method is the selection of the pairs of units. In the pivotal method at each step two units are selected, for instance, the first two units in the vector with inclusion probabilities after randomising the order of the units. In the local pivotal method the first unit is selected fully randomly and the nearest neighbour of this unit is used as its counterpart. Recall that when one unit of a pair is included in the sample, the inclusion probability of its counterpart is decreased. This leads to a better spreading of the sampling units in the space spanned by the spreading variables.
 
-LPM can be used for arbitrary inclusion probabilities. The inclusion probabilities can be equal, but as in the pivotal method these probabilities may also differ among the population units.   
+LPM can be used for arbitrary inclusion probabilities. The inclusion probabilities can be equal, but as with the pivotal method these probabilities may also differ among the population units.   
 
-Selecting samples with LPM can be done with functions `lpm`, `lpm1` or `lpm2` of package **BalancedSampling** [@Grafstrom2016]. The functions `lpm1` and `lpm2` only differ in the selection of neighbours that are allowed to compete, for details see @Grafstrom2012. For most populations the two algorithms perform similarly (personal communication Anton Grafstr&ouml;m). The algorithm implemented in the function `lpm` is only recommended when the population size is too large for `lpm1` or `lpm2`. It only uses a subset of the population in search for nearest neighbours, and is thus not as good. Another function ` lpm2_kdtree` of package  **SamplingBigData** [@samplingBigData] is developed for big data sets.
+Selecting samples with LPM can be done with functions `lpm`, `lpm1` or `lpm2` of package **BalancedSampling** [@Grafstrom2016]. The functions `lpm1` and `lpm2` only differ in the selection of neighbours that are allowed to compete, for details see @Grafstrom2012. For most populations the two algorithms perform similarly (personal communication Anton Grafstr&ouml;m). The algorithm implemented in the function `lpm` is only recommended when the population size is too large for `lpm1` or `lpm2`. It only uses a subset of the population in search for nearest neighbours and is thus not as good. Another function ` lpm2_kdtree` of package  **SamplingBigData** [@samplingBigData] is developed for big data sets.
 
 Inclusion probabilities are computed with function `inclusionprobabilities` of package **sampling**.  A matrix $\mathbf{X}$ must be defined with the values of the spreading variables of the population units. Figure \@ref(fig:LPMKandahar) shows a sample of 40 units selected from the sampling frame of Kandahar, using the spatial coordinates of the population units as spreading variables. Inclusion probabilities are proportional to the agricultural area within the population units. The geographical spreading is improved compared with the sample shown in Figure \@ref(fig:ppswrKandahar). 
 
@@ -571,11 +573,11 @@ units <- lpm1(pi, X)
 myLPMsample <- grdKandahar[units,]
 ```
 
-```{r LPMKandahar, echo=FALSE, out.width='100%', fig.cap="Spatial ppswor sample selected by local pivotal method, using agricultural area as size variable."}
+```{r LPMKandahar, echo=FALSE, out.width='100%', fig.cap="Spatial ppswor sample of size 40 from Kandahar, selected by the local pivotal method, using agricultural area as a size variable."}
 ggplot(data=grdKandahar) +
   geom_raster(mapping=aes(x=x, y=y, fill=agri)) +
   geom_tile(data=myLPMsample, mapping=aes(x=x, y=y), colour="white", size=0.7, width=5, height=5, fill=NA) +
-  scale_fill_viridis_c(name="Agric. area") +
+  scale_fill_viridis_c(name="Agriarea") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
   coord_fixed()
@@ -588,7 +590,7 @@ myLPMsample$pi <- pi[units]
 tz_HT <- sum(myLPMsample$poppy/myLPMsample$pi)
 ```
 
-The estimated total poppy area equals `r as.character(round(tz_HT,0))` ha. The sampling variance of the estimator of the population total with the local pivotal method can be estimated by [@Grafstrom2014]
+The estimated total poppy area equals 56,420 ha. The sampling variance of the estimator of the population total with the local pivotal method can be estimated by [@Grafstrom2014]
 
 \begin{equation}
 \widehat{V}(\hat{t}(z)) = \frac{1}{2} \sum_{k \in \mathcal{S}} \left( \frac{z_k}{\pi_k} - \frac{z_{k_j}}{\pi_{k_j}} \right)^2 \;,
@@ -606,7 +608,7 @@ pk <- myLPMsample$pi/n
 se_tz_pwr <- sqrt(var(myLPMsample$poppy/pk)/n)
 ```
 
-The standard error obtained with function `vsb` equals `r as.character(round(se_tz_HT,0))`, the standard error of the Hansen-Hurwitz estimator equals  `r as.character(round(se_tz_pwr,0))`. So in this case the Hansen-Hurwitz variance estimator is smaller than the other variance estimator, but on average it will be larger.
+The standard error obtained with function `vsb` equals 14,222 ha, the standard error of the Hansen-Hurwitz estimator equals 13,468 ha. So for the selected sample the Hansen-Hurwitz variance estimator is smaller than the other variance estimator, but on average it will be larger.
 
 As explained above, the LPM design can also be used to select a probability sample well-spread in the space spanned by one or more quantitative covariates. Matrix $\mathbf{X}$ then should contain the values of the *scaled* (standardised) covariates instead of the spatial coordinates.
 
@@ -616,7 +618,7 @@ As explained above, the LPM design can also be used to select a probability samp
 
 ### Generalised random-tessellation stratified sampling {#GRTS}
 
-Generalised random-tessellation stratified sampling\index{Generalised random-tessellation stratified sampling} (GRTS) is designed for sampling discrete objects scattered throughout space, think for instance of the lakes in Finland, segments of hedgerows in England, etc.  Each object is represented by a point in 2D-space. It is a complicated design, and for sampling points from a continuous universe, or raster cells from a finite population, I recommend more simple designs such as the local pivotal method (Section \@ref(LPM)), balanced sampling with geographical spreading (Section \@ref(BalancedandSpreaded)), or sampling from compact geographical strata (Section \@ref(geostrata)).  Let me try to explain the GRTS design with a simple example of a finite population of point objects in a circular study area (Figure  \@ref(fig:GRTSNumbering)). For a more detailed description of this design I refer to @Hankin2019. As a first step a square bounding box of the study area is constructed. This bounding box is recursively partitioned into square grid cells. First 2 $\times$ 2 grid cells are constructed. These grid cells are numbered in a predefined order. In Figure  \@ref(fig:GRTSNumbering) this numbering is from lower left, lower right, upper left to upper right. Each grid cell is then subdivided into four subcells; the subcells are numbered using the same order. This is repeated until at most one population unit occurs in each subcell. For our population only two iterations were needed, leading to 4 x 4 subcells. Note that some subcells are empty. Each address of a subcell consists of two digits, the first digit is for the grid cell, the second digit for the subcell. 
+Generalised random-tessellation stratified (GRTS) sampling\index{Generalised random-tessellation stratified sampling}  is designed for sampling discrete objects scattered throughout space, think for instance of the lakes in Finland, segments of hedgerows in England, etc.  Each object is represented by a point in 2D-space. It is a complicated design and for sampling points from a continuous universe, or raster cells from a finite population, I recommend more simple designs such as the local pivotal method (Section \@ref(LPM)), balanced sampling with geographical spreading (Section \@ref(BalancedandSpreaded)), or sampling from compact geographical strata (Section \@ref(geostrata)).  Let me try to explain the GRTS design with a simple example of a finite population of point objects in a circular study area (Figure  \@ref(fig:GRTSNumbering)). For a more detailed description of this design I refer to @Hankin2019. As a first step a square bounding box of the study area is constructed. This bounding box is recursively partitioned into square grid cells. First 2 $\times$ 2 grid cells are constructed. These grid cells are numbered in a predefined order. In Figure  \@ref(fig:GRTSNumbering) this numbering is from lower left, lower right, upper left to upper right. Each grid cell is then subdivided into four subcells; the subcells are numbered using the same order. This is repeated until at most one population unit occurs in each subcell. For our population only two iterations were needed, leading to 4 x 4 subcells. Note that two subcells are empty. Each address of a subcell consists of two digits, the first digit refers to the grid cell, the second digit to the subcell. 
 
 ```{r GRTSNumbering, echo=FALSE, out.width="100%", fig.cap = "Numbering of grid cells and subcells for GRTS sampling."}
 s1 <- s2 <- 1:100 - 0.5
@@ -643,7 +645,7 @@ units <- sampling::strata(pxl,stratanames="partit2",
 myfinpop <- getdata(pxl,units)
 #remove some units, and shift fourth point into circle
 myfinpop$s1[4] <- 78
-units <- sample.int(nrow(myfinpop),2)
+units <- sample(nrow(myfinpop),2)
 myfinpop <- myfinpop[-units,]
 N <- nrow(myfinpop)
 
@@ -671,11 +673,11 @@ plt2 <- ggplot(data=myfinpop) +
 grid.arrange(plt1, plt2, nrow=1)
 ```
 
-The next step is to place the sixteen subcells on a line in a random order. The randomisation is done hierarchically. First, the four grid cells at the highest level are randomised. In our example the randomized order is 1, 2, 3, 0 (Figure \@ref(fig:GRTS)). Next, within each grid cell the order of the subcells is randomized. This is done independently for the grid cells. In our example for grid cell 1 the randomized order of the subcells is 2, 1, 3, 0 (Figure \@ref(fig:GRTS)). Note that the empty subcells, subcells (0,0) and (3,3) are removed from the line.
+The next step is to place the sixteen subcells on a line in a random order. The randomisation is done hierarchically. First, the four grid cells at the highest level are randomised. In our example the randomised order is 1, 2, 3, 0 (Figure \@ref(fig:GRTS)). Next, within each grid cell the order of the subcells is randomised. This is done independently for the grid cells. In our example for grid cell 1 the randomised order of the subcells is 2, 1, 3, 0 (Figure \@ref(fig:GRTS)). Note that the empty subcells, subcells (0,0) and (3,3), are removed from the line.
 
 ```{r}
 set.seed(314)
-ord <- sample.int(4,4)
+ord <- sample(4,4)
 myfinpop_rand <- NULL
 for (i in ord) {
   units <- which(myfinpop$partit1==i)
@@ -684,7 +686,7 @@ for (i in ord) {
 }
 ```
 
-After the subcells are placed on a line, a one-dimensional systematic random sample is selected (Figure \@ref(fig:GRTS)), see also Section \@ref(Systematicpps). This can be done either with equal or unequal inclusion probabilities. With equal inclusion probabilities the length of the lines representing the population units is constant. With unequal inclusion probabilities the length of the lines is proportional to a size variable. For a sample size of $n$, the total line is divided into $n$ segments of equal length. A random point is selected in the first segment, and the other points of the systematic sample are determined. Finally, the population units corresponding with the selected systematic sample are identified. With equal probabilities the five selected units are the units in subcells 11, 23, 22, 32 and 03 (Figure \@ref(fig:GRTS)). 
+After the subcells have been placed on a line, a one-dimensional systematic random sample is selected (Figure \@ref(fig:GRTS)), see also Subsection \@ref(Systematicpps). This can be done either with equal or unequal inclusion probabilities. With equal inclusion probabilities the length of the lines representing the population units is constant. With unequal inclusion probabilities the length of the lines is proportional to a size variable. For a sample size of $n$, the total line is divided into $n$ segments of equal length. A random point is selected in the first segment and the other points of the systematic sample are determined. Finally, the population units corresponding to the selected systematic sample are identified. With equal probabilities the five selected units are the units in subcells 11, 23, 22, 32, and 03 (Figure \@ref(fig:GRTS)). 
 
 ```{r sys1D}
 size <- rep(1,N)
@@ -714,10 +716,10 @@ ggplot(data=datfr) +
   scale_x_continuous("", breaks=mysys)+
   scale_fill_viridis_d(guide="none")
 ```
-Figure \@ref(fig:GRTSpps) shows a systematic random sample along a line with unequal inclusion probabilities. The inclusion probabilities are proportional to a size variable, with values 1, 2, 3 or 4. The selected population units are the units in subcells 10, 20, 31, 01 and 02.
+Figure \@ref(fig:GRTSpps) shows a systematic random sample along a line with unequal inclusion probabilities. The inclusion probabilities are proportional to a size variable, with values 1, 2, 3, or 4. The selected population units are the units in subcells 10, 20, 31, 01, and 02.
 
 ```{r GRTSpps, echo=FALSE, fig.asp=.15, fig.cap = "Systematic random sample along a line with inclusion probabilities proportional to size."}
-size <- sample.int(4, size=N, replace=TRUE)
+size <- sample(4, size=N, replace=TRUE)
 n <- 5
 interval <- sum(size)/n
 start <- round(runif(1)*interval,2)
@@ -736,7 +738,7 @@ ggplot(data=datfr) +
   scale_fill_viridis_d(guide="none")
 ```
 
-GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. First, a data frame is created representing the sampling frame. With unequal inclusion probabilities this data frame  must include a variable for the inclusion probabilities. Next, a named list specifying the sampling design is created. The first element specifies how many units must be selected. In case of stratified random sampling these sample sizes must be set per stratum. Also, more than one sample can be selected (per stratum), referred to as panels. Per sampling round only one panel is observed. After multiple rounds the sample data can be used for estimating the temporal change of the spatial mean or total. The element `seltype` in the design list must be set to "Continuous" for sampling with probabilities proportional to an ancillary variable specified with argument `mdcaty`. If the argument `shift.grd` is set to TRUE (the default value), the hierarchical grid is shifted to a random position.
+GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. First, a data frame is created representing the sampling frame. With unequal inclusion probabilities this data frame  must include a variable for the inclusion probabilities. Next, a named list specifying the sampling design is created. The first element specifies how many units must be selected. In case of stratified random sampling these sample sizes must be set per stratum. Also, more than one sample can be selected (per stratum), referred to as panels. Per sampling round only one panel is observed. After multiple rounds the sample data can be used for estimating the temporal change of the spatial mean or total. The element `seltype` in the design list must be set to `Continuous` for sampling with probabilities proportional to an ancillary variable specified with argument `mdcaty`. If the argument `shift.grd` is set to `TRUE` (the default value), the hierarchical grid is shifted to a random position.
 
 ```{r GRTSppsKandahar}
 library(spsurvey)
@@ -761,7 +763,7 @@ The total poppy area is estimated by the $\pi$ estimator.
 tz_GRTS <- sum(myGRTSsample$poppy/pi[units])
 ```
 
-The estimated total is `r as.character(round(tz_GRTS,0))`. Function `vsb` of package **BalancedSampling** can be used to estimate the standard error of the estimated total poppy area.
+The estimated total is 56,979 ha. Function `vsb` of package **BalancedSampling** can be used to estimate the standard error of the estimated total poppy area.
 
 ```{r}
 X <- cbind(grdKandahar$x, grdKandahar$y)
@@ -771,7 +773,7 @@ sqrt(vsb(pi[units], myGRTSsample$poppy, Xsample)) %>% round(.,0)
 
 ## Balanced sampling with spreading {#BalancedandSpreaded}
 
-As mentioned in the introduction to this chapter a sample balanced on a covariate still may have a poor spreading along the axis spanned by the covariate. @Grafstrom2013 presented a method for selecting balanced samples that are also well-spread in the space spanned by the covariates, which they refer to as doubly-balanced sampling\index{Doubly-balanced sampling}. If we take one or more covariates as balancing variables, and besides Easting and Northing as spreading variables, this leads to balanced samples with good *geographical* spreading. When the residuals of the regression model show spatial structure (are spatially correlated), the estimated population mean of the study variable becomes more precise thanks to the improved geographical spreading. Balanced samples with spreading can be selected with function `lcube` of package **BalancedSampling**. This is illustrated with Eastern Amazonia, using as before lnSWIR2 for balancing the sample.  
+As mentioned in the introduction to this chapter a sample balanced on a covariate still may have a poor spreading along the axis spanned by the covariate. @Grafstrom2013 presented a method for selecting balanced samples that are also well-spread in the space spanned by the covariates, which they refer to as doubly-balanced sampling\index{Doubly-balanced sampling}. If we take one or more covariates as balancing variables and, besides, Easting and Northing as spreading variables, this leads to balanced samples with good *geographical* spreading. When the residuals of the regression model show spatial structure (are spatially correlated), the estimated population mean of the study variable becomes more precise thanks to the improved geographical spreading. Balanced samples with spreading can be selected with function `lcube` of package **BalancedSampling**. This is illustrated with Eastern Amazonia, using as before lnSWIR2 for balancing the sample.  
 
 ```{r lcube}
 library(BalancedSampling)
@@ -785,7 +787,7 @@ units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=pi)
 mysample <- gridAmazonia[units,]
 ```
 
-```{r DoublyBalanceSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Sample balanced on lnSWIR2 with geographical spreading from Eastern Amazonia (Brazil)."}
+```{r DoublyBalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Sample balanced on lnSWIR2 with geographical spreading from Eastern Amazonia."}
 ggplot(data=gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
   geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=2)+
@@ -795,16 +797,16 @@ ggplot(data=gridAmazonia) +
   coord_fixed()
 ```
 
-The selected sample is shown in Figure \@ref(fig:DoublyBalanceSampleAmazonia). Comparing this sample with the balanced sample of Figure \@ref(fig:BalancedSampleAmazonia) shows that the geographical spreading of the sample is improved, although there still are some close points. The $\pi$ estimate of the mean is `r mean(mysample$AGB)`.
+The selected sample is shown in Figure \@ref(fig:DoublyBalancedSampleAmazonia). Comparing this sample with the balanced sample of Figure \@ref(fig:BalancedSampleAmazonia) shows that the geographical spreading of the sample is improved, although there still are some close points. I used equal inclusion probabilities, so the $\pi$ estimate of the mean is equal to the sample mean, which is equal to `r round(mean(mysample$AGB),1)` kg $10^9$ ha$^{-1}$.
 
-The variance of the estimator of the mean can be estimated by (Equation (7), @Grafstrom2013)
+The variance of the estimator of the mean can be estimated by (Equation (7) of @Grafstrom2013)
 
 \begin{equation}
 \widehat{V}(\hat{\bar{z}}) = \frac{n}{n-p}\frac{p}{p+1} \sum_{k \in \mathcal{S}}(1-\pi_k) \left(\frac{\epsilon_k}{\pi_k}-\bar{\epsilon}_k \right)^2 \;,
 (\#eq:VarmeanDoublyBalanced)
 \end{equation}
 
-with $p$ the number of balancing variables, $\epsilon_k$ the regression model residual of unit $k$ (Equation \@ref(eq:residualsBalanced)), and $\bar{\epsilon}_k$ the local mean of the residuals of this unit, computed by
+with $p$ the number of balancing variables, $\epsilon_k$ the regression model residual of unit $k$ (Equation \@ref(eq:residualsBalanced)) and $\bar{\epsilon}_k$ the local mean of the residuals of this unit, computed by
 
 \begin{equation}
 \bar{\epsilon}_k = \frac{\sum_{j=1}^{p+1}(1-\pi_j)\frac{\epsilon_j}{\pi_j}}{\sum_{j=1}^{p+1}(1-\pi_j)}\;.
@@ -824,7 +826,7 @@ weights <- localmean.weight(x=mysample$x1, y=mysample$x2, prb=rep(pi,n), nbh=3)
 v_mz <- localmean.var(z=e/pi, weight.lst=weights)/N^2
 ```
 
-The estimated standard error is `r as.character(round(sqrt(v_mz),1))`, which is considerably smaller than the estimated standard error of the balanced sample without geographical spreading.
+The estimated standard error is `r as.character(round(sqrt(v_mz),1))` kg $10^9$ ha$^{-1}$, which is considerably smaller than the estimated standard error of the balanced sample without geographical spreading.
 
 ```{r, echo=FALSE}
 rm(list=ls())

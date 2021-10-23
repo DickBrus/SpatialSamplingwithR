@@ -4,13 +4,13 @@ In the previous chapters of Part II various methods are described for selecting 
 
 If the map has been made with a statistical model, then the predictors are typically model-unbiased and the variance of the prediction errors can be computed from the model. Think for instance of kriging, which also results in a map of the kriging variance. In Chapters \@ref(MBgridspacing) and \@ref(MBSamplePattern) I showed how this kriging variance can be used to optimise the grid spacing (sample size) and the spatial coordinates of the sampling units for mapping. So, if we have a map of these variances, why do we still need to collect new data for estimating the map quality?
 
-The problem is that these kriging variances rely on the validity\index{Validity} of the assumptions made in modelling the spatial variation of the study variable. Do we assume a constant mean, or a mean that is linear combination of some covariates? Which covariates? Or should we model the mean with a non-linear function, as in random forests? How good is our estimate of the semivariogram model form and parameters, either for the target variable or the residuals from some function of the covariates? If one or more of these modelling assumptions are violated, the variances of the prediction errors may become biased. For that reason, the quality of the map is preferably determined through independent validation, i.e. by comparing predictions with observations not used in mapping, and followed by *model-free* design-based estimation of the map quality indices. This process is often referred to as validation\index{Validation}, perhaps better statistical validation, a subset of the more comprehensive term map quality evaluation\index{Map quality evaluation}, which includes the concept of fitness-for-use. 
+The problem is that these kriging variances rely on the validity\index{Validity} of the assumptions made in modelling the spatial variation of the study variable. Do we assume a constant mean, or a mean that is linear combination of some covariates? Which covariates? Or should we model the mean with a non-linear function, as in random forests? How good is our estimate of the semivariogram model form and parameters, either for the target variable or the residuals from some function of the covariates? If one or more of these modelling assumptions are violated, the variances of the prediction errors may become biased. For this reason the quality of the map is preferably determined through independent validation, i.e. by comparing predictions with observations not used in mapping, and followed by *model-free* design-based estimation of the map quality indices. This process is often referred to as validation\index{Validation}, perhaps better statistical validation, a subset of the more comprehensive term map quality evaluation\index{Map quality evaluation}, which includes the concept of fitness-for-use. 
 
 Statistical validation of maps is often done through data-splitting\index{Data-splitting} or cross-validation\index{Cross-validation}. In data-splitting the data are split into two subsets, one for calibrating the model and mapping, one for validation. In cross-validation the data set is split into a number of disjoint subsets of equal size. Each subset is used one-by-one for calibration and prediction. The remaining subsets are used for validation. Leave-one-out-crossvalidation\index{Cross-validation!leave-one-out-crossvalidation} (LOOCV) is a special case of this, in which each sampling unit is left out one-by-one, and all other units are used for calibration and prediction of the study variable of the unit that is left out. The problem with data-splitting and cross-validation is that the data used for mapping typically are from non-probability samples. This makes model-free estimation of the map quality indices unfeasible [@brus2011d]. Designing a sampling scheme starts with a comprehensive description of the aim of the sampling project [@gru06]. Mapping and validation are different aims, which ask for different sampling approaches. For validation probability sampling is the best option because then a statistical model of the spatial variation of the prediction errors is not needed. Map quality indices, defined as population parameters, can be estimated model-free, by design-based inference (see also Section \@ref(DBvsMB)).
 
 ## Map quality indices
 
-I would like to emphasize that in validation we want to assess the accuracy of the map as a whole. We are not interested in the accuracy at a sample of population units only. For instance, we would like to know the prediction error averaged over all population units, and not merely the average prediction error at a sample of units. Map quality indices are therefore defined as population parameters. Because we cannot afford to determine the prediction error for each unit of the mapping area to calculate these population means (if we could do that there would be no need for a mapping model), we have to take a sample of units at which the predictions of the study variable are confronted with the observations. This sample is then used to *estimate* population parameters of the prediction error and our uncertainty about these population parameters, as quantified, for instance, by their standard errors or confidence interval.
+I would like to emphasise that in validation we want to assess the accuracy of the map as a whole. We are not interested in the accuracy at a sample of population units only. For instance, we would like to know the prediction error averaged over all population units and not merely the average prediction error at a sample of units. Map quality indices are therefore defined as population parameters. Because we cannot afford to determine the prediction error for each unit of the mapping area to calculate these population means (if we could do that there would be no need for a mapping model), we have to take a sample of units at which the predictions of the study variable are confronted with the observations. This sample is then used to *estimate* population parameters of the prediction error and our uncertainty about these population parameters, as quantified, for instance, by their standard errors or confidence interval.
 
 For quantitative maps, i.e. maps depicting a quantitative study variable\index{Quantitative map}, popular map quality indices\index{Map quality indices} are (i) the population mean error\index{Population mean error} (ME); (ii) the population mean absolute error\index{Population mean absolute error} (MAE); and (iii) the population mean squared error\index{Population mean squared error}, defined as
 
@@ -21,7 +21,7 @@ MSE = \frac{1}{N} \sum_{k=1}^N (\hat{z}_k-z_k)^2\;,
 (\#eq:mapqualityindices)
 \end{align}
 
-with $N$ the total number of units (e.g. pixels) in the population, $\hat{z}_k$ the predicted value for unit $k$, $z_k$ the true value of that unit, and $|\cdot|$ the absolute value operator. For infinite populations the sum must be replaced by an integral. The ME quantifies the systematic error\index{Systematic error}, and ideally  equals 0. It can be positive (in case of overprediction)  and negative (in case of underprediction). Positive and negative errors cancel out, and as a consequence the ME does not quantify the magnitude of the prediction errors. The MAE and RMSE do quantify the magnitude of the errors, they are nonnegative. Often the square root of MSE is taken, denoted by RMSE, so that the unit of measurement is the same as that of the study variable. The RMSE is strongly affected by outliers (large prediction errors), due to the squaring of the errors, and for this reason it is recommended to estimate both MAE and RMSE.
+with $N$ the total number of units (e.g. pixels) in the population, $\hat{z}_k$ the predicted value for unit $k$, $z_k$ the true value of that unit and $|\cdot|$ the absolute value operator. For infinite populations the sum must be replaced by an integral. The ME quantifies the systematic error\index{Systematic error} and ideally  equals 0. It can be positive (in case of overprediction)  and negative (in case of underprediction). Positive and negative errors cancel out and, as a consequence, the ME does not quantify the magnitude of the prediction errors. The MAE and RMSE do quantify the magnitude of the errors, they are nonnegative. Often the square root of MSE is taken, denoted by RMSE, which is in the same units as the study variable and is therefore more intelligible. The RMSE is strongly affected by outliers (large prediction errors), due to the squaring of the errors, and for this reason it is recommended to estimate both MAE and RMSE.
 
 Two other important map quality indices are the population coefficient of determination\index{Population coefficient of determination} and the Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC). The population coefficient  of determination $R^2$ is defined as the square of the Pearson correlation coefficient $r$ of the study variable and the predictions of the study variable, given by
 
@@ -30,7 +30,7 @@ r = \frac{\sum_{k=1}^{N}(z_k - \bar{z})(\hat{z}_k-\bar{\hat{z}})}{\sqrt{\sum_{k=
 (\#eq:r)
 \end{equation}
 
-with $\bar{z}$ the population mean of the study variable, $\bar{\hat{z}}$ the population mean of the predictions, $S^2(z,\hat{z})$ the population covariance of the study variable and the predictions of $z$, $S(z)$ the population standard deviation of the study variable, and $S(\hat{z})$ the population standard deviation of the predictions. Note that $R^2$ is unaffected by bias, and therefore should not be used in isolation, but always accompanied by ME.
+with $\bar{z}$ the population mean of the study variable, $\bar{\hat{z}}$ the population mean of the predictions, $S^2(z,\hat{z})$ the population covariance of the study variable and the predictions of $z$, $S(z)$ the population standard deviation of the study variable and $S(\hat{z})$ the population standard deviation of the predictions. Note that $R^2$ is unaffected by bias and therefore should not be used in isolation, but always accompanied by ME.
 
 MEC is defined as [@Janssen1995]
 
@@ -48,7 +48,7 @@ P = \frac{1}{N}\sum_{k=1}^N y_k\;,
 (\#eq:Purity)
 \end{equation}
 
-with $y_k$ an indicator for unit $k$ having value 1 if the predicted class equals the true class, and 0 otherwise:
+with $y_k$ an indicator for unit $k$, having value 1 if the predicted class equals the true class, and 0 otherwise:
 
 \begin{equation}
 y_k = \left\{
@@ -68,7 +68,7 @@ A different subpopulation is the part of the population that is *in reality* cla
 
 ### Estimation of map quality indices
 
-The map quality indices are defined as population or subpopulation means. To estimate these (sub)population means a design-based sampling approach is most appropriate. Sampling units are selected by probability sampling, and the map quality indices are estimated by model-free design-based inference. So the ME of a finite population can be estimated by the $\pi$ estimator (see Equation \@ref(eq:HTMean)):
+The map quality indices are defined as population or subpopulation means. To estimate these (sub)population means a design-based sampling approach is most appropriate. Sampling units are selected by probability sampling and the map quality indices are estimated by model-free design-based inference. So, the ME of a finite population can be estimated by the $\pi$ estimator (see Equation \@ref(eq:HTMean)):
 
 \begin{equation}
 \widehat{ME} =\frac{1}{N} \sum_{k \in \mathcal{S}} \frac{1}{\pi_k}e_k \;,
@@ -119,13 +119,13 @@ x_k = \left\{
 (\#eq:indicatorfromx)
 \end{equation}
 
-This estimator is also recommended in situations where the sample size is not fixed but varies among samples selected with the sampling design. This is the case, for instance, when estimating the mean (abolute or squared) error or purity of a given map unit from a simple random sample. The number of selected sampling units within the map unit is uncontrolled and varies between simple random samples. In this case we can either estimate the mean error or purity of a map unit $u$ by using the *known* size (area, number of pixels) of map unit $u$ in the denominator, or the *estimated* size. Interestingly, by dividing by the *estimated* size of the map unit instead of its known area, the estimator generally becomes more precise [@sar92]. See also Section \@ref(LargeDomainsDirectEstimator). 
+This estimator is also recommended in situations where the sample size is not fixed but varies among samples selected with the sampling design. This is the case, for instance, when estimating the mean (abolute or squared) error or purity of a given map unit from a simple random sample. The number of selected sampling units within the map unit is uncontrolled and varies between simple random samples. In this case we can either estimate the mean error or purity of a map unit $u$ using the *known* size (area, number of pixels) of map unit $u$ in the denominator, or the *estimated* size. Interestingly, by dividing by the *estimated* size of the map unit instead of its known area, the estimator generally becomes more precise [@sar92]. See also Section \@ref(LargeDomainsDirectEstimator). 
 
-All probability sampling designs described in Part I are in principle appropriate for validation. @steh99 evaluated five basic probability sampling designs, and concluded that in general stratified random sampling is a good choice. For validation of categorical maps natural strata are the map units, i.e. the groups of polygons or grid cells assigned to each class. Systematic random sampling is less suitable as no unbiased estimator of the sampling variance of the estimator of a population mean exists for this design (see Chapter \@ref(SY)). For validation of maps of extensive areas, think of whole continents, travel time between sampling locations can become substantial. In this case sampling designs that lead to spatial clustering\index{Spatial clustering} of validation locations can become efficient, for instance two-stage cluster random sampling (Chapter \@ref(Twostage)) or cluster random sampling (Chapter \@ref(Cl)).
+All probability sampling designs described in Part I are in principle appropriate for validation. @steh99 evaluated five basic probability sampling designs and concluded that in general stratified random sampling is a good choice. For validation of categorical maps natural strata are the map units, i.e. the groups of polygons or grid cells assigned to each class. Systematic random sampling is less suitable as no unbiased estimator of the sampling variance of the estimator of a population mean exists for this design (see Chapter \@ref(SY)). For validation of maps of extensive areas, think of whole continents, travel time between sampling locations can become substantial. In this case sampling designs that lead to spatial clustering\index{Spatial clustering} of validation locations can become efficient, for instance two-stage cluster random sampling (Chapter \@ref(Twostage)) or cluster random sampling (Chapter \@ref(Cl)).
 
 ## Real-world case study
 
-As an illustration two soil maps of the three northern counties of Xuancheng City (Anhui province, China), both depicting soil organic matter (SOM) concentration (g/kg) in the topsoil, are evaluated. In Section \@ref(Ospats) the data of three samples, including the stratified random sample, were merged to estimate the parameters of a spatial model for the natural log of SOM. Here only the data of the two non-random samples are used to map SOM. The stratified simple random sample is used for validation.
+As an illustration two soil maps of the three northern counties of Xuancheng City (Anhui province, China), both depicting soil organic matter (SOM) concentration (g kg$^{-1}$) in the topsoil, are evaluated. In Section \@ref(Ospats) the data of three samples, including the stratified random sample, were merged to estimate the parameters of a spatial model for the natural log of SOM. Here only the data of the two non-random samples are used to map SOM. The stratified simple random sample is used for validation.
 
 Two methods are used in mapping, kriging with an external drift\index{Kriging!kriging with an external drift} (KED) and a machine learning method, random forest\index{Random forest} (RF). For mapping with RF seven covariates are used: planar curvature, profile curvature, slope, temperature, precipitation, topographic wetness index and elevation. For mapping with KED only the two most important covariates in the RF model are used: precipitation and elevation. 
 
@@ -203,10 +203,9 @@ grd$x1 <- grd$x1/1000; grd$x2 <- grd$x2/1000
 save(grd,file="data/Xuancheng.RData")
 ```
 
-
 The two maps that are to be validated are shown in Figure \@ref(fig:validatedmaps). Note that non-soil areas (built-up, water, roads) are not predicted. The maps are quite similar. The most striking difference between the maps is the smaller range of the RF predictions: they range from 9.8 to 61.5, whereas the KED predictions range from 5.3 to 90.2.
 
-```{r validatedmaps, echo=FALSE, fig.cap="Map of soil organic matter concentration (g/kg) in the topsoil of Xuancheng, obtained by kriging with an external drift (KED) and random forest (RF)."}
+```{r validatedmaps, echo=FALSE, out.width="100%", fig.cap="Map of SOM (g kg$\\textsuperscript{-1}$) in the topsoil of Xuancheng, obtained by kriging with an external drift (KED) and random forest (RF)."}
 load(file="data/Xuancheng.RData")
 
 df <- grd[,c("x1","x2","KED","RF")]
@@ -223,7 +222,7 @@ ggplot(df_lf) +
 
 The two maps are evaluated by statistical validation with a stratified simple random sample of 62 units (points). The strata are the eight units of a geological map (Figure \@ref(fig:validationsample)).
 
-```{r validationsample, echo=FALSE, fig.cap="Stratified simple random sample for validation of the two maps of soil organic map concentrations in topsoil of Xuancheng, China."}
+```{r validationsample, echo=FALSE, fig.cap="Stratified simple random sample for validation of the two maps of soil SOM in Xuancheng, China."}
 library(terra)
 
 rmap <- rast("data/Xuancheng_geo.tif")
@@ -253,7 +252,7 @@ coord_fixed()
 
 ### Estimation of the population Mean Error and Mean Squared Error
 
-To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in the data frame `mysample` is `SOM_A_hori`. Four new columns are added to `mysample`, by computing the prediction errors for KED and RF, and squaring these errors. The next code chunks show the computations for KED only.
+To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in the data frame `mysample` is `SOM_A_hori`. Four new columns are added to `mysample`, by computing the prediction errors for KED and RF and squaring these errors. The next code chunks show the computations for KED only.
 
 ```{r}
 mysample <- read.csv(file="data/Xuancheng_STSIsample.csv",
@@ -304,7 +303,7 @@ mse_RF <- sum(w_h*mse_RF_h)
 
 ### Estimation of the standard error of the estimated population ME and MSE
 
-We are uncertain about both population MSEs, as we measured the squared errors at `r nrow(mysample)` sampling points only. So we would like to know how uncertain we are. This uncertainty is quantified by the standard error of the estimated population MSE. A problem is that in the second stratum we have only one sampling point. So for this stratum we cannot compute the variance of the squared errors. To compute the variance we need at least two sampling points. 
+We are uncertain about both population MSEs, as we measured the squared errors at `r nrow(mysample)` sampling points only. So, we would like to know how uncertain we are. This uncertainty is quantified by the standard error of the estimated population MSE. A problem is that in the second stratum we have only one sampling point. So, for this stratum we cannot compute the variance of the squared errors. To compute the variance we need at least two sampling points. 
 
 ```{r}
 table(mysample$stratum)
@@ -382,7 +381,7 @@ mec_KED <- 1-(mse_KED/s2z)
 mec_RF <- 1-(mse_RF/s2z)
 ```
 
-The estimated MEC for KED equals `r round(mec_KED,3)`, and for RF `r round(mec_RF,3)`, showing that the two models used in mapping are no better than the estimated mean of SOM used as a predictor. This is quite a disappointing result.
+The estimated MEC for KED equals `r round(mec_KED,3)` and for RF `r round(mec_RF,3)`, showing that the two models used in mapping are no better than the estimated mean of SOM used as a predictor. This is quite a disappointing result.
 
 ### Statistical testing of hypothesis about population ME and MSE
 
@@ -401,7 +400,7 @@ lowertail <- (t_RF<0)
 p_RF <- 2*pt(t_RF, df=df, lower.tail=lowertail)
 ```
 
-The outcomes of the test statistics are `r as.character(round(t_KED,3))` and `r as.character(round(t_RF,3))` for KED and RF, respectively, with *p*-values `r as.character(round(p_KED,3))` and `r as.character(round(p_RF,3))`. So we clearly have not enough evidence for systematic errors, neither with KED, nor with RF mapping.
+The outcomes of the test statistics are `r as.character(round(t_KED,3))` and `r as.character(round(t_RF,3))` for KED and RF, respectively, with *p*-values `r as.character(round(p_KED,3))` and `r as.character(round(p_RF,3))`. So, we clearly have not enough evidence for systematic errors, neither with KED, nor with RF mapping.
 
 Now we test whether the two population MSEs  differ significantly. This can be done by a paired $t$-test\index{Paired $t$-test}. The first step in a paired t-test is to compute pairwise differences of squared predictions errors, and then we can proceed as in a one-sample t-test. 
 
@@ -416,7 +415,7 @@ lowertail <- (t<0)
 p <- 2*pt(t, df=df, lower.tail=lowertail)
 ```
 
-The outcome of the test statistic is `r as.character(round(t, 3))`, with a *p*-value of `r as.character(round(p,2))`, so we clearly do not have enough evidence that the population MSEs obtained with the two mapping methods are different.
+The outcome of the test statistic is `r as.character(round(t, 3))`, with a *p*-value of `r as.character(round(p,3))`, so we clearly do not have enough evidence that the population MSEs obtained with the two mapping methods are different.
 
 ```{r, echo=FALSE}
 rm(list=ls())

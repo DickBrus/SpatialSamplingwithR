@@ -19,7 +19,7 @@ mz_regr <- av_mz_regr <- numeric(length=10000)
 set.seed(314)
 for (i in 1:length(n)) {
   for (j in 1:10000){
-    units <- sample.int(nrow(gridAmazonia), size=n[i], replace=FALSE)
+    units <- sample(nrow(gridAmazonia), size=n[i], replace=FALSE)
     mysample <- gridAmazonia[units,]
     mx_sam <- mean(mysample$lnSWIR2)
     mz_sam <- mean(mysample$AGB)

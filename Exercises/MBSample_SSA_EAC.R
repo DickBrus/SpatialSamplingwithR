@@ -29,7 +29,7 @@ mySCsample <- as(spsample(myStrata),"SpatialPoints")
 
 # Select initial supplemental sample
 nsup <- 20
-units <- sample.int(nrow(grd), nsup)
+units <- sample(nrow(grd), nsup)
 mysupsample <- as(grd[units,],"SpatialPoints")
 
 # Select evaluation sample

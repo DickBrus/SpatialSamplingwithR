@@ -13,7 +13,7 @@ SIpairs <- function(h,n,area){
   xypnts1 <- xypnts2 <- NULL
   i <- 1
   while (i <= n) {
-    id1 <- sample.int(n=length(area),size=1)
+    id1 <- sample(length(area),size=1)
     xypnt1 <- xy[id1,]
     xypnt1[1] <- jitter(xypnt1[1],amount=cellsize/2)
     xypnt1[2] <- jitter(xypnt1[2],amount=cellsize/2)
@@ -113,7 +113,7 @@ for (j in 1:nboot) {
   for (i in 1:length(h)){
     units <- which(mysample$h==h[i])
     pairs <- mysample[units,]
-    mysampleunits <- sample.int(samplesize,size=samplesize,replace=TRUE)
+    mysampleunits <- sample(samplesize,size=samplesize,replace=TRUE)
     mybtpsample <- pairs[mysampleunits,]
     gammah[i] <- mean((mybtpsample$z1-mybtpsample$z2)^2,na.rm=TRUE)/2 
     vargammah[i] <- var((mybtpsample$z1-mybtpsample$z2)^2,na.rm=TRUE)/(samplesize*4)

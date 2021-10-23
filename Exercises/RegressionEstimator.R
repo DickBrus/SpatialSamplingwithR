@@ -10,7 +10,7 @@ R <- 1000
 mz <- se_mz <- mz_g <- se_mz_g <- numeric(length=R)
 for (i in 1:R) {
   
-  units <- sample.int(nrow(gridAmazonia), size=n, replace=FALSE)
+  units <- sample(nrow(gridAmazonia), size=n, replace=FALSE)
   mysample <- gridAmazonia[units,c("AGB","lnSWIR2")]
   lm_sample <- lm(AGB~lnSWIR2, data=mysample)
 #inclusion probabilities are equal, so we can estimate regression coefficients by OLS

@@ -13,13 +13,13 @@ getCriterion <- function(mysample,dpnt,weight,phi){
 
 
 permute<-function(mysample,candidates)  {
-  unit.rand <- sample.int(n = nrow(mysample), size = 1)
+  unit.rand <- sample(nrow(mysample), size = 1)
   #remove selected unit from candidates
   candidates <- candidates[candidates$unit!=mysample$unit[unit.rand],]
   #replace selected sampling point by another randomly selected point from the same group
   units.dpnt <- which(candidates$dpnt==mysample$dpnt[unit.rand])
   candidates.dpnt <- candidates[units.dpnt,]
-  unit.candidate <- sample.int(n = nrow(candidates.dpnt), size = 1)
+  unit.candidate <- sample(nrow(candidates.dpnt), size = 1)
   mysample[unit.rand,] <- candidates.dpnt[unit.candidate,]
   mysample
 }

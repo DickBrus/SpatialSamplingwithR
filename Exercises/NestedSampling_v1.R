@@ -41,7 +41,7 @@ lags <- c(1000, 500, 200, 100, 50)
 
 #Select main station
 set.seed(123)
-id <- sample.int(nrow(grid),1)
+id <- sample(nrow(grid),1)
 mainstation <- grid[id, c(1,2)] 
 
 #Select randomly one  point at distance lag[1] from main station

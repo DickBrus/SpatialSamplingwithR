@@ -18,7 +18,7 @@ N <- nrow(gridAmazonia)
 set.seed(314)
 
 for (i in 1:10000) {
-  mysample <- sample.int(N, size=n, replace=TRUE, prob=p)
+  mysample <- sample(N, size=n, replace=TRUE, prob=p)
   zexpand <- gridAmazonia$AGB[mysample]/p[mysample]
   tz <- mean(zexpand)
   mz[i] <- tz/N
