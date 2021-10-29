@@ -2,7 +2,7 @@
 
 As with conditioned Latin hypercube sampling, spatial response surface sampling\index{Spatial response surface sampling} is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum of the response within specified ranges of the factors. There are many types of response surface designs, see @myers2002.  With response surface sampling one assumes that some type of low order (linear or quadratic) regression model can be used to accurately approximate the relationship between the study variable and the covariates.  A commonly used design is the central composite design\index{Central composite design}. The data produced as a result of this design are used to fit a multiple linear regression model with quadratic terms, yielding a curved, quadratic surface of the response.
 
-The response surface sampling approach is an example of a model-based sampling design. From that viewpoint I should have described this sampling design in the later part of this book dealing with model-based sampling. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see Figure \@ref(fig:twosamples)(b). The assumption of independent data might be violated when the sampling units are spatially clustered.  For that reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
+The response surface sampling approach is an example of a model-based sampling design. From that viewpoint I should have described this sampling design in the later part of this book dealing with model-based sampling. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see Figure \@ref(fig:twosamples)(b). The assumption of independent data might be violated when the sampling units are spatially clustered.  For this reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
 
 @lesch95 adapted the response surface methodology for observational studies. Several problems needed to be tackled. First, when multiple covariates are used, the covariates must be decorrelated. Second, when sampling units are spatially clustered, the assumption in linear regression modelling of spatially uncorrelated model residuals can be violated. To address these two problems @lesch95 proposed the following procedure; see also @lesch2005:   
 
@@ -13,9 +13,9 @@ The response surface sampling approach is an example of a model-based sampling d
 
 This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010 and @Fitzgerald2010.
 
-Spatial response surface sampling  is illustrated with the electromagnetic induction (EM) measurements (mS/m) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section \@ref(Datasets)). The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural logarithm of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
+Spatial response surface sampling  is illustrated with the electromagnetic induction (EM) measurements (mS/m) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section \@ref(Datasets)). The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
-```{r EMdataUzbekistan, echo=FALSE, out.width='100%', fig.cap="Natural logarithm of EM38 measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
+```{r EMdataUzbekistan, echo=FALSE, out.width='100%', fig.cap="Natural log of EM38 measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
 dat <- read.csv(file="data/TransectsData_EM_CRF.csv")
 dat$lnEM100cm <- log(dat$EMv1mt)
 dat$lnEM50cm <- log(dat$EMv05mt)
@@ -92,7 +92,7 @@ save(EM_CRF, file="data/CottonResearchFarm.RData")
 ```
 
 
-```{r EMdataUzbekistan2, echo=FALSE, out.width='100%', fig.cap="Interpolated surfaces of natural logarithm of EM38 measurements on the Cotton Research Farm , used as covariates in spatial response surface sampling."}
+```{r EMdataUzbekistan2, echo=FALSE, out.width='100%', fig.cap="Interpolated surfaces of natural log of EM38 measurements on the Cotton Research Farm , used as covariates in spatial response surface sampling."}
 load(file="data/CottonResearchFarm.RData")
 df <- EM_CRF %>% pivot_longer(cols=c("lnEM100cm","lnEM50cm"))
 
@@ -121,7 +121,7 @@ EM_CRF$PC2 <- pc$x[,2]*1/pc$sdev[2]
 
 Figure \@ref(fig:candidatelocations) shows a scatter plot of the two standardised principal component scores of all `r nrow(EM_CRF)` grid cells.
 
-Function `ccd` of package **rsm** [@Lenth2009] is now used to generate a central composite response surface design\index{Central composite response surface design} (CCRSD). Argument `basis` specifies the number of factors, which is two in our case. Argument `n0` is the number of centre points and argument `alpha` determines the position of the star points (explained hereafter).
+Function `ccd` of package **rsm** [@Lenth2009] is now used to generate a central composite design\index{Central composite design} (CCRSD). Argument `basis` specifies the number of factors, which is two in our case. Argument `n0` is the number of centre points and argument `alpha` determines the position of the star points (explained hereafter).
 
 ```{r}
 library(rsm)
@@ -131,7 +131,7 @@ print(ccdesign <- ccd(basis=2, n0=1, alpha="rotatable"))
 
 The experiment consists of two blocks, each of five experimental units. Block 1, the so-called cube block, consists of one centre point and four cube points\index{Cube point}. In the experimental unit represented by the centre point both factors have levels in the centre of the experimental range. In the experimental units represented by the cube points the levels of both factors is either -1 or +1 unit in the design space. Block 2, referred to as the star block, consists of one centre point and four star points\index{Star point}. With `alpha = rotatable` the  start points are on the circle circumscribing the square (Figure \@ref(fig:ccdesign)).
 
-```{r ccdesign, echo=FALSE, fig.cap="Rotatable central composite response surface design for two factors."}
+```{r ccdesign, echo=FALSE, fig.cap="Rotatable central composite design for two factors."}
 cube <- data.frame(x1=c(-1,1,-1,1,0),x2=c(-1,-1,1,1,0))
 star <- data.frame(x1=c(-sqrt(2),sqrt(2),0,0,0), x2=c(0,0,-sqrt(2),sqrt(2),0))
 df <- rbind(cube,star)
@@ -213,7 +213,7 @@ mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 
 The locations of the nine sampling points are now optimised by minimising a criterion. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion. 
 
-In the geometric criterion (as proposed by @lesch2005) for each sampling point the logarithm of the shortest distance to the other points is computed. The minimisation criterion is the negative of the sample mean of these distances. 
+In the geometric criterion (as proposed by @lesch2005) for each sampling point the log of the shortest distance to the other points is computed. The minimisation criterion is the negative of the sample mean of these distances. 
 
 The model-based minimisation criterion is the average correlation of the sampling points. This criterion requires as input the parameters of a residual correlogram (see Section \@ref(IntroKED)). I assume an exponential  correlogram without nugget, so that the only parameter to be chosen is the distance parameter $\phi$ (Equation \@ref(eq:exponential)). Three times $\phi$ is referred to as the effective range\index{Effective range} of the exponential correlogram. The correlation of the random variables at two points separated by this distance is 0.05.
 
@@ -237,7 +237,7 @@ getCriterion <- function(mysample, dpnt, weight=0, phi=NULL){
 }
 ```
 
-The function `getCriterion` is used to compute the geometric criterion for the initial sample.
+Function `getCriterion` is used to compute the geometric criterion for the initial sample.
 
 ```{r}
 criterion_geo <- getCriterion(mysample=mysample0, dpnt=ccd_df)

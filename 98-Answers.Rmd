@@ -119,21 +119,21 @@ ggplot(df_lf) +
 load(file="results/RegressionEstimator_Twophase.RData")
 ```
 
-1. See [`RegressionEstimator_Twophase.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator_Twophase.R). The variance of the regression estimator for two-phase sampling is considerably larger than the variance of the usual regression estimator (Figure \@ref(fig:RegressionEstimatorsAmazoniaTwoPhase)). The usual regression estimator exploits our knowledge of the population mean of the covariate SWIR2, whereas in two-phase sampling this population mean must be estimated from the first phase sample, introducing additional uncertainty.
+1. See [`RegressionEstimator_Twophase.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator_Twophase.R). Figure \@ref(fig:RegressionEstimatorsAmazoniaTwoPhase) shows the approximated sampling distribution of the simple regression estimator of the mean AGB when lnSWIR2 is observed for all selected units (Regression) and when AGB is observed for the subsample only (Regression_2phase). The variance of the regression estimator with two-phase sampling is considerably larger. Without subsampling the regression estimator exploits our knowledge of the population mean of the covariate lnSWIR2, whereas in two-phase sampling this population mean must be estimated from the first phase sample, introducing additional uncertainty.
 
     The average of the 10,000 approximated variances equals `r round(mean(av_mz_reg2ph),1)`, which is considerably smaller than the variance of the 10,000 regression estimates for two-phase sampling, which is equal to `r round(var(mz_reg2ph), 1)`.    
 
-```{r RegressionEstimatorsAmazoniaTwoPhase, echo=FALSE, fig.cap="Sampling distribution of the simple regression estimator of the mean of AGB in Eastern Amazonia for two-phase sampling."}
+```{r RegressionEstimatorsAmazoniaTwoPhase, echo=FALSE, fig.cap="Approximated sampling distribution of the simple regression estimator of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) in Eastern Amazonia in the case that the covariate is observed for all sampling units (One-phase) and for a subsample only (Two-phase)."}
 load(file="data/Amazonia_1km.RData")
 
 estimates<-data.frame(mz_reg2ph, mz_regr)
-names(estimates)<-c("Regression_2phase","Regression")
+names(estimates)<-c("Two-phase","One-phase")
 
-df_lf <- estimates %>% pivot_longer(.,cols=c("Regression_2phase","Regression"))
+df_lf <- estimates %>% pivot_longer(.,cols=c("Two-phase","One-phase"))
 ggplot(data=df_lf) +
     geom_boxplot(aes(y=value, x=name)) +
     geom_hline(yintercept=mean(gridAmazonia$AGB), colour="red") +
-    scale_x_discrete(name = "Estimator") +
+    scale_x_discrete(name = "Sampling design") +
     scale_y_continuous(name = "Estimated mean AGB")
 ```
 
@@ -149,7 +149,7 @@ ggplot(data=df_lf) +
 
 ## Model-based optimisation of probability sampling designs {-}
 
-1. See [`MBSamplingVarSI_VariogramwithNugget.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSamplingVarSI_VariogramwithNugget.R). The predicted sampling variance is slightly larger compared to the predicted sampling variance obtained with the semivariogram without nugget (and the same sill and range), because 50\% of the spatial variation is not spatially structured, so that the model expectation of the population variance (the predicted population variance) is larger.   
+1. See [`MBSamplingVarSI_VariogramwithNugget.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSamplingVarSI_VariogramwithNugget.R). The predicted sampling variance is slightly larger compared to the predicted sampling variance obtained with the semivariogram without nugget (and the same sill and range), because 50\% of the spatial variation is not spatially structured, so that the model-expectation of the population variance (the predicted population variance) is larger.   
 2. See first part of [`MBRequiredSampleSize_SIandSY.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBRequiredSampleSize_SIandSY.R).  
 3. See second part of MBRequiredSampleSize_SIandSY.R.  The model-based prediction of the required sample size for simple random sampling is 34 and for systematic random sampling 13. The design effect at a sample size of 34 equals 0.185. The design effect decreases with the sample size, i.e. the ratio of the variance with systematic random sampling to the variance with simple random sampling becomes smaller. This is because the larger the sample size, the more we profit from the spatial correlation.  
 
@@ -219,7 +219,7 @@ ggplot(grd) +
 
 1. See [`MBGridspacing_QOKV.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_QOKV.Rmd). For P50 not to exceed 0.85 the tolerable grid spacing is about 11.7 km, for P80 9.4 km and for P95 7.1 km (Figure \@ref(fig:QuantilesOKVarGridspacing)).    
 
-```{r QuantilesOKVarGridspacing, echo=FALSE, fig.asp=0.7, fig.cap="Three quantiles of the ordinary kriging variance of predicted SOM in three woredas in Ethiopia, as a function of the grid spacing."}
+```{r QuantilesOKVarGridspacing, echo=FALSE, fig.asp=0.7, fig.cap="Three quantiles of the ordinary kriging variance of predicted SOM concentrations in three woredas in Ethiopia, as a function of the grid spacing."}
 load(file="results/MBGridSpacing_Ethiopia_QOKV.RData")
 
 df <- result %>% pivot_longer(.,cols=c("V1","V2","V3"))
@@ -233,7 +233,7 @@ ggplot(data=df) +
 2. See [`MBGridspacing_Sensitivity.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_Sensitivity.Rmd). Increasing the nugget by 5% and decreasing the range by 5% yields a tolerable grid spacing that is smaller than with the original semivariogram (Figure \@ref(fig:SensitivityMKV)). The tolerable grid spacings for a mean kriging variance of 0.85 are 10.6, 8.9 and 7.4 km for the original semivariogram, the semivariogram with increased nugget and the semivariogram with the smaller range, respectively, leading to a required expected sample size of
 97, 137 and 200 points.
 
-```{r SensitivityMKV, echo=FALSE, fig.asp=0.7, fig.cap="Mean ordinary kriging variance of predicted SOM in three woredas of Ethiopia, as a function of grid spacing for three semivariograms."}
+```{r SensitivityMKV, echo=FALSE, fig.asp=0.7, fig.cap="Mean ordinary kriging variance of predicted SOM concentrations in three woredas of Ethiopia, as a function of grid spacing for three semivariograms."}
 load(file="results/MBGridSpacing_Ethiopia_Sensitivity.RData")
 
 df_lf <- df %>% pivot_longer(.,cols=c("MKV","MKV_morenugget","MKV_smallerrange"))
@@ -320,7 +320,7 @@ ggplot(data=mysamples) +
 3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern.  
 4. See [`MBSample_SSA_varkrigvar.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_varkrigvar.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern.
 
-```{r MBSupSamples, echo=FALSE, out.width='100%', fig.cap="Model-based sample for estimating the semivariogram, using the logarithm of the determinant of the inverse Fisher information matrix (logdet) and the variance of the kriging variance (VKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
+```{r MBSupSamples, echo=FALSE, out.width='100%', fig.cap="Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the variance of the kriging variance (VKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
 load(file="data/HunterValley.RData")
 load(file="results/MBSample_logdet_phi200nug05.RData")
 mysample_logdet <- mysample

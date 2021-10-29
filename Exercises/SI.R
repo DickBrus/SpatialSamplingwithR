@@ -33,7 +33,7 @@ vol_soil <- N * 25^2  * 0.3
 #Compute total mass of soil in kg. Use bulk density of 1.5 g/cm3 = 1500 kg/m3
 mass_soil <- vol_soil * 1500
 
-#Estimate total mass of SOM in tons. Note the units of mz is g/kg
+#Estimate total mass of SOM in Mg. Note the units of mz is g/kg
 print(tz <- mz * mass_soil * 10^-6)
 
 #Estimate the standard error of estimated total

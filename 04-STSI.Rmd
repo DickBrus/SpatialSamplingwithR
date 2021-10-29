@@ -19,13 +19,13 @@ The sum of the stratum sample sizes is 41, we want 40, so we reduce the largest 
 n_h[1] <- n_h[1] - 1
 ```
 
-The stratified simple random sample is selected with the function `strata` of package **sampling** [@Tille2016].  The argument `size` specifies the stratum sample sizes.
+The stratified simple random sample is selected with function `strata` of package **sampling** [@Tille2016].  The argument `size` specifies the stratum sample sizes.
 
 ```{block2, type='rmdcaution'}
 The stratum sample sizes must be in the order in which the strata are encountered in the data frame `grdVoorst`, which is determined first with function `unique`.
 ```
 
-Within the strata the grid cells are selected by simple random sampling *with replacement* (`method="srswr"`), so that in principle more than one point can be selected within a grid cell, see Chapter \@ref(SI) for a motivation of this. The function `getdata` extracts the observations of the selected units from the sampling frame, as well as the spatial coordinates and the stratum of these units. The coordinates of the centres of the selected grid cells are jittered by an amount equal to half the side of the grid cells.
+Within the strata the grid cells are selected by simple random sampling *with replacement* (`method="srswr"`), so that in principle more than one point can be selected within a grid cell, see Chapter \@ref(SI) for a motivation of this. Function `getdata` extracts the observations of the selected units from the sampling frame, as well as the spatial coordinates and the stratum of these units. The coordinates of the centres of the selected grid cells are jittered by an amount equal to half the side of the grid cells.
 
 ```{r}
 ord <- unique(grdVoorst$stratum)
@@ -39,7 +39,7 @@ mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
 ```
 
 ```{block2, type='rmdnote'}
-The name of the package is added to the function (`sampling::strata`), as `strata` is also a function in another package. Not adding the name of the package may result in an error message.
+The name of the package is added to function (`sampling::strata`), as `strata` is also a function in another package. Not adding the name of the package may result in an error message.
 ```
 
 Figure \@ref(fig:SampleSTSI) shows the selected sample.
@@ -122,7 +122,7 @@ N_h <- as.numeric(N_h)
 df <- data.frame(Nh=N_h, nh=n_h, Mean=round(mz_h,2), Var=round(S2z_h,2), VarMean=round(v_mz_h,3))
 
 knitr::kable(
-  df, caption = 'Stratum size (Nh), stratum sample size (nh), estimated stratum mean (Mean), estimated variance (Variance), and estimated variance of estimated stratum mean (Variance of mean) for the five strata in Voorst.',
+  df, caption = 'Size (Nh), sample size (nh), estimated mean (Mean), estimated variance (Variance), and estimated variance of estimated mean (Variance of mean) of the five strata in Voorst.',
   col.names = c("Nh","nh","Mean","Variance","Variance of mean"),
   booktabs = TRUE
 ) %>%
@@ -172,9 +172,9 @@ svymean(~z, design_stsi)
 
 ### Population proportion, cumulative distribution function, and quantiles
 
-The proportion of a population satisfying some condition can be estimated by Equations \@ref(eq:HTMeanSTSI) and \@ref(eq:HTStratumMeanSI), substituting for the study variable $z_k$ an 0/1 indicator $y_k$ with value 1 if for unit $k$ the condition is satisfied, and 0 otherwise (Section \@ref(PopProportion)). In general with stratified simple random sampling the inclusion probabilities are not exactly equal, so that the estimated population proportion is not equal to the sample proportion.
+The proportion of a population satisfying some condition can be estimated by Equations \@ref(eq:HTMeanSTSI) and \@ref(eq:HTStratumMeanSI), substituting for the study variable $z_k$ an 0/1 indicator $y_k$ with value 1 if for unit $k$ the condition is satisfied, and 0 otherwise (Subsection \@ref(PopProportion)). In general with stratified simple random sampling the inclusion probabilities are not exactly equal, so that the estimated population proportion is not equal to the sample proportion.
 
-These unequal inclusion probabilities must also be accounted for when estimating the cumulative distribution function (CDF) and quantiles (Section \@ref(CDF)), as shown in the next code chunk for the CDF.
+These unequal inclusion probabilities must also be accounted for when estimating the cumulative distribution function (CDF) and quantiles (Subsection \@ref(CDF)), as shown in the next code chunk for the CDF.
 
 ```{r}
 thresholds <- sort(unique(mysample$z))
@@ -189,7 +189,7 @@ df <- data.frame(x=thresholds, y=cumfreq)
 
 Figure \@ref(fig:EstimatedCDFVoorstSTSI) shows the estimated CDF, estimated from the stratified simple random sample of 40 units from Voorst (Figure \@ref(fig:SampleSTSI)).
 
-```{r EstimatedCDFVoorstSTSI, echo=FALSE, fig.asp=0.7, fig.cap="Estimated cumulative distribution function of SOM (g kg$\\textsuperscript{-1}$), estimated from the stratified simple random sample of 40 units from Voorst."}
+```{r EstimatedCDFVoorstSTSI, echo=FALSE, fig.asp=0.7, fig.cap="Estimated cumulative distribution function of the SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst, estimated from the stratified simple random sample of 40 units."}
 dx <- mean(diff(df$x))
 dat <- data.frame(
     x=c(df$x[1] - dx, df$x),
@@ -209,14 +209,14 @@ The estimated proportions (cumulative frequencies) are used to estimate a quanti
 svyquantile(~z, design_stsi, quantile=c(0.5,0.8))
 ```
 
-### Why should we stratify? {#WhyStratify}
+### When should we stratify? {#WhyStratify}
 
 There can be two reasons for stratifying the population:  
 
 1. we are interested in the means (totals) per stratum; or
 2. we want to increase the precision of the estimated mean (total) for the entire population.  
 
-Figure \@ref(fig:SamplingDistributionSTSI) shows the sampling distributions of the estimator of the population mean for stratified simple random sampling and simple random sampling, both of size 40, obtained by repeating the random sampling with each design and estimation 10,000 times. 
+Figure \@ref(fig:SamplingDistributionSTSI) shows the approximated sampling distributions (shown as boxplots) of the estimator of the mean SOM concentration for stratified simple random sampling and simple random sampling, both of size 40, approximated by repeating the random sampling with each design and estimation 10,000 times. 
 
 ```{r, eval=FALSE, echo=FALSE}
 number_of_samples <- 10000
@@ -234,7 +234,7 @@ for (i in 1:number_of_samples) {
 save(mz_STSI, mz_SI,file="results/STSI_Voorst.RData")
 ```
 
-```{r SamplingDistributionSTSI, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of the $\\pi$  estimator of the mean of SOM (g kg$\\textsuperscript{-1}$) in Voorst for stratified simple random sampling (STSI) and simple random sampling (SI) of size 40."}
+```{r SamplingDistributionSTSI, echo=FALSE, fig.asp=.8, fig.cap="Approximated sampling distribution of the $\\pi$  estimator of the mean SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst for stratified simple random sampling (STSI) and simple random sampling (SI) of size 40."}
 load(file="results/STSI_Voorst.RData")
 estimates <- data.frame(mz_STSI, mz_SI)
 names(estimates) <- c("STSI","SI")
@@ -255,7 +255,7 @@ v_mz_SI <- var(grdVoorst$z)/n
 mz_h_pop <- tapply(grdVoorst$z, INDEX=grdVoorst$stratum, FUN=mean)
 ```
 
-The sampling distributions of the estimators of the population mean with the two designs are not very different. With stratified random sampling the spread of the estimated means is somewhat smaller. The horizontal red line is the population mean (7.814). The gain in precision due to the stratification, referred to as the stratification effect\index{Stratification effect}, can be quantified by the ratio of the variance with simple random sampling and the variance with stratified simple random sampling. So, when this variance ratio is larger than 1, stratified simple random sampling is more precise than simple random sampling. For Voorst the stratification effect with proportional allocation (Section \@ref(STSIallocation)) equals `r round(v_mz_SI/v_mz_STSI,3)`. This means that with simple random sampling we need `r round(v_mz_SI/v_mz_STSI,3)` more sampling units than with stratified simple random sampling to obtain an estimate of the same precision. 
+The approximated sampling distributions of the estimators of the population mean with the two designs are not very different. With stratified random sampling the spread of the estimated means is somewhat smaller. The horizontal red line is the population mean (7.814). The gain in precision due to the stratification, referred to as the stratification effect\index{Stratification effect}, can be quantified by the ratio of the variance with simple random sampling and the variance with stratified simple random sampling. So, when this variance ratio is larger than 1, stratified simple random sampling is more precise than simple random sampling. For Voorst the stratification effect with proportional allocation (Section \@ref(STSIallocation)) equals `r round(v_mz_SI/v_mz_STSI,3)`. This means that with simple random sampling we need `r round(v_mz_SI/v_mz_STSI,3)` more sampling units than with stratified simple random sampling to obtain an estimate of the same precision. 
 
 The stratification effect can be computed from the population variance $S^2(z)$ (Equation \@ref(eq:PopulationVariance)) and the variances within the strata $S^2_h(z)$. In the sampling experiment these variances are known without error because we know the $z$-values for all units in the population. In practice we only know the $z$-values for the sampled units. However, a design-unbiased estimator of the population variance is [@gru06]
 
@@ -301,7 +301,7 @@ library(surveyplanning)
 S2z <- s2(mysample$z,w=mysample$weight)
 ```
 
-The design effect\index{Design effect} is defined as the ratio of the variance of the sampling design under study and the variance of the estimator of the mean with simple random sampling of an equal number of units (Chapter \@ref(DesignEffect)). So, the design effect of stratified random sampling is the reciprocal of the stratification effect. For the stratified simple random sample of Figure \@ref(fig:SampleSTSI) the design effect can then be estimated as follows. The function `SE` extracts the standard error of the estimated mean from the output of function `svymean`. The extracted standard error is then squared to obtain an estimate of the sampling variance of the estimator of the population with stratified simple random sampling. Finally, this variance is divided by the variance with simple random sampling of an equal number of units.
+The design effect\index{Design effect} is defined as a variance ratio: the variance of an estimator of the population mean with the sampling design under study divided by the variance of the $\pi$ estimator of the mean with simple random sampling of an equal number of units (Chapter \@ref(DesignEffect)). So, the design effect of stratified random sampling is the reciprocal of the stratification effect. For the stratified simple random sample of Figure \@ref(fig:SampleSTSI) the design effect can then be estimated as follows. Function `SE` extracts the standard error of the estimated mean from the output of function `svymean`. The extracted standard error is then squared to obtain an estimate of the sampling variance of the estimator of the population with stratified simple random sampling. Finally, this variance is divided by the variance with simple random sampling of an equal number of units.
 
 ```{r}
 v_mz_SI <- S2z/n
@@ -342,9 +342,9 @@ SSW = \sum_{h=1}^H (1-\frac{N_h}{N})S^2_h\;.
 \end{equation}
 
 
-In other words, the smaller the differences in the stratum means and the larger the variances within the strata, the smaller the stratification effect will be. Figure \@ref(fig:boxplotsSOMstrata) shows boxplots of SOM per stratum (soil-land use combination). The stratum means are equal to `r round(mz_h_pop,2)` g kg$^{-1}$. The stratum variances are `r round(S2z_h_pop,1)`. The rather small differences in stratum means in combination with the large stratum variances explain the modest gain in precision realised by stratified simple random sampling compared to simple random sampling in this case.
+In other words, the smaller the differences in the stratum means and the larger the variances within the strata, the smaller the stratification effect will be. Figure \@ref(fig:boxplotsSOMstrata) shows boxplots of the SOM concentration per stratum (soil-land use combination). The stratum means are equal to `r round(mz_h_pop,2)` g kg$^{-1}$. The stratum variances are `r round(S2z_h_pop,1)`. The rather small differences in stratum means in combination with the large stratum variances explain the modest gain in precision realised by stratified simple random sampling compared to simple random sampling in this case.
 
-```{r boxplotsSOMstrata, out.width='100%', fig.asp=0.5, echo=FALSE, fig.cap="Boxplots of SOM (g kg$\\textsuperscript{-1}$) for the five strata (soil-land use combination) in Voorst."}
+```{r boxplotsSOMstrata, out.width='100%', fig.asp=0.5, echo=FALSE, fig.cap="Boxplots of the SOM concentration (g kg$\\textsuperscript{-1}$) for the five strata (soil-land use combination) in Voorst."}
 ggplot(data=grdVoorst) +
   geom_boxplot(aes(y=z, x=stratum)) +
   scale_y_continuous(name="SOM") +
@@ -361,7 +361,7 @@ The $100(1-\alpha )$\% confidence interval for $\bar{z}$ is given by
 (\#eq:CISTSI)
 \end{equation}
 
-where $t_{\alpha /2,df}$ is the value of $t$ of a Student's $t$ distribution with $df$ degrees of freedom having a tail area of $\alpha/2$ to its right. In other words this is the $(1-(\alpha /2))$ quantile of the Student's $t$ distribution with $df$ degrees of freedom. The degrees of freedom $df$ can be approximated by $n-H$, as proposed by @loh99. This is the number of the degrees of freedom if the variances within the strata are equal. With unequal variances within strata $df$ can be approximated by Sattherwaite's method\index{Sattherwaite's method} [@nan04]:
+where $t_{\alpha /2,df}$ is the value of $t$ of a $t$ distribution with $df$ degrees of freedom having a tail area of $\alpha/2$ to its right. In other words this is the $(1-(\alpha /2))$ quantile of the $t$ distribution with $df$ degrees of freedom. The degrees of freedom $df$ can be approximated by $n-H$, as proposed by @loh99. This is the number of the degrees of freedom if the variances within the strata are equal. With unequal variances within strata $df$ can be approximated by Sattherwaite's method\index{Sattherwaite's method} [@nan04]:
 
 \begin{equation}
 df \approx \frac {\left(\sum_{h=1}^H w_h^2
@@ -458,7 +458,7 @@ df <- data.table(n=n, SI=sdmean_SI, STSIpro=se_mz_pro, STSIopt=se_mz_opt)
 
 Figure \@ref(fig:plotsdmeanallocation) shows the standard error of the estimated population mean as a function of the total sample size, for simple random sampling and for stratified simple random sampling with proportional and Neyman allocation. A small extra gain in precision can be achieved using Neyman allocation instead of proportional allocation. However, in practice often Neyman allocation is not achievable because we do not know the standard deviations of the study variable within the strata. If a quantitative covariate $x$ is used for stratification (see Sections \@ref(cumrootf) and \@ref(Ospats)), the standard deviations $S_h(z)$ are approximated by $S_h(x)$, resulting in approximately optimal stratum sample sizes. The gain in precision compared to proportional allocation is then partly or entirely lost.  
 
-```{r plotsdmeanallocation, echo=FALSE, out.width="100%", fig.asp=0.7, fig.cap="Standard error of the $\\pi$ estimator of the mean of SOM (g kg$\\textsuperscript{-1}$) as a function of the total sample size, for simple random sampling (SI) and for stratified simple random sampling with proportional (STSI(prop)) and Neyman allocation (STSI(Neyman)) for Voorst."}
+```{r plotsdmeanallocation, echo=FALSE, out.width="100%", fig.asp=0.7, fig.cap="Standard error of the $\\pi$ estimator of the mean SOM concentration (g kg$\\textsuperscript{-1}$) as a function of the total sample size, for simple random sampling (SI) and for stratified simple random sampling with proportional (STSI(prop)) and Neyman allocation (STSI(Neyman)) for Voorst."}
 df_lf <- df %>% pivot_longer(.,cols=c("SI","STSIpro","STSIopt"))
 ggplot(df_lf)+
   geom_point(mapping=aes(x=n, y=value, shape=name), size=3)+
@@ -504,7 +504,7 @@ ggplot(data=grd) +
   coord_fixed()
 ```
 
-The strata can be constructed with the package **stratification** [@Baillargeon2011]. Care should be taken that the data are sorted in ascending order by the columns used for stratification, see help of function `strata.cumrootf`. The argument `n` of this function is the total sample size, but this value has no effect on the stratification. The argument `Ls` is the number of strata. I arbitrarily chose to construct five strata.  The argument `nclass` is the number of bins of the histogram. The output object of the function `strata.cumrootf` is a list containing amongst others a numeric vector with the stratum breaks (`bh`) and a factor with the stratum levels of the grid cells (`stratumID`). Finally, note that the values of the stratification variable must be positive. The minimum elevation is -5 m, so we added the absolute value of this minimum to elevation.
+The strata can be constructed with the package **stratification** [@Baillargeon2011]. Care should be taken that the data are sorted in ascending order by the columns used for stratification, see help of function `strata.cumrootf`. The argument `n` of this function is the total sample size, but this value has no effect on the stratification. The argument `Ls` is the number of strata. I arbitrarily chose to construct five strata.  The argument `nclass` is the number of bins of the histogram. The output object of function `strata.cumrootf` is a list containing amongst others a numeric vector with the stratum bounds (`bh`) and a factor with the stratum levels of the grid cells (`stratumID`). Finally, note that the values of the stratification variable must be positive. The minimum elevation is -5 m, so we added the absolute value of this minimum to elevation.
 
 ```{r}
 library(stratification)
@@ -515,7 +515,7 @@ bh <- crfstrata$bh
 grd$crfstrata <- crfstrata$stratumID
 ```
 
-Stratum breaks are threshold values of the stratification variable elevation; these stratum breaks\index{Stratum breaks} are equal to `r round(bh,1)`. Note that the number of stratum breaks is one less than the number of strata. The resulting stratification is shown in Figure \@ref(fig:optstrata). Note that most strata are not single polygons, but are made up of many smaller polygons. This may be even more so if the stratification variable shows a noisy spatial pattern. This is not a problem at all, a stratum is just a collection of population units (raster cells) and need not be spatially contiguous.
+Stratum bounds are threshold values of the stratification variable elevation; these stratum bounds\index{Stratum bound} are equal to `r round(bh,1)`. Note that the number of stratum bounds is one less than the number of strata. The resulting stratification is shown in Figure \@ref(fig:optstrata). Note that most strata are not single polygons, but are made up of many smaller polygons. This may be even more so if the stratification variable shows a noisy spatial pattern. This is not a problem at all, a stratum is just a collection of population units (raster cells) and need not be spatially contiguous.
 
 ```{r optstrata, echo=FALSE, fig.cap="Stratification of Xuancheng obtained with $\\textit{cum-root-f}$ method, using elevation as a stratification variable."}
 labels <- as.character(round(bh,0))
@@ -537,7 +537,7 @@ ggplot(data=grd) +
 #### Exercises {-}
 
 5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `data/Amazonia_5km.RData`.  
-    +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by the function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?
+    +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?
     + Select a stratified simple random sample of 100 units. First compute the stratum sample sizes for proportional allocation.
     + Estimate the population mean of AGB and its sampling variance.
     + Compute the true sampling variance of the estimator of the mean for this sampling design (see Exercise 1 for a hint).
@@ -571,9 +571,9 @@ myClusters <- kmeans(scale(subgrd[,x]), centers=5, iter.max=1000, nstart=100)
 subgrd$cluster <- myClusters$cluster
 ```
 
-Figure \@ref(fig:kmeansstrataXuancheng) shows the five strata obtained by the $k$-means clustering\index{\emph{k}-means clustering} of the raster cells.
+Figure \@ref(fig:kmeansstrataXuancheng) shows the five clusters obtained by $k$-means clustering\index{\emph{k}-means clustering} of the raster cells. These clusters can be used as strata in random sampling.
 
-```{r kmeansstrataXuancheng, echo=FALSE, fig.cap="Five $k$-means clusters obtained with five scaled covariates in clustering, to be used as strata in random sampling of Xuancheng."}
+```{r kmeansstrataXuancheng, echo=FALSE, fig.cap="Five clusters obtained  by $k$-means clustering of the raster cells of Xuancheng, using five scaled covariates in clustering."}
 ggplot(subgrd) +
   geom_raster(mapping=aes(x=x1, y=x2, fill=as.character(cluster))) +
   scale_fill_viridis_d(name="Stratum") +
@@ -582,7 +582,7 @@ ggplot(subgrd) +
   coord_fixed()
 ```
 
-The size of the clusters (strata) is largely different among the strata (Table \@ref(tab:tablekmeansstrata)). This table also shows means of the unscaled covariates used in clustering.
+The size of the clusters (strata) is largely different (Table \@ref(tab:tablekmeansstrata)). This table also shows means of the unscaled covariates used in clustering.
 
 ```{r tablekmeansstrata, echo=FALSE}
 N_h <- tapply(subgrd$dem, INDEX=list(subgrd$cluster), FUN=length)
@@ -594,11 +594,12 @@ mean.twi <- tapply(subgrd$twi, INDEX=list(subgrd$cluster), FUN=mean)
 
 df <- data.frame(Stratum=seq(1:5), Nh=N_h, Elevation=round(mean.dem,0), Temperature=round(mean.temp,2), Slope=round(mean.slope,2), Profilecurv=round(mean.pc,5), Twi=round(mean.twi,2))
 knitr::kable(
-  df, caption = 'Total number of raster cells (Nh) and means of clustering variables of the five strata in Xuancheng obtained with $k$-means clustering of raster cells.',
+  df, caption = 'Size (Nh) and means of clustering variables of the five strata in Xuancheng obtained with $k$-means clustering of raster cells.',
   booktabs = TRUE
 ) %>%
   kable_classic()
 ```
+Categorical variables can be accommodated in clustering using the technique proposed by @Huang1998, implemented in package **clustMixType** [@clustMixType]. 
 
 In the situation that we already have some data of the study variable, an alternative solution is to calibrate a model for the study variable, for instance a multiple linear regression model, using the covariates as predictors, and to use the predictions of the study variable as a single stratification variable in *cum-root-f* stratification or in optimal spatial stratification, see Section \@ref(Ospats).
 
@@ -606,7 +607,7 @@ In the situation that we already have some data of the study variable, an altern
 
 When no covariate is available, we may still decide to apply a  *geographical stratification*\index{Geographical stratification}. For instance, a square study area can be divided into $4 \times 4$ equal-sized subsquares that are used as strata. When we select one or two points per subsquare, we avoid strong spatial clustering of the sampling points. Geographical stratification improves the *spatial coverage*\index{Spatial coverage}. When the study variable is spatially structured, think for instance of a spatial trend, then geographical stratification will lead to more precisely estimated means (smaller sampling variances).
 
-A simple method for constructing geographical strata is $k$-means clustering [@bru99]. See Chapter \@ref(SpatialCoverage) for a simple illustrative example of how geographical strata are computed with $k$-means clustering. In this approach the study area is discretised by a large number of grid cells. These grid cells are the objects that are clustered. The clustering variables are simply the spatial coordinates of the centres of the grid cells. This method leads to compact geographical strata\index{Compact geographical strata}, shortly referred to as geostrata\index{Geostrata}. Geostrata can be computed with function `kmeans`, as shown in Section \@ref(kmeansstratification). The two clustering variables have the same scale, so they should not be scaled because this would lead to an arbitrary distortion of geographical distances.  The geostrata generally will not have the same size (number of grid cells). Geostrata of equal size can be attractive, as then the sample becomes selfweighting, i.e. the sample mean is an unbiased estimator of the population mean. 
+A simple method for constructing geographical strata is $k$-means clustering [@bru99]. See Chapter \@ref(SpatialCoverage) for a simple illustrative example of how geographical strata are computed with $k$-means clustering. In this approach the study area is discretised by a large number of grid cells. These grid cells are the objects that are clustered. The clustering variables are simply the spatial coordinates of the centres of the grid cells. This method leads to compact geographical strata\index{Compact geographical stratum}, shortly referred to as geostrata\index{Geostratum|see{Compact geographical stratum}}. Geostrata can be computed with function `kmeans`, as shown in Section \@ref(kmeansstratification). The two clustering variables have the same scale, so they should not be scaled because this would lead to an arbitrary distortion of geographical distances.  The geostrata generally will not have the same size (number of grid cells). Geostrata of equal size can be attractive, as then the sample becomes selfweighting, i.e. the sample mean is an unbiased estimator of the population mean. 
 
 Geostrata of the same area can be computed with function `stratify` of the package **spcosa** [@walvoort2010], with argument `equalArea=TRUE`. If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. @walvoort2010 describe the $k$-means algorithms implemented in this package in detail. The argument `object` of function `stratify` specifies a spatial object of the population units. In the **R** code below the data frame `grdVoorst` is changed into a `SpatialPixelsDataFrame` with function `gridded` of the package **sp**. The spatial object can also be of class `SpatialPolygons`. In that case either argument `nGridCells` or argument `cellSize` must be set, so that the vector map in `object` can be discretised by a finite number of grid cells. Argument `nTry` specifies the number of initial stratifications in $k$-means clustering, and therefore is comparable with argument `nstart` of function `kmeans`. For more details on spatial stratification using $k$-means clustering, see Chapter \@ref(SpatialCoverage). The $k$-means algorithm used with `equalArea=TRUE` takes much more computing time than the one used with `equalArea=FALSE`. 
 
@@ -656,7 +657,7 @@ ggplot(mygeostrata) +
     theme(legend.position="none")
 ```
 
-Once the observations are done, the population mean can be estimated with function `estimate`. For Xuancheng I simulated data from a normal distribution, just to illustrate estimation with function `estimate`. Various statistics can be estimated, among which the population mean (spatial mean), the standard error, and the cumulative distribution function (CDF). The CDF is estimated by transforming the data to indicators (Section \@ref(CDF)).
+Once the observations are done, the population mean can be estimated with function `estimate`. For Xuancheng I simulated data from a normal distribution, just to illustrate estimation with function `estimate`. Various statistics can be estimated, among which the population mean (spatial mean), the standard error, and the cumulative distribution function (CDF). The CDF is estimated by transforming the data to indicators (Subsection \@ref(CDF)).
 
 ```{r}
 library(spcosa)
@@ -679,7 +680,7 @@ The estimated population mean equals `r round(mean, 2)` with an estimated standa
     + If only one point per stratum is selected, the sampling variance can be approximated by the collapsed strata\index{Collapsed strata} estimator. In this method pairs of strata are formed, and the two strata of a pair are joined. In each new stratum we now have two points. With an odd number of strata there will be one group of three strata and three points. The sample is then analysed as if it were a random sample from the new collapsed strata. Suppose we group the strata on the basis of the measurements of the study variable. Do you think this is a proper way of grouping?
     + In case you think this is not a proper way of grouping the strata, how would you group the strata?
     + Will the estimated sampling variance estimator be unbiased? If not, will it be overestimated or underestimated?  
-10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use the argument `equalArea = TRUE`. Select four points per stratum using argument `type="composite"` and change the class of the resulting object in `SpatialPoints`. Extract the $z$-values in grdVoorst at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Finally, estimate the population mean and its standard error.  
+10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use argument `equalArea = TRUE`. Select four points per stratum using argument `type="composite"` and change the class of the resulting object in `SpatialPoints`. Extract the $z$-values in grdVoorst at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Finally, estimate the population mean and its standard error.  
     + Can the sampling variance of the estimator of the mean be estimated for bulking within the strata?
     + The alternative to analysing the concentration of four composite samples obtained by bulking across strata  is to analyse all $20 \times 4$ aliquots separately. The strata have equal size, so the inclusion probabilities are equal. As a consequence the sample mean is an unbiased estimator of the population mean. Is the precision of this estimated population mean equal to that of the estimated population mean with composite sampling? If not, is it smaller or larger, and why?
     + If you use argument `equalArea=FALSE` in combination with argument `type="composite"`, you get an error message. Why does this combination of arguments not work?
@@ -689,7 +690,7 @@ The estimated population mean equals `r round(mean, 2)` with an estimated standa
 
 In Section \@ref(kmeansstratification) multiple continuous covariates are used to construct clusters of raster cells using $k$-means. These clusters are then used as strata. This section considers the case where we have multiple categorical and/or continuous variables that we would like to use as stratification variables. The continuous stratification variables are first used to compute strata based on that stratification variable, e.g. by the *cum-root-f* method. What could be done then is to compute the cross-classification of each unit and use these cross-classifications as strata in random sampling. However, this may lead to numerous strata, maybe even more than the intended sample size. To reduce the total number of strata, we may aggregate cross-classification strata\index{Cross-classification strata} with similar means of the study variable, based on our prior knowledge.
 
-An alternative to aggregation of cross-classification strata is to use the separate strata, i.e. the strata based on an individual stratification variable, as *marginal* strata in random sampling.  How this works is explained in Section \@ref(Multiwaystratification).
+An alternative to aggregation of cross-classification strata is to use the separate strata, i.e. the strata based on an individual stratification variable, as *marginal* strata in random sampling.  How this works is explained in Subsection \@ref(Multiwaystratification).
 
 ## Multivariate stratification {#MultivariateStratification}
 
@@ -697,11 +698,11 @@ Another situation is where we have multiple study variables and would like to op
 
 However in case we do have multiple stratification variables, tailored to different study variables, the objective is to partition the population in strata, so that for a given allocation the total sampling costs, assuming a linear costs model (Equation \@ref(eq:linearcostmodel)), are minimised, given a constraint on the precision of the estimated mean for each study variable. 
 
-Package **SamplingStrata** [@Barcaroli2020] can be used to optimise multivariate strata. @Barcaroli2014 gives details about the objective function and the algorithm used for optimising the strata. Sampling units are allocated to the strata by Bethel allocation\index{Allocation: Bethel allocation} [@Bethel1989]. The required precision is specified in terms of a coefficient of variation\index{Coefficient of variation}, one per study variable. 
+Package **SamplingStrata** [@Barcaroli2020] can be used to optimise multivariate strata. @Barcaroli2014 gives details about the objective function and the algorithm used for optimising the strata. Sampling units are allocated to the strata by Bethel allocation\index{Allocation!Bethel allocation} [@Bethel1989]. The required precision is specified in terms of a coefficient of variation\index{Coefficient of variation}, one per study variable. 
 
 Multivariate stratification is illustrated with the Meuse data set of package **gstat** [@peb04]. The prior data of heavy metal concentrations of Cd and Zn are used in spatial prediction to create maps of these two study variables.
 
-The maps of natural logarithms of the two metal concentrations are created by kriging with an external drift, using the square root of the distance to the Meuse river as a predictor for the mean, see Section \@ref(IntroKED) for how this spatial prediction method works.
+The maps of natural logs of the two metal concentrations are created by kriging with an external drift, using the square root of the distance to the Meuse river as a predictor for the mean, see Section \@ref(IntroKED) for how this spatial prediction method works.
 
 ```{r, echo=FALSE}
 library(sp)
@@ -739,7 +740,7 @@ lzn_kriged <- krige(
 ```
 
 
-```{r PredictedCd, echo=FALSE, out.width='100%', fig.cap="Kriging predictions of natural logarithms of Cd and Zn concentrations in study area Meuse, used as stratification variables in bivariate stratification."}
+```{r PredictedCd, echo=FALSE, out.width='100%', fig.cap="Kriging predictions of natural logs of Cd and Zn concentrations in study area Meuse, used as stratification variables in bivariate stratification."}
 df <- data.frame(x=lcd_kriged$x, y=lcd_kriged$y, lnCd=lcd_kriged$var1.pred, lnZn=lzn_kriged$var1.pred)
 
 plt1 <- ggplot(data=df) +

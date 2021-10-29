@@ -2,7 +2,7 @@
 
 This chapter and the next on response surface sampling are about experimental designs that have been adapted for spatial surveys. Adaptation is necessary because, in contrast to experiments, in observational studies one is not free to choose any possible combination of levels of different factors. When two covariates are strongly correlated it may happen that there are no population units with a relatively large value for one covariate and a relatively small value for the other covariate. By contrast, in experimental research it is possible to select combinations of levels of factors so that the factors are independent.
 
-In a full factorial design\index{Full factorial design} all combinations of factor levels\index{Factor level} are observed. With $k$ factors and $l$ levels per factor the total number of observations is $l^k$. With numerous factors and/or numerous levels per factor observing $l^k$ experimental units becomes unfeasible in practice. Alternative experimental designs have been developed that need fewer observations but still provide detailed information about how the study variable responds to changes in the factor levels. In this chapter I describe and illustrate the survey sampling analogue of Latin hypercube sampling\index{Latin hypercube sampling}. Response surface sampling will follow in the next chapter.
+In a full factorial design\index{Full factorial design} all combinations of factor levels\index{Factor level} are observed. With $k$ factors and $l$ levels per factor the total number of observations is $l^k$. With numerous factors and/or numerous levels per factor observing $l^k$ experimental units becomes unfeasible in practice. Alternative experimental designs have been developed that need fewer observations but still provide detailed information about how the study variable responds to changes in the factor levels. In this chapter I describe and illustrate the survey sampling analogue of Latin hypercube sampling\index{Latin hypercube sample}. Response surface sampling will follow in the next chapter.
 
 Latin hypercube sampling (LHS) is used in designing industrial process, agricultural and computer experiments, with numerous covariates and/or factors of which we want to study the effect on the output [@McKay1979]. With numerous covariates and/or levels per covariate a full factorial design becomes unfeasible. A much cheaper alternative then is an experiment with, for all covariates, exactly one observation per level. So, in the agricultural experiment described in Chapter \@ref(IntroSamplingforMapping) with the application rates of N and of P as factors and four levels for each factor, this would entail four observations only, distributed in a square in such way that we have in all rows and in all columns one observation. This is referred to as a Latin square. The generalisation of a Latin square to a higher number of dimensions is a Latin hypercube (LH).
 
@@ -90,7 +90,7 @@ ggplot(countslf) +
   scale_y_continuous(name="Sample size", breaks=c(0,1,2,3))
 ```
 
-For all marginal strata\index{Marginal strata} with one sampling unit the contribution to component O1 of the criterion is zero. For marginal strata with zero or two sampling units, the contribution is 1, for marginal strata with three sampling units the contribution equals 2. In Figure \@ref(fig:StratumSampleSizes) there are nine marginal strata with zero units and nine marginal strata with two units, so O1 equals 18 in this case.
+For all marginal strata\index{Marginal stratum} with one sampling unit the contribution to component O1 of the criterion is zero. For marginal strata with zero or two sampling units, the contribution is 1, for marginal strata with three sampling units the contribution equals 2. In Figure \@ref(fig:StratumSampleSizes) there are nine marginal strata with zero units and nine marginal strata with two units, so O1 equals 18 in this case.
 
 Figure \@ref(fig:tracecLHS) shows the trace of the objective function, i.e. the values of the minimisation criterion during the optimisation.
 
@@ -117,7 +117,7 @@ O3 <- sum(abs(rho-r))
 print(O1+O3)
 ```
 
-cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. The function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann** and can handle larger data sets. 
+cLH samples can also be selected with function `optimCLHS` of package **spsann** [@Alessandro2016]. With this package the criterion is minimised by a spatial version of simulated annealing\index{Simulated annealing}. Function `scheduleSPANN` is used to define the annealing schedule\index{Annealing schedule}, see Chapter \@ref(MBSamplePattern) for details. My experience is that package **clhs** is much quicker than package **spsann** and can handle larger data sets. 
 
 #### Exercises {-}
 
@@ -180,7 +180,7 @@ ggplot(data=gridAmazonia) +
 
 ## Performance of conditioned Latin hypercube sampling in random forest prediction
 
-The performance of conditioned Latin hypercube sampling is studied in the same experiment as covariate space coverage sampling of the previous chapter. For this 500 cLH samples of size 25, and an equal number of samples of size 50 and 100 are selected. Each sample is used to calibrate a random forest model for aboveground biomass (AGB), using five covariates as predictors. The calibrated models are used to predict AGB at the 25,000 validation units, selected by simple random sampling without replacement. The same procedure is used for a simple random sample (SI), as a prediction model that ignores covariates. The prediction errors are used to estimate three map quality indices\index{Map quality indices}, the population mean error\index{Population mean error} (ME), population mean squared error\index{Population mean squared error} (MSE) and the population Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC), see Chapter \@ref(Validation).
+The performance of conditioned Latin hypercube sampling is studied in the same experiment as covariate space coverage sampling of the previous chapter. For this 500 cLH samples of size 25, and an equal number of samples of size 50 and 100 are selected. Each sample is used to calibrate a random forest model for aboveground biomass (AGB), using five covariates as predictors. The calibrated models are used to predict AGB at the 25,000 validation units, selected by simple random sampling without replacement. The same procedure is used for a simple random sample (SI), as a prediction model that ignores covariates. The prediction errors are used to estimate three map quality indices\index{Map quality index}, the population mean error\index{Population mean error} (ME), population mean squared error\index{Population mean squared error} (MSE) and the population Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC), see Chapter \@ref(Validation).
 
 ```{r repeatedCSCandcLHS, echo=FALSE, eval=FALSE}
 library(LICORS)
@@ -445,7 +445,7 @@ df <- data.frame(c(25,50,100), mRMSE[,1], mRMSE[,2])
 df[,c(2,3)] <- round(df[,c(2,3)],2)
 rownames(df) <- NULL
 knitr::kable(
-  df, caption = 'Mean RMSE of random forest predictions of aboveground biomass in Eastern Amazonia of 500 conditioned Latin hypercube (cLH) samples and 500 simple random (SI) samples, for three sample sizes.',
+  df, caption = 'Mean RMSE of random forest predictions of AGB in Eastern Amazonia of 500 conditioned Latin hypercube (cLH) samples and 500 simple random (SI) samples, and three sample sizes.',
   booktabs = TRUE,
   col.names=c("Sample size","cLH","SI")
 ) %>%

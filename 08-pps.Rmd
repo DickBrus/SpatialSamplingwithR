@@ -106,7 +106,7 @@ The estimators of Equation \@ref(eq:HHTotalppswr) and \@ref(eq:VarHHTotalppswr) 
 
 ## Probability-proportional-to-size sampling without replacement {#ppswor}
 
-The alternative to pps sampling with replacement (ppswr) is pps sampling without replacement (ppswor)\index{pps sampling!without replacement (ppswor)}. In ppswor sampling the  *inclusion* probabilities are proportional to a size variable, not the draw-by-draw selection probabilities as in ppswr. For that reason ppswor sampling is  referred to as $\pi$ps sampling by @sar92. ppswor sampling starts with assigning target inclusion probabilities to all units in the population. With inclusion probabilities proportional to a size variable $x$ the target inclusion probabilities are computed by $\pi_k=  n\;x_k/\sum_{j=1}^Nx_j,\; k = 1, \cdots , N$. 
+The alternative to pps sampling with replacement (ppswr) is pps sampling without replacement (ppswor)\index{pps sampling!without replacement (ppswor)}. In ppswor sampling the  *inclusion* probabilities are proportional to a size variable, not the draw-by-draw selection probabilities as in ppswr. For this reason ppswor sampling is  referred to as $\pi$ps sampling by @sar92. ppswor sampling starts with assigning target inclusion probabilities to all units in the population. With inclusion probabilities proportional to a size variable $x$ the target inclusion probabilities are computed by $\pi_k=  n\;x_k/\sum_{j=1}^Nx_j,\; k = 1, \cdots , N$. 
 
 ### Systematic pps sampling without replacement {#Systematicpps}
 
@@ -246,9 +246,9 @@ An alternative estimator of the population mean is the ratio estimator, also kno
 (\#eq:HTTotalppsworHajek)
 \end{equation}
 
-with $w_k = 1/\pi_k$. The denominator is an estimator of the population size $N$.. The H&aacute;jek estimator of the population total is obtained by multiplying the H&aacute;jek estimator of the mean with the population size $N$. Recall that the ratio estimator of the population mean was presented before in the chapters on systematic random sampling (Equation \@ref(eq:RatioMeanSY)), cluster random sampling with simple random sampling of clusters (Equation \@ref(eq:EstMeanRatioClEqual)) and two-stage cluster random sampling with simple random sampling of PSUs. These sampling designs have in common that the sample size (for cluster random sampling the number of secondary sampling units) is random.
+with $w_k = 1/\pi_k$. The denominator is an estimator of the population size $N$. The H&aacute;jek estimator of the population total is obtained by multiplying the H&aacute;jek estimator of the mean with the population size $N$. Recall that the ratio estimator of the population mean was presented before in the chapters on systematic random sampling (Equation \@ref(eq:RatioMeanSY)), cluster random sampling with simple random sampling of clusters (Equation \@ref(eq:EstMeanRatioClEqual)) and two-stage cluster random sampling with simple random sampling of PSUs. These sampling designs have in common that the sample size (for cluster random sampling the number of secondary sampling units) is random.
 
-Various functions in package **sampling** [@Tille2016] can be used to select a ppswor sample. In the code chunk below I use the function `UPrandompivotal`. With this function the order of the population units is randomised before function `UPpivotal` is used. The argument `pi` is a numeric with the inclusion probabilities. These are computed with the function `inclusionprobabilities`. Recall that $\pi_k=  n\;x_k/t(x)$. The sum of the inclusion probabilities should be equal to the sample size $n$. Function `UPpivotal` returns a numeric of length $N$ with elements 1 and 0, 1 if the unit is selected, 0 if it is not selected.
+Various functions in package **sampling** [@Tille2016] can be used to select a ppswor sample. In the code chunk below I use function `UPrandompivotal`. With this function the order of the population units is randomised before function `UPpivotal` is used. The argument `pi` is a numeric with the inclusion probabilities. These are computed with function `inclusionprobabilities`. Recall that $\pi_k=  n\;x_k/t(x)$. The sum of the inclusion probabilities should be equal to the sample size $n$. Function `UPpivotal` returns a numeric of length $N$ with elements 1 and 0, 1 if the unit is selected, 0 if it is not selected.
 
 ```{r}
 library(sampling)
@@ -292,7 +292,7 @@ design_ppsworhr <- svydesign(id=~1, data=mysample, pps=HR(p2sum), fpc=~pi)
 svytotal(~poppy, design_ppsworhr)
 ```
 
-In package **samplingVarEst** [@samplingVarEst] also various functions are available for approximating the variance: `VE.Hajek.Total.NHT`, `VE.HT.Total.NHT`, and `VE.SYG.Total.NHT`. The first variance approximation is the H&aacute;jek-Ros&eacute;n variance estimator\index{H$\text{{\'a}}$jek-R$os\text{{\'e}}$n variance estimator}, see Equation (4.3) in @Rosen1997b. The latter two functions require the pairwise inclusion probabilities\index{Pairwise inclusion probability}, which can be estimated by function `Pkl.Hajek.s`.
+In package **samplingVarEst** [@samplingVarEst] also various functions are available for approximating the variance: `VE.Hajek.Total.NHT`, `VE.HT.Total.NHT`, and `VE.SYG.Total.NHT`. The first variance approximation is the H&aacute;jek-Ros&eacute;n variance estimator\index{H$\text{{\'a}}$jek-Ros$\text{{\'e}}$n variance estimator}, see Equation (4.3) in @Rosen1997b. The latter two functions require the pairwise inclusion probabilities\index{Pairwise inclusion probability}, which can be estimated by function `Pkl.Hajek.s`.
 
 ```{r HajekRosenVarianceEstimator}
 library(samplingVarEst)
@@ -304,7 +304,7 @@ se_tz_SYG <- sqrt(VE.SYG.Total.NHT(mysample$poppy, mysample$pi, pikl))
 
 The three approximated standard errors are 14,045, 14,068 and 14,017 ha. The differences are small when related to the estimated total.
 
-Figure \@ref(fig:SamplingDistributionPps) shows the sampling distribution of estimators of the total poppy area with ppswor sampling and simple random sampling without replacement of size 40, obtained by repeating the random sampling with each design and estimation 10,000 times. With the ppswor samples the total poppy area is estimated by the $\pi$ estimator and the H&aacute;jek estimator. For each ppswor sample the variance of the $\pi$ estimator is approximated by the H&aacute;jek-Ros&eacute;n variance estimator (using function `VE.Hajek.Total.NHT` of package **samplingVarEst**).
+Figure \@ref(fig:SamplingDistributionPps) shows the approximated sampling distribution of estimators of the total poppy area with ppswor sampling and simple random sampling without replacement of size 40, obtained by repeating the random sampling with each design and estimation 10,000 times. With the ppswor samples the total poppy area is estimated by the $\pi$ estimator and the H&aacute;jek estimator. For each ppswor sample the variance of the $\pi$ estimator is approximated by the H&aacute;jek-Ros&eacute;n variance estimator (using function `VE.Hajek.Total.NHT` of package **samplingVarEst**).
 
 ```{r repeatedpps, eval=FALSE, echo=FALSE}
 ppswor <- function(sframe, size, n) {
@@ -338,7 +338,7 @@ for (i in 1:number_of_samples){
 save(tz_HT, tz_Hajek, v_tz_HR, tz_SI,file="results/pps_Kandahar.RData")
 ```
 
-```{r SamplingDistributionPps, echo=FALSE, fig.asp=.8, echo=FALSE, fig.cap="Sampling distribution of the $\\pi$ estimator (ppswor.HT) and the H$\\text{{\\'a}}$jek estimator (ppswor.Hajek) of the total poppy area (ha) in Kandahar with ppswor sampling of size 40, and of the $\\pi$ estimator with simple random sampling without replacement (SI) of size 40."}
+```{r SamplingDistributionPps, echo=FALSE, fig.asp=.8, echo=FALSE, fig.cap="Approximated sampling distribution of the $\\pi$ estimator (ppswor.HT) and the H$\\text{{\\'a}}$jek estimator (ppswor.Hajek) of the total poppy area (ha) in Kandahar with ppswor sampling of size 40, and of the $\\pi$ estimator with simple random sampling without replacement (SI) of size 40."}
 load(file="results/pps_Kandahar.RData")
 estimates <- data.frame(tz_HT, tz_Hajek, v_tz_HR, tz_SI)
 names(estimates)[c(1,2,4)] <- c("ppswor.HT","ppswor.Hajek","SI")

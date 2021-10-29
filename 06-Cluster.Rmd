@@ -16,7 +16,7 @@ Note that the size of the clusters, i.e. the number of elementary units (points)
 
 Cluster random sampling is illustrated with the selection of E-W oriented transects in Voorst. In order to delimit the length of the transects the study area is split into six 1 km $\times$ 1 km zones. In this case the zones have an equal size, but this is not needed. Note that these zones do not serve as strata. When used as strata, from each zone one or more clusters would be selected, see Section \@ref(StratifiedCl).  
 
-In the code chunk below the zones are constructed by first computing a vector with the s1-coordinates of the boundaries  of the zones. Half the size of the cells of the discretisation  grid (12.5 m) is added to `s1bnd` so that the boundaries are halfway discretisation nodes. The function `findInterval` of the **base** package is then used to determine for all discretisation nodes in which zone they fall.
+In the code chunk below the zones are constructed by first computing a vector with the s1-coordinates of the boundaries  of the zones. Half the size of the cells of the discretisation  grid (12.5 m) is added to `s1bnd` so that the boundaries are halfway discretisation points (centres of discretisation grid cells). Function `findInterval` of the **base** package is then used to determine for all discretisation points in which zone they fall.
 
 ```{r}
 library(sp)
@@ -81,7 +81,7 @@ cl_ppswr <- function(sframe, n) {
 }
 ```
 
-The function `cl_ppswr` is now used to select six times a cluster by ppswr.
+Function `cl_ppswr` is now used to select six times a cluster by ppswr.
 
 ```{r}
 n <- 6 
@@ -89,7 +89,7 @@ set.seed(314)
 mysample <- cl_ppswr(sframe=grdVoorst, n=n)
 ```
 
-As our population actually is infinite, the nodes of the selected grid cells are jittered to a random point within the selected grid cells. Note that the same noise is added to all points of a given cluster.
+As our population actually is infinite, the centres of the selected grid cells are jittered to a random point within the selected grid cells. Note that the same noise is added to all points of a given cluster.
 
 ```{r}
 for (i in 1:n) {
@@ -209,7 +209,7 @@ A confidence interval estimate of the population mean can be computed with metho
 confint(svymean(~z, design_cluster, df=degf(design_cluster), level=0.95))
 ```
 
-Figure \@ref(fig:SamplingDistributionCl) shows the sampling distribution of the pwr estimator of the mean with cluster random sampling, and of the $\pi$ estimator with simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
+Figure \@ref(fig:SamplingDistributionCl) shows the approximated sampling distribution of the pwr estimator of the mean with cluster random sampling, and of the $\pi$ estimator with simple random sampling, approximated by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
 
 ```{r, echo=FALSE, eval=FALSE}
 number_of_samples <- 10000
@@ -242,7 +242,7 @@ for (i in 1:number_of_samples) {
 save(mz, mz_SI, v_mz, sampleSizes, m_n, file="results/Cl_Voorst.RData")
 ```
 
-```{r SamplingDistributionCl, echo=FALSE, fig.asp=.8, fig.cap="Sampling distribution of the pwr estimator of the mean of SOM (g kg$\\textsuperscript{-1}$) in Voorst with cluster random sampling (Cl) and of the $\\pi$ estimator with simple random sampling (SI). In Cl six clusters are selected by ppswr. The (expected) sample size (number of points) is 49 units."}
+```{r SamplingDistributionCl, echo=FALSE, fig.asp=.8, fig.cap="Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst with cluster random sampling (Cl) and of the $\\pi$ estimator with simple random sampling (SI). In Cl six clusters are selected by ppswr. The (expected) sample size (number of points) is 49 units."}
 load(file="results/Cl_Voorst.RData")
 estimates <- data.frame(mz, mz_SI)
 names(estimates) <- c("Cl","SI")
@@ -254,7 +254,7 @@ ggplot(data = df) +
     scale_y_continuous(name = "Estimated mean SOM")
 ```
 
-The variance of the 10,000 estimated population means with cluster random sampling equals `r as.character(round(var(estimates$Cl),3))`.  This is considerably larger than with simple random sampling: `r as.character(round(var(estimates$SI),3))`. The large variance is caused by the strong spatial clustering of points. This may save travel time in large study areas, but in Voorst the saved travel time will be very limited, and therefore cluster random sampling in Voorst is not a good idea. The average of the estimated variances with cluster random sampling equals `r as.character(round(mean(v_mz),3))`. The difference with the variance of the 10,000 estimated means is small because the estimator of the variance, Equation \@ref(eq:VarEstMeanCl), is unbiased. Figure \@ref(fig:histsamplesizeCl) shows the sampling distribution of the sample size. The expected sample size can be computed as follows:
+The variance of the 10,000 estimated population means with cluster random sampling equals `r as.character(round(var(estimates$Cl),3))`.  This is considerably larger than with simple random sampling: `r as.character(round(var(estimates$SI),3))`. The large variance is caused by the strong spatial clustering of points. This may save travel time in large study areas, but in Voorst the saved travel time will be very limited, and therefore cluster random sampling in Voorst is not a good idea. The average of the estimated variances with cluster random sampling equals `r as.character(round(mean(v_mz),3))`. The difference with the variance of the 10,000 estimated means is small because the estimator of the variance, Equation \@ref(eq:VarEstMeanCl), is unbiased. Figure \@ref(fig:histsamplesizeCl) shows the approximated sampling distribution of the sample size. The expected sample size can be computed as follows:
 
 ```{r}
 p <- M_cl/sum(M_cl)
@@ -263,16 +263,18 @@ print(m_n <- n*sum(p*M_cl))
 
 So, the unequal draw-by-draw selection probabilities of the clusters are accounted for in computing the expected sample size\index{Expected sample size}. 
 
-```{r histsamplesizeCl, echo=FALSE, fig.cap="Sampling distribution of the sample size (number of points) with cluster random sampling from Voorst, for six clusters selected by ppswr."}
-ggplot() +
-  geom_histogram(aes(x=sampleSizes), fill="black", alpha=0.5, breaks= 33.5:60.5, colour="black") +
-  scale_y_continuous(name = "Frequency") +
-  scale_x_continuous(name = "Sample size")
+```{r histsamplesizeCl, echo=FALSE, fig.cap="Approximated sampling distribution of the sample size (number of points) with cluster random sampling from Voorst, for six clusters selected by ppswr."}
+n_df <- data.frame(n=sampleSizes)
+ggplot(n_df) +
+  geom_histogram(aes(x=n, y=..density..), fill="black", alpha=0.5, breaks= 33.5:60.5, colour="black") +
+  geom_density(aes(x=n, y=..density..), lwd=1, adjust=2) +
+  scale_x_continuous(name = "Sample size") +
+  scale_y_continuous(name = "Density")
 ```
 
 #### Exercises {-}
 
-1. Write an **R** script to compute the true sampling variance of the estimator of the population mean of SOM in Voorst for cluster random sampling and clusters selected with ppswr, $n = 6$, see Equation \@ref(eq:TrueVarEstMeanCl). Compare the sampling variance for cluster random sampling with the sampling variance for simple random sampling with a sample size equal to the expected sample size of cluster random sampling.  
+1. Write an **R** script to compute the true sampling variance of the estimator of the mean SOM concentration in Voorst for cluster random sampling and clusters selected with ppswr, $n = 6$, see Equation \@ref(eq:TrueVarEstMeanCl). Compare the sampling variance for cluster random sampling with the sampling variance for simple random sampling with a sample size equal to the expected sample size of cluster random sampling.  
 2. As an alternative we may select three times a transect, using three 2 km $\times$ 1 km zones obtained by joining two neighbouring 1 km $\times$ 1 km zones of Figure \@ref(fig:ClVoorst). Do you expect that the sampling variance of the estimator of the  mean is equal to, larger or smaller than that of the sampling design with six transects of half the length?   
 
 ## Clusters selected with probabilities proportional to size, without replacement
@@ -283,7 +285,7 @@ In the previous section the clusters were selected with replacement (ppswr). The
 The problem is the computation of the inclusion probabilities of the clusters. After we have selected a first cluster, we must adapt the sum of the sizes of the $N-1$ remaining clusters and recompute the selection probabilities  of the remaining clusters in the second draw, etc. Section 6.4 of @loh99 nicely describes how the inclusion probabilities of the $N$ clusters in a cluster random sample of size two, selected by ppswor can be computed.
 ```
 
-Many algorithms have been developed for ppswor sampling, see @Tille2006 for an overview, and quite a few of them are implemented in package **sampling** [@Tille2016]. In the next code chunk function `UPpivotal` is used to select a cluster random sample with ppswor. For an explanation of this algorithm, see Section \@ref(pivotalmethod).
+Many algorithms have been developed for ppswor sampling, see @Tille2006 for an overview, and quite a few of them are implemented in package **sampling** [@Tille2016]. In the next code chunk function `UPpivotal` is used to select a cluster random sample with ppswor. For an explanation of this algorithm, see Subsection \@ref(pivotalmethod).
 
 ```{r}
 library(sampling)
@@ -496,7 +498,7 @@ mz <- sum(w_h*mz_h)
 se_mz <- sqrt(sum(w_h^2*v_mz_h))
 ```
 
-The estimated mean equals `r round(mz,3)` g kg$^{-1}$ and the estimated standard error equals 0.660 g kg$^{-1}$. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note the argument `nest=TRUE`, which means that the clusters are nested within the strata.
+The estimated mean equals `r round(mz,3)` g kg$^{-1}$ and the estimated standard error equals 0.660 g kg$^{-1}$. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
 
 ```{r}
 mysample$weights <- M_h[mysample$zonestratum]/
