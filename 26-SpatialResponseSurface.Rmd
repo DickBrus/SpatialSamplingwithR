@@ -8,10 +8,10 @@ The response surface sampling approach is an example of a model-based sampling d
 
 1. Transform the covariate matrix into a scaled, centred, de-correlated matrix by principal components analysis (PCA).   
 2. Choose the response surface design type.   
-3. Select candidate sampling units based on the distance from the design points in PC-space and then select multiple units per design point.   
+3. Select candidate sampling units based on the distance from the design points in the space spanned by the principal componets and then select multiple units per design point.   
 4. Select the combination of candidate sampling units with the highest value for a criterion that quantifies how uniform the sample is spread across the study area.   
 
-This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010 and @Fitzgerald2010.
+This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010, and @Fitzgerald2010.
 
 Spatial response surface sampling  is illustrated with the electromagnetic induction (EM) measurements (mS/m) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section \@ref(Datasets)). The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
@@ -175,7 +175,7 @@ for (i in 1:nrow(ccd_df)) {
 }
 ```
 
-Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate points associated with the design points with coordinates  (-1.51,-1.51), (0, -2.13), (1.51,-1.51) and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample the value of one of the principal component scores will be less extreme than the ideal values according to the CCRSD design.   
+Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate points associated with the design points with coordinates  (-1.51,-1.51), (0, -2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample the value of one of the principal component scores will be less extreme than the ideal values according to the CCRSD design.   
 
 ```{r candidatelocations, echo=FALSE, fig.cap="Clusters of units (red points) around the design points (triangles) of a CCRSD (two covariates), serving as candidate sampling points."}
 notcandidates <- EM_CRF[-candi_all$unit,]
@@ -272,9 +272,9 @@ save(mySRSsample, file="results/SpatialResponseSurfaceSample_CRF_geo.RData")
 #save(mySRSsample, file="results/SpatialResponseSurfaceSample_CRF_mb.RData")
 ```
 
-Figure \@ref(fig:CCRSDinPCspace) shows the optimised CCRSD samples plotted in the space spanned by the two principal components, obtained with the geometric and model-based criterion, plotted together with the design points. The two optimised samples are very similar.
+Figure \@ref(fig:CCRSDinPCspace) shows the optimised CCRSD samples plotted in the space spanned by the two principal components, obtained with the geometric and the model-based criterion, plotted together with the design points. The two optimised samples are very similar.
 
-```{r CCRSDinPCspace, echo=FALSE, out.width='100%', fig.cap="Principal component scores of the spatial CCRSD sample (triangles), optimised with the geometric and model-based criterion. Dots: design points of CCRSD."}
+```{r CCRSDinPCspace, echo=FALSE, out.width='100%', fig.cap="Principal component scores of the spatial CCRSD sample (triangles), optimised with the geometric and the model-based criterion. Dots: design points of CCRSD."}
 load(file="results/SpatialResponseSurfaceSample_CRF_geo.RData")
 mysample_geo<-mySRSsample$mysample
 critmin_geo <- tail(mySRSsample$trace,1)
@@ -297,7 +297,7 @@ ggplot(mysamples) +
 
 Figure \@ref(fig:CCRSDSample) shows the two optimised CCRSD samples plotted in geographical space on the first standardised principal component scores.
 
-```{r CCRSDSample, echo=FALSE, fig.cap="CCRSD sample from the Cotton Research Farm, optimised with the geometric and model-based criterion plotted on a map of the first standardised principal component (PC1)."}
+```{r CCRSDSample, echo=FALSE, fig.cap="CCRSD sample from the Cotton Research Farm, optimised with the geometric and the model-based criterion, plotted on a map of the first standardised principal component (PC1)."}
 
 ggplot(mysamples) +
   geom_raster(data=EM_CRF, mapping=aes(x=x1/1000,y=x2/1000,fill=PC1)) +
@@ -358,7 +358,7 @@ mySRSsample <- anneal(
 save(mySRSsample, file="results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
 ```
 
-Figures \@ref(fig:CCRSDUzbekistan2n) and \@ref(fig:CCRSDinPCSpace2n) show the optimised CCRSD sample of eighteen points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 150 m and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.
+Figures \@ref(fig:CCRSDUzbekistan2n) and \@ref(fig:CCRSDinPCSpace2n) show the optimised CCRSD sample of eighteen points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 150 m, and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.
 
 ```{r CCRSDUzbekistan2n, echo=FALSE, fig.cap="CCRSD sample with two points per design point, from the Cotton Research Farm, plotted on a map of the first standardised principal component (PC1)."}
 load(file="results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
@@ -468,7 +468,7 @@ save(mySRSsample, file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RD
 
 Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left cube point is very large. In this stratum no population units are present that are close to these two design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance. However, the optimised sample obtained with `weight=5` shows much stronger spatial clustering. In addition, there are some pairs of points with a separation distance smaller than the effective range used in optimisation, so that violation of the independence assumption becomes more likely. 
 
-```{r StratifiedCCRSD, echo=FALSE, fig.cap="Stratified CCRSD samples from the Cotton Research Farm in Uzbekistan, optimised with model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for large average distance to design points."}
+```{r StratifiedCCRSD, echo=FALSE, fig.cap="Stratified CCRSD samples from the Cotton Research Farm in Uzbekistan, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
 load(file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
 mysample_w0 <- mySRSsample$mysample
 
@@ -487,7 +487,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 
-```{r StratifiedCCRSDinPCSpace, echo=FALSE, out.width='100%', fig.cap="Principal component scores of the stratified CCRSD sample, optimised with model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)."}
+```{r StratifiedCCRSDinPCSpace, echo=FALSE, out.width='100%', fig.cap="Principal component scores of the stratified CCRSD sample, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)."}
 load(file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
 mysample_w0<-mySRSsample$mysample
 mysample_w0$subarea <- as.factor(rep(c(1,2),each=9))

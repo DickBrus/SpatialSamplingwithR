@@ -43,7 +43,7 @@ where $Z(\mathbf{s}_i)$ is the study variable at the $i^{\mathrm{th}}$ sampling 
 (\#eq:krigingequations)
 \end{equation}
 
-where $C(\mathbf{s}_i,\mathbf{s}_j)$ is the covariance of the $i$th and $j$th sampling location, $C(\mathbf{s}_i,\mathbf{s}_0)$ is the covariance of the $i$th sampling location and the prediction location $s_0$ and $\nu$ is an extra parameter to be estimated, referred to as the Lagrange multiplier\index{Lagrange multiplier}. This Lagrange multiplier must be included in the set of equations because the error variance is minimised under the constraint that the kriging weights sum to one, see the final line in Equation \@ref(eq:krigingequations). This constraint ensures that the OK-predictor is model-unbiased. It is convenient to write this system of equations in matrix form:
+where $C(\mathbf{s}_i,\mathbf{s}_j)$ is the covariance of the $i$th and $j$th sampling location, $C(\mathbf{s}_i,\mathbf{s}_0)$ is the covariance of the $i$th sampling location and the prediction location $s_0$ and $\nu$ is an extra parameter to be estimated, referred to as the Lagrange multiplier\index{Lagrange multiplier}. This Lagrange multiplier must be included in the set of equations because the error variance is minimised under the constraint that the kriging weights sum to 1, see the final line in Equation \@ref(eq:krigingequations). This constraint ensures that the OK-predictor is model-unbiased. It is convenient to write this system of equations in matrix form:
 
 \begin{eqnarray}
 \left[
@@ -221,7 +221,7 @@ c_0+c_1\; \mathrm{exp}(-h/\phi) &\,\,\,\text{if}\,\,\, h > 0 \\
 
 In an exponential semivariogram the semivariance goes asymptotically to a maximum; it never reaches it. In an exponential semivariogram the range parameter is replaced by the distance parameter. In an exponential semivariogram without nugget the semivariance at three times the distance parameter is at 95\% of the sill. Three times the distance parameter is referred to as the *effective* or *practical* range. 
 
-In following chapters I also use a correlogram\index{Correlogram}, which is a scaled covariance function, such that the sill of the correlogram equals one:
+In following chapters I also use a correlogram\index{Correlogram}, which is a scaled covariance function, such that the sill of the correlogram equals 1:
 
 \begin{equation}
 \rho(\mathbf{h}) = \frac{C(\mathbf{h})}{\sigma^2} \;.
@@ -354,7 +354,7 @@ With KED the study variable at a prediction location $\mathbf{s}_0$ is predicted
 
 with $\hat{\beta}_k$ the estimated regression coefficient associated with covariate $x_k$. The first component of this predictor is the estimated expectation at the new location using the covariate values at this location and the estimated regression coefficients, and the second component is a weighted sum of the residuals at the sampling locations.
 
-The optimal kriging weights $\lambda_i,\; i = 1, \cdots ,n$ are obtained in a similar way as in OK. The difference is that additional constraints on the weights are needed, to ensure unbiased predictions. Not only the weights must sum to one, but also for all $p$ covariates the weighted sum of the covariate values at the sampling locations must equal the covariate value at the target location: $\sum_{i=1}^n \lambda_i x_k(\mathbf{s}_i) = x_k(\mathbf{s}_0)$ for all $k=1, \cdots , p$. This leads to a system of $n+p+1$ simultaneous equations that must be solved. In matrix notation this system is
+The optimal kriging weights $\lambda_i,\; i = 1, \cdots ,n$ are obtained in a similar way as in OK. The difference is that additional constraints on the weights are needed, to ensure unbiased predictions. Not only the weights must sum to 1, but also for all $p$ covariates the weighted sum of the covariate values at the sampling locations must equal the covariate value at the target location: $\sum_{i=1}^n \lambda_i x_k(\mathbf{s}_i) = x_k(\mathbf{s}_0)$ for all $k=1, \cdots , p$. This leads to a system of $n+p+1$ simultaneous equations that must be solved. In matrix notation this system is
 
 \begin{eqnarray}
 \left[
@@ -535,7 +535,7 @@ With the method-of-moments approach the semivariogram is estimated in two steps.
 
 For each distance interval all pairs of points with a separation distance\index{Separation distance} in that interval are identified. For each pair half the squared difference of the study variable is computed, and these squared differences are averaged over all point-pairs of that interval. This average is the estimated semivariance of that distance interval. The estimated semivariances for all distance intervals are plotted against the average separation distances per distance interval. In the second step a permissible model is fitted to the sample semivariogram, using some form of weighted least squares. For details, see @webster2007.
 
-The next code chunk shows how this can be done in **R**.  A simple random sample of 150 points is selected from the first simulated field shown in Figure \@ref(fig:Twokrigingsimulations). Function `variogram` of package **gstat** is then used to compute the sample semivariogram. Note that no distance intervals need be specified to function `variogram`. This can be done with argument `width` or argument `boundaries`. In their absence, the default value for argument `width` is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with the argument `cutoff`. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point-pairs, average separation distance and estimated semivariance in the first three columns.
+The next code chunk shows how this can be done in **R**.  A simple random sample of 150 points is selected from the first simulated field shown in Figure \@ref(fig:Twokrigingsimulations). Function `variogram` of package **gstat** is then used to compute the sample semivariogram. Note that no distance intervals need be specified to function `variogram`. This can be done with argument `width` or argument `boundaries`. In their absence, the default value for argument `width` is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with argument `cutoff`. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point-pairs, average separation distance and estimated semivariance in the first three columns.
 
 ```{r, echo=FALSE}
 #Copy mypop to mypop_spdf, which is needed later
@@ -596,7 +596,7 @@ mysample <- as(mysample,"data.frame")
 dGeoR <- as.geodata(obj=mysample, header=TRUE, coords.col=1:2, data.col=3)
 ```
 
-The model parameters can then be estimated with function `likfit`. The argument `trend="cte"` means that we assume that the mean is constant throughout the study area.
+The model parameters can then be estimated with function `likfit`. Argument `trend="cte"` means that we assume that the mean is constant throughout the study area.
 
 ```{r}
 vgm_ML <- likfit(geodata=dGeoR, trend="cte", 
@@ -677,7 +677,7 @@ repeat {
 }
 ```
 
-Table \@ref(tab:ResidualVariogramEstimates) shows the estimates of the residual semivariogram parameters and regression coefficients, together with the estimates obtained by restricted maximum likelihood, which is explained in the next section.
+Table \@ref(tab:ResidualVariogramEstimates) shows the estimates of the residual semivariogram parameters and regression coefficients, together with the estimates obtained by restricted maximum likelihood, which is explained in the next subsection.
 
 ### Restricted maximum likelihood {#REML}
 

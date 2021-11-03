@@ -57,7 +57,7 @@ The mean semivariance $\bar{\gamma}$ is a model-based prediction of the populati
 The mean semivariance $\bar{\gamma}$ can be calculated by discretising the study area by a fine square grid, computing the matrix with geographical distances between the discretisation nodes, transforming this into a semivariance matrix, and computing the average of all elements of the semivariance matrix. The second term $E_p(\pmb{\lambda}^{\mathrm{T}}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda})$ can be evaluated by Monte Carlo simulation, repeatedly selecting a sample according to design $p$, calculating $\pmb{\lambda}^{\mathrm{T}}\pmb{\Gamma}_{\mathcal{S}}\pmb{\lambda}$, and averaging.
 
 ```{block2, type='rmdnote'}
-The semivariance at zero distance (same location) is 0, so on the diagonal of a semivariance matrix we have zeroes. If a semivariogram with nugget is assumed, the zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\pmb{\Gamma}_{\mathcal{S}}$.  
+The semivariance at zero distance (same location) is 0, so the diagonal of a semivariance matrix is filled with zeroes. If a semivariogram with nugget is assumed, the zeroes on the diagonal must be replaced by the nugget to compute $\bar{\gamma}$. The same holds for the diagonal zeroes in  $\pmb{\Gamma}_{\mathcal{S}}$.  
 ```
 
 This generic procedure is still computationally demanding, but it is the only option for complex spatial sampling designs. For basic sampling designs the general formula can be worked out. For simple random sampling, the sampling variance can be predicted by
@@ -91,7 +91,9 @@ with $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ the design-expectation, i.e. 
 
 The analytical approach is illustrated with the data of agricultural field Leest [@HofmanBrus2021]. Nitrate-N (NO$_3$-N) in kg ha$^{-1}$ in the layer $0-90$ cm, using a standard soil density of 1,500 kg m$^{-3}$, is measured at 30 points. These data are used to compute a sample semivariogram using the method-of-moments with function `variogram`, see Chapter \@ref(Introkriging). A spherical model without nugget is fitted to the sample semivariogram using function `fit.variogram`. The numbers in this plot are the numbers of pairs of points used to compute the semivariances.
 
-```{r VariogramLeest, fig.asp=0.7, fig.cap="Sample semivariogram and fitted spherical model for NO3-N in field Leest. Numbers are numbers of point pairs used in computing semivariances."}
+(ref:VariogramLeestlabel) Sample semivariogram and fitted spherical model for NO~3~-N in field Leest. Numbers are numbers of point pairs used in computing semivariances.
+
+```{r VariogramLeest, fig.asp=0.7, fig.cap="(ref:VariogramLeestlabel)"}
 library(gstat)
 mydata <- read.csv("data/Leest05.csv")
 coordinates(mydata) <- ~Easting+Northing
@@ -347,7 +349,9 @@ The model-based prediction of the variance of the design-based estimate of the p
 
 The Bayesian approach is illustrated with a case study on predicting the sampling variance of NO$_3$-N in agricultural field Melle in Belgium [@HofmanBrus2021]. As for field Leest used in Subsection \@ref(AnalyticalApproach) data of NO$_3$-N are available at 30 points. The sampling points are approximately on the nodes of a square grid with a spacing of about 4.5 m. As a first step, I check whether we can safely assume that the data come from a normal distribution.
 
-```{r qqplotMelle, fig.asp=0.7, fig.cap="Q-Q plot of NO3-N of field Melle."}
+(ref:qqplotMellelabel) Q-Q plot of NO~3~-N of field Melle.
+
+```{r qqplotMelle, fig.asp=0.7, fig.cap="(ref:qqplotMellelabel)"}
 mydata <- read.csv("data/Melle17.csv", header=TRUE)
 ggplot(mydata, aes(sample=N)) +
   geom_qq() +
@@ -411,7 +415,7 @@ vgML <- optim(pars, ll, control=list(fnscale = -1),
 
 The maximum likelihood (ML) estimates of the semivariogram parameters are used as initial values in MCMC sampling. A uniform prior is used for the inverse of the sill parameter, $\lambda=1/\sigma^2$, with a lower bound of $10^{-6}$ and an upper bound of 1. For the relative nugget, $\tau^2/\sigma^2$, a uniform prior is assumed with a lower bound of 0 and an upper bound of 1. For the distance parameter $\phi$ of the exponential semivariogram a uniform prior is assumed, with a lower bound of $10^{-6}$ m and an upper bound of 150 m. 
 
-These priors can be defined by function `createUniformPrior` of package **BayesianTools** [@Hartig2018]. The function `createBayesianSetup` is then used to define the setup of the MCMC sampling, specifying the likelihood function, the prior, and the vector with best prior estimates of the model parameters, specified with argument `best`. Argument `sampler` of function `runMCMC` specifies the type of MCMC sampler. I used the differential evolution algorithm\index{Differential evolution algorithm} of @terBraak2008. Argument `start` of function `getSample` specifies the burn-in period\index{Burn-in period}, i.e. the number of first samples that are discarded to diminish the influence of the initial semivariogram parameter values. Argument `numSamples` specifies the sample size, i.e. the number of saved vectors with semivariogram parameter values, drawn from the posterior distribution.
+These priors can be defined by function `createUniformPrior` of package **BayesianTools** [@Hartig2018]. Function `createBayesianSetup` is then used to define the setup of the MCMC sampling, specifying the likelihood function, the prior, and the vector with best prior estimates of the model parameters, specified with argument `best`. Argument `sampler` of function `runMCMC` specifies the type of MCMC sampler. I used the differential evolution algorithm\index{Differential evolution algorithm} of @terBraak2008. Argument `start` of function `getSample` specifies the burn-in period\index{Burn-in period}, i.e. the number of first samples that are discarded to diminish the influence of the initial semivariogram parameter values. Argument `numSamples` specifies the sample size, i.e. the number of saved vectors with semivariogram parameter values, drawn from the posterior distribution.
 
 ```{r MCMCMelles, eval=FALSE}
 library(BayesianTools)
@@ -435,7 +439,9 @@ Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled b
 MCMCsample <- read.csv(file="results/MCMC_Melle17_logN.csv", header=TRUE)
 ```
 
-```{r MCMCsampleVariogramlnN, echo=FALSE, fig.asp=0.7, fig.cap="Semivariograms of the natural log of NO3-N for field Melle obtained by MCMC sampling from posterior distribution of the estimated semivariogram parameters."}
+(ref:MCMCsampleVariogramlnNlabel) Semivariograms of the natural log of NO~3~-N for field Melle obtained by MCMC sampling from posterior distribution of the estimated semivariogram parameters.
+
+```{r MCMCsampleVariogramlnN, echo=FALSE, fig.asp=0.7, fig.cap="(ref:MCMCsampleVariogramlnNlabel)"}
 d <- 1:150
 semivar <- matrix(nrow=length(d),ncol=20)
 for (i in 1:20) {
@@ -541,7 +547,9 @@ for (i in 1:4) {
 save(Zsim, v, file="results/SimulatedMaps_Melle17.RData")
 ```
 
-```{r, plotsimulatedmapsMelle, echo=FALSE, out.width="100%", fig.cap="Maps of NO3-N of field Melle simulated with four semivariograms (rows). Each semivariogram is used to simulate four maps (columns a-d)."}
+(ref:plotsimulatedmapsMellelabel) Maps of NO~3~-N of field Melle simulated with four semivariograms (rows). Each semivariogram is used to simulate four maps (columns a-d).
+
+```{r, plotsimulatedmapsMelle, echo=FALSE, out.width="100%", fig.cap="(ref:plotsimulatedmapsMellelabel)"}
 load(file="results/SimulatedMaps_Melle17.RData")
 ggplot(data=Zsim) +
   geom_raster(mapping=aes(x=x1, y=x2, fill=zsim)) +
@@ -566,7 +574,9 @@ The sampling variance shows quite strong variation among the maps. The histogram
 load(file="results/SimulatedSamplingVariances_Melle17.RData")
 ```
 
-```{r histogramNMelle, echo=FALSE, fig.asp=0.7, fig.cap="Histogram of simulated sampling variances of the $\\pi$ estimator of the mean of NO3-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum."}
+(ref:histogramNMellelabel) Histogram of simulated sampling variances of the $\pi$ estimator of the mean of NO~3~-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum.
+
+```{r histogramNMelle, echo=FALSE, fig.asp=0.7, fig.cap="(ref:histogramNMellelabel)"}
 ggplot() +
   geom_histogram(aes(x=V), binwidth=0.2, fill="black", alpha=0.5, colour="black") +
   scale_y_continuous(name="Frequency") +
@@ -666,7 +676,7 @@ E_{\xi}[O] = \frac{1}{N} \sum\limits_{h=1}^H \left( \sum_{i=1}^{N_h-1}\sum_{j=i+
 (\#eq:minicritospatsDeGruijter)
 \end{equation}
 
-Optimal spatial stratification with package **SamplingStrata** is illustrated with a survey of the soil organic matter (SOM) concentration (g kg$^{-1}$) in the topsoil (A horizon) of Xuancheng (China). Three samples are available. These three samples are merged. The total number of sampling points is 183. This sample is used to fit a simple linear regression model for the SOM concentration, using the elevation of the surface (dem) as a predictor. The function `lm` of the **stats** package is used to fit the simple linear regression model.
+Optimal spatial stratification with package **SamplingStrata** is illustrated with a survey of the soil organic matter (SOM) concentration (g kg$^{-1}$) in the topsoil (A horizon) of Xuancheng (China). Three samples are available. These three samples are merged. The total number of sampling points is 183. This sample is used to fit a simple linear regression model for the SOM concentration, using the elevation of the surface (dem) as a predictor. Function `lm` of the **stats** package is used to fit the simple linear regression model.
 
 ```{r}
 sample_grid <- read.csv("data/Xuancheng_gridsample.csv")
@@ -727,7 +737,9 @@ grd <- within(as(grd,"data.frame"),
 
 The predictions and their standard errors are shown in Figure \@ref(fig:predictedlnSOM).
 
-```{r predictedlnSOM, echo=FALSE, out.width="100%", fig.cap = "Predicted natural log of the SOM concentration (g kg$\\textsuperscript{-1}$) in the topsoil of Xunacheng and its standard error, obtained with a linear regression model with elevation as predictor."}
+(ref:predictedlnSOMlabel) Predicted natural log of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng and its standard error, obtained with a linear regression model with elevation as predictor.
+
+```{r predictedlnSOM, echo=FALSE, out.width="100%", fig.cap = "(ref:predictedlnSOMlabel)"}
 plt1 <- ggplot(grd) +
   geom_raster(mapping=aes(x=x1, y=x2, fill=lnSOMpred)) +
   scale_fill_continuous(name="lnSOM",type="viridis") + 
@@ -768,6 +780,8 @@ vgm_REML <- likfit(
   ini.cov.pars=c(0.05,3), nugget=0.1, lik.method="REML", messages=FALSE)
 ```
 
+(ref:TableModelXuanchenglabel) Estimated regression coefficients (intercept and slope for dem) and parameters of an exponential semivariogram for the natural log of the SOM concentration (g kg^-1^) in Xuancheng.
+
 ```{r TableModelXuancheng, echo=FALSE}
 int <- round(vgm_REML$beta[1],3)
 dem <- round(vgm_REML$beta[2],5)
@@ -779,7 +793,7 @@ coefs <- data.frame(int,dem,nugget,psill,range)
 rownames(coefs) <- c()
 
 knitr::kable(
-  coefs, caption = 'Estimated regression coefficients (intercept and slope for dem) and parameters of an exponential semivariogram for the natural log of the SOM concentration (g kg$\\textsuperscript{-1}$) in Xuancheng.',
+  coefs, caption = '(ref:TableModelXuanchenglabel)',
   booktabs = TRUE,col.names=c("Int","dem","Nugget","Partial sill", "Distance parameter (km)")
 ) %>%
   kable_classic()
@@ -796,7 +810,7 @@ subgrd <- spsample(grd, type="regular", cellsize=0.8, offset=c(0.5,0.5))
 subgrd <- data.frame(coordinates(subgrd), over(subgrd,grd))
 ```
 
-The first step in optimisation of spatial strata with package **SamplingStrata** is to build the sampling frame with function `buildFrameSpatial`. The argument `X` specifies the stratification variables and argument `Y` specifies the study variables. In our case we have only one stratification variable and one study variable, and these are the same variable. Argument `variance` specifies the variance of the prediction error of the study variable. The variable `dom` is an identifier of the domain of interest of which we want to estimate the mean or total. I assigned the value 1 to all population units, which implies that the stratification is optimised for the entire population. If we have multiple domains of interest, the stratification is optimised for each domain separately.
+The first step in optimisation of spatial strata with package **SamplingStrata** is to build the sampling frame with function `buildFrameSpatial`. Argument `X` specifies the stratification variables and argument `Y` specifies the study variables. In our case we have only one stratification variable and one study variable, and these are the same variable. Argument `variance` specifies the variance of the prediction error of the study variable. The variable `dom` is an identifier of the domain of interest of which we want to estimate the mean or total. I assigned the value 1 to all population units, which implies that the stratification is optimised for the entire population. If we have multiple domains of interest, the stratification is optimised for each domain separately.
 
 Finally, as a preparatory step we must specify how precise the estimated mean should be. This precision must be specified in terms of the coefficient of variation (cv), i.e. the standard error of the estimated mean divided by the mean. I use a cv of 0.005, see code chunk below. In case of multiple domains of interest and multiple study variables a cv must be specified per domain and per study variable. This precision requirement is used to compute the sample size for Neyman allocation (Equation \@ref(eq:Neymanallocation))^[For multivariate stratification, i.e. stratification with multiple study variables, Bethel allocation is used to compute the required sample size.]. The optimal stratification is independent of the precision requirement, although for a large cv the optimal number of strata can be smaller than the value assigned to argument `nStrata` of function `optimStrata`, see hereafter.
 

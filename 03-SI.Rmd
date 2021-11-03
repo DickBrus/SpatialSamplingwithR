@@ -102,7 +102,7 @@ With simple random sampling of *infinite* populations the $\pi$ estimator of the
 (\#eq:HTTotalSIInfinite)
 \end{equation}
 
-The simple random sample of size 40 selected above is used to estimate the total mass of SOM in the population. First the population mean is estimated.
+The simple random sample of size 40 selected above is used to estimate the total mass of SOM in the population. First, the population mean is estimated.
 
 ```{r}
 mz <- mean(mysample$z)
@@ -124,8 +124,9 @@ Note that a constant bulk density is used. Ideally, this bulk density is also me
 
 The simulated population is now sampled 10,000 times to see how sampling affects the estimates. For each sample the population mean is estimated by the sample mean. Figure \@ref(fig:SamplingDistributionSI) shows the approximated sampling distribution of the $\pi$ estimator of the mean SOM concentration. Note that the sampling distribution is nearly symmetric, whereas the histogram of the SOM concentrations in the population is far from symmetric, see Figure \@ref(fig:histogramVoorst). The increased symmetry is due to the of averaging 40 numbers.
 
+(ref:SamplingDistributionSIlabel) Approximated sampling distribution of the estimator of the mean SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst for simple random sampling of size 40.
 
-```{r SamplingDistributionSI, echo=FALSE, fig.asp=0.8, fig.cap="Approximated sampling distribution of the estimator of the mean SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst for simple random sampling of size 40."}
+```{r SamplingDistributionSI, echo=FALSE, fig.asp=0.8, fig.cap="(ref:SamplingDistributionSIlabel)"}
 n <- 40
 number_of_samples <- 10000
 
@@ -166,11 +167,13 @@ In some cases one is interested in the proportion of the population (study area)
 
 ### Cumulative distribution function and quantiles {#CDF}
 
-The population CDF is defined in Equation \@ref(eq:CDF). A population CDF can be estimated by repeated application of the indicator technique described in the previous section on estimating a population proportion. A series of threshold values is chosen. Each threshold results in $n$ indicator values having value 1 if the observed study variable $z$ of unit $k$ is smaller than or equal to the threshold, and 0 otherwise. These indicator values are then used to estimate the proportion of the population with a $z$ value smaller than or equal to that threshold. For simple random sampling these proportions can be estimated with Equation \@ref(eq:HTProportionSI). Commonly the unique $z$ values in the sample are used as threshold values, leading to as many estimated population proportions as there are unique values in the sample.
+The population CDF is defined in Equation \@ref(eq:CDF). A population CDF can be estimated by repeated application of the indicator technique described in the previous subsection on estimating a population proportion. A series of threshold values is chosen. Each threshold results in $n$ indicator values having value 1 if the observed study variable $z$ of unit $k$ is smaller than or equal to the threshold, and 0 otherwise. These indicator values are then used to estimate the proportion of the population with a $z$-value smaller than or equal to that threshold. For simple random sampling these proportions can be estimated with Equation \@ref(eq:HTProportionSI). Commonly the unique $z$-values in the sample are used as threshold values, leading to as many estimated population proportions as there are unique values in the sample.
 
 Figure \@ref(fig:CDFSIVoorst) shows the estimated CDF, estimated from the simple random sample of 40 units from Voorst. The steps are at the unique values of SOM in the sample.
 
-```{r CDFSIVoorst, fig.asp=0.7, fig.cap="Estimated cumulative distribution function of the SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst, estimated from the simple random sample of 40 units."}
+(ref:CDFSIVoorstlabel) Estimated cumulative distribution function of the SOM concentration (g kg^-1^) in Voorst, estimated from the simple random sample of 40 units.
+
+```{r CDFSIVoorst, fig.asp=0.7, fig.cap="(ref:CDFSIVoorstlabel)"}
 ggplot(mysample, mapping=aes(z)) +
   stat_ecdf(geom="step") + 
   scale_x_continuous(name="SOM") +
@@ -281,9 +284,9 @@ The estimated standard error of the estimated total equals 1,400 Mg. This standa
 
 Although there is no advantage in using package **survey** [@Lumley2020] to compute the $\pi$ estimator and its standard error for this simple sampling design, I illustrate how this works. For more complex designs and alternative estimators, estimation of the population mean and its standard error with functions defined in this package is very convenient, as will be shown in the following chapters.
 
-First the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula `id=~1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. The argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. The variable `pi` is a column in the data frame `mysample`, which is indicated with the tilde in `probs=~pi`.
+First, the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula `id=~1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. Argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. The variable `pi` is a column in the data frame `mysample`, which is indicated with the tilde in `probs=~pi`.
 
-The population mean is then estimated with function `svymean`. The first argument is a formula specifying the study variable. The argument `design` specifies the sampling design. 
+The population mean is then estimated with function `svymean`. The first argument is a formula specifying the study variable. Argument `design` specifies the sampling design. 
 
 ```{r}
 library(survey)
@@ -356,7 +359,9 @@ The interpretation of a confidence interval is not straightforward. A common mis
 
 Figure \@ref(fig:coverageconfinterval) shows the 90\% confidence interval estimates of the mean for the first 100 simple random samples drawn above. Note that both the location and the length of the intervals differ between samples. For each sample I determined whether this interval covers the population mean.
 
-```{r coverageconfinterval, echo=FALSE, fig.cap="Estimated confidence intervals of the mean SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst, estimated from 100 simple random samples of size 40. The vertical red line is at the true population mean."}
+(ref:coverageconfintervallabel) Estimated confidence intervals of the mean SOM concentration (g kg^-1^) in Voorst, estimated from 100 simple random samples of size 40. The vertical red line is at the true population mean.
+
+```{r coverageconfinterval, echo=FALSE, fig.cap="(ref:coverageconfintervallabel)"}
 lower <- mz-qt(0.05, n-1, lower.tail=FALSE)*sqrt(v_mz)
 upper <- mz+qt(0.05, n-1, lower.tail=FALSE)*sqrt(v_mz)
 mz_pop <- mean(grdVoorst$z)

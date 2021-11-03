@@ -4,11 +4,11 @@ This chapter describes and illustrates two sampling designs by which the samplin
 
 ## Regular grid sampling {#Regulargrid}
 
-Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid points are not used for design-based estimation of the population mean or total, and for this reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
+Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid points are not used for design-based estimation of the population mean or total. For this reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area, in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configuration are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids give the best result in comparison to square grids.
 
 Besides the shape of the sampling grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation, and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per point, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m$^2$ and $n$ is the number of sampling units (sample size).
 
-Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. The argument `offset` is used to select non-randomly a grid. A sample size can be specified, using argument `n`; alternatively a grid spacing can be specified using argument `cellsize`.
+Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. Argument `offset` is used to select non-randomly a grid. A sample size can be specified, using argument `n`; alternatively, a grid spacing can be specified using argument `cellsize`.
 
 ```{r grid}
 library(sp)
@@ -21,7 +21,7 @@ mysample <- spsample(
 
 Figure \@ref(fig:gridVoorst) shows the selected square grid.
 
-```{r gridVoorst, echo=FALSE, out.width='100%', fig.cap="Non-random square grid sample with a grid spacing of 200 m  from Voorst."}
+```{r gridVoorst, echo=FALSE, out.width='100%', fig.cap="Non-random square grid sample with a grid spacing of 200 m from Voorst."}
 grdVoorst <- as(grdVoorst, "data.frame")
 ggplot()+
   geom_raster(data=grdVoorst, mapping=aes(x=s1/1000, y=s2/1000), fill="grey")+
@@ -38,7 +38,7 @@ The number of grid points in this example equals `r n`. Nodes of the square grid
 
 1. Write an **R** script to select a square grid of size 100 from the three woredas in Ethiopia. The data.frame `grdEthiopia` is stored in `data/CovariatesThreeWoredasEthiopia.RData`. Use argument `offset=c(0.5,0.5)` so that the starting point of the grid is not selected randomly.   
     +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?
-    +  Select a square grid with a spacing of 10.2 distance units (km) and compute the sample size.
+    +  Select a square grid with a spacing of 10.2 km and compute the sample size.
     +  Write a for-loop to select 200 times a square grid of on average 100 points with random starting point. Set a seed so that results can be reproduced. Determine for each randomly selected grid the number of selected grid points and save this in a numeric. Compute summary statistics of the sample size and plot a histogram.
     +  Select a square grid of exactly 100 points.  
   
@@ -56,9 +56,9 @@ MSSD=\frac{1}{N}\sum_{k=1}^{N}\min_{j}\left(D_{kj}^{2}\right) \;,
 (\#eq:MSSD)
 \end{equation}
 
-where $N$ is the total number of nodes of the discretisation grid and $D_{kj}$ is the distance between the $k$th grid node and the $j$th sampling point. This distance measure can be minimised by the $k$-means algorithm, which is a numerical, iterative procedure. Figure \@ref(fig:spatialcoveragesamplefromsquare) illustrates the selection of a spatial coverage sample of four points from a square. In this simple example the optimal sample is known, being the centres of four subsquares of equal size. A simple random sample of four points serves as an initial solution. Each raster cell is then assigned to the closest sampling point. This is the initial clustering. In the next iteration the centres of these initial clusters are computed. Next, the raster cells are re-assigned to the closest new centres. This continues until there is no change anymore. In this case only nine iterations are needed, where an iteration consists of computing the clusters by assigning the raster cells to the nearest centre (sampling unit), followed by computing the centres of these clusters. Figure \@ref(fig:spatialcoveragesamplefromsquare) shows the first, second and ninth iteration. 
+where $N$ is the total number of nodes of the discretisation grid and $D_{kj}$ is the distance between the $k$th grid node and the $j$th sampling point. This distance measure can be minimised by the $k$-means algorithm, which is a numerical, iterative procedure. Figure \@ref(fig:spatialcoveragesamplefromsquare) illustrates the selection of a spatial coverage sample of four points from a square. In this simple example the optimal sample is known, being the centres of four subsquares of equal size. A simple random sample of four points serves as an initial solution. Each raster cell is then assigned to the closest sampling point. This is the initial clustering. In the next iteration the centres of these initial clusters are computed. Next, the raster cells are re-assigned to the closest new centres. This continues until there is no change anymore. In this case only nine iterations are needed, where an iteration consists of computing the clusters by assigning the raster cells to the nearest centre (sampling unit), followed by computing the centres of these clusters. Figure \@ref(fig:spatialcoveragesamplefromsquare) shows the first, second, and ninth iteration. 
 
-```{r spatialcoveragesamplefromsquare, echo=FALSE, fig.show='hold', out.width='47%', fig.cap="First, second and ninth iteration of $k$-means algorithm to select a spatial coverage sample of four points from a square. Iterations are rowwise from top to bottom. In the left column of subfigures clusters are computed by assigning the raster cells to the nearest centre. In the right column of subfigures centres of the clusters are computed."}
+```{r spatialcoveragesamplefromsquare, echo=FALSE, fig.show='hold', out.width='47%', fig.cap="First, second, and ninth iteration of the $k$-means algorithm to select a spatial coverage sample of four points from a square. Iterations are rowwise from top to bottom. In the left column of subfigures the clusters are computed by assigning the raster cells to the nearest centre. In the right column of subfigures the centres of the clusters are computed."}
 interval<-1/10
 x <- y <- seq(from=interval/2, to=1, by=interval)
 xy <- expand.grid(x=x, y=y)
@@ -191,7 +191,7 @@ If georeferenced data are available that can be used for mapping the study varia
 
 Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for three woredas (districts) in Ethiopia. A large set of legacy data on soil organic matter (SOM) in wt\% is available, but these data come from strongly spatially clustered units along roads. This is a nice example of a convenience sample. The legacy data are not ideal for mapping the SOM concentration throughout the three woredas. Clearly, it is desirable to collect additional data in the off-road parts of the woredas, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are specified as a `SpatialPoints` object to the `priorPoints` optional argument of **spcosa**. This argument fixes these points as cluster centres. A spatial infill sample of 100 points is selected, taking into account these fixed points.
 
-```{r spatialinfillEthiopia, fig.cap="Spatial infill sample of 100 points from three woredas in Ethiopia."}
+```{r spatialinfillEthiopia, fig.cap="Spatial infill sample of 100 points from the three woredas in Ethiopia."}
 load("data/CovariatesThreeWoredasEthiopia.RData")
 load("data/ThreeWoredasEthiopia.RData")
 gridded(grdEthiopia) <- ~s1+s2

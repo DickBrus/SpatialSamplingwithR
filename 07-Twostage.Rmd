@@ -1,8 +1,8 @@
 # Two-stage cluster random sampling {#Twostage}
 
-As opposed to cluster random sampling in which all population units of cluster are observed (Chapter \@ref(Cl)), in two-stage cluster random sampling\index{Two-stage cluster random sampling} not all units of the selected clusters are observed, but only some of them. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in single-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling the clusters are commonly referred to as primary sampling units\index{Primary sampling unit} (PSUs) and the units selected in the second stage as the secondary sampling units\index{Secondary sampling unit} (SSUs).
+As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter \@ref(Cl)), in two-stage cluster random sampling\index{Two-stage cluster random sampling} not all units of the selected clusters are observed, but only some of them. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in single-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling the clusters are commonly referred to as primary sampling units\index{Primary sampling unit} (PSUs) and the units selected in the second stage as the secondary sampling units\index{Secondary sampling unit} (SSUs).
 
-As with cluster random sampling, two-stage cluster random sampling may lead to a strong spatial clustering of the selected population units (SSUs in case of two-stage cluster random sampling) in the study area. This may save considerable time for fieldwork, and more population units can be observed for the same budget. However, due to the spatial clustering the estimates will generally be less precise compared to samples of the same size selected by a design that leads to a much better spreading of the sampling units throughout the study area, such as systematic random sampling.
+As with cluster random sampling, two-stage cluster random sampling may lead to a strong spatial clustering of the selected population units in the study area. This may save considerable time for fieldwork, and more population units can be observed for the same budget. However, due to the spatial clustering the estimates will generally be less precise compared to samples of the same size selected by a design that leads to a much better spreading of the sampling units throughout the study area, such as systematic random sampling.
 
 In two-stage cluster random sampling in principle any type of sampling design can be used at the two stages, leading to numerous combinations. An example is (SI,SI), in which both PSUs and SSUs are selected by simple random sampling.
 
@@ -34,7 +34,7 @@ s2f <- findInterval(grdVoorst$s2, s2bnd)
 grdVoorst$psu <- as.character(interaction(s1f, s2f))
 ```
 
-To select a two-stage cluster random sample a function is defined.
+In the next code  chunk a function is defined to select a two-stage cluster random sample from an infinite population, discretised by finite number of points (centres of grid cells).
 
 ```{r}
 twostage <- function(sframe, psu, n, m) {
@@ -51,9 +51,9 @@ twostage <- function(sframe, psu, n, m) {
 }
 ```
 
-Note that both the primary and secondary sampling units are selected with replacement. The SSUs are selected by simple random sampling with replacement because the actual population is infinite. The infinite population is discretised by a finite number of fine grid cells. If a grid cell is selected, one point is selected fully randomly from that grid cell. This is done by shifting the centre of the grid cell to a random point within the selected grid cell with function `jitter`. In every grid cell there is an infinite number of points, so we must select the grid cells with replacement. If a grid cell is selected more than once, more than one point is selected from the associated grid cell. The column `psudraw` in the output data frame of function `twostage` is needed in estimation because PSUs are selected with replacement. In case a PSU is selected more than once, multiple estimates of the mean of that PSU are used in estimation, see next section.
+Note that both the PSUs and the SSUs are selected with replacement. If a grid cell centre is selected, one point is selected fully randomly from that grid cell. This is done by shifting the centre of the grid cell to a random point within the selected grid cell with function `jitter`, see code chunk hereafter. In every grid cell there is an infinite number of points, so we must select the grid cell centres with replacement. If a grid cell is selected more than once, more than one point is selected from the associated grid cell. Column `psudraw` in the output data frame of function `twostage` is needed in estimation because PSUs are selected with replacement. In case a PSU is selected more than once, multiple estimates of the mean of that PSU are used in estimation, see next section.
 
-Function `twostage` is used to select four times a PSU ($n=4$), with probabilities proportional to size and with replacement (ppswr). The second stage sample size equals 10 for all PSUs ($m_j=10,\; j = 1, \cdots, N$). These SSUs are selected by simple random sampling. 
+In the next code chunk function `twostage` is used to select four times a PSU ($n=4$), with probabilities proportional to size and with replacement (ppswr). The second stage sample size equals 10 for all PSUs ($m_j=10,\; j = 1, \cdots, N$). These SSUs are selected by simple random sampling. 
 
 ```{r}
 n <- 4
@@ -67,7 +67,7 @@ mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
 
 Figure \@ref(fig:TwostageVoorst) shows the selected sample.
 
-```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten points are selected from that PSU by simple random sampling."}
+```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten SSus (points) are selected from that PSU by simple random sampling."}
 ggplot(data=grdVoorst) +        
   geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(psu))) +
   scale_fill_viridis_d(alpha=0.5) +
@@ -97,7 +97,7 @@ where $n$ is the number of PSU selections and $M_{j}$ is total number of SSUs in
 
 with $\hat{\bar{z}}_{j}$ the estimated mean of the PSU $j$. With simple random sampling of SSUs this mean can be estimated by the sample mean of this PSU. Note the two bars in $\hat{\bar{\bar{z}}}$, indicating that the population mean is estimated as the mean of estimated PSU means. When $m_j$ is equal for all PSUs the sampling design is self-weighting\index{Self-weighting sampling design}, i.e. the average of $z$ over all selected SSUs is an unbiased estimator of the population mean.
 
-The sampling variance of the estimator of the mean with two-stage cluster random sampling (PSUs selected with probabilities proportional to size with replacement, SSUs by simple random sampling (with replacement in case of finite populations) and $m_j = m, \; j = 1, \cdots, N$) is equal to (@coc77, Equation (11.33)^[Equation (11.33) in @coc77 is the variance estimator for the estimator of the population total. In Exercise 5 you are asked to derive the variance estimator for estimator of the population mean from this variance estimator.])
+The sampling variance of the estimator of the mean with two-stage cluster random sampling (PSUs selected with probabilities proportional to size with replacement, SSUs selected by simple random sampling (with replacement in case of finite populations), and $m_j = m, \; j = 1, \cdots, N$) is equal to (@coc77, Equation (11.33)^[Equation (11.33) in @coc77 is the variance estimator for the estimator of the population total. In Exercise 5 you are asked to derive the variance estimator for the estimator of the population mean from this variance estimator.])
 
 \begin{equation}
 V(\hat{\bar{\bar{z}}}) = \frac{S^2_{\mathrm{b}}}{n} + \frac{S^2_{\mathrm{w}}}{n\;m} \;,
@@ -114,11 +114,11 @@ S^2_{\mathrm{b}}=\sum_{j=1}^N p_j\left(\bar{z}_j-\bar{z}\right)^2
 and
 
 \begin{equation}
-S^2_{\mathrm{w}}=\sum_{j=1}^N p_j S^2_j
+S^2_{\mathrm{w}}=\sum_{j=1}^N p_j S^2_j \;,
 (\#eq:PooledWithinClusterVariance)
 \end{equation}
 
-with $N$ the total number of PSUs in the population, $p_j=M_j/M$ is the draw-by-draw selection probability of PSU $j$\index{Draw-by-draw selection probability!of a primary sampling unit}, $\bar{z}_j$ the mean of PSU $j$, $\bar{z}$ the population mean of $z$ and $S^2_j$ the variance of $z$ within PSU $j$:
+with $N$ the total number of PSUs in the population, $p_j=M_j/M$ the draw-by-draw selection probability of PSU $j$\index{Draw-by-draw selection probability!of a primary sampling unit}, $\bar{z}_j$ the mean of PSU $j$, $\bar{z}$ the population mean of $z$, and $S^2_j$ the variance of $z$ within PSU $j$:
 
 \begin{equation}
 S^2_j = \frac{1}{M_j} \sum_{k=1}^{M_j} (z_{kj}-\bar{z}_j)^2 \;.
@@ -149,14 +149,14 @@ with $\hat{\bar{z}}_{j}$ the estimated mean of PSU $j$ and $\hat{\bar{\bar{z}}}$
 Neither the sizes of the PSUs, $M_j$, nor the secondary sample sizes $m_{j}$ occur in Equations \@ref(eq:VarEstMeanTwostage) and \@ref(eq:S2psuMeans). This simplicity is due to the fact that the PSUs are selected with replacement and with probabilities proportional to size. The effect of the secondary sample sizes on the variance is implicitly accounted for. To understand this, note that the larger $m_{j}$, the less variable $\hat{\bar{z}}_{j}$, and the smaller its contribution to the variance.
 ```
 
-Let us assume a linear model for the total costs: $C = c_0 + c_1n + c_2nm$, with $c_0$ the fixed costs, $c_1$ the costs per PSU and $c_2$ the costs per SSU. We want to minimise the total costs, under the constraint that the variance of the estimator of the population mean may not exceed $V_{\mathrm{max}}$. The total costs can then be minimised by selecting [@gru06]
+Let us assume a linear model for the total costs: $C = c_0 + c_1n + c_2nm$, with $c_0$ the fixed costs, $c_1$ the costs per PSU, and $c_2$ the costs per SSU. We want to minimise the total costs, under the constraint that the variance of the estimator of the population mean may not exceed $V_{\mathrm{max}}$. The total costs can then be minimised by selecting [@gru06]
 
 \begin{equation}
 n=\frac{1}{V_{\mathrm{max}}}\left(S_{\mathrm{w}}S_{\mathrm{b}}\sqrt{\frac{c_2}{c_1}}+S^2_{\mathrm{b}}\right)
 (\#eq:nopt)
 \end{equation}
 
-PSUs, and 
+PSUs and 
 
 \begin{equation}
 m=\frac{S_{\mathrm{w}}}{S_{\mathrm{b}}}\sqrt{\frac{c_1}{c_2}}
@@ -182,7 +182,7 @@ mz <- mean(mz_psu)
 se_mz <- sqrt(var(mz_psu)/n)
 ```
 
-The estimated mean equals `r round(mz,3)` g kg$^{-1}$ and the estimated standard error equals `r round(se_mz,3)` g kg$^{-1}$. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.
+The estimated mean equals `r round(mz,3)` g kg$^{-1}$, and the estimated standard error equals `r round(se_mz,3)` g kg$^{-1}$. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.
 
 ```{r}
 print(mean(mysample$z))
@@ -200,13 +200,13 @@ svymean(~z, design_2stage, deff="replace")
 
 Similar to (one-stage) cluster random sampling the estimated design effect\index{Design effect} is much larger than 1.
 
-A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of PSU draws minus one.
+A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of PSU draws minus 1.
 
 ```{r}
 confint(svymean(~z, design_2stage, df=degf(design_2stage), level=0.95))
 ```
 
-Figure \@ref(fig:SamplingDistributionTwostage) shows the approximated sampling distribution of the pwr estimator of the population mean with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, approximated by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
+Figure \@ref(fig:SamplingDistributionTwostage) shows the approximated sampling distribution of the pwr estimator of the population mean with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
 
 ```{r, echo = FALSE, eval=FALSE}
 number_of_samples <- 10000
@@ -231,7 +231,9 @@ for (i in 1:number_of_samples) {
 save(mz, mz_SI, v_mz, file="results/Twostage_Voorst.RData")
 ```
 
-```{r SamplingDistributionTwostage, echo=FALSE, fig.asp=.8, fig.cap="Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg$\\textsuperscript{-1}$) in Voorst with two-stage cluster random sampling (Twostage), and of the $\\pi$ estimator with simple random sampling (SI). The sample size with both sampling designs is 40. In two-stage sampling four PSUs are selected by ppswr, and ten points are selected per PSU-draw by simple random sampling."}
+(ref:SamplingDistributionTwostagelabel) Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg^-1^) in Voorst with two-stage cluster random sampling (Twostage) and of the $\pi$ estimator with simple random sampling (SI). The sample size with both sampling designs is 40. In two-stage sampling four PSUs are selected by ppswr and ten SSus (points) are selected per PSU-draw by simple random sampling.
+
+```{r SamplingDistributionTwostage, echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionTwostagelabel)"}
 load(file="results/Twostage_Voorst.RData")
 estimates <- data.frame(mz, mz_SI)
 names(estimates) <- c("Twostage","SI")
@@ -253,19 +255,19 @@ Optimal sample sizes for two-stage cluster random sampling (ppswr in first stage
 
 #### Exercises {-}
 
-1. Write an **R** script to compute for Voorst the true sampling variance of the estimator of the population mean for two-stage cluster random sampling, PSUs selected by ppswr, $n=4$ and $m=10$, see Equation \@ref(eq:TrueVarEstMeanTwostage).   
+1. Write an **R** script to compute for Voorst the true sampling variance of the estimator of the population mean for two-stage cluster random sampling, PSUs selected by ppswr, $n=4$, and $m=10$, see Equation \@ref(eq:TrueVarEstMeanTwostage).   
 2. Do you expect that the standard error of the estimated population mean with ten PSU draws ($n=10$) and four SSUs per PSU draw ($m=4$) is larger or smaller than with four PSU draws ($n=4$) and ten SSUs per PSU draw ($m=10$)?  
 3. Compute the optimal sample sizes $n$ and $m$ for a maximum variance of the estimator of the population mean of 1, $c_1=2$ and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt) and \@ref(eq:mopt).  
 4. Compute the optimal sample sizes $n$ and $m$ for a budget of 100 monetary units,  $c_1=2$ monetary units and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt2) and \@ref(eq:mopt).  
 5. Use function `clusOpt2` of **R** package **PracTools** to compute optimal sample sizes given the precision requirement for the estimated population mean of Exercise 3 and given the budget of Exercise 4. First use function `BW2stagePPS` to compute the variance measures needed as input for function ` optClus2`. Note that the precision requirement of function `clusOpt2` is the coefficient of variation of the estimated population total, i.e. the standard deviation of the estimated population total divided by the population total. Compute this coefficient of variation from the maximum variance of the estimator of the population mean used in Exercise 3.  
-6. Derive the variance of the estimator for the population mean, Equation \@ref(eq:TrueVarEstMeanTwostage), from the variance of the estimator for the population total [@coc77]:
+6. The variance of the estimator for the population total is [@coc77]:
 \begin{equation}
 V(\hat{t}(z)) = \frac{1}{n} \sum_{j=1}^N p_j\left(\frac{t_j(z)}{p_j}-t(z)\right)^2 + \frac{1}{n} \sum_{j=1}^N \frac{M_j^2 (1-f_{2j})S^2_j}{m_j p_j}  \;,
 (\#eq:EstVarTotalTwostageCochran)
 \end{equation}
-with $\hat{t}(z)$ and $t(z)$ the estimated and true population total of $z$, respectively, $t_j(z)$ the total of PSU $j$, and $p_j = M_j/M$. Use $m_j = m, \;j = 1, \cdots, N$, and $f_{2j}=0$, i.e. sampling from infinite population, or sampling of SSUs within PSUs by simple random sampling *with* replacement from finite population.
+with $\hat{t}(z)$ and $t(z)$ the estimated and the true population total of $z$, respectively, $t_j(z)$ the total of PSU $j$, and $p_j = M_j/M$. Use $m_j = m, \;j = 1, \cdots, N$, and $f_{2j}=0$, i.e. sampling from infinite population, or sampling of SSUs within PSUs by simple random sampling *with* replacement from finite population. Derive the variance of the estimator for the population mean, Equation \@ref(eq:TrueVarEstMeanTwostage), from Equation \@ref(eq:EstVarTotalTwostageCochran).
 
-## Primary sampling units selected with probabilities proportional to size, without replacement
+## Primary sampling units selected without replacement
 
 Similar to cluster random sampling, we may prefer to select the PSUs without replacement\index{pps sampling!without replacement (ppswor)}. This leads to less strong spatial clustering of the sampling points, especially with large sampling fractions of PSUs. Sampling without replacement of PSUs can be done with function `UPpivotal` of package **sampling** [@Tille2016], see Subsection \@ref(pivotalmethod). The second stage sample of SSUs is selected with function `strata` of the same package, using the PSUs as strata.
 
@@ -309,7 +311,7 @@ Suppose the PSUs are for some reason not selected  with probabilities proportion
 
 with $\hat{t}_j(z)$ an estimator of the total of PSU $j$. The population mean can be estimated by dividing this estimator by the population size $M$. 
 
-Alternatively, we may estimate the population mean by dividing the estimate of the population total by the *estimated* population size. The population size can be estimated by the $\pi$ estimator, see Equation \@ref(eq:EstPopulatonSizeClEqual). The $\pi$ estimator and the ratio estimator are equal when the PSUs are selected by ppswr, but not so when the PSUs of different size are selected with equal probabilities. This is shown below. First a sample is selected by selecting both PSUs and SSUs by simple random sampling without replacement. 
+Alternatively, we may estimate the population mean by dividing the estimate of the population total by the *estimated* population size. The population size can be estimated by the $\pi$ estimator, see Equation \@ref(eq:EstPopulatonSizeClEqual). The $\pi$ estimator and the ratio estimator are equal when the PSUs are selected by ppswr, but not so when the PSUs of different size are selected with equal probabilities. This is shown below. First, a sample is selected by selecting both PSUs and SSUs by simple random sampling without replacement. 
 
 ```{r}
 library(sampling)
@@ -339,7 +341,7 @@ M_HT <- sum(1/mysample$pi)
 mz_ratio <- tz_HT/M_HT
 ```
 
-The $\pi$ estimate equals `r round(mz_HT,3)` g kg$^{-1}$ and the ratio estimate equals `r round(mz_ratio,3)` g kg$^{-1}$. The $\pi$ estimate of the population mean can also be computed by first estimating totals of PSUs, see Equation \@ref(eq:EstTotalTwostageEqual). 
+The $\pi$ estimate equals `r round(mz_HT,3)` g kg$^{-1}$, and the ratio estimate equals `r round(mz_ratio,3)` g kg$^{-1}$. The $\pi$ estimate of the population mean can also be computed by first estimating totals of PSUs, see Equation \@ref(eq:EstTotalTwostageEqual). 
 
 ```{r}
 tz_psu <- tapply(mysample$z/pi_ssu, INDEX=mysample$psu, FUN=sum)

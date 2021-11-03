@@ -4,9 +4,9 @@ This chapter is about probability sampling and estimation of means or totals of 
 
 If we have multiple maps with domains, think for instance of a soil class map, a map with land cover classes, and a map with countries, we can make an overlay of these maps to construct the cross-tabulation strata. However, this may result in numerous strata, in some cases even more than the sample size. In this situation an attractive solution is multi-way stratification (Subsection \@ref(Multiwaystratification)). With this design the domains of interest are used as strata, not their cross-classification, and the sample sizes of these marginal strata are controlled.
 
-Even with a multi-way stratified sample, resulting in controlled sample sizes for each domain, the sample size of a domain can be too small for a reliable estimate of the mean or total when using the data of that domain only. In that case we may use model-assisted estimators to increase the precision. In Chapter \@ref(Modelassisted) model-assisted estimation of the population mean or total is explained, using all data collected from the population. In this chapter (Section \@ref(SmallDomainsModelAssisted)) also data outside the domain are used, more specifically to estimate the population regression coefficients (@cha94, @Rao2003, @Falorsi2008).
+Even with a multi-way stratified sample, resulting in controlled sample sizes for each domain, the sample size of a domain can be too small for a reliable estimate of the mean or total when using the data of this domain only. In this case we may use model-assisted estimators (Chapter \@ref(Modelassisted)) to increase the precision. Not just the data collected from a given domain are used to estimate the mean or total, but also data outside the domain (Section \@ref(SmallDomainsModelAssisted)) (@cha94, @Rao2003, @Falorsi2008).
 
-We may also wish to estimate the mean or total of domains that are not used as (marginal) strata. The sample size in these domains is then not controlled and varies among samples selected with the sampling design. As before with multi-way stratified sampling, the mean can either be estimated with the direct estimator, using the data from the domain only (Section \@ref(LargeDomainsDirectEstimator)), or a model-assisted estimator, also using data from outside the domain for estimating regression coefficients (Section \@ref(SmallDomainsModelAssisted)).
+We may also wish to estimate the mean or total of domains that are not used as (marginal) strata. The sample size in these domains is then not controlled and varies among samples selected with the sampling design. As before with multi-way stratified sampling, the mean can either be estimated with the direct estimator, using the data from the domain only (Section \@ref(LargeDomainsDirectEstimator)), or a model-assisted estimator, also using data from outside the domain (Section \@ref(SmallDomainsModelAssisted)).
 
 ## Direct estimator for large domains {#LargeDomainsDirectEstimator}
 
@@ -73,19 +73,21 @@ design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
 ```
 
-The ratio estimates are shown in Table \@ref(tab:TableRatioEstimatesEcoregions). There are three ecoregions with an estimated standard error of 0.0. These ecoregions have less than two sampling units only, so that the standard error cannot be estimated.
+The ratio estimates of the mean AGB are shown in Table \@ref(tab:TableRatioEstimatesEcoregions). Two ecoregions are missing in the table: no units are selected from these ecoregions so that a direct estimate is not available. There are three ecoregions with an estimated standard error of 0.0. These ecoregions have less than two sampling units only, so that the standard error cannot be estimated.
+
+(ref:TableRatioEstimatesEcoregionslabel) Ratio estimates of the mean AGB (10^9^ kg ha^-1^) and their standard errors of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200. The estimated standard errors of 0.0 are non-availables.
 
 ```{r TableRatioEstimatesEcoregions, echo=FALSE}
 rownames(res) <- NULL
 res[,c(2,3)] <- round(res[,c(2,3)],1)
 knitr::kable(
-  res, caption = 'Ratio estimates of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) and their standard errors of ecoregions in Eastern Amazonia. The estimated standard errors of 0.0 are non-availables.',
+  res, caption = '(ref:TableRatioEstimatesEcoregionslabel)',
   booktabs = TRUE
 ) %>%
   kable_classic()
 ```
 
-The simple random sampling is repeated 1,000 times, and every sample is used to estimate the mean AGB of the ecoregions both with the $\pi$ estimator and the ratio estimator. As can be in Table \@ref(tab:TableRatiovsHTEstimatesEcoregions) the standard deviation of the ratio estimates is much smaller than that of the $\pi$ estimates. The reason is that the number of sampling units in a ecoregion varies among samples, i.e. the sample size of an ecoregion is random. When many units are selected from an ecoregion, the estimated total of that ecoregion is large. The estimated mean as obtained with the $\pi$ estimator then is large too, because the estimated total is divided by the fixed size (total number of population units, $N_d$) of the ecoregion. However, in the ratio estimator the size of an ecoregion is estimated from the same sample, despite that we know its size, see Equation \@ref(eq:generalratiodomain). With many units selected from an ecoregion, the estimated size of that ecoregion, $\widehat{N}_d$ is also large. By dividing the large estimated total by the large estimated size, a more stable estimate of the mean of the domain is obtained. For quite a few ecoregions the standard deviations are very large, especially of the $\pi$ estimator. These are the ecoregions with very small average sample sizes. With simple random sampling the expected sample size can simply be computed by $E[n] = n \; N_d/N$. In the following section alternative estimators are described for these ecoregions with small expected sample sizes. To speed up the computations I used a 5 km $\times$ 5 km subgrid in this sampling experiment.
+The simple random sampling is repeated 1,000 times, and every sample is used to estimate the mean AGB of the ecoregions both with the $\pi$ estimator and the ratio estimator. As can be seen in Table \@ref(tab:TableRatiovsHTEstimatesEcoregions) the standard deviation of the ratio estimates is much smaller than that of the $\pi$ estimates. The reason is that the number of sampling units in an ecoregion varies among samples, i.e. the sample size of an ecoregion is random. When many units are selected from an ecoregion, the estimated total of that ecoregion is large. The estimated mean as obtained with the $\pi$ estimator then is large too, because the estimated total is divided by the fixed size (total number of population units, $N_d$) of the ecoregion. However, in the ratio estimator the size of an ecoregion is estimated from the same sample, although we know its size, see Equation \@ref(eq:generalratiodomain). With many units selected from an ecoregion, the estimated size of that ecoregion, $\widehat{N}_d$, is also large. By dividing the large estimated total by the large estimated size, a more stable estimate of the mean of the domain is obtained. For quite a few ecoregions the standard deviations are very large, especially of the $\pi$ estimator. These are the ecoregions with very small average sample sizes. With simple random sampling the expected sample size can simply be computed by $E[n] = n \; N_d/N$. In the following section alternative estimators are described for these ecoregions with small expected sample sizes. To speed up the computations I used a 5 km $\times$ 5 km subgrid in this sampling experiment.
 
 ```{r, echo=FALSE, eval=FALSE}
 load(file="data/Amazonia_5km.RData")
@@ -143,6 +145,8 @@ for (i in 1:number_of_samples) {
 save(mz_eco_HT, mz_eco_ratio, mz_eco_regr, mz_eco_synt, mz_eco_extsynt, file="results/MeanAGB_ecoregions.RData")
 ```
 
+(ref:TableRatiovsHTEstimatesEcoregions) Standard deviations of 1,000 $\pi$ estimates (HT) and 1,000 ratio estimates (Ratio) of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200. Expected n: expected sample size.
+
 ```{r TableRatiovsHTEstimatesEcoregions, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
 sd_mz_HT <- apply(mz_eco_HT, MARGIN=1, FUN=var, na.rm=TRUE) %>% sqrt(.) %>% round(.,1)
@@ -151,10 +155,15 @@ notNA <- apply(mz_eco_HT, MARGIN=1, FUN=function(x) {sum(!is.na(x))})
 N_eco <- tapply(gridAmazonia$AGB, INDEX=gridAmazonia$Ecoregion, FUN=length)
 N <- nrow(gridAmazonia)
 En <- round(n*N_eco/N,2)
-res <- data.frame(sd_mz_HT,sd_mz_ratio,En)
+nms <- names(sd_mz_HT)
+names(sd_mz_HT) <- NULL
+names(sd_mz_ratio) <- NULL
+names(En) <- NULL
+res <- data.frame(nms,sd_mz_HT,sd_mz_ratio,En)
+rownames(res) <- NULL
 knitr::kable(
-  res, caption = 'Standard deviations of 1,000 Horvitz-Thompson (HT) and 1,000 ratio estimates (ratio) of the mean AGB of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200.',
-  col.names=c("HT","ratio","Exp. sample size"),
+  res, caption = '(ref:TableRatiovsHTEstimatesEcoregions)',
+  col.names=c("Ecoregion","HT","Ratio","Expected n"),
   booktabs = TRUE
 ) %>%
   kable_classic()
@@ -166,24 +175,24 @@ No covariates are used in the ratio estimator. If we wish to exploit covariates,
 \hat{\bar{z}}_{\text{ratio},d}= \frac{\hat{t}_{\text{regr},d}(z)}{\widehat{N}_d}\;.
 \end{equation}
 
-For a large domain with a reasonable sample size, the regression estimate can computed from the data of that domain (Chapter \@ref(Modelassisted)). For small domains, also the data from outside these domains can be used to estimate the population regression coefficients. This is explained in Subsection \@ref(RegressionestimatorSmallDomain). 
+For a large domain with a reasonable sample size, the regression estimate can be computed from the data of that domain (Chapter \@ref(Modelassisted)). For small domains, also the data from outside these domains can be used to estimate the population regression coefficients. This is explained in Subsection \@ref(RegressionestimatorSmallDomain). 
 
 ## Model-assisted estimators for small domains {#SmallDomainsModelAssisted}
 
-When the domains are not well represented in the sample, the direct estimators from the previous section lead to large standard errors. In this situation we may try to increase the precision by also using observations from outside the domain. If we have covariates related to the study variable, we may exploit this ancillary information by fitting a regression model relating the study variable to the covariates, and using the fitted model to predict the study variable for all population units (nodes of discretisation grid), see Chapter \@ref(Modelassisted)\index{Model-assisted approach}. However, for small domains\index{Small domain} we may have too few sampled units in that domain to fit a separate regression model. The alternative then is to use the entire sample to estimate the regression coefficients, and to use this global regression model to estimate the means of the domains. This introduces a systematic error, a design-bias, in the estimator. However, this extra error is potentially outweighed by the reduction of the random error due to the use of the globally estimated regression coefficients. If one or more units are selected from a domain, the observations of the study variable of these units can be used to correct for the bias. This leads to the regression estimator for small domains\index{Regression estimator!for small domains}. In the absence of such data, the mean of the domain can still be estimated by the so-called synthetic estimator\index{Synthetic estimator}.
+When the domains are not well represented in the sample, the direct estimators from the previous section lead to large standard errors. In this situation we may try to increase the precision by also using observations from outside the domain. If we have covariates related to the study variable, we may exploit this ancillary information by fitting a regression model relating the study variable to the covariates and using the fitted model to predict the study variable for all population units (nodes of discretisation grid), see Chapter \@ref(Modelassisted)\index{Model-assisted approach}. However, for a small domain\index{Small domain} we may have too few sampled units in that domain to fit a separate regression model. The alternative then is to use the entire sample to estimate the regression coefficients, and to use this global regression model to estimate the means of the domains. This introduces a systematic error, a design-bias, in the estimator. However, this extra error is potentially outweighed by the reduction of the random error due to the use of the globally estimated regression coefficients. If one or more units are selected from a domain, the observations of the study variable of these units can be used to correct for the bias. This leads to the regression estimator for small domains\index{Regression estimator!for small domains}. In the absence of such data, the mean of the domain can still be estimated by the so-called synthetic estimator\index{Synthetic estimator}.
 
 There are quite a few packages for model-assisted estimation of means of small areas, the **maSAE** package [@maSAE], the **JoSAE** package [@JoSAE], the **rsae** package [@rsae], and the **forestinventory** package [@Hill2021]. I use package **forestinventory** for model-assisted estimation (Subsections \@ref(RegressionestimatorSmallDomain) and \@ref(SyntheticestimatorSmallDomain)) and package **JoSAE** for model-based prediction of the means of small areas (Section \@ref(SmallAreaModelBased)).
 
 ### Regression estimator {#RegressionestimatorSmallDomain}
 
-In the regression estimator the potential bias due to the globally estimated regression coefficients, can be eliminated by adding the $\pi$ estimator of the mean of the regression residuals to the mean of the predictions in the domain (compare with Equation \@ref(eq:GREG)) (@Mandallaz2007, @Mandallaz2013):
+In the regression estimator the potential bias due to the globally estimated regression coefficients can be eliminated by adding the $\pi$ estimator of the mean of the regression residuals to the mean of the predictions in the domain (compare with Equation \@ref(eq:GREG)) (@Mandallaz2007, @Mandallaz2013):
 
 \begin{equation}
 \hat{\bar{z}}_{\text{regr},d} = \frac{1}{N_d} \sum_{k=1}^{N_d} \mathbf{x}^{\mathrm{T}}_{dk} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{e_{dk}}{\pi_{dk}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{N_d} \sum_{k \in \mathcal{S}_d} \frac{e_{dk}}{\pi_{dk}} \;,
 (\#eq:regressionestimatorsmalldomain)
 \end{equation}
 
-with $\mathbf{x}_{dk}$ the vector with covariate values for unit $k$ in domain $d$, $\hat{\mathbf{b}}$ the vector with globally estimated regression coefficients, $e_{dk}$ the residual for unit $k$ in domain $d$, $\pi_{dk}$ the inclusion probability of that unit, and $\bar{\mathbf{x}}_d$ the mean of the covariates in domain $d$. Alternatively the mean of the residuals in a domain is estimated by the ratio estimator:
+with $\mathbf{x}_{dk}$ the vector with covariate values for unit $k$ in domain $d$, $\hat{\mathbf{b}}$ the vector with globally estimated regression coefficients, $e_{dk}$ the residual for unit $k$ in domain $d$, $\pi_{dk}$ the inclusion probability of that unit, and $\bar{\mathbf{x}}_d$ the mean of the covariates in domain $d$. Alternatively, the mean of the residuals in a domain is estimated by the ratio estimator:
 
 \begin{equation}
 \hat{\bar{z}}_{\text{regr},d} =  \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\mathbf{b}} + \frac{1}{\widehat{N}_d} \sum_{k \in \mathcal{S}_d} \frac{e_{dk}}{\pi_{dk}} \;,
@@ -225,7 +234,7 @@ The sampling variances and covariances of the estimators of the population regre
 Function `twophase` of package **forestinventory** [@Hill2021] can be used to compute the regression estimate for small domains and its standard error. 
 
 ```{block2, type='rmdnote'}
-The name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, @Hill2021 considers infinite populations and they treat the grid that discretises this infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large.
+The function name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, upon considering infinite populations, @Hill2021 treat the grid that discretises the infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large.
 ```
 
 By assigning the domain means of the covariates to argument `exhaustive` of function `twophase` the sampling error of the first phase is ignored.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package **survey** also a function `twophase` is defined, for this reason the  name of the package is made explicit by `forestinventory::twophase`. With arguments `psmall=TRUE` and element `unbiased=TRUE` in the list `small_area` the regression estimate is computed.
@@ -254,13 +263,14 @@ res <- forestinventory::twophase(AGB~lnSWIR2, data=gridAmazonia,
   psmall=TRUE, exhaustive=mX_eco_pop)
 regr <- res$estimation
 ```
+(ref:TableRegressionEstimatesEcoregionslabel) Regression estimates of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, using lnSWIR2 as a predictor. For explanation of variances of regression estimator, see text. n2G: sample size of ecoregion; NA: not available; NaN: not a number.
 
 ```{r TableRegressionEstimatesEcoregions, echo=FALSE}
 df <- regr[c("area","estimate","ext_variance","g_variance","n2G")]
 df[,c(2,3,4)] <- round(df[,c(2,3,4)],1)
 
 knitr::kable(
-  df, caption = 'Regression estimates of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, using lnSWIR2 as a predictor. For explanation of variances of regression estimator, see text. In the final column the number of sampling units per ecoregion is listed.',
+  df, caption = '(ref:TableRegressionEstimatesEcoregionslabel)',
   booktabs = TRUE,
   col.names=c("Ecoregion","AGB","ext_var","g_var","n2G")
 ) %>%
@@ -269,11 +279,13 @@ knitr::kable(
 
 The alternative is to save the selected units (the sample) in a `data.frame`, assigned to argument `data`. The results are identical because the true means of the covariate $x$ assigned to argument `exhaustive` contains all required information at the population level.
 
-For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:TableRegressionEstimatesEcoregions)). No units are selected from these domains. The variance of the estimated domain mean is in the column `g_variance`. The column `ext_variance` ignores the first variance component  of Equation \@ref(eq:Varregressionestimatorsmalldomain). Note that for the ecoregions with a sample size of one unit (the sample sizes per domain are in column `n2G`) no estimate of the variance is available, because the variance of the estimated mean of the residuals cannot be estimated from one unit.
+For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:TableRegressionEstimatesEcoregions)). No units are selected from these domains. The estimated variance of the estimated domain mean is in the column g_var. In the estimated variance ext_var the first variance component of Equation \@ref(eq:Varregressionestimatorsmalldomain) is ignored. Note that for the ecoregions with a sample size of one unit (the sample size per domain is in column `n2G`) no estimate of the variance is available, because the variance of the estimated mean of the residuals cannot be estimated from one unit.
 
-Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates (Equation \@ref(eq:ratiodomainSI)). The variation of the regression estimates among the ecoregions is smaller than those of the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
+Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
 
-```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="Scatter plot of the ratio and regression estimates of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia for simple random sample of size 200. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares."}
+(ref:RatioversusRegrEcoregionslabel) Scatter plot of the ratio and the regression estimates of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia for simple random sample without replacement of size 200. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares.
+
+```{r RatioversusRegrEcoregions, echo=FALSE, fig.cap="(ref:RatioversusRegrEcoregionslabel)"}
 mysample$N <- nrow(gridAmazonia)
 design_si <- svydesign(id=~1, data=mysample, fpc=~N)
 res <- svyby(~AGB, by=~Ecoregion, design=design_si, FUN=svymean)
@@ -291,7 +303,7 @@ ggplot(data=df) +
         coord_fixed()
 ```
 
-I quantified the gain in precision due to the use of the regression model by the variance of the ratio estimator divided by the variance of the regression estimator (Table \@ref(tab:TableGainRegressionestimator)). For ratios larger than one there is a gain in precision. Both variances are estimated from 1,000 repeated ratio and regression estimates obtained with simple random sampling without replacement of size 200. For all but two small ecoregions there is a gain. For quite a few ecoregions the gain is quite large. These are the ecoregions where the globally fitted regression model explains a large part of the spatial variation of AGB.
+I quantified the gain in precision due to the use of the regression model by the variance of the ratio estimator divided by the variance of the regression estimator (Table \@ref(tab:TableGainRegressionestimator)). For ratios larger than 1 there is a gain in precision. Both variances are estimated from 1,000 repeated ratio and regression estimates obtained with simple random sampling without replacement of size 200. For all but two small ecoregions there is a gain. For quite a few ecoregions the gain is quite large. These are the ecoregions where the globally fitted regression model explains a large part of the spatial variation of AGB.
 
 ```{r TableGainRegressionestimator, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -336,13 +348,14 @@ res <- forestinventory::twophase(AGB~lnSWIR2, data=gridAmazonia,
   psmall=FALSE, exhaustive=mX_eco_pop)
 synt <- res$estimation
 ```
+(ref:TableSyntheticEstimateslabel) Synthetic estimates of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, using lnSWIR2 as a predictor. n2G: sample size of ecoregion.
 
 ```{r TableSyntheticEstimates, echo=FALSE}
 df <- synt[c("area","estimate","g_variance","n2G")]
 df[,c(2,3)] <- round(df[,c(2,3)],1)
 
 knitr::kable(
-  df, caption = 'Synthetic estimates of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, using lnSWIR2 as a predictor. In the final column the number of sampling units per ecoregion is listed.',
+  df, caption = '(ref:TableSyntheticEstimateslabel)',
   booktabs = TRUE, col.names=c("Ecoregion","AGB","g_var","n2G")
 ) %>%
   kable_classic()
@@ -357,7 +370,7 @@ md <- mean(d_estimates)
 d_vars <- df$g_variance.x-df$g_variance.y
 ```
 
-For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10$^9$ kg ha$^{-1}$. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error.
+For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10$^9$ kg ha$^{-1}$. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error.
 
 ```{r, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -376,7 +389,7 @@ ecoregions_short[c(1,16)] <- c("Amazon-Orinoco Carib. mangroves","Xingu-Toc.-Ara
 df <- data.frame(Ecoregion=ecoregions_short, se.reg=round(sqrt(v_mz_eco_regr),1), se.syn=round(sqrt(v_mz_eco_synt),1), bias.syn=round(bias_synt,1), RMSE.syn=round(RMSE_synt,1))
 rownames(df) <- NULL
 knitr::kable(
-  df, caption = 'Estimated standard error (se), bias, and root mean squared error (RMSE) of the regression estimator (reg) and synthetic estimator (syn) of the mean AGB of ecoregions in Eastern Amazonia. The regression estimator is design-unbiased, so the RMSE of the regression estimator is equal to its standard error.',
+  df, caption = 'Estimated standard error (se), bias, and root mean squared error (RMSE) of the regression estimator (reg) and the synthetic estimator (syn) of the mean AGB of ecoregions in Eastern Amazonia. The regression estimator is design-unbiased, so the RMSE of the regression estimator is equal to its standard error.',
   booktabs = TRUE,
   col.names=c("Ecoregion", "RMSE reg","se syn","bias syn", "RMSE syn")
 ) %>%
@@ -384,11 +397,11 @@ knitr::kable(
 ```
 
 
-In the synthetic estimator and the regression estimator both quantitative covariates and categorical variables can be used. If one or more categorical variables are included in the estimator, the variable names in the data frame with the true means of the ancillary variables per domain, assigned to argument `exhaustive`,  must correspond with the column names of the design matrix that is generated with function `lm`, see Subsection \@ref(RegressionEstimatorSTSI).
+In the synthetic estimator and the regression estimator both quantitative covariates and categorical variables can be used. If one or more categorical variables are included in the estimator, the variable names in the data frame with the true means of the ancillary variables per domain, assigned to argument `exhaustive`,  must correspond to the column names of the design matrix that is generated with function `lm`, see Subsection \@ref(RegressionEstimatorSTSI).
 
 ## Model-based prediction {#SmallAreaModelBased}
 
-The alternative for design-based and model-assisted estimation of the means or totals of small domains is model-based prediction. The fundamental difference between model-assisted estimation and model-based prediction is explained in Chapter \@ref(Approaches). The models used in this section are linear mixed models\index{Linear mixed model}. In a linear mixed model the mean of the study variable is modelled as a linear combination of covariates, similar to a linear regression model. The difference with a linear regression model is that the residuals of the mean are not assumed independent. The dependency of the residuals is also modelled. Two types of linear mixed models are described, a random intercept model and a geostatistical model. 
+The alternative for design-based and model-assisted estimation of the means or totals of small domains is model-based prediction. The fundamental difference between model-assisted estimation and model-based prediction is explained in Chapter \@ref(Approaches). The models used in this section are linear mixed models\index{Linear mixed model}. In a linear mixed model the mean of the study variable is modelled as a linear combination of covariates, similar to a linear regression model. The difference with a linear regression model is that the residuals of the mean are not assumed independent. The dependency of the residuals is also modelled. Two types of linear mixed model are described, a random intercept model and a geostatistical model. 
 
 ### Random intercept model
 
@@ -406,14 +419,14 @@ v_d &\sim \mathcal{N}(0,\sigma^2_v) \\
 Two random variables are now involved, both with a normal distribution with mean zero: $v_d$, a random intercept at the domain level with variance $\sigma^2_v$, and the residuals $\epsilon_{dk}$ at the unit level with variance $\sigma^2_{\epsilon}$. The variance $\sigma^2_v$ can be interpreted as a measure of the heterogeneity among the domains after accounting for the fixed effect [@Breidenbach2012]. With this model the mean of a domain can be predicted by
 
 \begin{equation}
-\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\pmb{\beta}} + \hat{v}_d \;,
+\hat{\bar{z}}_{\text{mb},d} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\pmb{\beta}} + \hat{v}_d \;,
 (\#eq:mbpredictordomainmeanrandomintercept)
 \end{equation}
 
 with $\hat{\pmb{\beta}}$ the best linear unbiased estimates (BLUE) of the regression coefficients and $\hat{v}_d$ the best linear unbiased prediction (BLUP) of the intercept for domain $d$, $v_d$. The model-based predictor can also be written as
 
 \begin{equation}
-\hat{\bar{z}}_{d,\text{mb}} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\pmb{\beta}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
+\hat{\bar{z}}_{\text{mb},d} = \bar{\mathbf{x}}_d^{\mathrm{T}} \hat{\pmb{\beta}} + \lambda_d \left( \frac{1}{n_d }\sum_{k \in \mathcal{S}_d} \epsilon_{dk} \right) \;,
 (\#eq:mbpredictordomainmeanrandomintercept2)
 \end{equation}
 
@@ -426,7 +439,7 @@ with $\lambda_d$ a weight for the second term that corrects for the bias of the 
 
 This equation shows that the larger the estimated residual variance $\hat{\sigma}^2_{\epsilon}$, the smaller the weight for the bias correction factor, and the larger the sample size $n_d$, the larger the weight. Comparing Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2) shows that the random intercept of a domain is predicted by the sample mean of the residuals of that domain, multiplied by a weight factor computed by Equation \@ref(eq:weightrandomintercept).  
 
-The means of the small domains can be computed with function `eblup.mse.f.wrap` of package **JoSAE** [@JoSAE]. It requires as input a linear mixed model generated with function `lme` of package **nlme** [@nlme]. The simple random sample of size 200 selected before is used to fit the linear mixed model, with lnSWIR2 as a fixed effect, i.e. the effect of SWIR2 on the mean of AGB. The random effect is added by assigning another formula to argument `random`. The formula, `~1|Ecoregions` means that the intercept is treated as a random variable and that it varies among the Ecoregions. This linear mixed model is referred to as a random intercept model: the intercepts are allowed to differ among the small domains, whereas the effects of the covariates, lnSWIR2 in our case, is equal for all domains.
+The means of the small domains can be computed with function `eblup.mse.f.wrap` of package **JoSAE** [@JoSAE]. It requires as input a linear mixed model generated with function `lme` of package **nlme** [@nlme]. The simple random sample of size 200 selected before is used to fit the linear mixed model, with lnSWIR2 as a fixed effect, i.e. the effect of lnSWIR2 on the mean AGB. The random effect is added by assigning another formula to argument `random`. The formula `~1|Ecoregion` means that the intercept is treated as a random variable and that it varies among the ecoregions. This linear mixed model is referred to as a random intercept model: the intercepts are allowed to differ among the small domains, whereas the effects of the covariates, lnSWIR2 in our case, is equal for all domains.
 
 ```{r, echo=FALSE}
 load("data/Amazonia_1km.RData")
@@ -443,21 +456,21 @@ library(JoSAE)
 lmm_AGB <- lme(fixed=AGB~lnSWIR2, data=mysample, random=~1|Ecoregion)
 ```
 
-The fixed effects\index{Fixed effect} can be extracted with function `fixed.effects`.
+The fixed effects\index{Fixed effect} of the linear mixed model can be extracted with function `fixed.effects`.
 
 ```{r}
 fixed_lmm <- fixed.effects(lmm_AGB)
 ```
 
-The fixed effects differ somewhat from the fixed effects in the simple linear regression model:
+The fixed effects of the linear mixed model differ somewhat from the fixed effects in the simple linear regression model (fixed_lm):
  
 ```{r, echo=FALSE}
 slm <- lm(AGB~lnSWIR2, data=mysample)
 ab.lm <- coef(slm)
-(df <- data.frame(fixed.lm=ab.lm, fixed.lmm=fixed_lmm))
+(df <- data.frame(fixed_lm=ab.lm, fixed_lmm=fixed_lmm))
 ```
 
-The random effect\index{Random effect} can be extracted with function `random.effect`. 
+The random effect\index{Random effect} can be extracted with function `random.effects`. 
 
 ```{r}
 random.effects(lmm_AGB)
@@ -469,7 +482,7 @@ The random intercepts are added to the fixed intercept; the coefficient of lnSWI
 coef(lmm_AGB)
 ```
 
-The fitted model can now be used to predict the means of the ecoregions as follows. As a first step a data frame must be defined, with the sizes of the domains and the population means of the covariate lnSWIR2 per domain. This data frame is assigned to argument `domain.data` of function `eblup.mse.f.wrap`. This function computes the model-based prediction, as well as the regression estimator (Equation \@ref(eq:regressionestimatorsmalldomain)) and the synthetic estimator (Equation \@ref(eq:syntheticestimatorsmalldomain)) and their variances. The model-based predictor is the variable `EBLUP` in the output data frame. For the model-based predictor two standard errors are computed, see @Breidenbach2012 for details.
+The fitted model can now be used to predict the means of the ecoregions as follows. As a first step a data frame must be defined, with the size and the population mean of the covariate lnSWIR2 per domain. This data frame is assigned to argument `domain.data` of function `eblup.mse.f.wrap`. This function computes the model-based prediction, as well as the regression estimator (Equation \@ref(eq:regressionestimatorsmalldomain)) and the synthetic estimator (Equation \@ref(eq:syntheticestimatorsmalldomain)) and their variances. The model-based predictor is the variable `EBLUP` in the output data frame. For the model-based predictor two standard errors are computed, see @Breidenbach2012 for details.
 
 ```{r}
 N_eco <- tapply(gridAmazonia$AGB, INDEX=gridAmazonia$Ecoregion, FUN=length)
@@ -479,24 +492,26 @@ df <- data.frame(Ecoregion=res$domain.ID, mb=res$EBLUP,
   se.1=res$EBLUP.se.1, se.2=res$EBLUP.se.2)
 ```
 
+(ref:TableRandomInterceptModelEstimateslabel) Model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, obtained with the random intercept model and lnSWIR2 as a predictor. se.1 and se.2 are standard errors, for explanation see text.
+
 ```{r TableRandomInterceptModelEstimates, echo=FALSE}
 df[,c(2,3,4)] <- round(df[,c(2,3,4)],1)
 
 knitr::kable(
-  df, caption = 'Model-based predictions of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, obtained with the random intercept model and lnSWIR2 as a predictor. se.1 and se.2 are standard errors, for explanation see text.',
+  df, caption = '(ref:TableRandomInterceptModelEstimateslabel)',
   booktabs = TRUE,
   col.names=c("Ecoregion","AGB","se.1","se.2")
 ) %>%
   kable_classic()
 ```
 
-Note that with this model no predictions are obtained for the unsampled ecoregions. For the unsampled ecoregions no prediction is obtained of the random intercept $v_d$, see Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2).
+Note that with this model no predictions of the mean AGB are obtained for the unsampled ecoregions. This is because the random intercept $v_d$, cannot be predicted in the absence of data, see Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2).
 
 ### Geostatistical model 
 
 In a geostatistical model (see Equation \@ref(eq:OKmodel) for a geostatistical model with a constant mean and Equation \@ref(eq:KEDmodel2) for a model with a mean that is a linear combination of covariates) there is only one random variable, the residual of the model-mean, not two random variables as in the random intercept model. In a geostatistical model the covariance of the residuals of the mean at two locations is modelled as a function of the distance (and direction) of the points. Instead of the covariance often the semivariance is modelled, i.e. half the variance of the difference of the residuals at two locations, see Chapter \@ref(Introkriging) for details.
 
-The simple random sample of size 200 selected before is used to estimate the regression coefficients for the mean, an intercept and a slope coefficient for lnSWIR2, and besides the parameters of a spherical semivariogram model for the residuals of the mean. The two regression coefficients and the three semivariogram parameters are estimated by restricted maximum likelihood (REML), see Subsection \@ref(REML). This estimation procedure is also used in function `lme` to fit the random intercept model. Here function `likfit` of package **geoR** [@geoR] is used to estimate the model parameters. First a geoR object must be generated with function `as.geodata`.
+The simple random sample of size 200 selected before is used to estimate the regression coefficients for the mean, an intercept, and a slope coefficient for lnSWIR2, and besides the parameters of a spherical semivariogram model for the residuals of the mean. The two regression coefficients and the three semivariogram parameters are estimated by restricted maximum likelihood (REML), see Subsection \@ref(REML). This estimation procedure is also used in function `lme` to fit the random intercept model. Here function `likfit` of package **geoR** [@geoR] is used to estimate the model parameters. First, a geoR object must be generated with function `as.geodata`.
 
 ```{r}
 library(geoR)
@@ -543,7 +558,7 @@ mz_eco_mb <- tapply(AGBpred_unit, INDEX=gridAmazonia$Ecoregion,
                     FUN=mean) %>% round(.,1)
 ```
 
-A difficulty is the computation of the standard error of these model-based predictions of the ecoregion mean. We cannot simply sum the unit-wise variances and divide the sum by the squared number of units, because the prediction errors of units with a mutual distance smaller than the estimated range of the spherical semivariogram are correlated. A straightforward approach to obtain the standard error of the predicted mean is geostatistical simulation\index{Geostatistical simulation}. A large number of maps are simulated, conditional on the selected sample. For an infinite number of maps, the "average map", i.e. the map obtained by averaging for each unit all simulated values of that unit, is equal to the map with predicted AGB. For each simulated map, the average of the simulated values across all units of an ecoregion is computed. This results in as many averages as we have simulated maps. The variance of the averages of an ecoregion is an estimate of the variance of the predicted mean of that ecoregion. To reduce computing time the 5 km $\times$ 5 km subgrid is used in geostatistical simulation  
+A difficulty is the computation of the standard error of these model-based predictions of the ecoregion mean. We cannot simply sum the unit-wise variances and divide the sum by the squared number of units, because the prediction errors of units with a mutual distance smaller than the estimated range of the spherical semivariogram are correlated. A straightforward approach to obtain the standard error of the predicted mean is geostatistical simulation\index{Geostatistical simulation}. A large number of maps are simulated, conditional on the selected sample. For an infinite number of maps, the "average map", i.e. the map obtained by averaging for each unit all simulated values of that unit, is equal to the map with predicted AGB. For each simulated map, the average of the simulated values across all units of an ecoregion is computed. This results in as many averages as we have simulated maps. The variance of the averages of an ecoregion is an estimate of the variance of the predicted mean of that ecoregion. To reduce computing time the 5 km $\times$ 5 km subgrid is used in the geostatistical simulation.  
 
 ```{r, eval=FALSE}
 load(file="data/Amazonia_5km.RData")
@@ -573,21 +588,25 @@ load(file="results/AGBsimulated_ecoregions.RData")
 se_mz_eco_mb <- round(sqrt(apply(AGBsim_eco,MARGIN=1,FUN=var)),1)
 ```
 
-```{r TableGeostatisticqalModelEstimates, echo=FALSE}
+(ref:TableGeostatisticalModelEstimateslabel) Model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, using a simple random sample without replacement of size 200, obtained with the geostatistical model and lnSWIR2 as a predictor for the mean. se: standard error of predicted mean.
+
+```{r TableGeostatisticalModelEstimates, echo=FALSE}
 df <- data.frame(Ecoregion=ecoregions, mz_eco_mb, se_mz_eco_mb)
 df[,c(2,3)] <- round(df[,c(2,3)],1)
 rownames(df) <- NULL
 knitr::kable(
-  df, caption = 'Model-based predictions of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia, using a simple random sample without replacement of size 200, obtained with the geostatistical model and lnSWIR2 as a predictor for the mean. se: standard error of predicted mean.',
+  df, caption = '(ref:TableGeostatisticalModelEstimateslabel)',
   booktabs = TRUE,
   col.names=c("Ecoregion","AGB","se")
 ) %>%
   kable_classic()
 ```
 
-Similar to the synthetic estimator, for all ecoregions an estimate of the mean AGB is obtained, also for the unsampled ecoregions (Table \@ref(tab:TableGeostatisticqalModelEstimates)). The model-based prediction is strongly correlated with the synthetic estimate (Figure \@ref(fig:MBvsSynt)).
+Similarly to the synthetic estimator, for all ecoregions an estimate of the mean AGB is obtained, also for the unsampled ecoregions (Table \@ref(tab:TableGeostatisticalModelEstimates)). The model-based prediction is strongly correlated with the synthetic estimate (Figure \@ref(fig:MBvsSynt)).
 
-```{r MBvsSynt, echo=FALSE, fig.cap="Scatter plot of the model-based prediction and the synthetic estimate of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia. The solid line is the 1:1 line."}
+(ref:MBvsSyntlabel) Scatter plot of the model-based prediction and the synthetic estimate of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia. The solid line is the 1:1 line.
+
+```{r MBvsSynt, echo=FALSE, fig.cap="(ref:MBvsSyntlabel)"}
 df <- data.frame(ecoregions, mb=mz_eco_mb, se.mb=se_mz_eco_mb, synt=synt$estimate, se.synt=sqrt(synt$g_variance)) 
 ggplot(data=df) +
         geom_point(mapping=aes(x=synt, y=mb), size=2) +
@@ -597,11 +616,13 @@ ggplot(data=df) +
         coord_fixed()
 ```
 
-The most striking difference is the standard error. The standard errors of the synthetic estimator range from 3.2 to 4.3, whereas the standard errors of the geostatistical predictions range from 6.2 to 28.1. However, these two standard errors are fundamentally different and should not be compared. The standard error of the synthetic estimator is a *sampling* standard error, i.e. it quantifies the variation of the estimated mean of an ecoregion over repeated random sampling with the sampling design, in this case simple random sampling of 200 units. The model-based standard error is not a sampling standard error but a model standard error, which expresses our uncertainty about the means of the domains due to our imperfect knowledge of the spatial variation of AGB. Given the observations of AGB at the selected sample, the map with the covariate lnSWIR2, and the estimated semivariogram model parameters, we are uncertain about the exact value of AGB at unsampled units. No other samples are considered than the one actually selected. For the fundamental difference between the design-based, model-assisted, and model-based estimates of means, I refer to Section \@ref(DBvsMB) and Chapter \@ref(Approaches).
+The most striking difference is the standard error. The standard errors of the synthetic estimator range from 3.7 to 7.1 (Table \@ref(tab:tableRMSEs)), whereas the standard errors of the geostatistical predictions range from 6.2 to 28.1. However, these two standard errors are fundamentally different and should not be compared. The standard error of the synthetic estimator is a *sampling* standard error, i.e. it quantifies the variation of the estimated mean of an ecoregion over repeated random sampling with the sampling design, in this case simple random sampling of 200 units. The model-based standard error is not a sampling standard error but a model standard error, which expresses our uncertainty about the means of the domains due to our imperfect knowledge of the spatial variation of AGB. Given the observations of AGB at the selected sample, the map with the covariate lnSWIR2, and the estimated semivariogram model parameters, we are uncertain about the exact value of AGB at unsampled units. No other samples are considered than the one actually selected. For the fundamental difference between design-based, model-assisted, and model-based estimates of means, I refer to Section \@ref(DBvsMB) and Chapter \@ref(Approaches).
 
-It makes more sense to compare the two model-based predictions, the random intercept model predictions, and the geostatistical predictions, and their standard errors. Figure \@ref(fig:MBvsMB) shows that the two model-based predictions are very similar. 
+It makes more sense to compare the two model-based predictions, the random intercept model predictions and the geostatistical predictions, and their standard errors. Figure \@ref(fig:MBvsMB) shows that the two model-based predictions are very similar. 
 
-```{r MBvsMB, echo=FALSE, fig.cap="Scatter plot of model-based predictions of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line."}
+(ref:MBvsMBlabel) Scatter plot of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line.
+
+```{r MBvsMB, echo=FALSE, fig.cap="(ref:MBvsMBlabel)"}
 res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
 TF <- (ecoregions %in% ecos_in_sam)
 n_eco <- tapply(mysample$AGB, INDEX=mysample$Ecoregion, FUN=length)
@@ -616,7 +637,9 @@ ggplot(data=df) +
 
 For four ecoregions the standard errors of the geostatistical model predictions are much smaller than those of the random intercept model predictions (Figure \@ref(fig:MBvsMBse)). These are ecoregions with small sample sizes.
 
-```{r MBvsMBse, echo=FALSE,  fig.cap="Scatter plot of the standard error of model-based predictions of the mean AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of ecoregions obtained with the random intercept model and the geostatistical model, using a simple random sample without replacement of size 200 from Eastern Amazonia. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line."}
+(ref:MBvsMBselabel) Scatter plot of the standard error of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions obtained with the random intercept model and the geostatistical model, using a simple random sample without replacement of size 200 from Eastern Amazonia. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line.
+
+```{r MBvsMBse, echo=FALSE,  fig.cap="MBvsMBselabel"}
 ggplot(data=df) +
         geom_point(mapping=aes(x=semb.rint, y=semb.geo), size=2) +
         geom_text(mapping=aes(x=semb.rint, y=semb.geo, label=n_eco), hjust=1, vjust=1)+
@@ -633,9 +656,9 @@ If a different semivariogram model were used, both the predicted means per ecore
 
 ## Supplemental probability sampling of small domains
 
-The sample size in small domains of interest can be so small that no reliable statistical estimate of the mean or total of these domains can be obtained. In that case we may decide to collect a supplemental sample\index{Supplemental sample} from these domains. It is convenient to use these domains as strata in supplemental probability sampling, so that we can control the sample sizes in the strata. If we can safely assume that the study variable at the units of the first sample are not changed, there is no need to revisit these units, otherwise we must revisit them to observe the current values.
+The sample size in small domains of interest can be so small that no reliable statistical estimate of the mean or total of these domains can be obtained. In this case we may decide to collect a supplemental sample\index{Supplemental sample} from these domains. It is convenient to use these domains as strata in supplemental probability sampling, so that we can control the sample sizes in the strata. If we can safely assume that the study variable at the units of the first sample are not changed, there is no need to revisit these units, otherwise we must revisit them to observe the current values.
 
-There are two approaches for using the two probability samples to estimate the population mean or total of a small domain [@Grafstrom2019]. In the first approach the two samples are combined and then the merged sample is used to estimate the population mean or total. In the second approach not the samples are combined, but the two estimates from the separate samples. In this section only the first approach is illustrated with a simple situation in which the two samples are easily combined. I refer to @Grafstrom2019 for a more general approach of how multiple probability samples can be combined.
+There are two approaches for using the two probability samples to estimate the population mean or total of a small domain [@Grafstrom2019]. In the first approach the two samples are combined, and then the merged sample is used to estimate the population mean or total. In the second approach not the samples are combined, but the two estimates from the separate samples. In this section only the first approach is illustrated with a simple situation in which the two samples are easily combined. I refer to @Grafstrom2019 for a more general approach of how multiple probability samples can be combined.
 
 Suppose that the original sample is a simple random sample from the entire study area. A supplemental sample is selected from small domains, i.e. domains that have few selected units only. For a given small domain, the first sample is supplemented by selecting a simple random sample from the units not yet selected in the first sample. The size of the supplemental sample of a domain depends on the number of units of that domain in the first sample. The first sample is supplemented so that the total sample size of that domain is fixed. In this case the combined sample of a domain is a simple random sample from that domain, so that the usual estimators for simple random sampling can be used to estimate the domain mean or total and its standard error.
 
@@ -653,7 +676,7 @@ mysample_1 <- gridAmazonia[units_1, c("AGB","Biome")]
 print(n1_biome <- table(mysample_1$Biome))
 ```
 
-The selected units are removed from the sampling frame. For each of the three small biomes, Mangrove, Forest.dry, and Grassland, the size of the supplemental sample is computed so that the total sample size becomes 40. The supplemental sample is selected by stratified simple random sampling without replacement, using the small biomes as strata (Chapter \@ref(STSI).
+The selected units are removed from the sampling frame. For each of the three small biomes, Mangrove, Forest.dry, and Grassland, the size of the supplemental sample is computed so that the total sample size becomes 40. The supplemental sample is selected by stratified simple random sampling without replacement, using the small biomes as strata (Chapter \@ref(STSI)).
 
 ```{r}
 units_notselected <- gridAmazonia[-units_1,]
@@ -667,7 +690,7 @@ mysample_2 <- getdata(Biomes_NFM, units_2)
 mysample_2 <- mysample_2[c("AGB","Biome")]
 ```
 
-The two samples are merged and the means of the domains are estimated by the sample means.
+The two samples are merged, and the means of the domains are estimated by the sample means.
 
 ```{r}
 mysample <- rbind(mysample_1, mysample_2)
@@ -759,11 +782,13 @@ for (i in 1:3) {
 }
 ```
 
-This sampling approach and estimation is repeated 10,000 times, i.e. 10,000 times a simple random sample without replacement of size 400 is selected from Eastern Amazonia, and the samples from the three small domains are supplemented so that the total sample sizes in these domains become 40. In two out of the 10,000 samples the size of the first sample in one of the domains exceeded 40 units. These two samples are discarded. Ideally, these samples are not discarded, but their sizes in the small domains are reduced to 40 units, which are then used to estimate the means of the domains.
+This sampling approach and estimation are repeated 10,000 times, i.e. 10,000 times a simple random sample without replacement of size 400 is selected from Eastern Amazonia, and the samples from the three small domains are supplemented so that the total sample sizes in these domains become 40. In two out of the 10,000 samples the size of the first sample in one of the domains exceeded 40 units. These two samples are discarded. Ideally, these samples are not discarded, but their sizes in the small domains are reduced to 40 units, which are then used to estimate the means of the domains.
+
+(ref:SmalldomainEstimateslabel) Summary statistics of 10,000 estimated means of AGB (10^9^ kg ha^-1^) of small domains (biomes) in Eastern Amazonia, estimated by combining a simple random sample without replacement of size 400 from all units and a supplemental stratified simple random sample without replacement from the units in the small domains not included in the simple random sample. The total sample size per small domain is 40.
 
 ```{r SmalldomainEstimates, echo=FALSE}
 knitr::kable(
-  dom, caption = 'Summary statistics of 10,000 estimated means of AGB (10$\\textsuperscript{9}$ kg ha$\\textsuperscript{-1}$) of small domains (biomes) in Eastern Amazonia, estimated by combining a simple random sample without replacement of size 400 from all units and a supplemental stratified simple random sample without replacement from the units in the small domains not included in the simple random sample. The total sample size per small domain is 40.',
+  dom, caption = '(ref:SmalldomainEstimateslabel)',
   col.names = c("Mangrove","Dry forest","Grassland"),
   row.names = TRUE,
   booktabs = TRUE
