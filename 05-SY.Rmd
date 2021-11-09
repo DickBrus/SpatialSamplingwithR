@@ -4,7 +4,7 @@ A simple way of drawing probability samples whose units are spread uniformly ove
 
 ```{r}
 load("data/Voorst.RData")
-set.seed(314)
+set.seed(777)
 #change class of grdVoorst to SpatialPixelsDataFrame
 gridded(grdVoorst) <- ~s1+s2
 n <- 40
@@ -23,7 +23,7 @@ ggplot()+
   coord_fixed()
 ```
 
-Argument `n` in function `spsample` is used to set the sample size. Note that this is the *expected* sample size\index{Expected sample size}, i.e. on average over repeated sampling the sample size is 40. In Figure \@ref(fig:sampleSY) the number of selected sampling points equals `r nrow(mySYsample)`, but this is a lucky shot only. Given the expected sample size, the spacing\index{Grid spacing} of the square grid can be computed with $\sqrt{A/n}$, with $A$ the area of the study area. This area $A$ can be computed by the total number of cells of the discretisation grid multiplied by the area of a grid cell. Function `getGridTopology` is used to retrieve the cell size of the grid cells of the `SpatialPixelsDataFrame`. Note that this area is smaller than the number of grid cells in the horizontal direction multiplied by the number of grid cells in the vertical direction multiplied by the grid cell area, as we have non-availables (built-up areas, roads, etc.).   
+Argument `n` in function `spsample` is used to set the sample size. Note that this is the *expected* sample size\index{Expected sample size}, i.e. on average over repeated sampling the sample size is 40. In Figure \@ref(fig:sampleSY) the number of selected sampling points equals `r nrow(mySYsample)`. Given the expected sample size, the spacing\index{Grid spacing} of the square grid can be computed with $\sqrt{A/n}$, with $A$ the area of the study area. This area $A$ can be computed by the total number of cells of the discretisation grid multiplied by the area of a grid cell. Function `getGridTopology` is used to retrieve the cell size of the grid cells of the `SpatialPixelsDataFrame`. Note that this area is smaller than the number of grid cells in the horizontal direction multiplied by the number of grid cells in the vertical direction multiplied by the grid cell area, as we have non-availables (built-up areas, roads, etc.).   
 
 ```{r}
 gridtop <- as(getGridTopology(grdVoorst), "data.frame")
@@ -308,9 +308,12 @@ So the ratio estimator of the population total is equal to the unweighted sample
 
 Recall that for Voorst we have exhaustive knowledge of the study variable $z$: values of SOM were simulated for all grid cells. To determine the $z$-values at the selected sampling points an overlay of the systematic random sample and the `SpatialPixelsDataFrame` is made, using function `over` of package **sp**.
 
-```{r}
-set.seed(1956)
+```{r, echo=FALSE}
+set.seed(777)
 mySYsample <- spsample(x=grdVoorst, n=n, type="regular")
+```
+
+```{r}
 res <- over(mySYsample, grdVoorst)
 mySYsample <- as(mySYsample, "data.frame")
 mySYsample$z <- res$z
@@ -318,7 +321,7 @@ mz_HT <- sum(mySYsample$z)/n
 mz_ratio <- mean(mySYsample$z)
 ```
 
-The $\pi$ estimated population mean equals `r round(mz_HT,3)` g kg$^{-1}$, the ratio estimate equals `r round(mz_ratio,3)` g kg$^{-1}$. The ratio estimate is smaller than the $\pi$ estimate because the size of the selected sample is three units larger (43) than the expected sample size (40).
+Using the systematic random sample of Figure \@ref(fig:sampleSY) the $\pi$ estimated population mean equals `r round(mz_HT,3)` g kg^-1^, the ratio estimate equals `r round(mz_ratio,3)` g kg^-1^. The ratio estimate is larger than the $\pi$ estimate because the size of the selected sample is two units smaller (38) than the expected sample size (40).
 
 ## Approximating the sampling variance of the estimator of the mean
 
@@ -330,7 +333,7 @@ av_SI_mz <- var(mySYsample$z)/nrow(mySYsample)
 
 The approximated variance equals `r round(av_SI_mz,3)`.
 
-Alternatively, the sampling variance can be estimated by treating the systematic random sample as if it were a stratified simple random sample (Equation \@ref(eq:EstVarMeanSTSI)). The sampling units are clustered on the basis of their spatial coordinates into $H=n/2$ clusters ($n$ even) or $H=(n-1)/2$ clusters ($n$ odd). In the next code chunk a simple $k$-means function is defined to cluster the sampling units of the grid into equal-sized clusters\index{\emph{k}-means clustering}. Arguments `s1` and `s2` are the spatial coordinates of the sampling units, `k` is the number of clusters. First, in this function the ids of equal-sized clusters are randomly assigned to the sampling units on the nodes of the sampling grid (initial clustering). Next, the centres of the clusters, i.e. the means of the spatial coordinates of the clusters (initial cluster centres), are computed. There are two for-loops. In the inner-loop it is determined whether the cluster id of the unit selected in the outer-loop should be swopped with the cluster id of the next unit. If both units have the same cluster id the next unit is selected, until a unit of a different cluster is found. The cluster ids of the two units are swopped when the sum of the squared distances of the two units to their corresponding cluster centres is reduced. When the cluster ids are swopped, the centres are recomputed. The two loops are repeated until no swops are made anymore.
+Alternatively, the sampling variance can be estimated by treating the systematic random sample as if it were a stratified simple random sample (Equation \@ref(eq:EstVarMeanSTSI)). The sampling units are clustered on the basis of their spatial coordinates into $H=n/2$ clusters ($n$ even) or $H=(n-1)/2$ clusters ($n$ odd). In the next code chunk a simple *k*-means function is defined to cluster the sampling units of the grid into equal-sized clusters\index{\emph{k}-means clustering}. Arguments `s1` and `s2` are the spatial coordinates of the sampling units, `k` is the number of clusters. First, in this function the ids of equal-sized clusters are randomly assigned to the sampling units on the nodes of the sampling grid (initial clustering). Next, the centres of the clusters, i.e. the means of the spatial coordinates of the clusters (initial cluster centres), are computed. There are two for-loops. In the inner-loop it is determined whether the cluster id of the unit selected in the outer-loop should be swopped with the cluster id of the next unit. If both units have the same cluster id the next unit is selected, until a unit of a different cluster is found. The cluster ids of the two units are swopped when the sum of the squared distances of the two units to their corresponding cluster centres is reduced. When the cluster ids are swopped, the centres are recomputed. The two loops are repeated until no swops are made anymore.
 
 ```{r}
 .kmeans_equal_size <- function(s1, s2, k) {
@@ -372,7 +375,7 @@ Alternatively, the sampling variance can be estimated by treating the systematic
 
 The clustering is repeated 100 times (`ntry=100`). The clustering with the smallest mean of the squared distances of the sampling units to their cluster centres (mean of squared shortest distances, MSSD) is selected. 
 
-```{r, cache=TRUE}
+```{r}
 kmeans_equal_size <- function(s1, s2, k, ntry) {
   res_opt <- NULL
   MSSD_min <- Inf

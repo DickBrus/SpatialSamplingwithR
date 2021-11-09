@@ -71,15 +71,12 @@ ggplot(data=gridAmazonia) +
 
 Figure \@ref(fig:StratumSampleSizes) shows the sample sizes for all 100 marginal strata. The next code chunk shows how the marginal stratum sample sizes are computed.
 
-```{r computemarginalsamplesizes}
+```{r StratumSampleSizes, out.width='100%', fig.asp=0.4, fig.cap="Sample sizes of marginal strata for the conditioned Latin hypercube sample of size twenty from Eastern Amazonia."}
 probs <- seq(from=0, to=1, length.out=nrow(myCLHsample)+1)
 breaks <- apply(gridAmazonia[,covs], MARGIN=2, 
   FUN=function(x) quantile(x, probs=probs))
 counts <- lapply(1:5, function (i) 
   hist(myCLHsample[, i+3], breaks[,i], plot=FALSE)$counts)
-```
-
-```{r StratumSampleSizes, out.width='100%', fig.asp=0.4, fig.cap="Sample sizes of marginal strata for the conditioned Latin hypercube sample of size twenty from Eastern Amazonia."}
 countslf <- data.frame(counts=unlist(counts))
 countslf$covariate <- rep(names(gridAmazonia)[c(4,5,6,7,8)], each=20)
 countslf$stratum <- rep(1:20, times=5)

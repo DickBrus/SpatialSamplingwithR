@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 6 Cluster random sampling | Spatial sampling with R</title>
   <meta name="description" content="This book is for students, scientists, researchers and consultants who want to know how to collect spatial data, either for estimating parameters for the population or several subpopulations, or for mapping. How many data do we need, and how to select the population units? The book presents a wide overview of spatial sampling designs. Besides there is a chapter on designs for sampling in space and time for monitoring. The emphasis is not on the theory, but on how to implement sampling designs in R and on how the (sub)population parameters can be estimated from the sample." />
-  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 6 Cluster random sampling | Spatial sampling with R" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-11-03" />
+<meta name="date" content="2021-11-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,8 +33,9 @@
   
 <link rel="prev" href="SY.html"/>
 <link rel="next" href="Twostage.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -42,7 +43,6 @@
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
-
 
 
 
@@ -550,7 +550,7 @@ Figure 6.1: Frequency distribution of the size (number of units) of clusters in 
 </p>
 </div>
 <p>In total there are 960 clusters in the population. Figure <a href="Cl.html#fig:clustersize">6.1</a> shows the frequency distribution of the size (number of grid cells) of the clusters.</p>
-<p>Clusters are selected with probabilities proportional to their size and with replacement (ppswr). So, the sizes of all clusters must be known, which explains that all clusters must be enumerated. Selection of clusters by ppswr can be done by simple random sampling with replacement of elementary units (grid cells) and identifying the clusters to which these units belong. Finally, all units of the selected clusters are included in the sample. In the code chunk below a function is defined for selecting clusters by ppswr. Note the variable <code>cldraw</code>, that has value 1 for all units selected in the first draw, value 2 for all units selected in the second draw, etc. This variable is needed in estimating the population mean, as explained in Section <a href="Cl.html#clustersamplingestimators">6.1</a>.</p>
+<p>Clusters are selected with probabilities proportional to their size and with replacement (ppswr). So, the sizes of all clusters must be known, which explains that all clusters must be enumerated. Selection of clusters by ppswr can be done by simple random sampling with replacement of elementary units (centres of grid cells) and identifying the clusters to which these units belong. Finally, all units of the selected clusters are included in the sample. In the code chunk below a function is defined for selecting clusters by ppswr. Note the variable <code>cldraw</code>, that has value 1 for all units selected in the first draw, value 2 for all units selected in the second draw, etc. This variable is needed in estimating the population mean, as explained in Section <a href="Cl.html#clustersamplingestimators">6.1</a>.</p>
 <div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="Cl.html#cb94-1" aria-hidden="true" tabindex="-1"></a>cl_ppswr <span class="ot">&lt;-</span> <span class="cf">function</span>(sframe, n) {</span>
 <span id="cb94-2"><a href="Cl.html#cb94-2" aria-hidden="true" tabindex="-1"></a>  units <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(sframe), <span class="at">size=</span>n, <span class="at">replace=</span><span class="cn">TRUE</span>)</span>
 <span id="cb94-3"><a href="Cl.html#cb94-3" aria-hidden="true" tabindex="-1"></a>  units_cl <span class="ot">&lt;-</span> sframe<span class="sc">$</span>cluster[units]</span>
@@ -597,7 +597,7 @@ t_j(z) = \sum_{k=1}^{M_j} z_{kj} \;,
 <p>with <span class="math inline">\(M_j\)</span> the size (number of units) of cluster <span class="math inline">\(j\)</span> and <span class="math inline">\(z_{kj}\)</span> the study variable value of unit <span class="math inline">\(k\)</span> in cluster <span class="math inline">\(j\)</span>.</p>
 <p>The draw-by-draw selection probability of a cluster equals</p>
 <p><span class="math display" id="eq:drawbydraw">\[\begin{equation}
-\bar{p}_{j} = \frac{M_j}{M} \;,
+p_{j} = \frac{M_j}{M} \;,
 \tag{6.3}
 \end{equation}\]</span></p>
 <p>with <span class="math inline">\(M\)</span> the total number of population units (for Voorst <span class="math inline">\(M\)</span> equals 7,528). Inserting this in Equation <a href="Cl.html#eq:EstTotalCl1">(6.1)</a> yields</p>
@@ -612,6 +612,7 @@ t_j(z) = \sum_{k=1}^{M_j} z_{kj} \;,
 \tag{6.5}
 \end{equation}\]</span></p>
 <p>Note the two bars in <span class="math inline">\(\hat{\bar{\bar{z}}}\)</span>, indicating that the observations are averaged twice.</p>
+<p>For an infinite population of points discretised by the centres of a finite number of grid cells, <span class="math inline">\(z_{kj}\)</span> in Equation <a href="Cl.html#eq:clustertotal">(6.2)</a> is the study variable value at a randomly selected point within the grid cell multiplied by the area of the grid cell. The estimated population total thus obtained is equal to the estimated population mean (Equation <a href="Cl.html#eq:EstMeanCl">(6.5)</a>) multiplied by the area of the study area.</p>
 <p>The sampling variance of the estimator of the mean with ppswr sampling of clusters is equal to (<span class="citation"><a href="#ref-coc77" role="doc-biblioref">Cochran</a> (<a href="#ref-coc77" role="doc-biblioref">1977</a>)</span>, Equation (9A.6))</p>
 <p><span class="math display" id="eq:TrueVarEstMeanCl">\[\begin{equation}
 V(\hat{\bar{\bar{z}}})= \frac{1}{n}\sum_{j=1}^N \frac{M_j}{M} (\bar{z}_j-\bar{z})^2  \;,
@@ -625,7 +626,7 @@ V(\hat{\bar{\bar{z}}})= \frac{1}{n}\sum_{j=1}^N \frac{M_j}{M} (\bar{z}_j-\bar{z}
 \end{equation}\]</span></p>
 <p>where <span class="math inline">\(\widehat{S^2}(\bar{z})\)</span> is the estimated variance of cluster means (the between-cluster variance):</p>
 <p><span class="math display" id="eq:S2EstMeanCl">\[\begin{equation}
-\widehat{S^2}(\bar{z}) = \frac{1}{n-1}\sum_{j \in \mathcal{S}}(\bar{z}_{j}-\hat{\bar{z}})^2 \;.
+\widehat{S^2}(\bar{z}) = \frac{1}{n-1}\sum_{j \in \mathcal{S}}(\bar{z}_{j}-\hat{\bar{\bar{z}}})^2 \;.
 \tag{6.8}
 \end{equation}\]</span></p>
 <p>In <strong>R</strong> the population mean and the sampling variance of the estimator of the population means can be estimated as follows.</p>
@@ -633,8 +634,8 @@ V(\hat{\bar{\bar{z}}})= \frac{1}{n}\sum_{j=1}^N \frac{M_j}{M} (\bar{z}_j-\bar{z}
 <span id="cb97-2"><a href="Cl.html#cb97-2" aria-hidden="true" tabindex="-1"></a>  mysample<span class="sc">$</span>z, <span class="at">INDEX=</span>mysample<span class="sc">$</span>cldraw, <span class="at">FUN=</span>mean)</span>
 <span id="cb97-3"><a href="Cl.html#cb97-3" aria-hidden="true" tabindex="-1"></a>mz <span class="ot">&lt;-</span> <span class="fu">mean</span>(mz_cl)</span>
 <span id="cb97-4"><a href="Cl.html#cb97-4" aria-hidden="true" tabindex="-1"></a>se_mz <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">var</span>(mz_cl)<span class="sc">/</span>n)</span></code></pre></div>
-<p>The estimated mean equals 8.549 g kg<span class="math inline">\(^{-1}\)</span>, and the estimated standard error equals 1.473 g kg<span class="math inline">\(^{-1}\)</span>. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.</p>
-<p>The same estimates are obtained with functions <code>svydesign</code> and <code>svymean</code> of package <strong>survey</strong> <span class="citation">(<a href="#ref-Lumley2020" role="doc-biblioref">Lumley 2020b</a>)</span>. Argument <code>weights</code> specifies the weights of the sampled clusters equal to <span class="math inline">\(M/(M_j\; n)\)</span> (Equation <a href="Cl.html#eq:EstTotalCl">(6.4)</a>).</p>
+<p>The estimated mean equals 8.549 g kg<sup>-1</sup>, and the estimated standard error equals 1.473 g kg<sup>-1</sup>. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.</p>
+<p>The same estimates are obtained with functions <code>svydesign</code> and <code>svymean</code> of package <strong>survey</strong> <span class="citation">(<a href="#ref-Lumley2020" role="doc-biblioref">Lumley 2021</a>)</span>. Argument <code>weights</code> specifies the weights of the sampled clusters equal to <span class="math inline">\(M/(M_j\; n)\)</span> (Equation <a href="Cl.html#eq:EstTotalCl">(6.4)</a>).</p>
 <div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="Cl.html#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
 <span id="cb98-2"><a href="Cl.html#cb98-2" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">nrow</span>(grdVoorst)</span>
 <span id="cb98-3"><a href="Cl.html#cb98-3" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>weights <span class="ot">&lt;-</span> M<span class="sc">/</span>(M_cl[mysample<span class="sc">$</span>cluster]<span class="sc">*</span>n)</span>
@@ -682,7 +683,7 @@ Figure 6.4: Approximated sampling distribution of the sample size with cluster r
 <div class="rmdnote">
 The problem is the computation of the inclusion probabilities of the clusters. After we have selected a first cluster, we must adapt the sum of the sizes of the <span class="math inline">\(N-1\)</span> remaining clusters and recompute the selection probabilities of the remaining clusters in the second draw, etc. Section 6.4 of <span class="citation"><a href="#ref-loh99" role="doc-biblioref">Lohr</a> (<a href="#ref-loh99" role="doc-biblioref">1999</a>)</span> nicely describes how the inclusion probabilities of the <span class="math inline">\(N\)</span> clusters in a cluster random sample of size two, selected by ppswor, can be computed.
 </div>
-<p>Many algorithms have been developed for ppswor sampling, see <span class="citation"><a href="#ref-Tille2006" role="doc-biblioref">Tillé</a> (<a href="#ref-Tille2006" role="doc-biblioref">2006</a>)</span> for an overview, and quite a few of them are implemented in package <strong>sampling</strong> <span class="citation">(<a href="#ref-Tille2016" role="doc-biblioref">Tillé and Matei 2016</a>)</span>. In the next code chunk function <code>UPpivotal</code> is used to select a cluster random sample with ppswor. For an explanation of this algorithm, see Subsection <a href="pps.html#pivotalmethod">8.2.2</a>.</p>
+<p>Many algorithms have been developed for ppswor sampling, see <span class="citation"><a href="#ref-Tille2006" role="doc-biblioref">Tillé</a> (<a href="#ref-Tille2006" role="doc-biblioref">2006</a>)</span> for an overview, and quite a few of them are implemented in package <strong>sampling</strong> <span class="citation">(<a href="#ref-Tille2016" role="doc-biblioref">Tillé and Matei 2021</a>)</span>. In the next code chunk function <code>UPpivotal</code> is used to select a cluster random sample with ppswor. For an explanation of this algorithm, see Subsection <a href="pps.html#pivotalmethod">8.2.2</a>.</p>
 <div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="Cl.html#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sampling)</span>
 <span id="cb104-2"><a href="Cl.html#cb104-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">6</span></span>
 <span id="cb104-3"><a href="Cl.html#cb104-3" aria-hidden="true" tabindex="-1"></a>pi <span class="ot">&lt;-</span> n<span class="sc">*</span>M_cl<span class="sc">/</span>M</span>
@@ -743,7 +744,7 @@ z 9.6777 1.2921</code></pre>
 <span id="cb112-4"><a href="Cl.html#cb112-4" aria-hidden="true" tabindex="-1"></a>mz_HT <span class="ot">&lt;-</span> tz_HT<span class="sc">/</span>M</span>
 <span id="cb112-5"><a href="Cl.html#cb112-5" aria-hidden="true" tabindex="-1"></a>M_HT <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="dv">1</span><span class="sc">/</span>mysample<span class="sc">$</span>pi)</span>
 <span id="cb112-6"><a href="Cl.html#cb112-6" aria-hidden="true" tabindex="-1"></a>mz_ratio <span class="ot">&lt;-</span> tz_HT<span class="sc">/</span>M_HT</span></code></pre></div>
-<p>The <span class="math inline">\(\pi\)</span> estimate equals 6.449 g kg<span class="math inline">\(^{-1}\)</span>, and the ratio estimate equals 6.596 g kg<span class="math inline">\(^{-1}\)</span>. The <span class="math inline">\(\pi\)</span> estimate of the population mean can also be computed by first computing totals of clusters, see Equations <a href="Cl.html#eq:EstTotalClEqual">(6.9)</a> and <a href="Cl.html#eq:EstMeanHTClEqual">(6.10)</a>.</p>
+<p>The <span class="math inline">\(\pi\)</span> estimate equals 6.449 g kg<sup>-1</sup>, and the ratio estimate equals 6.596 g kg<sup>-1</sup>. The <span class="math inline">\(\pi\)</span> estimate of the population mean can also be computed by first computing totals of clusters, see Equations <a href="Cl.html#eq:EstTotalClEqual">(6.9)</a> and <a href="Cl.html#eq:EstMeanHTClEqual">(6.10)</a>.</p>
 <div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="Cl.html#cb113-1" aria-hidden="true" tabindex="-1"></a>tz_cluster <span class="ot">&lt;-</span> <span class="fu">tapply</span>(mysample<span class="sc">$</span>z, <span class="at">INDEX=</span>mysample<span class="sc">$</span>cluster, <span class="at">FUN=</span>sum)</span>
 <span id="cb113-2"><a href="Cl.html#cb113-2" aria-hidden="true" tabindex="-1"></a>pi_cluster <span class="ot">&lt;-</span> n<span class="sc">/</span>N</span>
 <span id="cb113-3"><a href="Cl.html#cb113-3" aria-hidden="true" tabindex="-1"></a>tz_HT <span class="ot">&lt;-</span> <span class="fu">sum</span>(tz_cluster<span class="sc">/</span>pi_cluster)</span>
@@ -763,7 +764,7 @@ z 9.6777 1.2921</code></pre>
 <div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="Cl.html#cb115-1" aria-hidden="true" tabindex="-1"></a>fpc <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span>n<span class="sc">/</span>N</span>
 <span id="cb115-2"><a href="Cl.html#cb115-2" aria-hidden="true" tabindex="-1"></a>v_tz <span class="ot">&lt;-</span> N<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>fpc<span class="sc">*</span><span class="fu">var</span>(tz_cluster)<span class="sc">/</span>n</span>
 <span id="cb115-3"><a href="Cl.html#cb115-3" aria-hidden="true" tabindex="-1"></a>se_mz_HT <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(v_tz<span class="sc">/</span>M<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
-<p>The estimated standard error equals 0.82 g kg<span class="math inline">\(^{-1}\)</span>.</p>
+<p>The estimated standard error equals 0.82 g kg<sup>-1</sup>.</p>
 <p>To compute the variance of the ratio estimator of the population mean we first compute residuals of cluster totals:</p>
 <p><span class="math display" id="eq:residualsclustertotals">\[\begin{equation}
 e_j = t_j(z)-\hat{b}M_j \;,
@@ -830,7 +831,7 @@ Figure 6.5: Stratified cluster random sample from Voorst, with three strata. Fro
 <span id="cb121-10"><a href="Cl.html#cb121-10" aria-hidden="true" tabindex="-1"></a>w_h <span class="ot">&lt;-</span> M_h<span class="sc">/</span>M</span>
 <span id="cb121-11"><a href="Cl.html#cb121-11" aria-hidden="true" tabindex="-1"></a>mz <span class="ot">&lt;-</span> <span class="fu">sum</span>(w_h<span class="sc">*</span>mz_h)</span>
 <span id="cb121-12"><a href="Cl.html#cb121-12" aria-hidden="true" tabindex="-1"></a>se_mz <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_h<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>v_mz_h))</span></code></pre></div>
-<p>The estimated mean equals 7.708 g kg<span class="math inline">\(^{-1}\)</span> and the estimated standard error equals 0.660 g kg<span class="math inline">\(^{-1}\)</span>. The same estimates are obtained with function <code>svymean</code>. Weights for the clusters are computed as before, but now at the level of the strata. Note argument <code>nest=TRUE</code>, which means that the clusters are nested within the strata.</p>
+<p>The estimated mean equals 7.708 g kg<sup>-1</sup> and the estimated standard error equals 0.660 g kg<sup>-1</sup>. The same estimates are obtained with function <code>svymean</code>. Weights for the clusters are computed as before, but now at the level of the strata. Note argument <code>nest=TRUE</code>, which means that the clusters are nested within the strata.</p>
 <div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb122-1"><a href="Cl.html#cb122-1" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>weights <span class="ot">&lt;-</span> M_h[mysample<span class="sc">$</span>zonestratum]<span class="sc">/</span></span>
 <span id="cb122-2"><a href="Cl.html#cb122-2" aria-hidden="true" tabindex="-1"></a>  (M_cl[mysample<span class="sc">$</span>cluster]<span class="sc">*</span>n_h[mysample<span class="sc">$</span>zonestratum])</span>
 <span id="cb122-3"><a href="Cl.html#cb122-3" aria-hidden="true" tabindex="-1"></a>design_strcluster <span class="ot">&lt;-</span> <span class="fu">svydesign</span>(<span class="at">id=</span><span class="sc">~</span>cldraw, <span class="at">strata=</span><span class="sc">~</span>zonestratum, </span>
@@ -850,7 +851,7 @@ z 7.7075 0.6597</code></pre>
 <h3>References</h3>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-Berger2004" class="csl-entry">
-Berger, Y. G. 2004. <span>“A Simple Variance Estimator for Unequal Probability Sampling Without Replacement.”</span> <em>Journal of Applied Statistics</em> 31 (3): 305–15. <a href="https://doi.org/10.1080/0266476042000184046">https://doi.org/10.1080/0266476042000184046</a>.
+Berger, Y. G. 2004. <span>“A Simple Variance Estimator for Unequal Probability Sampling Without Replacement.”</span> <em>Canadian Journal of Applied Statistics</em> 31 (3): 305–15. <a href="https://doi.org/10.1080/0266476042000184046">https://doi.org/10.1080/0266476042000184046</a>.
 </div>
 <div id="ref-coc77" class="csl-entry">
 Cochran, W. G. 1977. <em>Sampling Techniques</em>. New York: Wiley.
@@ -859,16 +860,16 @@ Cochran, W. G. 1977. <em>Sampling Techniques</em>. New York: Wiley.
 de Gruijter, J. J., D. J. Brus, M. F. P. Bierkens, and M. Knotters. 2006. <em>Sampling for Natural Resource Monitoring</em>. Berlin: Springer.
 </div>
 <div id="ref-loh99" class="csl-entry">
-Lohr, S. L. 1999. <em>Sampling: Design and Analysis</em>. Pacific Grove, USA: Duxbury Press.
+Lohr, S. L. 1999. <em>Sampling: Design and Analysis</em>. Pacific Grove: Duxbury Press.
 </div>
 <div id="ref-Lumley2020" class="csl-entry">
-———. 2020b. <em><span class="nocase">survey: analysis of complex survey samples</span></em>.
+———. 2021. <em><span class="nocase">survey: analysis of complex survey samples</span></em>.
 </div>
 <div id="ref-Tille2006" class="csl-entry">
-Tillé, Y. 2006. <em>Sampling Algorithms</em>. Springer.
+Tillé, Y. 2006. <em>Sampling Algorithms</em>. New York: Springer.
 </div>
 <div id="ref-Tille2016" class="csl-entry">
-Tillé, Y., and A. Matei. 2016. <em><span class="nocase">sampling: Survey Sampling</span></em>. <a href="https://CRAN.R-project.org/package=sampling">https://CRAN.R-project.org/package=sampling</a>.
+Tillé, Y., and A. Matei. 2021. <em><span class="nocase">sampling: Survey Sampling</span></em>. <a href="https://CRAN.R-project.org/package=sampling">https://CRAN.R-project.org/package=sampling</a>.
 </div>
 </div>
 <div class="footnotes">
@@ -887,7 +888,6 @@ Tillé, Y., and A. Matei. 2016. <em><span class="nocase">sampling: Survey Sampli
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -928,7 +928,7 @@ gitbook.start({
 },
 "download": ["SpatialSampling.epub"],
 "search": {
-"engine": "lunr",
+"engine": "fuse",
 "options": null
 },
 "toc": {

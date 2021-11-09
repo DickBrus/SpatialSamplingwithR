@@ -1,10 +1,10 @@
 # Sampling for estimating parameters of (small) domains {#SmallAreaEstimation}
 
-This chapter is about probability sampling and estimation of means or totals of subpopulations (subareas, subregions). In the sampling literature these subpopulations are referred to as domains of interest\index{Domains of interest}, or shortly domains. Ideally, at the stage of designing a sample these domains are known, and of every population unit we know to which domain it belongs. In that situation it is most convenient to use these domains as strata in random sampling, so that we can control the sample size in each domain (Chapter \@ref(STSI)). 
+This chapter is about probability sampling and estimation of means or totals of subpopulations (subareas, subregions). In the sampling literature these subpopulations are referred to as domains of interest\index{Domain of interest}, or shortly domains. Ideally, at the stage of designing a sample these domains are known, and of every population unit we know to which domain it belongs. In that situation it is most convenient to use these domains as strata in random sampling, so that we can control the sample size in each domain (Chapter \@ref(STSI)). 
 
 If we have multiple maps with domains, think for instance of a soil class map, a map with land cover classes, and a map with countries, we can make an overlay of these maps to construct the cross-tabulation strata. However, this may result in numerous strata, in some cases even more than the sample size. In this situation an attractive solution is multi-way stratification (Subsection \@ref(Multiwaystratification)). With this design the domains of interest are used as strata, not their cross-classification, and the sample sizes of these marginal strata are controlled.
 
-Even with a multi-way stratified sample, resulting in controlled sample sizes for each domain, the sample size of a domain can be too small for a reliable estimate of the mean or total when using the data of this domain only. In this case we may use model-assisted estimators (Chapter \@ref(Modelassisted)) to increase the precision. Not just the data collected from a given domain are used to estimate the mean or total, but also data outside the domain (Section \@ref(SmallDomainsModelAssisted)) (@cha94, @Rao2003, @Falorsi2008).
+Even with a multi-way stratified sample, resulting in controlled sample sizes for each domain, the sample size of a domain can be too small for a reliable estimate of the mean or total when using just the data of this domain. In this case we may use model-assisted estimators (Chapter \@ref(Modelassisted)) to increase the precision. Not only the data collected from a given domain are used to estimate the mean or total, but also data outside the domain (Section \@ref(SmallDomainsModelAssisted)) (@cha94, @Rao2003, @Falorsi2008).
 
 We may also wish to estimate the mean or total of domains that are not used as (marginal) strata. The sample size in these domains is then not controlled and varies among samples selected with the sampling design. As before with multi-way stratified sampling, the mean can either be estimated with the direct estimator, using the data from the domain only (Section \@ref(LargeDomainsDirectEstimator)), or a model-assisted estimator, also using data from outside the domain (Section \@ref(SmallDomainsModelAssisted)).
 
@@ -234,7 +234,7 @@ The sampling variances and covariances of the estimators of the population regre
 Function `twophase` of package **forestinventory** [@Hill2021] can be used to compute the regression estimate for small domains and its standard error. 
 
 ```{block2, type='rmdnote'}
-The function name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, upon considering infinite populations, @Hill2021 treat the grid that discretises the infinite population as the first phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large.
+The function name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, upon considering infinite populations, @Hill2021 treat the grid that discretises the infinite population as the first-phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large.
 ```
 
 By assigning the domain means of the covariates to argument `exhaustive` of function `twophase` the sampling error of the first phase is ignored.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package **survey** also a function `twophase` is defined, for this reason the  name of the package is made explicit by `forestinventory::twophase`. With arguments `psmall=TRUE` and element `unbiased=TRUE` in the list `small_area` the regression estimate is computed.
@@ -316,7 +316,7 @@ rownames(df) <- NULL
 knitr::kable(
   df, caption = 'Estimated gain in precision of the estimated mean AGB of ecoregions in Eastern Amazonia, as quantified by the ratio of the estimated variance of the ratio estimator (no covariate used) to the estimated variance of the regression estimator (using lnSWIR2 as a predictor), for simple random sampling without replacement of size 200.',
   booktabs = TRUE,
-  col.names=c("Ecoregions","Gain")
+  col.names=c("Ecoregion","Gain")
 ) %>%
   kable_classic()
 ```
@@ -370,7 +370,7 @@ md <- mean(d_estimates)
 d_vars <- df$g_variance.x-df$g_variance.y
 ```
 
-For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10$^9$ kg ha$^{-1}$. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error.
+For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10^9^ kg ha^-1^. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error.
 
 ```{r, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -505,7 +505,7 @@ knitr::kable(
   kable_classic()
 ```
 
-Note that with this model no predictions of the mean AGB are obtained for the unsampled ecoregions. This is because the random intercept $v_d$, cannot be predicted in the absence of data, see Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2).
+Note that with this model no predictions of the mean AGB are obtained for the unsampled ecoregions. This is because the random intercept $v_d$ cannot be predicted in the absence of data, see Equations \@ref(eq:mbpredictordomainmeanrandomintercept) and \@ref(eq:mbpredictordomainmeanrandomintercept2).
 
 ### Geostatistical model 
 
@@ -620,7 +620,7 @@ The most striking difference is the standard error. The standard errors of the s
 
 It makes more sense to compare the two model-based predictions, the random intercept model predictions and the geostatistical predictions, and their standard errors. Figure \@ref(fig:MBvsMB) shows that the two model-based predictions are very similar. 
 
-(ref:MBvsMBlabel) Scatter plot of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid lines is the 1:1 line.
+(ref:MBvsMBlabel) Scatter plot of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid line is the 1:1 line.
 
 ```{r MBvsMB, echo=FALSE, fig.cap="(ref:MBvsMBlabel)"}
 res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
@@ -639,7 +639,7 @@ For four ecoregions the standard errors of the geostatistical model predictions 
 
 (ref:MBvsMBselabel) Scatter plot of the standard error of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions obtained with the random intercept model and the geostatistical model, using a simple random sample without replacement of size 200 from Eastern Amazonia. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line.
 
-```{r MBvsMBse, echo=FALSE,  fig.cap="MBvsMBselabel"}
+```{r MBvsMBse, echo=FALSE,  fig.cap="(ref:MBvsMBselabel)"}
 ggplot(data=df) +
         geom_point(mapping=aes(x=semb.rint, y=semb.geo), size=2) +
         geom_text(mapping=aes(x=semb.rint, y=semb.geo, label=n_eco), hjust=1, vjust=1)+

@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 2 Introduction to probability sampling | Spatial sampling with R</title>
   <meta name="description" content="This book is for students, scientists, researchers and consultants who want to know how to collect spatial data, either for estimating parameters for the population or several subpopulations, or for mapping. How many data do we need, and how to select the population units? The book presents a wide overview of spatial sampling designs. Besides there is a chapter on designs for sampling in space and time for monitoring. The emphasis is not on the theory, but on how to implement sampling designs in R and on how the (sub)population parameters can be estimated from the sample." />
-  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 2 Introduction to probability sampling | Spatial sampling with R" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-11-03" />
+<meta name="date" content="2021-11-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,8 +33,9 @@
   
 <link rel="prev" href="GeneralIntro.html"/>
 <link rel="next" href="SI.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -42,7 +43,6 @@
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
-
 
 
 
@@ -560,7 +560,7 @@ w_k = \frac{1}{\pi_k}\;,
 <div class="rmdnote">
 An <em>estimator</em> is not the same as an <em>estimate</em>. Whereas an estimate is a particular value calculated from the sample data, an estimator is a formula for estimating a parameter. An estimator is a <em>random variable</em> and therefore has a probability distribution. For this reason it is not correct, although very common, to say ‘the variance (standard error) of the estimated population mean equals ….’ It is (more) correct to say ‘the variance (standard error) of the estimator of the population mean equals ….’
 </div>
-<p>Also for infinite populations, think of points in a continuous population, the above estimator for the population total can be used, but special attention must then be paid to the inclusion probabilities. Suppose the infinite population is discretised by <span class="math inline">\(N\)</span> cells of a fine grid, and a simple random sample of <span class="math inline">\(n\)</span> cells is selected. The inclusion probabilities of the grid cells is then <span class="math inline">\(n/N\)</span>. However, constraining the sampling points to the centres of the cells of the discretisation grid is not needed and even undesirable. To account for the infinite number of points in the population we may adopt a two-step approach, see Figure <a href="GeneralIntro.html#fig:SamplingFromInfinitePopulation">1.2</a>. In the first step <span class="math inline">\(n\)</span> cells of the discretisation grid are selected by simple random sampling <em>with replacement</em>. In the second step one point is selected fully randomly from the selected grid cells. If a grid cell is selected more than once, more points are selected in that grid cell. With this selection procedure the inclusion probability density is <span class="math inline">\(n/A\)</span>, with <span class="math inline">\(A\)</span> the area of the study area. This inclusion probability density equals the expected number of sampling points per unit area, e.g. the expected number of points per ha or per m<span class="math inline">\(^2\)</span>. The inclusion probability density can be interpreted as the global sampling intensity. Note that the local sampling intensity may strongly vary, think for instance of cluster random sampling.</p>
+<p>Also for infinite populations, think of points in a continuous population, the above estimator for the population total can be used, but special attention must then be paid to the inclusion probabilities. Suppose the infinite population is discretised by <span class="math inline">\(N\)</span> cells of a fine grid, and a simple random sample of <span class="math inline">\(n\)</span> cells is selected. The inclusion probabilities of the grid cells is then <span class="math inline">\(n/N\)</span>. However, constraining the sampling points to the centres of the cells of the discretisation grid is not needed and even undesirable. To account for the infinite number of points in the population we may adopt a two-step approach, see Figure <a href="GeneralIntro.html#fig:SamplingFromInfinitePopulation">1.2</a>. In the first step <span class="math inline">\(n\)</span> cells of the discretisation grid are selected by simple random sampling <em>with replacement</em>. In the second step one point is selected fully randomly from the selected grid cells. If a grid cell is selected more than once, more points are selected in that grid cell. With this selection procedure the inclusion probability density is <span class="math inline">\(n/A\)</span>, with <span class="math inline">\(A\)</span> the area of the study area. This inclusion probability density equals the expected number of sampling points per unit area, e.g. the expected number of points per ha or per m<sup>2</sup>. The inclusion probability density can be interpreted as the global sampling intensity. Note that the local sampling intensity may strongly vary, think for instance of cluster random sampling.</p>
 <p>The <span class="math inline">\(\pi\)</span> estimator for the <em>mean</em> of a finite population, <span class="math inline">\(\bar{z}\)</span>, is simply the <span class="math inline">\(\pi\)</span> estimator for the total, divided by the total number of units in the population, <span class="math inline">\(N\)</span>:</p>
 <p><span class="math display" id="eq:HTMean">\[\begin{equation}
 \hat{\bar{z}}_{\pi}=\frac{1}{N} \sum_{k \in \mathcal{S}} \frac{1}{\pi_k}z_k \;.
@@ -577,7 +577,7 @@ An <em>estimator</em> is not the same as an <em>estimate</em>. Whereas an estima
 <div id="hansen-hurwitz-estimator" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Hansen-Hurwitz estimator</h2>
 <p>In sampling finite populations, units can be selected with or without replacement. In sampling with replacement after each draw the selected unit is replaced. As a consequence a unit can be selected more than once. Sampling with replacement is less efficient than sampling without replacement. If a population unit is selected in a given draw, there is no additional information in this unit if it is selected again. One reason that sampling with replacement is still used is that it is more easy to implement.</p>
-<p>The most common estimator used for sampling with replacement is the Hansen-Hurwitz estimator, referred to as the<span class="math inline">\(p\)</span>-expanded with replacement (pwr) estimator by <span class="citation"><a href="#ref-sar92" role="doc-biblioref">Särndal, Swensson, and Wretman</a> (<a href="#ref-sar92" role="doc-biblioref">1992</a>)</span>. With direct unit sampling, i.e. sampling of individual population units, the pwr estimator is</p>
+<p>The most common estimator used for sampling with replacement is the Hansen-Hurwitz estimator, referred to as the <span class="math inline">\(p\)</span>-expanded with replacement (pwr) estimator by <span class="citation"><a href="#ref-sar92" role="doc-biblioref">Särndal, Swensson, and Wretman</a> (<a href="#ref-sar92" role="doc-biblioref">1992</a>)</span>. With direct unit sampling, i.e. sampling of individual population units, the pwr estimator is</p>
 <p><span class="math display" id="eq:pwrTotal">\[\begin{equation}
 \hat{t}_{\text{pwr}}(z)=\frac{1}{n}\sum_{k \in \mathcal{S} } \frac{z_k}{p_k} \;,
 \tag{2.6}
@@ -615,7 +615,6 @@ Särndal, C. E., B. Swensson, and J. Wretman. 1992. <em>Model Assisted Survey Sa
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -656,7 +655,7 @@ gitbook.start({
 },
 "download": ["SpatialSampling.epub"],
 "search": {
-"engine": "lunr",
+"engine": "fuse",
 "options": null
 },
 "toc": {

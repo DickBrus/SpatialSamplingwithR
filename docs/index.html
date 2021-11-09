@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Spatial sampling with R</title>
   <meta name="description" content="This book is for students, scientists, researchers and consultants who want to know how to collect spatial data, either for estimating parameters for the population or several subpopulations, or for mapping. How many data do we need, and how to select the population units? The book presents a wide overview of spatial sampling designs. Besides there is a chapter on designs for sampling in space and time for monitoring. The emphasis is not on the theory, but on how to implement sampling designs in R and on how the (sub)population parameters can be estimated from the sample." />
-  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Spatial sampling with R" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-11-03" />
+<meta name="date" content="2021-11-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,8 +33,9 @@
   
 
 <link rel="next" href="GeneralIntro.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -42,7 +43,6 @@
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
-
 
 
 
@@ -504,7 +504,7 @@ div.csl-indent {
 <div id="header">
 <h1 class="title">Spatial sampling with R</h1>
 <p class="author"><em>Dick J. Brus</em></p>
-<p class="date"><em>2021-11-03</em></p>
+<p class="date"><em>2021-11-09</em></p>
 </div>
 <div id="preface" class="section level1 unnumbered">
 <h1>Preface</h1>
@@ -512,14 +512,14 @@ div.csl-indent {
 <p>Over the past decades numerous wall-to-wall data sets have been collected by remote sensing devices such as satellites and drones. These remote sensing images are valuable sources of information on the natural environment and resources. The question may arise how useful it still can be in this big data era to collect data in the field at a restricted number of sampling locations. Do we really need these data to estimate a population mean or total, for instance of the aboveground biomass or carbon stocks in the soil, or to map these study variables? In many cases the answer is that it is indeed still useful to collect sample data on the study variable, because the remote sensing images provide only proxies of the study variable. The variables derived from the remote sensing images can be related to the study variable, but we still need groundtruth data of the study variable to model this relation. By combining the wall-to-wall data of covariates and the sample data of the groundtruth we can increase the accuracy of the survey result compared to using only one of these data sources.</p>
 <p>The handbook Sampling for Natural Resource Monitoring (SNRM) <span class="citation">(<a href="#ref-gru06" role="doc-biblioref">de Gruijter et al. 2006</a>)</span> presents an overview of sampling strategies for the survey of natural resources at a given point in time, as well as for how these resources can be monitored through repeated surveys. The book presented here can be seen as a follow-up of SNRM. In SNRM spatial sampling designs for survey and space-time designs for monitoring are described and illustrated with notional and real-world examples. Estimators for global and local quantities in space and in space-time, and for the variance of these estimators are presented. However, neither the computer code for how a sample with a given design can be selected, nor the code for how the estimates can be computed is presented in SNRM. The publication at hand fills this gap.</p>
 <p>This book describes and illustrates classical, basic sampling designs for spatial survey, as well as more recently developed, advanced sampling designs and estimators. Part I of the book is about random sampling designs for estimating a mean, total or proportion of a population or of several subpopulations. Part II focuses on sampling designs for mapping.</p>
-<p>The computer code is written in the popular programming language <strong>R</strong> <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2020</a>)</span>. There are several good reasons for choosing <strong>R</strong> as a language. First of all, it is open-source, giving users the right to view the source code and modify it to their needs. Second, as a result of this open-source, numerous add-on packages have been developed, and this number is still increasing. Happily enough, also quite a few add-on packages have been published for sampling design and analysis. All these add-on packages make the writing of computer code much more simple. Even very advanced statistical methods for sampling design and statistical analysis are now within the reach of many scientists: only a few lines of <strong>R</strong> code are needed to do the work. A risk is that the appliers of the packages may not fully understand the implemented statistical method. This understanding is not needed to obtain a result. For this reason I decided not to jump to the add-on packages right after the theory, but to follow a more gradual approach. First I show in the simplest possible <strong>R</strong> code how a sample can be selected with a given sampling design, and how the (sub)population parameters can be estimated. After this I point out how the same result can be obtained with an add-on package.</p>
+<p>The computer code is written in the popular programming language <strong>R</strong> <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2021</a>)</span>. There are several good reasons for choosing <strong>R</strong> as a language. First of all, it is open-source, giving users the right to view the source code and modify it to their needs. Second, as a result of this open-source, numerous add-on packages have been developed, and this number is still increasing. Happily enough, also quite a few add-on packages have been published for sampling design and analysis. All these add-on packages make the writing of computer code much more simple. Even very advanced statistical methods for sampling design and statistical analysis are now within the reach of many scientists: only a few lines of <strong>R</strong> code are needed to do the work. A risk is that the appliers of the packages may not fully understand the implemented statistical method. This understanding is not needed to obtain a result. For this reason I decided not to jump to the add-on packages right after the theory, but to follow a more gradual approach. First I show in the simplest possible <strong>R</strong> code how a sample can be selected with a given sampling design, and how the (sub)population parameters can be estimated. After this I point out how the same result can be obtained with an add-on package.</p>
 <p>The target group of this book are practitioners of sample surveys, as well as students in environmental, ecological, agricultural science or any other science in which knowledge about a population of interest is collected through spatial sampling. I have added exercises to quite a few chapters, making this book suitable as a textbook for students. The answers to the exercises can be found in the appendix of this book. Large parts of the book are self-contained, requiring no prior knowledge of statistics. For the chapters in Part I on more advanced sampling designs, such as balanced sampling, and advanced estimators of (sub)population parameters (model-assisted estimators), knowledge of matrix algebra and regression analysis is required. For the final chapters of Part II basic knowledge of geostatistics is required. This knowledge is also needed for some chapters in Part I. For this reason I have added a chapter introducing the basics of geostatistics (Chapter <a href="Introkriging.html#Introkriging">21</a>).</p>
 <p>A gitbook version of this book (html files) is available at <a href="https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master" class="uri">https://git.wageningenur.nl/brus003/spatialsamplingwithr/tree/master</a>. This is also the place where you can report errata and comment on text and/or <strong>R</strong> code.</p>
 <!-- Mention **R** package **SPSRBook** with the data files used in this book and some **R** functions. Package **SPSRBook** is not available on CRAN. It must be installed with remotes::github(...) -->
 <div id="acknowledgements" class="section level2 unnumbered">
 <h2>Acknowledgements</h2>
 <p>In 2006 our handbook Sampling for Natural Resource Monitoring (SNRM) was published <span class="citation">(<a href="#ref-gru06" role="doc-biblioref">de Gruijter et al. 2006</a>)</span>. Soon after this milestone Jaap retired from Wageningen University and Research (WUR). Now I arrived in the final stage of my career at WUR. For a couple of years I had been thinking of a revision of our handbook, to repair errors, and to include new developments in sampling design. Then I realised that to increase the impact of SNRM, it might be a better idea to write a new book, showing by means of computer code how the sampling designs can be implemented, and how the sample data can be used in statistical inference.</p>
-<p>A nice side effect of the publication of SNRM was that I was asked to give sampling courses at many places in the world: China, Ethiopia, Uzbekistan, Australia, and various countries in the European Union. I have very pleasant memories of these courses, they made my life as a scientist very joyful. For these courses I wrote numerous scripts with computer code, using the popular programming language <strong>R</strong> <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2020</a>)</span>. My naïve idea was that all I had to do was to bundle these <strong>R</strong> scripts into an Rmarkdown document <span class="citation">(<a href="#ref-Xie2020" role="doc-biblioref">Xie, Dervieux, and Riederer 2020</a>)</span>, and add some text explaining the theory and the <strong>R</strong> code. As usual, it proved to be much more work than expected, but I am very happy that I was able to finish the job just before my retirement. My experience as a statistical consultant is that many researchers pay little attention to the method for data collection. Too many researchers start thinking when the data are there. Often I had to conclude that the way the data were collected was suboptimal, or even unsuitable for their aim. I hope that this new book may help researchers, practitioners, and students to implement proper sampling designs, tailored to their problems at hand, so that valuable data are collected that can be used to answer the research questions.</p>
+<p>A nice side effect of the publication of SNRM was that I was asked to give sampling courses at many places in the world: China, Ethiopia, Uzbekistan, Australia, and various countries in the European Union. I have very pleasant memories of these courses, they made my life as a scientist very joyful. For these courses I wrote numerous scripts with computer code, using the popular programming language <strong>R</strong> <span class="citation">(<a href="#ref-R2020" role="doc-biblioref">R Core Team 2021</a>)</span>. My naïve idea was that all I had to do was to bundle these <strong>R</strong> scripts into an Rmarkdown document <span class="citation">(<a href="#ref-Xie2020" role="doc-biblioref">Xie, Dervieux, and Riederer 2020</a>)</span>, and add some text explaining the theory and the <strong>R</strong> code. As usual, it proved to be much more work than expected, but I am very happy that I was able to finish the job just before my retirement. My experience as a statistical consultant is that many researchers pay little attention to the method for data collection. Too many researchers start thinking when the data are there. Often I had to conclude that the way the data were collected was suboptimal, or even unsuitable for their aim. I hope that this new book may help researchers, practitioners, and students to implement proper sampling designs, tailored to their problems at hand, so that valuable data are collected that can be used to answer the research questions.</p>
 <p>I could not have written this book without the help of many fellow researchers. First, I am very grateful for the support I received from the authors of various packages used in this book: Thomas Lumley for his support with package <strong>survey</strong>, Yves Tillé and Alina Gabriela Matei with package <strong>sampling</strong>, Anton Grafström with package <strong>BalancedSampling</strong>, Giulio Barcaroli and Marco Ballin with package <strong>SamplingStrata</strong>, Andreas Hill and Alex Massey with package <strong>forestinventory</strong>, and Martins Liberts with package <strong>surveyplanning</strong>. No need to say that I am responsible for all shortcomings of the <strong>R</strong> code.</p>
 <p>Second, I would like to thank the following researchers for their valuable comments on (parts) of the book: Gerard Heuvelink (Wageningen University and ISRIC World Soil Information, Netherlands), David Rossiter (Cornell University, USA and ISRIC World Soil Information, Netherlands), Yuha Heikkinen (Luke, Natural Resources Institute, Finland), Steve Stehman (SUNY College of Environmental Science and Forestry, USA), Anton Grafström (Swedish University of Agricultural Sciences), Dennis Walvoort (Wageningen University and Research, Netherlands), and Ben Marchant (British Geological Survey, United Kingdom). Dennis Walvoort also was very supportive with the writing of various <strong>R</strong> scripts.
 <!--and the **R** package of this book **SPSRBook**. --></p>
@@ -533,10 +533,10 @@ div.csl-indent {
 de Gruijter, J. J., D. J. Brus, M. F. P. Bierkens, and M. Knotters. 2006. <em>Sampling for Natural Resource Monitoring</em>. Berlin: Springer.
 </div>
 <div id="ref-R2020" class="csl-entry">
-R Core Team. 2020. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+R Core Team. 2021. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
 </div>
 <div id="ref-Xie2020" class="csl-entry">
-Xie, Yihui, Christophe Dervieux, and Emily Riederer. 2020. <em>R Markdown Cookbook</em>. First. Chapman &amp; Hall/CRC.
+Xie, Yihui, Christophe Dervieux, and Emily Riederer. 2020. <em>R Markdown Cookbook</em>. First. Boca Raton: Chapman &amp; Hall/CRC.
 </div>
 </div>
             </section>
@@ -549,7 +549,6 @@ Xie, Yihui, Christophe Dervieux, and Emily Riederer. 2020. <em>R Markdown Cookbo
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -590,7 +589,7 @@ gitbook.start({
 },
 "download": ["SpatialSampling.epub"],
 "search": {
-"engine": "lunr",
+"engine": "fuse",
 "options": null
 },
 "toc": {

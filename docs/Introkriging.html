@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 21 Introduction to kriging | Spatial sampling with R</title>
   <meta name="description" content="This book is for students, scientists, researchers and consultants who want to know how to collect spatial data, either for estimating parameters for the population or several subpopulations, or for mapping. How many data do we need, and how to select the population units? The book presents a wide overview of spatial sampling designs. Besides there is a chapter on designs for sampling in space and time for monitoring. The emphasis is not on the theory, but on how to implement sampling designs in R and on how the (sub)population parameters can be estimated from the sample." />
-  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 21 Introduction to kriging | Spatial sampling with R" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-11-03" />
+<meta name="date" content="2021-11-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,8 +33,9 @@
   
 <link rel="prev" href="SpatialResponseSurface.html"/>
 <link rel="next" href="MBgridspacing.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -42,7 +43,6 @@
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
-
 
 
 
@@ -683,27 +683,27 @@ c_0+c_1\; \mathrm{exp}(-h/\phi) &amp;\,\,\,\text{if}\,\,\, h &gt; 0 \\
 Figure 21.2: Two maps simulated with the spherical semivariogram of Figure 21.1, the centred square grid of sampling units and the prediction unit (red cell with coordinates (590,670)).
 </p>
 </div>
-<p>The simulated fields are sampled on a centred square grid with a spacing of 100 distance units, resulting in a sample of 100 units. Each sample is used one-by-one to predict the study variable at one prediction location (see Figure <a href="Introkriging.html#fig:Twokrigingsimulations">21.2</a>), using again the semivariogram of Figure <a href="Introkriging.html#fig:CovFunctionVariogram">21.1</a>. The semivariogram is specified by function <code>vgm</code> of package <strong>gstat</strong> <span class="citation">(<a href="#ref-peb04" role="doc-biblioref">Pebesma 2004</a>)</span>. Usually this semivariogram is estimated from a sample, see Chapter <a href="SamplingVariogram.html#SamplingVariogram">24</a>, but here we assume that it is known. Function <code>krige</code> of package <strong>gstat</strong> is used for kriging. The formula argument specifies the dependent (study variable) and independent variables (covariates). The formula <code>z ~ 1</code> means that we do not have covariates and that predictions are done by OK (or simple kriging, see Section <a href="Introkriging.html#IntroKED">21.3</a>). Argument <code>locations</code> is a file of class <code>SpatialPointsDataFrame</code> with the spatial coordinates and observations. Argument <code>newdata</code> is a file of class <code>SpatialPoints</code> with the locations where we want to predict. Argument <code>nmax</code> can be used to specify the neighbourhood in terms of the number of nearest observations to be used in kriging.</p>
-<div class="sourceCode" id="cb467"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb467-1"><a href="Introkriging.html#cb467-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
-<span id="cb467-2"><a href="Introkriging.html#cb467-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gstat)</span>
-<span id="cb467-3"><a href="Introkriging.html#cb467-3" aria-hidden="true" tabindex="-1"></a>vgmodel <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">nugget=</span><span class="dv">25</span>, <span class="at">psill=</span><span class="dv">75</span>, <span class="at">range=</span><span class="dv">250</span>)</span>
-<span id="cb467-4"><a href="Introkriging.html#cb467-4" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(mypop) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
-<span id="cb467-5"><a href="Introkriging.html#cb467-5" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">spsample</span>(<span class="at">x=</span>mypop, <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">cellsize=</span><span class="fu">c</span>(<span class="dv">100</span>,<span class="dv">100</span>),</span>
-<span id="cb467-6"><a href="Introkriging.html#cb467-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">offset=</span><span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>))</span>
-<span id="cb467-7"><a href="Introkriging.html#cb467-7" aria-hidden="true" tabindex="-1"></a>zsim_sample <span class="ot">&lt;-</span> <span class="fu">over</span>(mysample, mypop)</span>
-<span id="cb467-8"><a href="Introkriging.html#cb467-8" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(s_0) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
-<span id="cb467-9"><a href="Introkriging.html#cb467-9" aria-hidden="true" tabindex="-1"></a>zpred_OK <span class="ot">&lt;-</span> v_zpred_OK <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb467-10"><a href="Introkriging.html#cb467-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(Z)) {</span>
-<span id="cb467-11"><a href="Introkriging.html#cb467-11" aria-hidden="true" tabindex="-1"></a>  mysample<span class="sc">$</span>z <span class="ot">&lt;-</span> zsim_sample[,i]</span>
-<span id="cb467-12"><a href="Introkriging.html#cb467-12" aria-hidden="true" tabindex="-1"></a>  predictions <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
-<span id="cb467-13"><a href="Introkriging.html#cb467-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>z<span class="sc">~</span><span class="dv">1</span>,</span>
-<span id="cb467-14"><a href="Introkriging.html#cb467-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mysample,</span>
-<span id="cb467-15"><a href="Introkriging.html#cb467-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>s_0,</span>
-<span id="cb467-16"><a href="Introkriging.html#cb467-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgmodel,</span>
-<span id="cb467-17"><a href="Introkriging.html#cb467-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
-<span id="cb467-18"><a href="Introkriging.html#cb467-18" aria-hidden="true" tabindex="-1"></a>  zpred_OK[i] <span class="ot">&lt;-</span> predictions<span class="sc">$</span>var1.pred</span>
-<span id="cb467-19"><a href="Introkriging.html#cb467-19" aria-hidden="true" tabindex="-1"></a>  v_zpred_OK[i] <span class="ot">&lt;-</span> predictions<span class="sc">$</span>var1.var</span>
-<span id="cb467-20"><a href="Introkriging.html#cb467-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The simulated fields are sampled on a centred square grid with a spacing of 100 distance units, resulting in a sample of 100 units. Each sample is used one-by-one to predict the study variable at one prediction location (see Figure <a href="Introkriging.html#fig:Twokrigingsimulations">21.2</a>), using again the semivariogram of Figure <a href="Introkriging.html#fig:CovFunctionVariogram">21.1</a>. The semivariogram is specified by function <code>vgm</code> of package <strong>gstat</strong> <span class="citation">(<a href="#ref-peb04" role="doc-biblioref">E. J. Pebesma 2004</a>)</span>. Usually this semivariogram is estimated from a sample, see Chapter <a href="SamplingVariogram.html#SamplingVariogram">24</a>, but here we assume that it is known. Function <code>krige</code> of package <strong>gstat</strong> is used for kriging. The formula argument specifies the dependent (study variable) and independent variables (covariates). The formula <code>z ~ 1</code> means that we do not have covariates and that predictions are done by OK (or simple kriging, see Section <a href="Introkriging.html#IntroKED">21.3</a>). Argument <code>locations</code> is a file of class <code>SpatialPointsDataFrame</code> with the spatial coordinates and observations. Argument <code>newdata</code> is a file of class <code>SpatialPoints</code> with the locations where we want to predict. Argument <code>nmax</code> can be used to specify the neighbourhood in terms of the number of nearest observations to be used in kriging.</p>
+<div class="sourceCode" id="cb464"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb464-1"><a href="Introkriging.html#cb464-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
+<span id="cb464-2"><a href="Introkriging.html#cb464-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gstat)</span>
+<span id="cb464-3"><a href="Introkriging.html#cb464-3" aria-hidden="true" tabindex="-1"></a>vgmodel <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">nugget=</span><span class="dv">25</span>, <span class="at">psill=</span><span class="dv">75</span>, <span class="at">range=</span><span class="dv">250</span>)</span>
+<span id="cb464-4"><a href="Introkriging.html#cb464-4" aria-hidden="true" tabindex="-1"></a><span class="fu">gridded</span>(mypop) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb464-5"><a href="Introkriging.html#cb464-5" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">spsample</span>(<span class="at">x=</span>mypop, <span class="at">type=</span><span class="st">&quot;regular&quot;</span>, <span class="at">cellsize=</span><span class="fu">c</span>(<span class="dv">100</span>,<span class="dv">100</span>),</span>
+<span id="cb464-6"><a href="Introkriging.html#cb464-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">offset=</span><span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>))</span>
+<span id="cb464-7"><a href="Introkriging.html#cb464-7" aria-hidden="true" tabindex="-1"></a>zsim_sample <span class="ot">&lt;-</span> <span class="fu">over</span>(mysample, mypop)</span>
+<span id="cb464-8"><a href="Introkriging.html#cb464-8" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(s_0) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb464-9"><a href="Introkriging.html#cb464-9" aria-hidden="true" tabindex="-1"></a>zpred_OK <span class="ot">&lt;-</span> v_zpred_OK <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb464-10"><a href="Introkriging.html#cb464-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(Z)) {</span>
+<span id="cb464-11"><a href="Introkriging.html#cb464-11" aria-hidden="true" tabindex="-1"></a>  mysample<span class="sc">$</span>z <span class="ot">&lt;-</span> zsim_sample[,i]</span>
+<span id="cb464-12"><a href="Introkriging.html#cb464-12" aria-hidden="true" tabindex="-1"></a>  predictions <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
+<span id="cb464-13"><a href="Introkriging.html#cb464-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>z<span class="sc">~</span><span class="dv">1</span>,</span>
+<span id="cb464-14"><a href="Introkriging.html#cb464-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mysample,</span>
+<span id="cb464-15"><a href="Introkriging.html#cb464-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>s_0,</span>
+<span id="cb464-16"><a href="Introkriging.html#cb464-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgmodel,</span>
+<span id="cb464-17"><a href="Introkriging.html#cb464-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
+<span id="cb464-18"><a href="Introkriging.html#cb464-18" aria-hidden="true" tabindex="-1"></a>  zpred_OK[i] <span class="ot">&lt;-</span> predictions<span class="sc">$</span>var1.pred</span>
+<span id="cb464-19"><a href="Introkriging.html#cb464-19" aria-hidden="true" tabindex="-1"></a>  v_zpred_OK[i] <span class="ot">&lt;-</span> predictions<span class="sc">$</span>var1.var</span>
+<span id="cb464-20"><a href="Introkriging.html#cb464-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>As can be seen below, unlike the predicted value, the OK variance produced from the different simulations is constant.</p>
 <table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
@@ -885,25 +885,25 @@ V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \mathbf{c}_0^{\mathrm{T}
 <p>The first two terms constitute the interpolation error variance, the third term the variance of the predictor of the mean.
 <!--Note that the computation is as Equation \@ref(eq:KEDvariance), with the $\lambda$ and $\nu$ from the solution of the KED system; Equation \@ref(eq:KEDvariance2) shows this in terms of linear modelling theory. --></p>
 <p>To illustrate that the kriging variance with KED depends on the values of the covariate at the sampling locations and prediction location, values of a covariate <span class="math inline">\(x\)</span> and of a correlated study variable <span class="math inline">\(z\)</span> are simulated for the <span class="math inline">\(50 \times 50\)</span> units of a spatial population (Figure <a href="Introkriging.html#fig:SimulatedXandZ">21.3</a>). First, a field with covariate values is simulated with a model-mean of 10. Next, a field with residuals is simulated. The field of the study variable is then obtained by multiplying the simulated field with covariate values by two (<span class="math inline">\(\beta_1=2\)</span>), adding a constant of 10 (<span class="math inline">\(\beta_0=10\)</span>) and, finally, adding the simulated field with residuals.</p>
-<div class="sourceCode" id="cb468"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb468-1"><a href="Introkriging.html#cb468-1" aria-hidden="true" tabindex="-1"></a><span class="co">#simulate covariate values</span></span>
-<span id="cb468-2"><a href="Introkriging.html#cb468-2" aria-hidden="true" tabindex="-1"></a>vgm_x <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="dv">10</span>, <span class="at">range=</span><span class="dv">200</span>, <span class="at">nugget=</span><span class="dv">0</span>)</span>
-<span id="cb468-3"><a href="Introkriging.html#cb468-3" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgm_x, <span class="at">dist_vector=</span>H, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
-<span id="cb468-4"><a href="Introkriging.html#cb468-4" aria-hidden="true" tabindex="-1"></a>Upper <span class="ot">&lt;-</span> <span class="fu">chol</span>(C) </span>
-<span id="cb468-5"><a href="Introkriging.html#cb468-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
-<span id="cb468-6"><a href="Introkriging.html#cb468-6" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">nrow</span>(mypop),<span class="dv">0</span>,<span class="dv">1</span>)</span>
-<span id="cb468-7"><a href="Introkriging.html#cb468-7" aria-hidden="true" tabindex="-1"></a>mypop<span class="sc">$</span>x <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(Upper,N)<span class="sc">+</span><span class="dv">10</span></span>
-<span id="cb468-8"><a href="Introkriging.html#cb468-8" aria-hidden="true" tabindex="-1"></a><span class="co">#simulate values for residuals</span></span>
-<span id="cb468-9"><a href="Introkriging.html#cb468-9" aria-hidden="true" tabindex="-1"></a>vgm_resi <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="dv">5</span>, <span class="at">range=</span><span class="dv">100</span>, <span class="at">nugget=</span><span class="dv">0</span>)</span>
-<span id="cb468-10"><a href="Introkriging.html#cb468-10" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgm_resi, <span class="at">dist_vector=</span>H, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
-<span id="cb468-11"><a href="Introkriging.html#cb468-11" aria-hidden="true" tabindex="-1"></a>Upper <span class="ot">&lt;-</span> <span class="fu">chol</span>(C)</span>
-<span id="cb468-12"><a href="Introkriging.html#cb468-12" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
-<span id="cb468-13"><a href="Introkriging.html#cb468-13" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">nrow</span>(mypop),<span class="dv">0</span>,<span class="dv">1</span>)</span>
-<span id="cb468-14"><a href="Introkriging.html#cb468-14" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(Upper,N)</span>
-<span id="cb468-15"><a href="Introkriging.html#cb468-15" aria-hidden="true" tabindex="-1"></a><span class="co">#compute mean of study variable</span></span>
-<span id="cb468-16"><a href="Introkriging.html#cb468-16" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">2</span>)</span>
-<span id="cb468-17"><a href="Introkriging.html#cb468-17" aria-hidden="true" tabindex="-1"></a>mu <span class="ot">&lt;-</span> betas[<span class="dv">1</span>] <span class="sc">+</span> betas[<span class="dv">2</span>]<span class="sc">*</span>mypop<span class="sc">$</span>x</span>
-<span id="cb468-18"><a href="Introkriging.html#cb468-18" aria-hidden="true" tabindex="-1"></a><span class="co">#compute study variable z</span></span>
-<span id="cb468-19"><a href="Introkriging.html#cb468-19" aria-hidden="true" tabindex="-1"></a>mypop<span class="sc">$</span>z <span class="ot">&lt;-</span> mu  <span class="sc">+</span> e</span></code></pre></div>
+<div class="sourceCode" id="cb465"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb465-1"><a href="Introkriging.html#cb465-1" aria-hidden="true" tabindex="-1"></a><span class="co">#simulate covariate values</span></span>
+<span id="cb465-2"><a href="Introkriging.html#cb465-2" aria-hidden="true" tabindex="-1"></a>vgm_x <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="dv">10</span>, <span class="at">range=</span><span class="dv">200</span>, <span class="at">nugget=</span><span class="dv">0</span>)</span>
+<span id="cb465-3"><a href="Introkriging.html#cb465-3" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgm_x, <span class="at">dist_vector=</span>H, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb465-4"><a href="Introkriging.html#cb465-4" aria-hidden="true" tabindex="-1"></a>Upper <span class="ot">&lt;-</span> <span class="fu">chol</span>(C) </span>
+<span id="cb465-5"><a href="Introkriging.html#cb465-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb465-6"><a href="Introkriging.html#cb465-6" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">nrow</span>(mypop),<span class="dv">0</span>,<span class="dv">1</span>)</span>
+<span id="cb465-7"><a href="Introkriging.html#cb465-7" aria-hidden="true" tabindex="-1"></a>mypop<span class="sc">$</span>x <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(Upper,N)<span class="sc">+</span><span class="dv">10</span></span>
+<span id="cb465-8"><a href="Introkriging.html#cb465-8" aria-hidden="true" tabindex="-1"></a><span class="co">#simulate values for residuals</span></span>
+<span id="cb465-9"><a href="Introkriging.html#cb465-9" aria-hidden="true" tabindex="-1"></a>vgm_resi <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="dv">5</span>, <span class="at">range=</span><span class="dv">100</span>, <span class="at">nugget=</span><span class="dv">0</span>)</span>
+<span id="cb465-10"><a href="Introkriging.html#cb465-10" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgm_resi, <span class="at">dist_vector=</span>H, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb465-11"><a href="Introkriging.html#cb465-11" aria-hidden="true" tabindex="-1"></a>Upper <span class="ot">&lt;-</span> <span class="fu">chol</span>(C)</span>
+<span id="cb465-12"><a href="Introkriging.html#cb465-12" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb465-13"><a href="Introkriging.html#cb465-13" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">nrow</span>(mypop),<span class="dv">0</span>,<span class="dv">1</span>)</span>
+<span id="cb465-14"><a href="Introkriging.html#cb465-14" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(Upper,N)</span>
+<span id="cb465-15"><a href="Introkriging.html#cb465-15" aria-hidden="true" tabindex="-1"></a><span class="co">#compute mean of study variable</span></span>
+<span id="cb465-16"><a href="Introkriging.html#cb465-16" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">2</span>)</span>
+<span id="cb465-17"><a href="Introkriging.html#cb465-17" aria-hidden="true" tabindex="-1"></a>mu <span class="ot">&lt;-</span> betas[<span class="dv">1</span>] <span class="sc">+</span> betas[<span class="dv">2</span>]<span class="sc">*</span>mypop<span class="sc">$</span>x</span>
+<span id="cb465-18"><a href="Introkriging.html#cb465-18" aria-hidden="true" tabindex="-1"></a><span class="co">#compute study variable z</span></span>
+<span id="cb465-19"><a href="Introkriging.html#cb465-19" aria-hidden="true" tabindex="-1"></a>mypop<span class="sc">$</span>z <span class="ot">&lt;-</span> mu  <span class="sc">+</span> e</span></code></pre></div>
 <p>As before, a centred square grid with a spacing of 100 distance units is selected. The simulated values of the study variable <span class="math inline">\(z\)</span> and covariate <span class="math inline">\(x\)</span> are used to predict <span class="math inline">\(z\)</span> at a prediction location <span class="math inline">\(\mathbf{s}_0\)</span> by kriging with an external drift (red cell in Figure <a href="Introkriging.html#fig:SimulatedXandZ">21.3</a>). Although at the prediction location we have only one simulated value of covariate <span class="math inline">\(x\)</span>, a series of covariate values is used to predict <span class="math inline">\(z\)</span> at that location: <span class="math inline">\(x_0 = 0, 2, 4, \cdots, 20\)</span>. In practice we have of course only one value of the covariate at a fixed location, but this is for illustration purposes only. Note that we have only one data set with `observations’ of <span class="math inline">\(x\)</span> and <span class="math inline">\(z\)</span> at the sampling locations (square grid).</p>
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:SimulatedXandZ"></span>
 <img src="SpatialSampling_files/figure-html/SimulatedXandZ-1.png" alt="Maps with simulated values of covariate $x$ and study variable $z$, the centred square grid of sampling units and the prediction unit (red cell with coordinates (590,670))." width="100%" />
@@ -911,35 +911,35 @@ V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \mathbf{c}_0^{\mathrm{T}
 Figure 21.3: Maps with simulated values of covariate <span class="math inline">\(x\)</span> and study variable <span class="math inline">\(z\)</span>, the centred square grid of sampling units and the prediction unit (red cell with coordinates (590,670)).
 </p>
 </div>
-<div class="sourceCode" id="cb469"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb469-1"><a href="Introkriging.html#cb469-1" aria-hidden="true" tabindex="-1"></a>zxsim_sample <span class="ot">&lt;-</span> <span class="fu">over</span>(mysample, mypop)</span>
-<span id="cb469-2"><a href="Introkriging.html#cb469-2" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>z <span class="ot">&lt;-</span> zxsim_sample<span class="sc">$</span>z</span>
-<span id="cb469-3"><a href="Introkriging.html#cb469-3" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>x <span class="ot">&lt;-</span> zxsim_sample<span class="sc">$</span>x</span>
-<span id="cb469-4"><a href="Introkriging.html#cb469-4" aria-hidden="true" tabindex="-1"></a>x0 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span><span class="dv">0</span>, <span class="at">to=</span><span class="dv">20</span>, <span class="at">by=</span><span class="dv">2</span>)</span>
-<span id="cb469-5"><a href="Introkriging.html#cb469-5" aria-hidden="true" tabindex="-1"></a>v_zpred_KED <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb469-6"><a href="Introkriging.html#cb469-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x0)) {</span>
-<span id="cb469-7"><a href="Introkriging.html#cb469-7" aria-hidden="true" tabindex="-1"></a>  s_0<span class="sc">$</span>x <span class="ot">&lt;-</span> x0[i]</span>
-<span id="cb469-8"><a href="Introkriging.html#cb469-8" aria-hidden="true" tabindex="-1"></a>  predictions  <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
-<span id="cb469-9"><a href="Introkriging.html#cb469-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>z<span class="sc">~</span>x,</span>
-<span id="cb469-10"><a href="Introkriging.html#cb469-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mysample,</span>
-<span id="cb469-11"><a href="Introkriging.html#cb469-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>s_0,</span>
-<span id="cb469-12"><a href="Introkriging.html#cb469-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgm_resi,</span>
-<span id="cb469-13"><a href="Introkriging.html#cb469-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
-<span id="cb469-14"><a href="Introkriging.html#cb469-14" aria-hidden="true" tabindex="-1"></a>  v_zpred_KED[i] <span class="ot">&lt;-</span> predictions<span class="sc">$</span>var1.var</span>
-<span id="cb469-15"><a href="Introkriging.html#cb469-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb466"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb466-1"><a href="Introkriging.html#cb466-1" aria-hidden="true" tabindex="-1"></a>zxsim_sample <span class="ot">&lt;-</span> <span class="fu">over</span>(mysample, mypop)</span>
+<span id="cb466-2"><a href="Introkriging.html#cb466-2" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>z <span class="ot">&lt;-</span> zxsim_sample<span class="sc">$</span>z</span>
+<span id="cb466-3"><a href="Introkriging.html#cb466-3" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>x <span class="ot">&lt;-</span> zxsim_sample<span class="sc">$</span>x</span>
+<span id="cb466-4"><a href="Introkriging.html#cb466-4" aria-hidden="true" tabindex="-1"></a>x0 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span><span class="dv">0</span>, <span class="at">to=</span><span class="dv">20</span>, <span class="at">by=</span><span class="dv">2</span>)</span>
+<span id="cb466-5"><a href="Introkriging.html#cb466-5" aria-hidden="true" tabindex="-1"></a>v_zpred_KED <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb466-6"><a href="Introkriging.html#cb466-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x0)) {</span>
+<span id="cb466-7"><a href="Introkriging.html#cb466-7" aria-hidden="true" tabindex="-1"></a>  s_0<span class="sc">$</span>x <span class="ot">&lt;-</span> x0[i]</span>
+<span id="cb466-8"><a href="Introkriging.html#cb466-8" aria-hidden="true" tabindex="-1"></a>  predictions  <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
+<span id="cb466-9"><a href="Introkriging.html#cb466-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>z<span class="sc">~</span>x,</span>
+<span id="cb466-10"><a href="Introkriging.html#cb466-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mysample,</span>
+<span id="cb466-11"><a href="Introkriging.html#cb466-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>s_0,</span>
+<span id="cb466-12"><a href="Introkriging.html#cb466-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgm_resi,</span>
+<span id="cb466-13"><a href="Introkriging.html#cb466-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
+<span id="cb466-14"><a href="Introkriging.html#cb466-14" aria-hidden="true" tabindex="-1"></a>  v_zpred_KED[i] <span class="ot">&lt;-</span> predictions<span class="sc">$</span>var1.var</span>
+<span id="cb466-15"><a href="Introkriging.html#cb466-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>Note the formula <code>z~x</code> in the code chunk above, indicating that there is now an independent variable (covariate). The covariate values are attached to the file with the prediction location one-by-one in a for-loop. Also note that for KED we need the semivariogram of the residuals, not of the study variable itself. The residual semivariogram used in prediction is the same as the one used in simulating the fields: a spherical model without nugget, a sill of 5 and a range of 100 distance units.</p>
 <p>To assess the contribution of the uncertainty about the mean, I also predict the values assuming that the mean is known. In other words we assume that the two regression coefficients <span class="math inline">\(\beta_0\)</span> (intercept) and <span class="math inline">\(\beta_1\)</span> (slope) are known. This type of kriging is referred to as simple kriging (SK). With SK the constraints explained above are removed, so that there are no Lagrange multipliers involved. Argument <code>beta</code> is used to specify the known regression coefficients. I used the same values as in simulation.</p>
-<div class="sourceCode" id="cb470"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb470-1"><a href="Introkriging.html#cb470-1" aria-hidden="true" tabindex="-1"></a>v_zpred_SK <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb470-2"><a href="Introkriging.html#cb470-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x0)) {</span>
-<span id="cb470-3"><a href="Introkriging.html#cb470-3" aria-hidden="true" tabindex="-1"></a>  s_0<span class="sc">$</span>x <span class="ot">&lt;-</span> x0[i]</span>
-<span id="cb470-4"><a href="Introkriging.html#cb470-4" aria-hidden="true" tabindex="-1"></a>  prediction  <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
-<span id="cb470-5"><a href="Introkriging.html#cb470-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>z<span class="sc">~</span>x, </span>
-<span id="cb470-6"><a href="Introkriging.html#cb470-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mysample, </span>
-<span id="cb470-7"><a href="Introkriging.html#cb470-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>s_0, </span>
-<span id="cb470-8"><a href="Introkriging.html#cb470-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgm_resi, </span>
-<span id="cb470-9"><a href="Introkriging.html#cb470-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">beta=</span>betas, </span>
-<span id="cb470-10"><a href="Introkriging.html#cb470-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
-<span id="cb470-11"><a href="Introkriging.html#cb470-11" aria-hidden="true" tabindex="-1"></a>  v_zpred_SK[i] <span class="ot">&lt;-</span> prediction<span class="sc">$</span>var1.var</span>
-<span id="cb470-12"><a href="Introkriging.html#cb470-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb467"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb467-1"><a href="Introkriging.html#cb467-1" aria-hidden="true" tabindex="-1"></a>v_zpred_SK <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb467-2"><a href="Introkriging.html#cb467-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x0)) {</span>
+<span id="cb467-3"><a href="Introkriging.html#cb467-3" aria-hidden="true" tabindex="-1"></a>  s_0<span class="sc">$</span>x <span class="ot">&lt;-</span> x0[i]</span>
+<span id="cb467-4"><a href="Introkriging.html#cb467-4" aria-hidden="true" tabindex="-1"></a>  prediction  <span class="ot">&lt;-</span> <span class="fu">krige</span>(</span>
+<span id="cb467-5"><a href="Introkriging.html#cb467-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula=</span>z<span class="sc">~</span>x, </span>
+<span id="cb467-6"><a href="Introkriging.html#cb467-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations=</span>mysample, </span>
+<span id="cb467-7"><a href="Introkriging.html#cb467-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">newdata=</span>s_0, </span>
+<span id="cb467-8"><a href="Introkriging.html#cb467-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">model=</span>vgm_resi, </span>
+<span id="cb467-9"><a href="Introkriging.html#cb467-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">beta=</span>betas, </span>
+<span id="cb467-10"><a href="Introkriging.html#cb467-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">debug.level=</span><span class="dv">0</span>)</span>
+<span id="cb467-11"><a href="Introkriging.html#cb467-11" aria-hidden="true" tabindex="-1"></a>  v_zpred_SK[i] <span class="ot">&lt;-</span> prediction<span class="sc">$</span>var1.var</span>
+<span id="cb467-12"><a href="Introkriging.html#cb467-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>Figure <a href="Introkriging.html#fig:KEDVarSKVar">21.4</a> shows that, contrary to the SK variance, the kriging variance with KED is not constant, but depends on the covariate value at the prediction location. It is the smallest near the mean of the covariate values at the sampling units, which is 10.0. The more extreme the covariate value at the prediction location, the larger the kriging variance with KED. This is analogous to the variance of predictions with a linear regression model.</p>
 <p>The variance with simple kriging (SK) is constant. This is because with SK we assume that the regression coefficients are known, so that we know the model-mean at a prediction location. What remains is the error in the interpolation of the residuals (first two terms in Equation <a href="Introkriging.html#eq:KEDvariance2">(21.20)</a>. This interpolation error is independent of the value of <span class="math inline">\(x\)</span> at the prediction location. In Figure <a href="Introkriging.html#fig:KEDVarSKVar">21.4</a> the difference between the variance with KED and with SK is the variance of the predictor of the model-mean, due to uncertainty about the regression coefficients. In real-world applications these regression coefficients are unknown and must be <em>estimated</em> from the sample data. This variance is smallest for a covariate value about equal to the sample mean of the covariate, and increases with the absolute difference of the covariate value and this sample mean.</p>
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:KEDVarSKVar"></span>
@@ -957,12 +957,12 @@ Figure 21.4: Variance of the prediction error as a function of the covariate val
 <p>With the method-of-moments approach the semivariogram is estimated in two steps. In the first step a sample semivariogram, also referred to as an experimental semivariogram, is estimated. This is done by choosing a series of distance intervals (bins). If a semivariogram in different directions is required, we must also choose direction intervals.</p>
 <p>For each distance interval all pairs of points with a separation distance in that interval are identified. For each pair half the squared difference of the study variable is computed, and these squared differences are averaged over all point-pairs of that interval. This average is the estimated semivariance of that distance interval. The estimated semivariances for all distance intervals are plotted against the average separation distances per distance interval. In the second step a permissible model is fitted to the sample semivariogram, using some form of weighted least squares. For details, see <span class="citation"><a href="#ref-webster2007" role="doc-biblioref">Webster and Oliver</a> (<a href="#ref-webster2007" role="doc-biblioref">2007</a>)</span>.</p>
 <p>The next code chunk shows how this can be done in <strong>R</strong>. A simple random sample of 150 points is selected from the first simulated field shown in Figure <a href="Introkriging.html#fig:Twokrigingsimulations">21.2</a>. Function <code>variogram</code> of package <strong>gstat</strong> is then used to compute the sample semivariogram. Note that no distance intervals need be specified to function <code>variogram</code>. This can be done with argument <code>width</code> or argument <code>boundaries</code>. In their absence, the default value for argument <code>width</code> is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with argument <code>cutoff</code>. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point-pairs, average separation distance and estimated semivariance in the first three columns.</p>
-<div class="sourceCode" id="cb471"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb471-1"><a href="Introkriging.html#cb471-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb471-2"><a href="Introkriging.html#cb471-2" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(mypop), <span class="at">size=</span><span class="dv">150</span>)</span>
-<span id="cb471-3"><a href="Introkriging.html#cb471-3" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> mypop[units,]</span>
-<span id="cb471-4"><a href="Introkriging.html#cb471-4" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(mysample) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
-<span id="cb471-5"><a href="Introkriging.html#cb471-5" aria-hidden="true" tabindex="-1"></a>vg <span class="ot">&lt;-</span> <span class="fu">variogram</span>(z<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>mysample)</span>
-<span id="cb471-6"><a href="Introkriging.html#cb471-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(vg[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)])</span></code></pre></div>
+<div class="sourceCode" id="cb468"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb468-1"><a href="Introkriging.html#cb468-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb468-2"><a href="Introkriging.html#cb468-2" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(mypop), <span class="at">size=</span><span class="dv">150</span>)</span>
+<span id="cb468-3"><a href="Introkriging.html#cb468-3" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> mypop[units,]</span>
+<span id="cb468-4"><a href="Introkriging.html#cb468-4" aria-hidden="true" tabindex="-1"></a><span class="fu">coordinates</span>(mysample) <span class="ot">&lt;-</span> <span class="er">~</span>s1<span class="sc">+</span>s2</span>
+<span id="cb468-5"><a href="Introkriging.html#cb468-5" aria-hidden="true" tabindex="-1"></a>vg <span class="ot">&lt;-</span> <span class="fu">variogram</span>(z<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>mysample)</span>
+<span id="cb468-6"><a href="Introkriging.html#cb468-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(vg[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)])</span></code></pre></div>
 <pre><code>   np      dist    gamma
 1  35  24.02379 38.73456
 2  74  49.02384 42.57199
@@ -971,11 +971,11 @@ Figure 21.4: Variance of the prediction error as a function of the covariate val
 5 239 139.20163 82.21432
 6 323 170.55712 88.38168</code></pre>
 <p>The next step is to fit a model. This can be done with function <code>fit.variogram</code> of the <strong>gstat</strong> package. Many models can be fitted with this function (type <code>vgm()</code> to see all models). I chose a spherical model. Function <code>fit.variogram</code> requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range and 75 for the partial sill. These are passed to the <code>vgm</code> function, and used as the <code>model</code> argument of function <code>fit.variogram</code>. The sample semivariogram and the fitted model can simply be plotted with function <code>plot</code>.</p>
-<div class="sourceCode" id="cb473"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb473-1"><a href="Introkriging.html#cb473-1" aria-hidden="true" tabindex="-1"></a>vgm_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg, <span class="at">model=</span><span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>,</span>
-<span id="cb473-2"><a href="Introkriging.html#cb473-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">psill=</span><span class="dv">75</span>, <span class="at">range=</span><span class="dv">250</span>, <span class="at">nugget=</span><span class="dv">25</span>))</span>
-<span id="cb473-3"><a href="Introkriging.html#cb473-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vg, vgm_MoM, <span class="at">plot.numbers=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb470"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb470-1"><a href="Introkriging.html#cb470-1" aria-hidden="true" tabindex="-1"></a>vgm_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg, <span class="at">model=</span><span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>,</span>
+<span id="cb470-2"><a href="Introkriging.html#cb470-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">psill=</span><span class="dv">75</span>, <span class="at">range=</span><span class="dv">250</span>, <span class="at">nugget=</span><span class="dv">25</span>))</span>
+<span id="cb470-3"><a href="Introkriging.html#cb470-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vg, vgm_MoM, <span class="at">plot.numbers=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="SpatialSampling_files/figure-html/semivariogramSimulatedField1-1.png" width="80%" style="display: block; margin: auto;" /></p>
-<div class="sourceCode" id="cb474"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb474-1"><a href="Introkriging.html#cb474-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(vgm_MoM)</span></code></pre></div>
+<div class="sourceCode" id="cb471"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb471-1"><a href="Introkriging.html#cb471-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(vgm_MoM)</span></code></pre></div>
 <pre><code>  model    psill    range
 1   Nug 26.32048   0.0000
 2   Sph 68.36364 227.7999</code></pre>
@@ -999,13 +999,13 @@ f(\mathbf{z}|\pmb{\mu} ,\pmb{\theta})=
 \end{equation}\]</span></p>
 <p>where <span class="math inline">\(\mathbf{z}\)</span> is the vector with the <span class="math inline">\(n\)</span> sample data, <span class="math inline">\(\pmb{\mu}\)</span> is the vector with means, <span class="math inline">\(\pmb{\theta}\)</span> is the vector with parameters of the covariance function and <span class="math inline">\(\mathbf{C}\)</span> is the <span class="math inline">\(n \times n\)</span> matrix with variances and covariances of the sample data. If the probability density of Equation <a href="Introkriging.html#eq:densitymvnormal">(21.22)</a> is regarded as a function of <span class="math inline">\(\pmb{\mu}\)</span> and <span class="math inline">\(\pmb{\theta}\)</span> with the data <span class="math inline">\(\mathbf{z}\)</span> fixed, this equation defines the likelihood.</p>
 <p>Maximum likelihood estimates of the semivariogram can be obtained with function <code>likfit</code> of package <strong>geoR</strong> <span class="citation">(<a href="#ref-geoR" role="doc-biblioref">Ribeiro Jr et al. 2020</a>)</span>. First, a geoR object must be made, specifying which columns of the data frame contain the spatial coordinates and the study variable.</p>
-<div class="sourceCode" id="cb476"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb476-1"><a href="Introkriging.html#cb476-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geoR)</span>
-<span id="cb476-2"><a href="Introkriging.html#cb476-2" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">as</span>(mysample,<span class="st">&quot;data.frame&quot;</span>)</span>
-<span id="cb476-3"><a href="Introkriging.html#cb476-3" aria-hidden="true" tabindex="-1"></a>dGeoR <span class="ot">&lt;-</span> <span class="fu">as.geodata</span>(<span class="at">obj=</span>mysample, <span class="at">header=</span><span class="cn">TRUE</span>, <span class="at">coords.col=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">data.col=</span><span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb473"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb473-1"><a href="Introkriging.html#cb473-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geoR)</span>
+<span id="cb473-2"><a href="Introkriging.html#cb473-2" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">as</span>(mysample,<span class="st">&quot;data.frame&quot;</span>)</span>
+<span id="cb473-3"><a href="Introkriging.html#cb473-3" aria-hidden="true" tabindex="-1"></a>dGeoR <span class="ot">&lt;-</span> <span class="fu">as.geodata</span>(<span class="at">obj=</span>mysample, <span class="at">header=</span><span class="cn">TRUE</span>, <span class="at">coords.col=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">data.col=</span><span class="dv">3</span>)</span></code></pre></div>
 <p>The model parameters can then be estimated with function <code>likfit</code>. Argument <code>trend="cte"</code> means that we assume that the mean is constant throughout the study area.</p>
-<div class="sourceCode" id="cb477"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb477-1"><a href="Introkriging.html#cb477-1" aria-hidden="true" tabindex="-1"></a>vgm_ML <span class="ot">&lt;-</span> <span class="fu">likfit</span>(<span class="at">geodata=</span>dGeoR, <span class="at">trend=</span><span class="st">&quot;cte&quot;</span>, </span>
-<span id="cb477-2"><a href="Introkriging.html#cb477-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">cov.model=</span><span class="st">&quot;spherical&quot;</span>, <span class="at">ini.cov.pars=</span><span class="fu">c</span>(<span class="dv">80</span>,<span class="dv">200</span>),</span>
-<span id="cb477-3"><a href="Introkriging.html#cb477-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nugget=</span><span class="dv">20</span>, <span class="at">lik.method=</span><span class="st">&quot;ML&quot;</span>, <span class="at">messages=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb474"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb474-1"><a href="Introkriging.html#cb474-1" aria-hidden="true" tabindex="-1"></a>vgm_ML <span class="ot">&lt;-</span> <span class="fu">likfit</span>(<span class="at">geodata=</span>dGeoR, <span class="at">trend=</span><span class="st">&quot;cte&quot;</span>, </span>
+<span id="cb474-2"><a href="Introkriging.html#cb474-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">cov.model=</span><span class="st">&quot;spherical&quot;</span>, <span class="at">ini.cov.pars=</span><span class="fu">c</span>(<span class="dv">80</span>,<span class="dv">200</span>),</span>
+<span id="cb474-3"><a href="Introkriging.html#cb474-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nugget=</span><span class="dv">20</span>, <span class="at">lik.method=</span><span class="st">&quot;ML&quot;</span>, <span class="at">messages=</span><span class="cn">FALSE</span>)</span></code></pre></div>
 <p>Table <a href="Introkriging.html#tab:VariogramEstimates">21.2</a> shows the maximum likelihood estimates together with the method-of-moments estimates.</p>
 <table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
@@ -1070,43 +1070,43 @@ range
 <div id="IterativeMoM" class="section level3" number="21.5.1">
 <h3><span class="header-section-number">21.5.1</span> Iterative method-of-moments</h3>
 <p>A simple option is iterative estimation of the regression coefficients followed by method-of-moments estimation of the sample semivariogram and fitting of a semivariogram model. In the first iteration the regression coefficients are estimated by ordinary least squares (OLS). This implies that the data are assumed independent, i.e. we assume a pure nugget residual semivariogram. The sample semivariogram of the OLS residuals is then computed by the method-of-moments, followed by fitting a model to this sample semivariogram. With package <strong>gstat</strong> this can be done with one line of <strong>R</strong> code, using in function <code>variogram</code> as an argument a formula specifying the study variable and the predictors.</p>
-<div class="sourceCode" id="cb478"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb478-1"><a href="Introkriging.html#cb478-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
-<span id="cb478-2"><a href="Introkriging.html#cb478-2" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(mypop), <span class="at">size=</span><span class="dv">150</span>)</span>
-<span id="cb478-3"><a href="Introkriging.html#cb478-3" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">cbind</span>(mypop[units,])</span>
-<span id="cb478-4"><a href="Introkriging.html#cb478-4" aria-hidden="true" tabindex="-1"></a>vg_resi <span class="ot">&lt;-</span> <span class="fu">variogram</span>(z<span class="sc">~</span>x, <span class="at">data=</span>mysample)</span>
-<span id="cb478-5"><a href="Introkriging.html#cb478-5" aria-hidden="true" tabindex="-1"></a>vgmdl <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="dv">10</span>, <span class="at">range=</span><span class="dv">150</span>, <span class="at">nugget=</span><span class="dv">0</span>)</span>
-<span id="cb478-6"><a href="Introkriging.html#cb478-6" aria-hidden="true" tabindex="-1"></a>vgmresi_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg_resi, <span class="at">model=</span>vgmdl)</span></code></pre></div>
+<div class="sourceCode" id="cb475"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb475-1"><a href="Introkriging.html#cb475-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
+<span id="cb475-2"><a href="Introkriging.html#cb475-2" aria-hidden="true" tabindex="-1"></a>units <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(mypop), <span class="at">size=</span><span class="dv">150</span>)</span>
+<span id="cb475-3"><a href="Introkriging.html#cb475-3" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">cbind</span>(mypop[units,])</span>
+<span id="cb475-4"><a href="Introkriging.html#cb475-4" aria-hidden="true" tabindex="-1"></a>vg_resi <span class="ot">&lt;-</span> <span class="fu">variogram</span>(z<span class="sc">~</span>x, <span class="at">data=</span>mysample)</span>
+<span id="cb475-5"><a href="Introkriging.html#cb475-5" aria-hidden="true" tabindex="-1"></a>vgmdl <span class="ot">&lt;-</span> <span class="fu">vgm</span>(<span class="at">model=</span><span class="st">&quot;Sph&quot;</span>, <span class="at">psill=</span><span class="dv">10</span>, <span class="at">range=</span><span class="dv">150</span>, <span class="at">nugget=</span><span class="dv">0</span>)</span>
+<span id="cb475-6"><a href="Introkriging.html#cb475-6" aria-hidden="true" tabindex="-1"></a>vgmresi_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg_resi, <span class="at">model=</span>vgmdl)</span></code></pre></div>
 <p>Given these estimates of the semivariogram parameters, the regression coefficients are re-estimated by accounting for spatial dependency of the residuals. This can be done by generalised least squares (GLS). Function <code>spDists</code> of package <strong>sp</strong> is used to compute the matrix with distances between the sampling locations, <code>variogramLine</code> of package <strong>gstat</strong> to transform the distance matrix into a covariance matrix.</p>
-<div class="sourceCode" id="cb479"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb479-1"><a href="Introkriging.html#cb479-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data=</span><span class="dv">1</span>, <span class="at">nrow=</span><span class="fu">nrow</span>(<span class="fu">as</span>(mysample, <span class="st">&quot;data.frame&quot;</span>)), <span class="at">ncol=</span><span class="dv">2</span>)</span>
-<span id="cb479-2"><a href="Introkriging.html#cb479-2" aria-hidden="true" tabindex="-1"></a>X[,<span class="dv">2</span>] <span class="ot">&lt;-</span> mysample<span class="sc">$</span>x</span>
-<span id="cb479-3"><a href="Introkriging.html#cb479-3" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> mysample<span class="sc">$</span>z</span>
-<span id="cb479-4"><a href="Introkriging.html#cb479-4" aria-hidden="true" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">spDists</span>(mysample)</span>
-<span id="cb479-5"><a href="Introkriging.html#cb479-5" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmresi_MoM, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
-<span id="cb479-6"><a href="Introkriging.html#cb479-6" aria-hidden="true" tabindex="-1"></a>Cinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(C)</span>
-<span id="cb479-7"><a href="Introkriging.html#cb479-7" aria-hidden="true" tabindex="-1"></a>XCXinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> X)</span>
-<span id="cb479-8"><a href="Introkriging.html#cb479-8" aria-hidden="true" tabindex="-1"></a>XCz <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> z</span>
-<span id="cb479-9"><a href="Introkriging.html#cb479-9" aria-hidden="true" tabindex="-1"></a>betaGLS <span class="ot">&lt;-</span> XCXinv <span class="sc">%*%</span> XCz</span></code></pre></div>
+<div class="sourceCode" id="cb476"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb476-1"><a href="Introkriging.html#cb476-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data=</span><span class="dv">1</span>, <span class="at">nrow=</span><span class="fu">nrow</span>(<span class="fu">as</span>(mysample, <span class="st">&quot;data.frame&quot;</span>)), <span class="at">ncol=</span><span class="dv">2</span>)</span>
+<span id="cb476-2"><a href="Introkriging.html#cb476-2" aria-hidden="true" tabindex="-1"></a>X[,<span class="dv">2</span>] <span class="ot">&lt;-</span> mysample<span class="sc">$</span>x</span>
+<span id="cb476-3"><a href="Introkriging.html#cb476-3" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> mysample<span class="sc">$</span>z</span>
+<span id="cb476-4"><a href="Introkriging.html#cb476-4" aria-hidden="true" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">spDists</span>(mysample)</span>
+<span id="cb476-5"><a href="Introkriging.html#cb476-5" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmresi_MoM, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb476-6"><a href="Introkriging.html#cb476-6" aria-hidden="true" tabindex="-1"></a>Cinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(C)</span>
+<span id="cb476-7"><a href="Introkriging.html#cb476-7" aria-hidden="true" tabindex="-1"></a>XCXinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> X)</span>
+<span id="cb476-8"><a href="Introkriging.html#cb476-8" aria-hidden="true" tabindex="-1"></a>XCz <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> z</span>
+<span id="cb476-9"><a href="Introkriging.html#cb476-9" aria-hidden="true" tabindex="-1"></a>betaGLS <span class="ot">&lt;-</span> XCXinv <span class="sc">%*%</span> XCz</span></code></pre></div>
 <p>The GLS estimates of the regression coefficients can then be used to re-compute the residuals of the mean, and so on, until the changes in the model parameters are negligible.</p>
-<div class="sourceCode" id="cb480"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb480-1"><a href="Introkriging.html#cb480-1" aria-hidden="true" tabindex="-1"></a><span class="cf">repeat</span> {</span>
-<span id="cb480-2"><a href="Introkriging.html#cb480-2" aria-hidden="true" tabindex="-1"></a>  betaGLS.cur <span class="ot">&lt;-</span> betaGLS</span>
-<span id="cb480-3"><a href="Introkriging.html#cb480-3" aria-hidden="true" tabindex="-1"></a>  mu <span class="ot">&lt;-</span> X <span class="sc">%*%</span> betaGLS</span>
-<span id="cb480-4"><a href="Introkriging.html#cb480-4" aria-hidden="true" tabindex="-1"></a>  mysample<span class="sc">$</span>e <span class="ot">&lt;-</span> z<span class="sc">-</span>mu</span>
-<span id="cb480-5"><a href="Introkriging.html#cb480-5" aria-hidden="true" tabindex="-1"></a>  vg_resi <span class="ot">&lt;-</span> <span class="fu">variogram</span>(e<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>mysample)</span>
-<span id="cb480-6"><a href="Introkriging.html#cb480-6" aria-hidden="true" tabindex="-1"></a>  vgmresi_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg_resi, <span class="at">model=</span>vgmdl)</span>
-<span id="cb480-7"><a href="Introkriging.html#cb480-7" aria-hidden="true" tabindex="-1"></a>  C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmresi_MoM, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
-<span id="cb480-8"><a href="Introkriging.html#cb480-8" aria-hidden="true" tabindex="-1"></a>  Cinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(C)</span>
-<span id="cb480-9"><a href="Introkriging.html#cb480-9" aria-hidden="true" tabindex="-1"></a>  XCXinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> X)</span>
-<span id="cb480-10"><a href="Introkriging.html#cb480-10" aria-hidden="true" tabindex="-1"></a>  XCz <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> z</span>
-<span id="cb480-11"><a href="Introkriging.html#cb480-11" aria-hidden="true" tabindex="-1"></a>  betaGLS <span class="ot">&lt;-</span> XCXinv <span class="sc">%*%</span> XCz</span>
-<span id="cb480-12"><a href="Introkriging.html#cb480-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">sum</span>(<span class="fu">abs</span>(betaGLS<span class="sc">-</span>betaGLS.cur))<span class="sc">&lt;</span><span class="fl">0.0001</span>) {</span>
-<span id="cb480-13"><a href="Introkriging.html#cb480-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">break</span></span>
-<span id="cb480-14"><a href="Introkriging.html#cb480-14" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb480-15"><a href="Introkriging.html#cb480-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb477"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb477-1"><a href="Introkriging.html#cb477-1" aria-hidden="true" tabindex="-1"></a><span class="cf">repeat</span> {</span>
+<span id="cb477-2"><a href="Introkriging.html#cb477-2" aria-hidden="true" tabindex="-1"></a>  betaGLS.cur <span class="ot">&lt;-</span> betaGLS</span>
+<span id="cb477-3"><a href="Introkriging.html#cb477-3" aria-hidden="true" tabindex="-1"></a>  mu <span class="ot">&lt;-</span> X <span class="sc">%*%</span> betaGLS</span>
+<span id="cb477-4"><a href="Introkriging.html#cb477-4" aria-hidden="true" tabindex="-1"></a>  mysample<span class="sc">$</span>e <span class="ot">&lt;-</span> z<span class="sc">-</span>mu</span>
+<span id="cb477-5"><a href="Introkriging.html#cb477-5" aria-hidden="true" tabindex="-1"></a>  vg_resi <span class="ot">&lt;-</span> <span class="fu">variogram</span>(e<span class="sc">~</span><span class="dv">1</span>, <span class="at">data=</span>mysample)</span>
+<span id="cb477-6"><a href="Introkriging.html#cb477-6" aria-hidden="true" tabindex="-1"></a>  vgmresi_MoM <span class="ot">&lt;-</span> <span class="fu">fit.variogram</span>(vg_resi, <span class="at">model=</span>vgmdl)</span>
+<span id="cb477-7"><a href="Introkriging.html#cb477-7" aria-hidden="true" tabindex="-1"></a>  C <span class="ot">&lt;-</span> <span class="fu">variogramLine</span>(vgmresi_MoM, <span class="at">dist_vector=</span>D, <span class="at">covariance=</span><span class="cn">TRUE</span>)</span>
+<span id="cb477-8"><a href="Introkriging.html#cb477-8" aria-hidden="true" tabindex="-1"></a>  Cinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(C)</span>
+<span id="cb477-9"><a href="Introkriging.html#cb477-9" aria-hidden="true" tabindex="-1"></a>  XCXinv <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> X)</span>
+<span id="cb477-10"><a href="Introkriging.html#cb477-10" aria-hidden="true" tabindex="-1"></a>  XCz <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(X, Cinv) <span class="sc">%*%</span> z</span>
+<span id="cb477-11"><a href="Introkriging.html#cb477-11" aria-hidden="true" tabindex="-1"></a>  betaGLS <span class="ot">&lt;-</span> XCXinv <span class="sc">%*%</span> XCz</span>
+<span id="cb477-12"><a href="Introkriging.html#cb477-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">sum</span>(<span class="fu">abs</span>(betaGLS<span class="sc">-</span>betaGLS.cur))<span class="sc">&lt;</span><span class="fl">0.0001</span>) {</span>
+<span id="cb477-13"><a href="Introkriging.html#cb477-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">break</span></span>
+<span id="cb477-14"><a href="Introkriging.html#cb477-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb477-15"><a href="Introkriging.html#cb477-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>Table <a href="Introkriging.html#tab:ResidualVariogramEstimates">21.3</a> shows the estimates of the residual semivariogram parameters and regression coefficients, together with the estimates obtained by restricted maximum likelihood, which is explained in the next subsection.</p>
 </div>
 <div id="REML" class="section level3" number="21.5.2">
 <h3><span class="header-section-number">21.5.2</span> Restricted maximum likelihood</h3>
-<p>The estimates of the residual semivariogram parameters obtained by the iterative method-of-moments procedure are not unbiased. When the mean is not constant but a linear combination of one or more covariates, also ML estimation results in biased estimates of the residual semivariogram parameters. Unbiased estimates of the regression coefficients and residual semivariogram parameters can be obtained by restricted maximum likelihood (also referred to as residual maximum likelihood), REML. In REML the vector with the data are premultiplied by a so-called projection matrix <span class="math inline">\(\mathbf{P}\)</span> <span class="citation">(<a href="#ref-Kitanidis1983" role="doc-biblioref">P. Kitanidis 1983</a>)</span>. This projection matrix has the property that a vector with zeroes is obtained when the matrix <span class="math inline">\(\mathbf{X}\)</span> with the covariate values at the sampling locations (and ones in first column) is pre-multiplied with <span class="math inline">\(\mathbf{P}\)</span>:</p>
+<p>The estimates of the residual semivariogram parameters obtained by the iterative method-of-moments procedure are not unbiased. When the mean is not constant but a linear combination of one or more covariates, also ML estimation results in biased estimates of the residual semivariogram parameters. Unbiased estimates of the regression coefficients and residual semivariogram parameters can be obtained by restricted maximum likelihood (also referred to as residual maximum likelihood), REML. In REML the vector with the data are premultiplied by a so-called projection matrix <span class="math inline">\(\mathbf{P}\)</span> <span class="citation">(<a href="#ref-Kitanidis1983" role="doc-biblioref">Kitanidis 1983</a>)</span>. This projection matrix has the property that a vector with zeroes is obtained when the matrix <span class="math inline">\(\mathbf{X}\)</span> with the covariate values at the sampling locations (and ones in first column) is pre-multiplied with <span class="math inline">\(\mathbf{P}\)</span>:</p>
 <p><span class="math display" id="eq:PX">\[\begin{equation}
 \mathbf{P}\mathbf{X}=\mathbf{0} \;.
 \tag{21.23}
@@ -1128,9 +1128,9 @@ range
 \end{equation}\]</span></p>
 <p>with <span class="math inline">\(\mathbf{Q} = \mathbf{X}(\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X})^{-1}\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\)</span></p>
 <p>Restricted maximum likelihood estimates of the semivariogram can be obtained with function <code>likfit</code> of package <strong>geoR</strong>, used above in maximum likelihood estimation of the variogram <span class="citation">(<a href="#ref-geoR" role="doc-biblioref">Ribeiro Jr et al. 2020</a>)</span>.</p>
-<div class="sourceCode" id="cb481"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb481-1"><a href="Introkriging.html#cb481-1" aria-hidden="true" tabindex="-1"></a>vgm_REML <span class="ot">&lt;-</span> <span class="fu">likfit</span>( <span class="at">geodata=</span>dGeoR, <span class="at">trend=</span><span class="sc">~</span>x,</span>
-<span id="cb481-2"><a href="Introkriging.html#cb481-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">cov.model=</span><span class="st">&quot;spherical&quot;</span>, <span class="at">ini.cov.pars=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">100</span>),</span>
-<span id="cb481-3"><a href="Introkriging.html#cb481-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nugget=</span><span class="dv">0</span>, <span class="at">lik.method=</span><span class="st">&quot;REML&quot;</span>, <span class="at">messages=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb478"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb478-1"><a href="Introkriging.html#cb478-1" aria-hidden="true" tabindex="-1"></a>vgm_REML <span class="ot">&lt;-</span> <span class="fu">likfit</span>( <span class="at">geodata=</span>dGeoR, <span class="at">trend=</span><span class="sc">~</span>x,</span>
+<span id="cb478-2"><a href="Introkriging.html#cb478-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">cov.model=</span><span class="st">&quot;spherical&quot;</span>, <span class="at">ini.cov.pars=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">100</span>),</span>
+<span id="cb478-3"><a href="Introkriging.html#cb478-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">nugget=</span><span class="dv">0</span>, <span class="at">lik.method=</span><span class="st">&quot;REML&quot;</span>, <span class="at">messages=</span><span class="cn">FALSE</span>)</span></code></pre></div>
 <table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:ResidualVariogramEstimates">Table 21.3: </span>Estimated parameters of a spherical semivariogram for the residuals and estimated regression coefficients, obtained with iterative method-of-moments (iMoM) and restricted maximum likelihood (REML) estimation.
@@ -1215,31 +1215,31 @@ x
 <h3>References</h3>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-chr91" class="csl-entry">
-Christensen, R. 1991. <em>Linear Models for Multivariate, Time Series and Spatial Data</em>. New York: Springer.
+Christensen, R. 1991. <em>Linear Models for Multivariate, Time Series, and Spatial Data</em>. New York: Springer.
 </div>
 <div id="ref-goo97" class="csl-entry">
 Goovaerts, P. 1997. <em>Geostatistics for Natural Resources Evaluation</em>. New York: Oxford University Press.
 </div>
 <div id="ref-isa89" class="csl-entry">
-Isaaks, E. H., and R. H. Srivastava. 1989. <em>An Introduction to Applied Geostatistics</em>. New York: Oxford University Press.
+Isaaks, E. H., and R. M. Srivastava. 1989. <em>An Introduction to Applied Geostatistics</em>. New York: Oxford University Press.
 </div>
 <div id="ref-Kitanidis1983" class="csl-entry">
-Kitanidis, P. 1983. <span>“Statistical Estimation of Polynomial Generalized Covariance Functions and Hydrological Applications.”</span> <em>Water Resources Research</em> 19: 909–21.
+Kitanidis, P. K. 1983. <span>“Statistical Estimation of Polynomial Generalized Covariance Functions and Hydrologic Applications.”</span> <em>Water Resources Research</em> 19 (4): 909–21.
 </div>
 <div id="ref-lar00b" class="csl-entry">
-Lark, R. M. 2000. <span>“Estimating Variograms of Soil Properties by the Method-of-Moments and Maximum Likelihood.”</span> <em>European Journal of Soil Science</em> 51: 717–28.
+Lark, R. M. 2000. <span>“Estimating Variograms of Soil Properties by the Method-of-Moments and Maximum Likelihood.”</span> <em>European Journal of Soil Science</em> 51 (4): 717–28.
 </div>
 <div id="ref-lar06" class="csl-entry">
-Lark, R. M., and R. Webster. 2006. <span>“Geostatistical Mapping of Geomorphic Variables in the Presence of Trend.”</span> <em>Earth Surface Processes and Landforms</em> 31: 862–74.
+Lark, R. M., and R. Webster. 2006. <span>“Geostatistical Mapping of Geomorphic Variables in the Presence of Trend.”</span> <em>Earth Surface Processes and Landforms</em> 31 (7): 862–74.
 </div>
 <div id="ref-peb04" class="csl-entry">
-Pebesma, E. J. 2004. <span>“Multivariable Geostatistics in <span>S</span>: The Gstat Package.”</span> <em>Computers &amp; Geosciences</em> 30: 683–91.
+Pebesma, E. J. 2004. <span>“Multivariable Geostatistics in <span>S</span>: The Gstat Package.”</span> <em>Computers &amp; Geosciences</em> 30 (7): 683–91.
 </div>
 <div id="ref-geoR" class="csl-entry">
 Ribeiro Jr, Paulo J., Peter J. Diggle, Martin Schlather, Roger Bivand, and Brian Ripley. 2020. <em><span class="nocase">geoR: Analysis of Geostatistical Data</span></em>. <a href="https://CRAN.R-project.org/package=geoR">https://CRAN.R-project.org/package=geoR</a>.
 </div>
 <div id="ref-webster2007" class="csl-entry">
-———. 2007. <em><span class="nocase">Geostatistics for Environmental Scientists, Second Edition</span></em>. Wiley, Chichester.
+———. 2007. <em><span class="nocase">Geostatistics for Environmental Scientists</span></em>. Second. Chichester: Wiley.
 </div>
 </div>
 <div class="footnotes">
@@ -1258,7 +1258,6 @@ Ribeiro Jr, Paulo J., Peter J. Diggle, Martin Schlather, Roger Bivand, and Brian
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -1299,7 +1298,7 @@ gitbook.start({
 },
 "download": ["SpatialSampling.epub"],
 "search": {
-"engine": "lunr",
+"engine": "fuse",
 "options": null
 },
 "toc": {

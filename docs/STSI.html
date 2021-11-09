@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 4 Stratified simple random sampling | Spatial sampling with R</title>
   <meta name="description" content="This book is for students, scientists, researchers and consultants who want to know how to collect spatial data, either for estimating parameters for the population or several subpopulations, or for mapping. How many data do we need, and how to select the population units? The book presents a wide overview of spatial sampling designs. Besides there is a chapter on designs for sampling in space and time for monitoring. The emphasis is not on the theory, but on how to implement sampling designs in R and on how the (sub)population parameters can be estimated from the sample." />
-  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 4 Stratified simple random sampling | Spatial sampling with R" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-11-03" />
+<meta name="date" content="2021-11-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,8 +33,9 @@
   
 <link rel="prev" href="SI.html"/>
 <link rel="next" href="SY.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -42,7 +43,6 @@
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
-
 
 
 
@@ -515,7 +515,7 @@ div.csl-indent {
 13  8  9  4  7 </code></pre>
 <p>The sum of the stratum sample sizes is 41, we want 40, so we reduce the largest stratum sample size by 1.</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="STSI.html#cb34-1" aria-hidden="true" tabindex="-1"></a>n_h[<span class="dv">1</span>] <span class="ot">&lt;-</span> n_h[<span class="dv">1</span>] <span class="sc">-</span> <span class="dv">1</span></span></code></pre></div>
-<p>The stratified simple random sample is selected with function <code>strata</code> of package <strong>sampling</strong> <span class="citation">(<a href="#ref-Tille2016" role="doc-biblioref">Tillé and Matei 2016</a>)</span>. Argument <code>size</code> specifies the stratum sample sizes.</p>
+<p>The stratified simple random sample is selected with function <code>strata</code> of package <strong>sampling</strong> <span class="citation">(<a href="#ref-Tille2016" role="doc-biblioref">Tillé and Matei 2021</a>)</span>. Argument <code>size</code> specifies the stratum sample sizes.</p>
 
 <div class="rmdcaution">
 The stratum sample sizes must be in the order in which the strata are encountered in the data frame <code>grdVoorst</code>, which is determined first with function <code>unique</code>.
@@ -712,7 +712,7 @@ XF
 </tr>
 </tbody>
 </table>
-<p>Table <a href="STSI.html#tab:stratummeans">4.1</a> shows per stratum the estimated mean, the estimated variance, and the estimated sampling variance of the estimated mean. We can see large differences in the within-stratum variances. For the stratified sample of Figure <a href="STSI.html#fig:SampleSTSI">4.1</a> the estimated population mean equals 7.238 g kg<span class="math inline">\(^{-1}\)</span> and the estimated standard error of this estimator equals 0.507 g kg<span class="math inline">\(^{-1}\)</span>.</p>
+<p>Table <a href="STSI.html#tab:stratummeans">4.1</a> shows per stratum the estimated mean, the estimated variance, and the estimated sampling variance of the estimated mean. We can see large differences in the within-stratum variances. For the stratified sample of Figure <a href="STSI.html#fig:SampleSTSI">4.1</a> the estimated population mean equals 7.238 g kg<sup>-1</sup> and the estimated standard error of this estimator equals 0.507 g kg<sup>-1</sup>.</p>
 <p>The population mean can also be estimated directly using the basic <span class="math inline">\(\pi\)</span> estimator (Equation <a href="IntroProbabilitySampling.html#eq:HTMean">(2.4)</a>). The inclusion probabilities are included in the data frame , obtained with function <code>getdata</code> (see code chunk above), in column <code>Prob</code>.</p>
 <div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="STSI.html#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mysample)</span></code></pre></div>
 <pre><code>           s1       s2         z stratum ID_unit        Prob Stratum
@@ -734,7 +734,7 @@ XF
 <div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="STSI.html#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(mysample<span class="sc">$</span>z))</span></code></pre></div>
 <pre><code>[1] 7.211431</code></pre>
 <p>The sample mean slightly differs from the proper estimate of the population mean (7.238). The sample mean is a <em>biased</em> estimator, but the bias is small. The bias is only small because the stratum sample sizes are about proportional to the sizes of the strata, so that the inclusion probabilities (sampling intensities) are about equal for all strata: 0.0050494, 0.0055344, 0.0052509, 0.006056, 0.005189. The probabilities are not exactly equal because the stratum sample sizes are necessarily rounded to integers and because we reduced the largest sample size by one unit. The bias would have been substantially larger if an equal number of units would have been selected from each stratum, leading to much larger differences in the inclusion probabilities among the strata. Sampling intensity in stratum BA, for instance, then would be much smaller compared to the other strata, and so would be the inclusion probabilities of the units in this stratum as compared to the other strata. Stratum BA then would be underrepresented in the sample. This is not a problem as long as we account for the difference in inclusion probabilities of the units in the estimation of the population mean. The estimated mean of stratum BA then gets the largest weight, equal to the inverse of the inclusion probability. If we do not account for these differences in inclusion probabilities, the estimator of the mean will be seriously biased.</p>
-<p>The next code chunk shows how the population mean and its standard error can be estimated with package <strong>survey</strong> <span class="citation">(<a href="#ref-Lumley2020" role="doc-biblioref">Lumley 2020b</a>)</span>. Note that the stratum weights <span class="math inline">\(N_h/n_h\)</span> must be passed to function <code>svydesign</code> using argument <code>weight</code>. These are first attached to the data frame <code>mysample</code> by creating a look-up table <code>lut</code>, which is then merged with function <code>merge</code> to the data frame <code>mysample</code>.</p>
+<p>The next code chunk shows how the population mean and its standard error can be estimated with package <strong>survey</strong> <span class="citation">(<a href="#ref-Lumley2020" role="doc-biblioref">Lumley 2021</a>)</span>. Note that the stratum weights <span class="math inline">\(N_h/n_h\)</span> must be passed to function <code>svydesign</code> using argument <code>weight</code>. These are first attached to the data frame <code>mysample</code> by creating a look-up table <code>lut</code>, which is then merged with function <code>merge</code> to the data frame <code>mysample</code>.</p>
 <div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="STSI.html#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
 <span id="cb45-2"><a href="STSI.html#cb45-2" aria-hidden="true" tabindex="-1"></a>labels <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(mysample<span class="sc">$</span>stratum))</span>
 <span id="cb45-3"><a href="STSI.html#cb45-3" aria-hidden="true" tabindex="-1"></a>lut <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">stratum=</span>labels, <span class="at">weight=</span>N_h<span class="sc">/</span>n_h)</span>
@@ -842,7 +842,7 @@ SSB = \sum_{h=1}^H N_h (\bar{z}_h-\bar{z})^2 \;,
 SSW = \sum_{h=1}^H (1-\frac{N_h}{N})S^2_h\;.
 \tag{4.12}
 \end{equation}\]</span></p>
-<p>In other words, the smaller the differences in the stratum means and the larger the variances within the strata, the smaller the stratification effect will be. Figure <a href="STSI.html#fig:boxplotsSOMstrata">4.4</a> shows a boxplot of the SOM concentration per stratum (soil-land use combination). The stratum means are equal to 7.94, 5.26, 6.56, 9.47, 11.12 g kg<span class="math inline">\(^{-1}\)</span>. The stratum variances are 14.5, 3.6, 9.2, 17.4, 27.6. The rather small differences in stratum means in combination with the large stratum variances explain the modest gain in precision realised by stratified simple random sampling compared to simple random sampling in this case.</p>
+<p>In other words, the smaller the differences in the stratum means and the larger the variances within the strata, the smaller the stratification effect will be. Figure <a href="STSI.html#fig:boxplotsSOMstrata">4.4</a> shows a boxplot of the SOM concentration per stratum (soil-land use combination). The stratum means are equal to 7.94, 5.26, 6.56, 9.47, 11.12 g kg<sup>-1</sup>. The stratum variances are 14.5, 3.6, 9.2, 17.4, 27.6. The rather small differences in stratum means in combination with the large stratum variances explain the modest gain in precision realised by stratified simple random sampling compared to simple random sampling in this case.</p>
 
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:boxplotsSOMstrata"></span>
 <img src="SpatialSampling_files/figure-html/boxplotsSOMstrata-1.png" alt="Boxplots of the SOM concentration (g kg-1) for the five strata (soil-land use combinations) in Voorst." width="100%" />
@@ -860,7 +860,7 @@ Figure 4.4: Boxplots of the SOM concentration (g kg<sup>-1</sup>) for the five s
 \sqrt{\widehat{V}\!\left(\hat{\bar{z}}\right)} \;,
 \tag{4.13}
 \end{equation}\]</span></p>
-<p>where <span class="math inline">\(t_{\alpha /2,df}\)</span> is the value of <span class="math inline">\(t\)</span> of a <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(df\)</span> degrees of freedom having a tail area of <span class="math inline">\(\alpha/2\)</span> to its right. In other words this is the <span class="math inline">\((1-\alpha /2)\)</span> quantile of the <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(df\)</span> degrees of freedom. The degrees of freedom <span class="math inline">\(df\)</span> can be approximated by <span class="math inline">\(n-H\)</span>, as proposed by <span class="citation"><a href="#ref-loh99" role="doc-biblioref">Lohr</a> (<a href="#ref-loh99" role="doc-biblioref">1999</a>)</span>. This is the number of the degrees of freedom if the variances within the strata are equal. With unequal variances within strata <span class="math inline">\(df\)</span> can be approximated by Sattherwaite’s method <span class="citation">(<a href="#ref-nan04" role="doc-biblioref">Nanthakumar and Selvavel 2004</a>)</span>:</p>
+<p>where <span class="math inline">\(t_{\alpha /2,df}\)</span> is the <span class="math inline">\((1-\alpha /2)\)</span> quantile of a <em>t</em> distribution with <span class="math inline">\(df\)</span> degrees of freedom. The degrees of freedom <span class="math inline">\(df\)</span> can be approximated by <span class="math inline">\(n-H\)</span>, as proposed by <span class="citation"><a href="#ref-loh99" role="doc-biblioref">Lohr</a> (<a href="#ref-loh99" role="doc-biblioref">1999</a>)</span>. This is the number of the degrees of freedom if the variances within the strata are equal. With unequal variances within strata <span class="math inline">\(df\)</span> can be approximated by Sattherwaite’s method <span class="citation">(<a href="#ref-nan04" role="doc-biblioref">Nanthakumar and Selvavel 2004</a>)</span>:</p>
 <p><span class="math display" id="eq:dfSattherwaite">\[\begin{equation}
 df \approx \frac {\left(\sum_{h=1}^H w_h^2
 \frac{\widehat{S^2}_h(z)}{n_h}\right)^2} {\sum_{h=1}^H w_h^4
@@ -1039,7 +1039,7 @@ Figure 4.5: Standard error of the <span class="math inline">\(\pi\)</span> estim
 </ul></li>
 <li>Looking at Figure <a href="STSI.html#fig:boxplotsSOMstrata">4.4</a>, which strata do you expect can be merged without losing much precision of the estimated population mean?<br />
 </li>
-<li>Use function <code>fct_collapse</code> of package <strong>forcats</strong> <span class="citation">(<a href="#ref-forcats" role="doc-biblioref">Wickham 2020</a>)</span> to merge the strata EA and PA.
+<li>Use function <code>fct_collapse</code> of package <strong>forcats</strong> <span class="citation">(<a href="#ref-forcats" role="doc-biblioref">Wickham 2021</a>)</span> to merge the strata EA and PA.
 <ul>
 <li>Compute the true sampling variance of the estimator of the mean for this new stratification, for a total sample size of 40 and proportional allocation.</li>
 <li>Compare this true sampling variance with the true sampling variance using the original five strata (same sample size, proportional allocation). What is your conclusion about the new stratification?<br />
@@ -1062,11 +1062,12 @@ Figure 4.5: Standard error of the <span class="math inline">\(\pi\)</span> estim
 <li>Divide the cumulative sum of the last bin by the number of strata, multiply this value by 1, 2, <span class="math inline">\(\cdots\)</span>, <em>H</em>-1, with <em>H</em> the number of strata, and select the boundaries of the histogram bins closest to these values.</li>
 </ol>
 <p>In <em>cum-root-f</em> stratification it is assumed that (after linear transformation) the covariate values are nearly perfect predictions of the study variable, so that the prediction errors do not affect the stratification. Under this assumption the stratification is optimal.</p>
-<p><em>Cum-root-f</em> stratification is illustrated with the data of Xuancheng (Anhui province, China). We wish to estimate the mean organic matter concentration in the topsoil (SOM, g kg<span class="math inline">\(^{-1}\)</span>) of this area. Various covariates are available that are correlated with SOM, such as elevation, yearly average temperature, slope, and various other terrain attributes. Elevation (the name of this variable in the data frame is dem) is used as as a single stratification variable, see Figure <a href="STSI.html#fig:DEMXuancheng">4.6</a>. The correlation coefficient of SOM and elevation in a sample of 183 observations is 0.59. The positive correlation can be explained as follows. Temperature is decreasing with elevation, leading to a smaller decomposition rate of organic matter in the soil.</p>
+<p><em>Cum-root-f</em> stratification is illustrated with the data of Xuancheng (Anhui province, China). We wish to estimate the mean organic matter concentration in the topsoil (SOM, g kg<sup>-1</sup>) of this area. Various covariates are available that are correlated with SOM, such as elevation, yearly average temperature, slope, and various other terrain attributes. Elevation (the name of this variable in the data frame is dem) is used as as a single stratification variable, see Figure <a href="STSI.html#fig:DEMXuancheng">4.6</a>. The correlation coefficient of SOM and elevation in a sample of 183 observations is 0.59. The positive correlation can be explained as follows. Temperature is decreasing with elevation, leading to a smaller decomposition rate of organic matter in the soil.</p>
+
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:DEMXuancheng"></span>
-<img src="SpatialSampling_files/figure-html/DEMXuancheng-1.png" alt="Elevation used as a stratification variable in $\textit{cum-root-f}$ stratification of Xuancheng." width="80%" />
+<img src="SpatialSampling_files/figure-html/DEMXuancheng-1.png" alt="Elevation used as a stratification variable in cum-root-f stratification of Xuancheng." width="80%" />
 <p class="caption">
-Figure 4.6: Elevation used as a stratification variable in <span class="math inline">\(\textit{cum-root-f}\)</span> stratification of Xuancheng.
+Figure 4.6: Elevation used as a stratification variable in <em>cum-root-f</em> stratification of Xuancheng.
 </p>
 </div>
 <p>The strata can be constructed with the package <strong>stratification</strong> <span class="citation">(<a href="#ref-Baillargeon2011" role="doc-biblioref">Baillargeon and Rivest 2011</a>)</span>. Care should be taken that the data are sorted in ascending order by the columns used for stratification, see help of function <code>strata.cumrootf</code>. Argument <code>n</code> of this function is the total sample size, but this value has no effect on the stratification. Argument <code>Ls</code> is the number of strata. I arbitrarily chose to construct five strata. Argument <code>nclass</code> is the number of bins of the histogram. The output object of function <code>strata.cumrootf</code> is a list containing amongst others a numeric vector with the stratum bounds (<code>bh</code>) and a factor with the stratum levels of the grid cells (<code>stratumID</code>). Finally, note that the values of the stratification variable must be positive. The minimum elevation is -5 m, so we added the absolute value of this minimum to elevation.</p>
@@ -1077,10 +1078,11 @@ Figure 4.6: Elevation used as a stratification variable in <span class="math inl
 <span id="cb60-5"><a href="STSI.html#cb60-5" aria-hidden="true" tabindex="-1"></a>bh <span class="ot">&lt;-</span> crfstrata<span class="sc">$</span>bh</span>
 <span id="cb60-6"><a href="STSI.html#cb60-6" aria-hidden="true" tabindex="-1"></a>grd<span class="sc">$</span>crfstrata <span class="ot">&lt;-</span> crfstrata<span class="sc">$</span>stratumID</span></code></pre></div>
 <p>Stratum bounds are threshold values of the stratification variable elevation; these stratum bounds are equal to 46.7, 108.3, 214.5, 384.4. Note that the number of stratum bounds is one less than the number of strata. The resulting stratification is shown in Figure <a href="STSI.html#fig:optstrata">4.7</a>. Note that most strata are not single polygons, but are made up of many smaller polygons. This may be even more so if the stratification variable shows a noisy spatial pattern. This is not a problem at all, a stratum is just a collection of population units (raster cells) and need not be spatially contiguous.</p>
+
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:optstrata"></span>
-<img src="SpatialSampling_files/figure-html/optstrata-1.png" alt="Stratification of Xuancheng obtained with $\textit{cum-root-f}$ method, using elevation as a stratification variable." width="80%" />
+<img src="SpatialSampling_files/figure-html/optstrata-1.png" alt="Stratification of Xuancheng obtained with cum-root-f method, using elevation as a stratification variable." width="80%" />
 <p class="caption">
-Figure 4.7: Stratification of Xuancheng obtained with <span class="math inline">\(\textit{cum-root-f}\)</span> method, using elevation as a stratification variable.
+Figure 4.7: Stratification of Xuancheng obtained with <em>cum-root-f</em> method, using elevation as a stratification variable.
 </p>
 </div>
 <div id="exercises-5" class="section level4 unnumbered">
@@ -1112,10 +1114,11 @@ Figure 4.7: Stratification of Xuancheng obtained with <span class="math inline">
 <span id="cb62-3"><a href="STSI.html#cb62-3" aria-hidden="true" tabindex="-1"></a>myClusters <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(<span class="fu">scale</span>(subgrd[,x]), <span class="at">centers=</span><span class="dv">5</span>, <span class="at">iter.max=</span><span class="dv">1000</span>, <span class="at">nstart=</span><span class="dv">100</span>)</span>
 <span id="cb62-4"><a href="STSI.html#cb62-4" aria-hidden="true" tabindex="-1"></a>subgrd<span class="sc">$</span>cluster <span class="ot">&lt;-</span> myClusters<span class="sc">$</span>cluster</span></code></pre></div>
 <p>Figure <a href="STSI.html#fig:kmeansstrataXuancheng">4.8</a> shows the five clusters obtained by <span class="math inline">\(k\)</span>-means clustering of the raster cells. These clusters can be used as strata in random sampling.</p>
+
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:kmeansstrataXuancheng"></span>
-<img src="SpatialSampling_files/figure-html/kmeansstrataXuancheng-1.png" alt="Five clusters obtained  by $k$-means clustering of the raster cells of Xuancheng, using five scaled covariates." width="80%" />
+<img src="SpatialSampling_files/figure-html/kmeansstrataXuancheng-1.png" alt="Five clusters obtained by k-means clustering of the raster cells of Xuancheng, using five scaled covariates." width="80%" />
 <p class="caption">
-Figure 4.8: Five clusters obtained by <span class="math inline">\(k\)</span>-means clustering of the raster cells of Xuancheng, using five scaled covariates.
+Figure 4.8: Five clusters obtained by <em>k</em>-means clustering of the raster cells of Xuancheng, using five scaled covariates.
 </p>
 </div>
 <p>The size of the clusters (strata) is largely different (Table <a href="STSI.html#tab:tablekmeansstrata">4.3</a>). This table also shows means of the unscaled covariates used in clustering.</p>
@@ -1273,7 +1276,7 @@ Twi
 <h2><span class="header-section-number">4.6</span> Geographical stratification</h2>
 <p>When no covariate is available, we may still decide to apply a <em>geographical stratification</em>. For instance, a square study area can be divided into <span class="math inline">\(4 \times 4\)</span> equal-sized subsquares that are used as strata. When we select one or two points per subsquare, we avoid strong spatial clustering of the sampling points. Geographical stratification improves the <em>spatial coverage</em>. When the study variable is spatially structured, think for instance of a spatial trend, then geographical stratification will lead to more precisely estimated means (smaller sampling variances).</p>
 <p>A simple method for constructing geographical strata is <span class="math inline">\(k\)</span>-means clustering <span class="citation">(<a href="#ref-bru99" role="doc-biblioref">Brus, Spätjens, and de Gruijter 1999</a>)</span>. See Chapter <a href="RegularGridSpatialCoverage.html#SpatialCoverage">17.2</a> for a simple illustrative example of how geographical strata are computed with <span class="math inline">\(k\)</span>-means clustering. In this approach the study area is discretised by a large number of grid cells. These grid cells are the objects that are clustered. The clustering variables are simply the spatial coordinates of the centres of the grid cells. This method leads to compact geographical strata, shortly referred to as geostrata. Geostrata can be computed with function <code>kmeans</code>, as shown in Section <a href="STSI.html#kmeansstratification">4.5</a>. The two clustering variables have the same scale, so they should not be scaled because this would lead to an arbitrary distortion of geographical distances. The geostrata generally will not have the same size (number of grid cells). Geostrata of equal size can be attractive, as then the sample becomes selfweighting, i.e. the sample mean is an unbiased estimator of the population mean.</p>
-<p>Geostrata of the same area can be computed with function <code>stratify</code> of the package <strong>spcosa</strong> <span class="citation">(<a href="#ref-walvoort2010" role="doc-biblioref">Walvoort, Brus, and Gruijter 2010</a>)</span>, with argument <code>equalArea=TRUE</code>. If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. <span class="citation"><a href="#ref-walvoort2010" role="doc-biblioref">Walvoort, Brus, and Gruijter</a> (<a href="#ref-walvoort2010" role="doc-biblioref">2010</a>)</span> describe the <span class="math inline">\(k\)</span>-means algorithms implemented in this package in detail. Argument <code>object</code> of function <code>stratify</code> specifies a spatial object of the population units. In the <strong>R</strong> code below the data frame <code>grdVoorst</code> is changed into a <code>SpatialPixelsDataFrame</code> with function <code>gridded</code> of the package <strong>sp</strong>. The spatial object can also be of class <code>SpatialPolygons</code>. In that case either argument <code>nGridCells</code> or argument <code>cellSize</code> must be set, so that the vector map in <code>object</code> can be discretised by a finite number of grid cells. Argument <code>nTry</code> specifies the number of initial stratifications in <span class="math inline">\(k\)</span>-means clustering, and therefore is comparable with argument <code>nstart</code> of function <code>kmeans</code>. For more details on spatial stratification using <span class="math inline">\(k\)</span>-means clustering, see Chapter <a href="RegularGridSpatialCoverage.html#SpatialCoverage">17.2</a>. The <span class="math inline">\(k\)</span>-means algorithm used with <code>equalArea=TRUE</code> takes much more computing time than the one used with <code>equalArea=FALSE</code>.</p>
+<p>Geostrata of the same area can be computed with function <code>stratify</code> of the package <strong>spcosa</strong> (<span class="citation"><a href="#ref-spcosa" role="doc-biblioref">D. Walvoort, Brus, and de Gruijter</a> (<a href="#ref-spcosa" role="doc-biblioref">2020</a>)</span>,<span class="citation"><a href="#ref-walvoort2010" role="doc-biblioref">D. J. J. Walvoort, Brus, and Gruijter</a> (<a href="#ref-walvoort2010" role="doc-biblioref">2010</a>)</span>), with argument <code>equalArea=TRUE</code>. If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. <span class="citation"><a href="#ref-walvoort2010" role="doc-biblioref">D. J. J. Walvoort, Brus, and Gruijter</a> (<a href="#ref-walvoort2010" role="doc-biblioref">2010</a>)</span> describe the <span class="math inline">\(k\)</span>-means algorithms implemented in this package in detail. Argument <code>object</code> of function <code>stratify</code> specifies a spatial object of the population units. In the <strong>R</strong> code below the data frame <code>grdVoorst</code> is changed into a <code>SpatialPixelsDataFrame</code> with function <code>gridded</code> of the package <strong>sp</strong>. The spatial object can also be of class <code>SpatialPolygons</code>. In that case either argument <code>nGridCells</code> or argument <code>cellSize</code> must be set, so that the vector map in <code>object</code> can be discretised by a finite number of grid cells. Argument <code>nTry</code> specifies the number of initial stratifications in <span class="math inline">\(k\)</span>-means clustering, and therefore is comparable with argument <code>nstart</code> of function <code>kmeans</code>. For more details on spatial stratification using <span class="math inline">\(k\)</span>-means clustering, see Chapter <a href="RegularGridSpatialCoverage.html#SpatialCoverage">17.2</a>. The <span class="math inline">\(k\)</span>-means algorithm used with <code>equalArea=TRUE</code> takes much more computing time than the one used with <code>equalArea=FALSE</code>.</p>
 <div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="STSI.html#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spcosa)</span>
 <span id="cb63-2"><a href="STSI.html#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
 <span id="cb63-3"><a href="STSI.html#cb63-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span>
@@ -1284,7 +1287,7 @@ Twi
 <span id="cb64-2"><a href="STSI.html#cb64-2" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> spcosa<span class="sc">::</span><span class="fu">spsample</span>(mygeostrata, <span class="at">n=</span><span class="dv">2</span>)</span>
 <span id="cb64-3"><a href="STSI.html#cb64-3" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> <span class="fu">as</span>(mysample, <span class="st">&quot;data.frame&quot;</span>)</span>
 <span id="cb64-4"><a href="STSI.html#cb64-4" aria-hidden="true" tabindex="-1"></a>mygeostrata <span class="ot">&lt;-</span> <span class="fu">as</span>(mygeostrata,  <span class="st">&quot;data.frame&quot;</span>)</span></code></pre></div>
-<p>Operator <code>%&gt;%</code> of package <strong>magrittr</strong> <span class="citation">(<a href="#ref-magrittr" role="doc-biblioref">Bache and Wickham 2014</a>)</span> can be used to merge the two lines in the code chunk above. In this way we can save memory, as we do not need an object of the class <code>SamplingPatternRandomSamplingUnits</code> obtained with function <code>spsample</code>.</p>
+<p>Operator <code>%&gt;%</code> of package <strong>magrittr</strong> <span class="citation">(<a href="#ref-magrittr" role="doc-biblioref">Bache and Wickham 2020</a>)</span> can be used to merge the two lines in the code chunk above. In this way we can save memory, as we do not need an object of the class <code>SamplingPatternRandomSamplingUnits</code> obtained with function <code>spsample</code>.</p>
 <div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="STSI.html#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
 <span id="cb65-2"><a href="STSI.html#cb65-2" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> spcosa<span class="sc">::</span><span class="fu">spsample</span>(mygeostrata, <span class="at">n=</span><span class="dv">2</span>) <span class="sc">%&gt;%</span> <span class="fu">as</span>(.,<span class="st">&quot;data.frame&quot;</span>)</span></code></pre></div>
 <p>Figure <a href="STSI.html#fig:GeoStrata">4.9</a> shows twenty compact geostrata of equal size for Xuancheng with the selected sampling points. Note that the sampling points are reasonably well spread throughout the study area.</p>
@@ -1338,7 +1341,7 @@ Figure 4.9: Compact geostrata of equal size for Xuancheng and stratified simple 
 <p>Another situation is where we have multiple study variables and would like to optimise the stratification and allocation for estimating the population means of all study variables. Optimal stratification for multiple study variables is only relevant if we would like to use different stratification variables for the study variables. In many cases we do not have reliable prior information about the different study variables justifying the use of multiple stratification variables. We are already happy to have one stratification variable that may serve to increase the precision of the estimated means of all study variables.</p>
 <p>However in case we do have multiple stratification variables, tailored to different study variables, the objective is to partition the population in strata, so that for a given allocation the total sampling costs, assuming a linear costs model (Equation <a href="STSI.html#eq:linearcostmodel">(4.18)</a>), are minimised, given a constraint on the precision of the estimated mean for each study variable.</p>
 <p>Package <strong>SamplingStrata</strong> <span class="citation">(<a href="#ref-Barcaroli2020" role="doc-biblioref">G. Barcaroli et al. 2020</a>)</span> can be used to optimise multivariate strata. <span class="citation"><a href="#ref-Barcaroli2014" role="doc-biblioref">Giulio Barcaroli</a> (<a href="#ref-Barcaroli2014" role="doc-biblioref">2014</a>)</span> gives details about the objective function and the algorithm used for optimising the strata. Sampling units are allocated to the strata by Bethel allocation <span class="citation">(<a href="#ref-Bethel1989" role="doc-biblioref">Bethel 1989</a>)</span>. The required precision is specified in terms of a coefficient of variation, one per study variable.</p>
-<p>Multivariate stratification is illustrated with the Meuse data set of package <strong>gstat</strong> <span class="citation">(<a href="#ref-peb04" role="doc-biblioref">Pebesma 2004</a>)</span>. The prior data of heavy metal concentrations of Cd and Zn are used in spatial prediction to create maps of these two study variables.</p>
+<p>Multivariate stratification is illustrated with the Meuse data set of package <strong>gstat</strong> <span class="citation">(<a href="#ref-peb04" role="doc-biblioref">E. J. Pebesma 2004</a>)</span>. The prior data of heavy metal concentrations of Cd and Zn are used in spatial prediction to create maps of these two study variables.</p>
 <p>The maps of natural logs of the two metal concentrations are created by kriging with an external drift, using the square root of the distance to the Meuse river as a predictor for the mean, see Section <a href="Introkriging.html#IntroKED">21.3</a> for how this spatial prediction method works.</p>
 <p>Figure <a href="STSI.html#fig:PredictedCd">4.10</a> shows the map with the predicted log Cd and log Zn concentrations.</p>
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:PredictedCd"></span>
@@ -1406,22 +1409,22 @@ DOM1   0.02  0.009</code></pre>
 <h3>References</h3>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-magrittr" class="csl-entry">
-Bache, Stefan Milton, and Hadley Wickham. 2014. <em><span class="nocase">magrittr: A Forward-Pipe Operator for R</span></em>. <a href="https://CRAN.R-project.org/package=magrittr">https://CRAN.R-project.org/package=magrittr</a>.
+Bache, Stefan Milton, and Hadley Wickham. 2020. <em><span class="nocase">magrittr: A Forward-Pipe Operator for R</span></em>. <a href="https://CRAN.R-project.org/package=magrittr">https://CRAN.R-project.org/package=magrittr</a>.
 </div>
 <div id="ref-Baillargeon2011" class="csl-entry">
-Baillargeon, S., and L.-P. Rivest. 2011. <span>“<span class="nocase">The construction of stratified designs in R with the package stratification</span>.”</span> <em>Survey Methodology</em> 37: 53–65.
+Baillargeon, S., and L.-P. Rivest. 2011. <span>“<span class="nocase">The construction of stratified designs in R with the package stratification</span>.”</span> <em>Survey Methodology</em> 37 (1): 53–65.
 </div>
 <div id="ref-Barcaroli2020" class="csl-entry">
 Barcaroli, G., M. Ballin, H. Odendaal, D. Pagliuca, E. Willighagen, and D. Zardetto. 2020. <em><span class="nocase">SamplingStrata: Optimal Stratification of Sampling Frames for Multipurpose Sampling Surveys</span></em>. <a href="{https://cran.r-project.org/package=SamplingStrata}">{https://cran.r-project.org/package=SamplingStrata}</a>.
 </div>
 <div id="ref-Barcaroli2014" class="csl-entry">
-Barcaroli, Giulio. 2014. <span>“<span class="nocase">SamplingStrata: An R Package for the optimisation of Stratified Sampling</span>.”</span> <em>Journal of Statistical Software</em> 61 (4). <a href="https://doi.org/10.18637/jss.v061.i04">https://doi.org/10.18637/jss.v061.i04</a>.
+Barcaroli, Giulio. 2014. <span>“<span class="nocase">SamplingStrata: An R Package for the Optimization of Stratified Sampling</span>.”</span> <em>Journal of Statistical Software</em> 61 (4): 1–24. <a href="https://doi.org/10.18637/jss.v061.i04">https://doi.org/10.18637/jss.v061.i04</a>.
 </div>
 <div id="ref-Bethel1989" class="csl-entry">
-Bethel, J. 1989. <span>“<span class="nocase">Sample allocation in multiple surveys</span>.”</span> <em>Survey Methodology</em> 15 (1): 47–57.
+Bethel, J. 1989. <span>“<span class="nocase">Sample allocation in multivariate surveys</span>.”</span> <em>Survey Methodology</em> 15 (1): 47–57.
 </div>
 <div id="ref-Bivand2013" class="csl-entry">
-Bivand, Roger S., Edzer Pebesma, and Virgilio Gomez-Rubio. 2013. <em>Applied Spatial Data Analysis with <span>R</span>, Second Edition</em>. Springer, NY. <a href="https://asdar-book.org/">https://asdar-book.org/</a>.
+Bivand, Roger S., Edzer Pebesma, and Virgilio Gomez-Rubio. 2013. <em>Applied Spatial Data Analysis with <span>R</span></em>. Second. New York: Springer. <a href="https://asdar-book.org/">https://asdar-book.org/</a>.
 </div>
 <div id="ref-surveyplanning" class="csl-entry">
 Breidaks, Juris, Martins Liberts, and Janis Jukams. 2020. <em><span class="nocase">surveyplanning</span>: Survey Planning Tools</em>. Riga, Latvia: Central Statistical Bureau of Latvia. <a href="https://csblatvia.github.io/surveyplanning/">https://csblatvia.github.io/surveyplanning/</a>.
@@ -1445,16 +1448,16 @@ Gershenfeld, N. 1999. <em>The Nature of Mathematical Modeling</em>. Cambridge: C
 Huang, Z. 1998. <span>“Extensions to the k-Means Algorithm for Clustering Large Data Sets with Categorical Variables.”</span> <em>Data Mining and Knowledege Discovery</em> 2: 283–304.
 </div>
 <div id="ref-loh99" class="csl-entry">
-Lohr, S. L. 1999. <em>Sampling: Design and Analysis</em>. Pacific Grove, USA: Duxbury Press.
+Lohr, S. L. 1999. <em>Sampling: Design and Analysis</em>. Pacific Grove: Duxbury Press.
 </div>
 <div id="ref-Lumley2020" class="csl-entry">
-———. 2020b. <em><span class="nocase">survey: analysis of complex survey samples</span></em>.
+———. 2021. <em><span class="nocase">survey: analysis of complex survey samples</span></em>.
 </div>
 <div id="ref-nan04" class="csl-entry">
-Nanthakumar, A., and K. Selvavel. 2004. <span>“Estimation of Proportion of Success from a Stratified Population: A Comparative Study.”</span> <em>Communications in Statistics</em> 33: 2245–57.
+Nanthakumar, A., and K. Selvavel. 2004. <span>“Estimation of Proportion of Success from a Stratified Population: A Comparative Study.”</span> <em>Communications in Statistics</em> 33 (9): 2245–57.
 </div>
 <div id="ref-peb04" class="csl-entry">
-Pebesma, E. J. 2004. <span>“Multivariable Geostatistics in <span>S</span>: The Gstat Package.”</span> <em>Computers &amp; Geosciences</em> 30: 683–91.
+Pebesma, E. J. 2004. <span>“Multivariable Geostatistics in <span>S</span>: The Gstat Package.”</span> <em>Computers &amp; Geosciences</em> 30 (7): 683–91.
 </div>
 <div id="ref-sar92" class="csl-entry">
 Särndal, C. E., B. Swensson, and J. Wretman. 1992. <em>Model Assisted Survey Sampling</em>. New York: Springer.
@@ -1463,13 +1466,16 @@ Särndal, C. E., B. Swensson, and J. Wretman. 1992. <em>Model Assisted Survey Sa
 Szepannek, Gero. 2018. <span>“clustMixType: User-Friendly Clustering of Mixed-Type Data in r.”</span> <em>The R Journal</em>, 200–208. <a href="https://doi.org/10.32614/RJ-2018-048">https://doi.org/10.32614/RJ-2018-048</a>.
 </div>
 <div id="ref-Tille2016" class="csl-entry">
-Tillé, Y., and A. Matei. 2016. <em><span class="nocase">sampling: Survey Sampling</span></em>. <a href="https://CRAN.R-project.org/package=sampling">https://CRAN.R-project.org/package=sampling</a>.
+Tillé, Y., and A. Matei. 2021. <em><span class="nocase">sampling: Survey Sampling</span></em>. <a href="https://CRAN.R-project.org/package=sampling">https://CRAN.R-project.org/package=sampling</a>.
 </div>
 <div id="ref-walvoort2010" class="csl-entry">
-Walvoort, D. J. J., D. J. Brus, and J. J. de Gruijter. 2010. <span>“An <span>R</span> Package for Spatial Coverage Sampling and Random Sampling from Compact Geographical Strata by k-Means.”</span> <em>Computers and Geosciences</em> 36: 1261–67. <a href="https://doi.org/10.1016/j.cageo.2010.04.005">https://doi.org/10.1016/j.cageo.2010.04.005</a>.
+Walvoort, D. J. J., D. J. Brus, and J. J. de Gruijter. 2010. <span>“An <span>R</span> Package for Spatial Coverage Sampling and Random Sampling from Compact Geographical Strata by k-Means.”</span> <em>Computers &amp; Geosciences</em> 36 (10): 1261–67. <a href="https://doi.org/10.1016/j.cageo.2010.04.005">https://doi.org/10.1016/j.cageo.2010.04.005</a>.
+</div>
+<div id="ref-spcosa" class="csl-entry">
+Walvoort, Dennis, Dick Brus, and Jaap de Gruijter. 2020. <em>Spatial Coverage Sampling and Random Sampling from Compact Geographical Strata</em>. <a href="https://CRAN.R-project.org/package=spcosa">https://CRAN.R-project.org/package=spcosa</a>.
 </div>
 <div id="ref-forcats" class="csl-entry">
-Wickham, Hadley. 2020. <em><span class="nocase">forcats: Tools for Working with Categorical Variables (Factors)</span></em>. <a href="https://CRAN.R-project.org/package=forcats">https://CRAN.R-project.org/package=forcats</a>.
+Wickham, Hadley. 2021. <em><span class="nocase">forcats: Tools for Working with Categorical Variables (Factors)</span></em>. <a href="https://CRAN.R-project.org/package=forcats">https://CRAN.R-project.org/package=forcats</a>.
 </div>
 </div>
             </section>
@@ -1482,7 +1488,6 @@ Wickham, Hadley. 2020. <em><span class="nocase">forcats: Tools for Working with 
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -1523,7 +1528,7 @@ gitbook.start({
 },
 "download": ["SpatialSampling.epub"],
 "search": {
-"engine": "lunr",
+"engine": "fuse",
 "options": null
 },
 "toc": {

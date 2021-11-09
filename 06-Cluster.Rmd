@@ -63,7 +63,7 @@ ggplot(data = df) +
 
 In total there are `r length(unique(grdVoorst$cluster))` clusters in the population. Figure \@ref(fig:clustersize) shows the frequency distribution of the size (number of grid cells) of the clusters.
 
-Clusters are selected with probabilities proportional to their size and with replacement (ppswr). So, the sizes of all clusters must be known, which explains that all clusters must be enumerated. Selection of clusters by ppswr can be done by simple random sampling with replacement of elementary units (grid cells) and identifying the clusters to which these units belong. Finally, all units of the selected clusters are included in the sample. In the code chunk below a function is defined for selecting clusters by ppswr. Note the variable `cldraw`, that has value 1 for all units selected in the first draw, value 2 for all units selected in the second draw, etc. This variable is needed in estimating the population mean, as explained in Section \@ref(clustersamplingestimators).
+Clusters are selected with probabilities proportional to their size and with replacement (ppswr). So, the sizes of all clusters must be known, which explains that all clusters must be enumerated. Selection of clusters by ppswr can be done by simple random sampling with replacement of elementary units (centres of grid cells) and identifying the clusters to which these units belong. Finally, all units of the selected clusters are included in the sample. In the code chunk below a function is defined for selecting clusters by ppswr. Note the variable `cldraw`, that has value 1 for all units selected in the first draw, value 2 for all units selected in the second draw, etc. This variable is needed in estimating the population mean, as explained in Section \@ref(clustersamplingestimators).
 
 ```{r}
 cl_ppswr <- function(sframe, n) {
@@ -135,7 +135,7 @@ with $M_j$ the size (number of units) of cluster $j$ and $z_{kj}$ the study vari
 The draw-by-draw selection probability of a cluster\index{Draw-by-draw selection probability!of a cluster} equals
 
 \begin{equation}
-\bar{p}_{j} = \frac{M_j}{M} \;,
+p_{j} = \frac{M_j}{M} \;,
 (\#eq:drawbydraw)
 \end{equation}
 
@@ -157,6 +157,8 @@ Dividing this estimator by the total number of population units $M$, yields the 
 
 Note the two bars in $\hat{\bar{\bar{z}}}$, indicating that the observations are averaged twice.
 
+For an infinite population of points discretised by the centres of a finite number of grid cells, $z_{kj}$ in Equation \@ref(eq:clustertotal) is the study variable value at a randomly selected point within the grid cell multiplied by the area of the grid cell. The estimated population total thus obtained is equal to the estimated population mean (Equation \@ref(eq:EstMeanCl)) multiplied by the area of the study area. 
+
 The sampling variance of the estimator of the mean with ppswr sampling of clusters is equal to (@coc77, Equation (9A.6)) 
 
 \begin{equation}
@@ -176,7 +178,7 @@ This sampling variance can be estimated by (@coc77, Equation (9A.22))
 where $\widehat{S^2}(\bar{z})$ is the estimated variance of cluster means (the between-cluster variance):
 
 \begin{equation}
-\widehat{S^2}(\bar{z}) = \frac{1}{n-1}\sum_{j \in \mathcal{S}}(\bar{z}_{j}-\hat{\bar{z}})^2 \;.
+\widehat{S^2}(\bar{z}) = \frac{1}{n-1}\sum_{j \in \mathcal{S}}(\bar{z}_{j}-\hat{\bar{\bar{z}}})^2 \;.
 (\#eq:S2EstMeanCl)
 \end{equation}
 
@@ -189,7 +191,7 @@ mz <- mean(mz_cl)
 se_mz <- sqrt(var(mz_cl)/n)
 ```
 
-The estimated mean equals `r round(mz,3)` g kg$^{-1}$, and the estimated standard error equals `r round(se_mz,3)` g kg$^{-1}$. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
+The estimated mean equals `r round(mz,3)` g kg^-1^, and the estimated standard error equals `r round(se_mz,3)` g kg^-1^. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
 
 The same estimates are obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. Argument `weights` specifies the  weights of the sampled clusters equal to $M/(M_j\; n)$ (Equation \@ref(eq:EstTotalCl)).
 
@@ -374,7 +376,7 @@ M_HT <- sum(1/mysample$pi)
 mz_ratio <- tz_HT/M_HT
 ```
 
-The $\pi$ estimate equals `r round(mz_HT,3)` g kg$^{-1}$, and the ratio estimate equals `r round(mz_ratio,3)` g kg$^{-1}$. The $\pi$ estimate of the population mean can also be computed by first computing totals of clusters, see Equations \@ref(eq:EstTotalClEqual) and \@ref(eq:EstMeanHTClEqual). 
+The $\pi$ estimate equals `r round(mz_HT,3)` g kg^-1^, and the ratio estimate equals `r round(mz_ratio,3)` g kg^-1^. The $\pi$ estimate of the population mean can also be computed by first computing totals of clusters, see Equations \@ref(eq:EstTotalClEqual) and \@ref(eq:EstMeanHTClEqual). 
 
 ```{r}
 tz_cluster <- tapply(mysample$z, INDEX=mysample$cluster, FUN=sum)
@@ -404,7 +406,7 @@ v_tz <- N^2*fpc*var(tz_cluster)/n
 se_mz_HT <- sqrt(v_tz/M^2)
 ```
 
-The estimated standard error equals `r round(se_mz_HT,3)` g kg$^{-1}$.
+The estimated standard error equals `r round(se_mz_HT,3)` g kg^-1^.
 
 To compute the variance of the ratio estimator of the population mean we first compute residuals of cluster totals:
 
@@ -500,7 +502,7 @@ mz <- sum(w_h*mz_h)
 se_mz <- sqrt(sum(w_h^2*v_mz_h))
 ```
 
-The estimated mean equals `r round(mz,3)` g kg$^{-1}$ and the estimated standard error equals 0.660 g kg$^{-1}$. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
+The estimated mean equals `r round(mz,3)` g kg^-1^ and the estimated standard error equals 0.660 g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
 
 ```{r}
 mysample$weights <- M_h[mysample$zonestratum]/

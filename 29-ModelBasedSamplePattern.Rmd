@@ -2,7 +2,7 @@
 
 In Chapter \@ref(MBgridspacing) a model of the spatial variation is used to optimise the spacing of a regular grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size.
 
-This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by $k$-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm $k$-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
+This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by *k*-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm *k*-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
 
 ## Spatial simulated annealing {#SSA}
 
@@ -164,7 +164,7 @@ save(mysample, trace, file="results/MBSample_OK_Uzbekistan.RData")
 
 The spatial pattern of the sample in Figure \@ref(fig:ModelBasedSampleOK) and the trace of the MKV in Figure \@ref(fig:TraceMOKV) suggest that we are close to the global optimum.
 
-```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sampling pattern optimised for the mean variance of ordinary kriging predictions of lnECe (Model-based sample) and spatial coverage sample (SCS) from the Cotton Research Farm."}
+```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sampling pattern optimised for the mean variance of ordinary kriging predictions of lnECe (Model-based sample) and spatial coverage sample from the Cotton Research Farm."}
 library(spcosa)
 load(file="results/MBSample_OK_Uzbekistan.RData")
 
@@ -177,7 +177,7 @@ myspcsample <- spsample(myStrata) %>% as(.,"data.frame")
 names(mysample) <- names(myspcsample)
 mysamples <- rbind(mysample,myspcsample)
 mysamples$design <- rep(c("Model-based sample","Spatial coverage sample"),each=50)
-
+#pdf(file="Samples_CRFUzbekistan.pdf", width = 7, height = 4)
 ggplot(data=mysamples) +
   geom_raster(data=EM_CRF, mapping=aes(x=x1/1000, y=x2/1000), fill="grey") +
   geom_point(data=mysamples, mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="black") +
@@ -185,7 +185,8 @@ ggplot(data=mysamples) +
   scale_y_continuous(name="Northing (km)") +
   facet_wrap(~ design) +
   coord_fixed()
-  
+#dev.off() 
+
 myspcsample$dummy <- 1
 coordinates(myspcsample)<- ~x1+x2
 #compute mean kriging variance of spatial coverage sample
@@ -339,7 +340,7 @@ Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample 
 load(file="results/MBSample_KED_Uzbekistan.RData")
 
 covars <- EM_CRF
-
+#pdf(file="Sample_KED_CRFUzbekistan.pdf", width = 7, height = 4)
 ggplot(data=covars) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000,fill=lnEM100cm)) +
   geom_point(data=mysample, mapping=aes(x=x/1000, y=y/1000), size=2,colour="black") +
@@ -347,6 +348,7 @@ ggplot(data=covars) +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
   coord_fixed()
+#dev.off()
 ```
 
 Comparing the population and sample histograms of the covariate clearly shows that locations with either small or large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sampling pattern is a compromise between spreading in geographic space and feature space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the estimator of the model-mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.

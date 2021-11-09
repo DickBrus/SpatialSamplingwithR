@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 26 Design-based, model-based, and model-assisted approach for sampling and inference | Spatial sampling with R</title>
   <meta name="description" content="This book is for students, scientists, researchers and consultants who want to know how to collect spatial data, either for estimating parameters for the population or several subpopulations, or for mapping. How many data do we need, and how to select the population units? The book presents a wide overview of spatial sampling designs. Besides there is a chapter on designs for sampling in space and time for monitoring. The emphasis is not on the theory, but on how to implement sampling designs in R and on how the (sub)population parameters can be estimated from the sample." />
-  <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 26 Design-based, model-based, and model-assisted approach for sampling and inference | Spatial sampling with R" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-11-03" />
+<meta name="date" content="2021-11-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,8 +33,9 @@
   
 <link rel="prev" href="Validation.html"/>
 <link rel="next" href="Answers.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -42,7 +43,6 @@
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
-
 
 
 
@@ -528,7 +528,7 @@ Figure 26.1: Random process considered in the design-based (top row) and model-b
 </div>
 <div id="iid" class="section level2" number="26.2">
 <h2><span class="header-section-number">26.2</span> “Identically and independently distributed” (i.i.d.)</h2>
-<p>In a recent review paper on spatial sampling by <span class="citation"><a href="#ref-Wang2012" role="doc-biblioref">Wang et al.</a> (<a href="#ref-Wang2012" role="doc-biblioref">2012</a>)</span> there is a section with the caption `Sampling of i.i.d populations’. Here i.i.d. stands for “identically and independently distributed.” In this section of <span class="citation"><a href="#ref-Wang2012" role="doc-biblioref">Wang et al.</a> (<a href="#ref-Wang2012" role="doc-biblioref">2012</a>)</span> we can read: “In SRS (simple random sampling) it is assumed that the population is independent and identically distributed.” This is one of the old misconceptions revitalised by this review paper. I will make clear that in statistics i.i.d is not a characteristic of populations, so the concept of i.i.d. populations does not make sense. The same misconception can be found in <span class="citation"><a href="#ref-Plant2012" role="doc-biblioref">Plant</a> (<a href="#ref-Plant2012" role="doc-biblioref">2012</a>)</span>: “There is considerable literature on sample size estimation, much of which is discussed by Cochran (1977, Chapter 4). This literature, however, is valid for samples of independent data but may not retain its validity for spatial data.” Also according to <span class="citation"><a href="#ref-Wang2010" role="doc-biblioref">Wang, Haining, and Cao</a> (<a href="#ref-Wang2010" role="doc-biblioref">2010</a>)</span> the classical formula for the variance of the estimator of the mean with simple random sampling, <span class="math inline">\(V=\sigma^2/n\)</span>, only holds when data are independent. They say: “However in the case of spatial data, although members of the sample are independent by construction, data values that are near to one another in space, are unlikely to be independent because of a fundamental property of attributes in space, which is that they show spatial structure or continuity (spatial autocorrelation).” According to <span class="citation"><a href="#ref-Wang2010" role="doc-biblioref">Wang, Haining, and Cao</a> (<a href="#ref-Wang2010" role="doc-biblioref">2010</a>)</span> the variance should be approximated by</p>
+<p>In a recent review paper on spatial sampling by <span class="citation"><a href="#ref-Wang2012" role="doc-biblioref">J. Wang et al.</a> (<a href="#ref-Wang2012" role="doc-biblioref">2012</a>)</span> there is a section with the caption `Sampling of i.i.d populations’. Here i.i.d. stands for “identically and independently distributed.” In this section of <span class="citation"><a href="#ref-Wang2012" role="doc-biblioref">J. Wang et al.</a> (<a href="#ref-Wang2012" role="doc-biblioref">2012</a>)</span> we can read: “In SRS (simple random sampling) it is assumed that the population is independent and identically distributed.” This is one of the old misconceptions revitalised by this review paper. I will make clear that in statistics i.i.d is not a characteristic of populations, so the concept of i.i.d. populations does not make sense. The same misconception can be found in <span class="citation"><a href="#ref-Plant2012" role="doc-biblioref">Plant</a> (<a href="#ref-Plant2012" role="doc-biblioref">2012</a>)</span>: “There is considerable literature on sample size estimation, much of which is discussed by Cochran (1977, Chapter 4). This literature, however, is valid for samples of independent data but may not retain its validity for spatial data.” Also according to <span class="citation"><a href="#ref-Wang2010" role="doc-biblioref">J. Wang, Haining, and Cao</a> (<a href="#ref-Wang2010" role="doc-biblioref">2010</a>)</span> the classical formula for the variance of the estimator of the mean with simple random sampling, <span class="math inline">\(V=\sigma^2/n\)</span>, only holds when data are independent. They say: “However in the case of spatial data, although members of the sample are independent by construction, data values that are near to one another in space, are unlikely to be independent because of a fundamental property of attributes in space, which is that they show spatial structure or continuity (spatial autocorrelation).” According to <span class="citation"><a href="#ref-Wang2010" role="doc-biblioref">J. Wang, Haining, and Cao</a> (<a href="#ref-Wang2010" role="doc-biblioref">2010</a>)</span> the variance should be approximated by</p>
 <p><span class="math display" id="eq:Wang2010">\[\begin{equation}
 V(\hat{\bar{z}})=\frac{\sigma^2 - \overline{\mathrm{Cov}(z_i,z_j)}}{n} \;,
 \tag{26.1}
@@ -563,7 +563,7 @@ Figure 26.4: Two series (a and b) of simple random samples of ten points (top) a
 Figure 26.5: Scatter plot of averages of 1,000 pairs of simple random samples of ten points (SI) and of averages of 1,000 pairs of systematic random samples of ten points on average (SY).
 </p>
 </div>
-<p>This sampling experiment shows that independence is not a characteristic of a population, as stated by <span class="citation"><a href="#ref-Wang2012" role="doc-biblioref">Wang et al.</a> (<a href="#ref-Wang2012" role="doc-biblioref">2012</a>)</span>, but of random variables (in the experiment the values at points, or the sample means) generated by a random process. As the random process differs between the design-based and model-based approach, independence has a different meaning in these two approaches. For this reason, it is imperative to be more specific when using the term independence, by saying that data are <em>design-independent</em> or that you <em>assume</em> that the data are <em>model-independent</em>.</p>
+<p>This sampling experiment shows that independence is not a characteristic of a population, as stated by <span class="citation"><a href="#ref-Wang2012" role="doc-biblioref">J. Wang et al.</a> (<a href="#ref-Wang2012" role="doc-biblioref">2012</a>)</span>, but of random variables (in the experiment the values at points, or the sample means) generated by a random process. As the random process differs between the design-based and model-based approach, independence has a different meaning in these two approaches. For this reason, it is imperative to be more specific when using the term independence, by saying that data are <em>design-independent</em> or that you <em>assume</em> that the data are <em>model-independent</em>.</p>
 </div>
 <div id="BiasandVariance" class="section level2" number="26.3">
 <h2><span class="header-section-number">26.3</span> Bias and variance</h2>
@@ -587,7 +587,7 @@ Figure 26.7: Histogram of the errors of ordinary kriging predictions from a pref
 <div id="effectivesamplesize" class="section level2" number="26.4">
 <h2><span class="header-section-number">26.4</span> Effective sample size</h2>
 <p>Another persistent misconception is that when estimating the variance of the estimator of the mean of a spatial population or the correlation of two variables of a population we must account for autocorrelation of the sample data. This misconception occurs, for instance, in <span class="citation"><a href="#ref-Griffith2005" role="doc-biblioref">Griffith</a> (<a href="#ref-Griffith2005" role="doc-biblioref">2005</a>)</span> and in various sections (for instance, Sections 3.5, 10.1 and 11.2) of <span class="citation"><a href="#ref-Plant2012" role="doc-biblioref">Plant</a> (<a href="#ref-Plant2012" role="doc-biblioref">2012</a>)</span>. The reasoning is that, due to the spatial autocorrelation in the sample data, there is less information in the data about the parameter of interest, and so the effective sample size is smaller than the actual sample size. An early example of this misconception is Barnes’ publication on the required sample size for estimating nonparametric tolerance intervals <span class="citation">(<a href="#ref-Barnes1988" role="doc-biblioref">Barnes 1988</a>)</span>. <span class="citation"><a href="#ref-dgr92" role="doc-biblioref">de Gruijter and ter Braak</a> (<a href="#ref-dgr92" role="doc-biblioref">1992</a>)</span> showed that a basic probability sampling design like simple random sampling requires fewer sampling points than the model-based sampling design proposed by Barnes.</p>
-<p>The misconception is caused by confusing population parameters with model parameters. Recall that the population mean and the model-mean are not the same; the model-mean <span class="math inline">\(\mu\)</span> of Equation <a href="Introkriging.html#eq:OKmodel">(21.1)</a> is the expectation of the population means over all populations that can be simulated with the model. The same holds for the variance of a variable and the covariance and Pearson correlation coefficient of two variables. All these parameters can be defined as a parameter of a (finite or infinite) population or of random variables generated by a superpopulation model. Using an effective sample size to quantify the variance of an estimator is perfectly correct for model parameters, but not so for population parameters. For instance, when the correlation coefficient is defined as a population parameter and sampling units are selected by simple random sampling, there is no need to apply the method proposed by <span class="citation"><a href="#ref-Clifford1989" role="doc-biblioref">Clifford, Richardson, and Hemon</a> (<a href="#ref-Clifford1989" role="doc-biblioref">1989</a>)</span> to correct the <em>p</em>-value in a significance test for the presence of spatial autocorrelation.</p>
+<p>The misconception is caused by confusing population parameters with model parameters. Recall that the population mean and the model-mean are not the same; the model-mean <span class="math inline">\(\mu\)</span> of Equation <a href="Introkriging.html#eq:OKmodel">(21.1)</a> is the expectation of the population means over all populations that can be simulated with the model. The same holds for the variance of a variable and the covariance and Pearson correlation coefficient of two variables. All these parameters can be defined as a parameter of a (finite or infinite) population or of random variables generated by a superpopulation model. Using an effective sample size to quantify the variance of an estimator is perfectly correct for model parameters, but not so for population parameters. For instance, when the correlation coefficient is defined as a population parameter and sampling units are selected by simple random sampling, there is no need to apply the method proposed by <span class="citation"><a href="#ref-Clifford1989" role="doc-biblioref">Clifford, Richardson, and Hémon</a> (<a href="#ref-Clifford1989" role="doc-biblioref">1989</a>)</span> to correct the <em>p</em>-value in a significance test for the presence of spatial autocorrelation.</p>
 <p>I elaborate on this for the mean as the parameter of interest. Suppose a sample is selected in some way (need not be random) and the sample mean is used as an estimator of the model-mean. Note that for a model with a constant mean as in Equation <a href="Introkriging.html#eq:OKmodel">(21.1)</a>, the sample mean is a model-unbiased estimator of the model-mean, but in general not the best linear unbiased estimator (BLUE) of the model-mean. If the random variables are model-independent, the variance of the sample mean, used as an estimator of the model-mean, can be computed by</p>
 <p><span class="math display" id="eq:VindModelMean">\[\begin{equation}
 V(\hat{\mu}) = \frac{\sigma^2}{n} \;,
@@ -636,7 +636,7 @@ Figure 26.10: Model-variance (MB) and design-variance (DB) of the average of sim
 Figure 26.11: Histograms of means and variances of 10,000 simulated populations.
 </p>
 </div>
-<p>Now let us return to Equation <a href="Approaches.html#eq:Wang2010">(26.1)</a>. What is wrong with this variance estimator? Where <span class="citation"><a href="#ref-Griffith2005" role="doc-biblioref">Griffith</a> (<a href="#ref-Griffith2005" role="doc-biblioref">2005</a>)</span> confused the population mean and the model-mean, <span class="citation"><a href="#ref-Wang2010" role="doc-biblioref">Wang, Haining, and Cao</a> (<a href="#ref-Wang2010" role="doc-biblioref">2010</a>)</span> confused the population variance with the sill (a priori variance) of the random process that has generated the population <span class="citation">(<a href="#ref-webster2007" role="doc-biblioref">Webster and Oliver 2007</a>)</span>. The parameter <span class="math inline">\(\sigma^2\)</span> in their formula is defined as the population variance. In doing so the variance estimator is clearly wrong. However, if we define <span class="math inline">\(\sigma^2\)</span> in this formula as the sill, the formula makes more sense, but even then, the equation is not fully correct. The variance computed with this equation is not the design-variance of the average of a simple random sample selected from the sampled population, but the <em>expectation</em> of this design-variance over all realisations of the model. So, it is a model-based prediction of the design-variance of the estimator of the population mean, estimated from a simple random sample, see Chapter <a href="MBpredictionofDesignVariance.html#MBpredictionofDesignVariance">13</a>. For the population actually sampled, the design-variance is either smaller or larger than this expectation. Figure <a href="Approaches.html#fig:HistogramsMeanVariance">26.11</a> shows that there is considerable variation in the population variance among the 10,000 populations simulated with the model. Consequently, for an individual population the variance of the estimator of the population mean, estimated from a simple random sample, can largely differ from the model-expectation of this variance. Do not use Equation <a href="Approaches.html#eq:Wang2010">(26.1)</a> for estimating the design-variance of the estimator of the population mean, but simply use Equation <a href="Approaches.html#eq:varmeanSRSwithout">(26.5)</a> (for simple random sampling with replacement and simple random sampling of infinite populations the term <span class="math inline">\((1-n/N)\)</span> can be dropped). Equation <a href="Approaches.html#eq:Wang2010">(26.1)</a> is only relevant for comparing simple random sampling under a variety of models of spatial variation (<span class="citation"><a href="#ref-Ripley1981" role="doc-biblioref">Ripley</a> (<a href="#ref-Ripley1981" role="doc-biblioref">1981</a>)</span>, <span class="citation"><a href="#ref-dom94" role="doc-biblioref">Domburg, de Gruijter, and Brus</a> (<a href="#ref-dom94" role="doc-biblioref">1994</a>)</span>).</p>
+<p>Now let us return to Equation <a href="Approaches.html#eq:Wang2010">(26.1)</a>. What is wrong with this variance estimator? Where <span class="citation"><a href="#ref-Griffith2005" role="doc-biblioref">Griffith</a> (<a href="#ref-Griffith2005" role="doc-biblioref">2005</a>)</span> confused the population mean and the model-mean, <span class="citation"><a href="#ref-Wang2010" role="doc-biblioref">J. Wang, Haining, and Cao</a> (<a href="#ref-Wang2010" role="doc-biblioref">2010</a>)</span> confused the population variance with the sill (a priori variance) of the random process that has generated the population <span class="citation">(<a href="#ref-webster2007" role="doc-biblioref">Webster and Oliver 2007</a>)</span>. The parameter <span class="math inline">\(\sigma^2\)</span> in their formula is defined as the population variance. In doing so the variance estimator is clearly wrong. However, if we define <span class="math inline">\(\sigma^2\)</span> in this formula as the sill, the formula makes more sense, but even then, the equation is not fully correct. The variance computed with this equation is not the design-variance of the average of a simple random sample selected from the sampled population, but the <em>expectation</em> of this design-variance over all realisations of the model. So, it is a model-based prediction of the design-variance of the estimator of the population mean, estimated from a simple random sample, see Chapter <a href="MBpredictionofDesignVariance.html#MBpredictionofDesignVariance">13</a>. For the population actually sampled, the design-variance is either smaller or larger than this expectation. Figure <a href="Approaches.html#fig:HistogramsMeanVariance">26.11</a> shows that there is considerable variation in the population variance among the 10,000 populations simulated with the model. Consequently, for an individual population the variance of the estimator of the population mean, estimated from a simple random sample, can largely differ from the model-expectation of this variance. Do not use Equation <a href="Approaches.html#eq:Wang2010">(26.1)</a> for estimating the design-variance of the estimator of the population mean, but simply use Equation <a href="Approaches.html#eq:varmeanSRSwithout">(26.5)</a> (for simple random sampling with replacement and simple random sampling of infinite populations the term <span class="math inline">\((1-n/N)\)</span> can be dropped). Equation <a href="Approaches.html#eq:Wang2010">(26.1)</a> is only relevant for comparing simple random sampling under a variety of models of spatial variation (<span class="citation"><a href="#ref-Ripley1981" role="doc-biblioref">Ripley</a> (<a href="#ref-Ripley1981" role="doc-biblioref">1981</a>)</span>, <span class="citation"><a href="#ref-dom94" role="doc-biblioref">Domburg, de Gruijter, and Brus</a> (<a href="#ref-dom94" role="doc-biblioref">1994</a>)</span>).</p>
 </div>
 <div id="ExploitSpatialStructure" class="section level2" number="26.5">
 <h2><span class="header-section-number">26.5</span> Exploiting spatial structure in design-based approach</h2>
@@ -1003,16 +1003,16 @@ bias = \frac{\frac{1}{5000}\sum_{s=1}^{5000} (\hat{\bar{z}}_s-\bar{z})}{\bar{z}}
 Barnes, R. J. 1988. <span>“Bounding the Required Sample Size for Geologic Site Characterization.”</span> <em>Mathematical Geology</em> 20: 477–90.
 </div>
 <div id="ref-Brus2021" class="csl-entry">
-Brus, D. J. 2021. <span>“<span class="nocase">Statistical approaches for spatial sample survey: Persistent misconceptions and new developments</span>.”</span> <em>European Journal of Soil Science</em>, June. <a href="https://doi.org/10.1111/ejss.12988">https://doi.org/10.1111/ejss.12988</a>.
+Brus, D. J. 2021. <span>“<span class="nocase">Statistical approaches for spatial sample survey: Persistent misconceptions and new developments</span>.”</span> <em>European Journal of Soil Science</em> 72 (June): 686–703. <a href="https://doi.org/10.1111/ejss.12988">https://doi.org/10.1111/ejss.12988</a>.
 </div>
 <div id="ref-bru97" class="csl-entry">
-———. 1997. <span>“Random Sampling or Geostatistical Modelling? <span>C</span>hoosing Between Design-Based and Model-Based Sampling Strategies for Soil (with <span>D</span>iscussion).”</span> <em>Geoderma</em> 80: 1–59.
+———. 1997. <span>“Random Sampling or Geostatistical Modelling? <span>C</span>hoosing Between Design-Based and Model-Based Sampling Strategies for Soil (with <span>D</span>iscussion).”</span> <em>Geoderma</em> 80 (1–2): 1–59.
 </div>
 <div id="ref-Cassel1977" class="csl-entry">
-Cassel, C. M., C. E. Särndal, and J. H. Wretman. 1977. <em>Foundations in Inference in Survey Sampling</em>. New York: Wiley.
+Cassel, C. M., C. E. Särndal, and J. H. Wretman. 1977. <em><span class="nocase">Foundations of inference in survey sampling</span></em>. New York: Wiley.
 </div>
 <div id="ref-Clifford1989" class="csl-entry">
-Clifford, P., S. Richardson, and D. Hemon. 1989. <span>“Assessing the Significance of the Correlation Between Two Spatial Processes.”</span> <em>Biometrics</em> 45: 123–34.
+Clifford, P., S. Richardson, and D. Hémon. 1989. <span>“Assessing the Significance of the Correlation Between Two Spatial Processes.”</span> <em>Biometrics</em> 45: 123–34.
 </div>
 <div id="ref-coc77" class="csl-entry">
 Cochran, W. G. 1977. <em>Sampling Techniques</em>. New York: Wiley.
@@ -1021,10 +1021,10 @@ Cochran, W. G. 1977. <em>Sampling Techniques</em>. New York: Wiley.
 de Gruijter, J. J., D. J. Brus, M. F. P. Bierkens, and M. Knotters. 2006. <em>Sampling for Natural Resource Monitoring</em>. Berlin: Springer.
 </div>
 <div id="ref-dgr90" class="csl-entry">
-de Gruijter, J. J., and C. J. F. ter Braak. 1990. <span>“Model-Free Estimation from Spatial Samples: A Reappraisal of Classical Sampling Theory.”</span> <em>Mathematical Geology</em> 22: 407–15.
+de Gruijter, J. J., and C. J. F. ter Braak. 1990. <span>“Model-Free Estimation from Spatial Samples: A Reappraisal of Classical Sampling Theory.”</span> <em>Mathematical Geology</em> 22 (4): 407–15.
 </div>
 <div id="ref-dgr92" class="csl-entry">
-———. 1992. <span>“Design-Based Versus Model-Based Sampling Strategies: Comment on <span>R.J. Barnes’</span> <span>‘<span>Bounding</span> the Required Sample Size for Geologic Site Characterization’</span>.”</span> <em>Mathematical Geology</em> 24: 859–64.
+———. 1992. <span>“Design-Based Versus Model-Based Sampling Strategies: Comment on <span>R.J. Barnes’</span> <span>‘<span>Bounding</span> the Required Sample Size for Geologic Site Characterization’</span>.”</span> <em>Mathematical Geology</em> 24 (7): 859–64.
 </div>
 <div id="ref-dom94" class="csl-entry">
 Domburg, P., J. J. de Gruijter, and D. J. Brus. 1994. <span>“A Structured Approach to Designing Soil Survey Schemes with Prediction of Sampling Error from Variograms.”</span> <em>Geoderma</em> 62: 151–64.
@@ -1033,16 +1033,16 @@ Domburg, P., J. J. de Gruijter, and D. J. Brus. 1994. <span>“A Structured Appr
 Griffith, D. A. 2005. <span>“Effective Geographic Sample Size in the Presence of Spatial Autocorrelation.”</span> <em>Annals of the Association of American Geographers</em> 95 (4): 740–60.
 </div>
 <div id="ref-han83" class="csl-entry">
-Hansen, M. H., W. G. Madow, and B. J. Tepping. 1983. <span>“An Evaluation of Model-Dependent and Probability Sampling Inferences in Sample-Surveys.”</span> <em>Journal of the American Statistical Association</em> 78: 805–7.
+Hansen, M. H., W. G. Madow, and B. J. Tepping. 1983. <span>“An Evaluation of Model-Dependent and Probability Sampling Inferences in Sample Surveys.”</span> <em>Journal of the American Statistical Association</em> 78 (384): 776–93.
 </div>
 <div id="ref-loh99" class="csl-entry">
-Lohr, S. L. 1999. <em>Sampling: Design and Analysis</em>. Pacific Grove, USA: Duxbury Press.
+Lohr, S. L. 1999. <em>Sampling: Design and Analysis</em>. Pacific Grove: Duxbury Press.
 </div>
 <div id="ref-Plant2012" class="csl-entry">
-Plant, R. E. 2012. <em><span class="nocase">Spatial data analysis in ecology and agriculture using R</span></em>. CRC Press.
+Plant, R. E. 2012. <em><span class="nocase">Spatial data analysis in ecology and agriculture using R</span></em>. Boca Raton: CRC Press.
 </div>
 <div id="ref-Ripley1981" class="csl-entry">
-Ripley, B. D. 1981. <em>Spatial Statistics</em>. John Wiley Sons, New York.
+Ripley, B. D. 1981. <em>Spatial Statistics</em>. New York: John Wiley &amp; Sons.
 </div>
 <div id="ref-sar92" class="csl-entry">
 Särndal, C. E., B. Swensson, and J. Wretman. 1992. <em>Model Assisted Survey Sampling</em>. New York: Springer.
@@ -1051,10 +1051,10 @@ Särndal, C. E., B. Swensson, and J. Wretman. 1992. <em>Model Assisted Survey Sa
 Wang, J., R. Haining, and Z. Cao. 2010. <span>“Sample Surveying to Estimate the Mean of a Heterogeneous Surface: Reducing the Error Variance Through Zoning.”</span> <em>International Journal of Geographical Information Science</em> 24 (4): 523–43. <a href="https://doi.org/10.1080/13658810902873512">https://doi.org/10.1080/13658810902873512</a>.
 </div>
 <div id="ref-Wang2012" class="csl-entry">
-Wang, J., A. Stein, B. Gao, and Y. Ge. 2012. <span>“A Review of Spatial Sampling.”</span> <em>Spatial Statistics</em> 2 (4): 1–14.
+Wang, J., A. Stein, B. Gao, and Y. Ge. 2012. <span>“A Review of Spatial Sampling.”</span> <em>Spatial Statistics</em> 2 (1): 1–14.
 </div>
 <div id="ref-webster2007" class="csl-entry">
-———. 2007. <em><span class="nocase">Geostatistics for Environmental Scientists, Second Edition</span></em>. Wiley, Chichester.
+———. 2007. <em><span class="nocase">Geostatistics for Environmental Scientists</span></em>. Second. Chichester: Wiley.
 </div>
 </div>
             </section>
@@ -1067,7 +1067,6 @@ Wang, J., A. Stein, B. Gao, and Y. Ge. 2012. <span>“A Review of Spatial Sampli
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -1108,7 +1107,7 @@ gitbook.start({
 },
 "download": ["SpatialSampling.epub"],
 "search": {
-"engine": "lunr",
+"engine": "fuse",
 "options": null
 },
 "toc": {

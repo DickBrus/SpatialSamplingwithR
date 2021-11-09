@@ -17,7 +17,6 @@ mysample$x <- grdHunterValley$Easting[res$index_samples]
 mysample$y <- grdHunterValley$Northing[res$index_samples]
 
 #Plot the selected points on top of one of the covariates
-library(ggplot2)
 ggplot(data=grdHunterValley) +
   geom_tile(mapping = aes(x = Easting, y = Northing, fill = cti))+  
   geom_point(data = mysample, mapping = aes(x = x, y = y), colour = "red") +
