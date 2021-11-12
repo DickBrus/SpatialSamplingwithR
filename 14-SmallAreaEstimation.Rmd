@@ -279,7 +279,7 @@ knitr::kable(
 
 The alternative is to save the selected units (the sample) in a `data.frame`, assigned to argument `data`. The results are identical because the true means of the covariate $x$ assigned to argument `exhaustive` contains all required information at the population level.
 
-For two ecoregions no estimate of the mean AGB is obtained (Table \@ref(tab:TableRegressionEstimatesEcoregions)). No units are selected from these domains. The estimated variance of the estimated domain mean is in the column g_var. In the estimated variance ext_var the first variance component of Equation \@ref(eq:Varregressionestimatorsmalldomain) is ignored. Note that for the ecoregions with a sample size of one unit (the sample size per domain is in column `n2G`) no estimate of the variance is available, because the variance of the estimated mean of the residuals cannot be estimated from one unit.
+For two ecoregions no regression estimate of the mean AGB is obtained (Table \@ref(tab:TableRegressionEstimatesEcoregions)). No units are selected from these domains. The estimated variance of the estimated domain mean is in the column g_var. In the estimated variance ext_var the first variance component of Equation \@ref(eq:Varregressionestimatorsmalldomain) is ignored. Note that for the ecoregions with a sample size of one unit (the sample size per domain is in column `n2G`) no estimate of the variance is available, because the variance of the estimated mean of the residuals cannot be estimated from one unit.
 
 Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plotted against the ratio estimates. The intercept of the line, fitted with ordinary least squares (OLS), is larger than 0, and the slope is smaller than 1. Using the regression model predictions in the estimation of the means leads to some smoothing.
 
@@ -303,7 +303,7 @@ ggplot(data=df) +
         coord_fixed()
 ```
 
-I quantified the gain in precision due to the use of the regression model by the variance of the ratio estimator divided by the variance of the regression estimator (Table \@ref(tab:TableGainRegressionestimator)). For ratios larger than 1 there is a gain in precision. Both variances are estimated from 1,000 repeated ratio and regression estimates obtained with simple random sampling without replacement of size 200. For all but two small ecoregions there is a gain. For quite a few ecoregions the gain is quite large. These are the ecoregions where the globally fitted regression model explains a large part of the spatial variation of AGB.
+I quantified the gain in precision of the estimated mean AGB due to the use of the regression model by the variance of the ratio estimator divided by the variance of the regression estimator (Table \@ref(tab:TableGainRegressionestimator)). For ratios larger than 1 there is a gain in precision. Both variances are estimated from 1,000 repeated ratio and regression estimates obtained with simple random sampling without replacement of size 200. For all but two small ecoregions there is a gain. For quite a few ecoregions the gain is quite large. These are the ecoregions where the globally fitted regression model explains a large part of the spatial variation of AGB.
 
 ```{r TableGainRegressionestimator, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -339,7 +339,7 @@ The variance can be estimated by
 \end{equation}
 
 This is equal to the first variance component of Equation \@ref(eq:Varregressionestimatorsmalldomain). 
-The synthetic estimate can be computed with function `twophase`, with arguments `psmall=FALSE` and element `unbiased=FALSE` in the list `small_area` .
+The synthetic estimate can be computed with function `twophase`, with arguments `psmall=FALSE` and element `unbiased=FALSE` in the list `small_area`.
 
 ```{r}
 res <- forestinventory::twophase(AGB~lnSWIR2, data=gridAmazonia,
@@ -370,7 +370,7 @@ md <- mean(d_estimates)
 d_vars <- df$g_variance.x-df$g_variance.y
 ```
 
-For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10^9^ kg ha^-1^. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error.
+For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10^9^ kg ha^-1^. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error (and therefore not shown in the table).
 
 ```{r, echo=FALSE}
 load(file="results/MeanAGB_ecoregions.RData")
@@ -491,6 +491,8 @@ res <- eblup.mse.f.wrap(domain.data=df_eco, lme.obj=lmm_AGB)
 df <- data.frame(Ecoregion=res$domain.ID, mb=res$EBLUP,
   se.1=res$EBLUP.se.1, se.2=res$EBLUP.se.2)
 ```
+
+Table \@ref(tab:TableRandomInterceptModelEstimates) shows the model-based predictions and the estimated standard errors of the mean AGB of the ecoregions, obtained with the random intercept model.
 
 (ref:TableRandomInterceptModelEstimateslabel) Model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, obtained with the random intercept model and lnSWIR2 as a predictor. se.1 and se.2 are standard errors, for explanation see text.
 
@@ -796,7 +798,7 @@ knitr::kable(
   kable_classic()
 ```
 
-For all three small domains the average of the 10,000 estimated means is about equal to the true mean (Table \@ref(tab:SmalldomainEstimates)). Also the mean of the 10,000 estimated standard errors is very close to the standard deviation of the 10,000 estimated means. The coverage rates of 95%, 90%, and 80% confidence intervals are about equal to the nominal coverage rates.
+For all three small domains the average of the 10,000 estimated means of AGB is about equal to the true mean (Table \@ref(tab:SmalldomainEstimates)). Also the mean of the 10,000 estimated standard errors is very close to the standard deviation of the 10,000 estimated means. The coverage rates of 95%, 90%, and 80% confidence intervals are about equal to the nominal coverage rates.
 
 This simple approach is feasible because at the domain level the two merged samples are a simple random sample. This  approach is also applicable when the first sample is a stratified simple random sample from the entire population, and the supplemental sample is a stratified simple random sample from a small domain using as strata the intersections of the strata used in the first phase and that domain.
 

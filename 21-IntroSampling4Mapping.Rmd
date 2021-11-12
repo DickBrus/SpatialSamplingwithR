@@ -125,53 +125,12 @@ n_h[3] <- n_h[3]+1
 print(n_h)
 ```
 
-Biome Forest.moist is by far the largest biome with a sample size of `r n_h[4]` points. The points from this biome are selected by balanced sampling with spreading in geographical space, using the covariate from remote sensing lnSWIR2 as a balancing variable.
+Biome Forest.moist is by far the largest biome with a sample size of `r n_h[4]` points.
 
-```{r}
-Biome_FM <- gridAmazonia[gridAmazonia$Biome=="Forest.moist",]
-library(BalancedSampling)
-Xbal <- cbind(rep(1, times=N_h[4]), Biome_FM$lnSWIR2)
-Xspread <- cbind(Biome_FM$x1, Biome_FM$x2)
-pi <- rep(n_h[4]/N_h[4], times=N_h[4])
-set.seed(314)
-units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=pi)
-mysample_FM <- Biome_FM[units,]
-```
-
-The sample sizes of the other three biomes are rather small, so I decided to keep it simple by selecting simple random samples from these three biomes.
-
-```{r}
-library(sampling)
-Biomes_NFM <- gridAmazonia[gridAmazonia$Biome!="Forest.moist",]
-ord <- unique(Biomes_NFM$Biome)
-units <- sampling::strata(
-  Biomes_NFM, stratanames="Biome", size=n_h[ord], method="srswor")
-mysample_NFM <- getdata(Biomes_NFM, units)
-```
-
-Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
-
-```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.cap="Balanced sample with geographical spreading from biome moist tropical forest, balanced on lnSWIR, and stratified simple random sample from other three biomes, Eastern Amazonia."}
-mysample <- rbind(mysample_FM[,c("x1","x2")], mysample_NFM[,c("x1","x2")])
-library(ggnewscale)
-
-ggplot() +
-  geom_tile(data=Biome_FM, mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
-  scale_fill_viridis_c(name="lnSWIR2") +
-  new_scale_fill() + 
-  scale_fill_discrete() +  
-  geom_tile(data=Biomes_NFM, mapping=aes(x=x1/1000, y=x2/1000, fill=Biome)) +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=1)+
-  scale_x_continuous(name="Easting (km)") +
-  scale_y_continuous(name="Northing (km)") +
-  coord_fixed()
-```
-
-### Balanced stratified random sampling
-
-A somewhat more advanced sampling  design is balanced sampling, using both the categorical variable biome and the continuous variable lnSWIR2 as balancing variables (Subsection \@ref(StratifiedsamplingasBalancedsampling)).
+In the next code chunk a balanced sample is selected with equal inclusion probabilities, using both the categorical variable biome and the continuous variable lnSWIR2 as balancing variables (Subsection \@ref(StratifiedsamplingasBalancedsampling)). The geographical coordinates are used as spreading variables.
 
 ```{r BalancedStratified}
+library(BalancedSampling)
 pi <- n_h/N_h
 stratalabels <- levels(gridAmazonia$Biome)
 lut <- data.frame(Biome=stratalabels, pi=as.numeric(pi))
@@ -184,18 +143,20 @@ units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=gridAmazonia$pi)
 mysample <- gridAmazonia[units,]
 ```
 
-```{r Sample4MappingandEstimationAmazonia2, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced stratified sample with geographical spreading, balanced on lnSWIR2 and the stratum sample sizes (biomes used as strata), Eastern Amazonia."}
+Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
+
+```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced sample of size 500 from Eastern Amazonia balanced on biome and lnSWIR2, with geographical spreading. Equal inclusion probabilities are used."}
 ggplot(data=gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
   scale_fill_viridis_c(name="lnSWIR2") +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000, shape=Biome), size=2)+
+  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000, shape=Biome), size=1.5)+
   scale_shape_manual(values=c(0,1,2,3), name="") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
   coord_fixed()
 ```
 
-I think these are suitable samples, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest.moist this population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
+I think this is a suitable sample, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest.moist this population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
 
 In this example I used one quantitative covariate, lnSWIR2, for balancing the sample. If we have a legacy sample that can be used to fit a linear or non-linear model, for instance a random forest using multiple covariates and factors as predictors (Chapter \@ref(Modelassisted)), then this model can be used to predict the study variable for all population units, so that we can use this variable with predictions of the study variable as a balancing variable, see Section \@ref(RandomForest).
 
@@ -209,7 +170,7 @@ The non-probability sampling designs for mapping described in the following chap
 
 Square and triangular grids are examples of geometric sampling designs; the sampling units show a regular, geometric spatial pattern. In other geometric sampling designs the spatial pattern is not perfectly regular. Yet these are classified as geometric sampling designs when the samples are obtained by minimising some geometric criterion, i.e. a criterion defined in terms of distances between the sampling units and the nodes of a fine prediction grid discretising the study area (Section \@ref(SpatialCoverage) and Chapter \@ref(kmeans)).
 
-In model-based sampling designs\index{Model-based sampling} the samples are obtained by minimising a criterion that is defined in terms of variances of prediction errors. An example is the mean kriging variance criterion, i.e. the average of the kriging variances over all nodes of the prediction grid. Model-based sampling therefore requires prior knowledge of the model of spatial variation. Such a model must be specified and justified. Once this model is given the sample can be optimised. In Chapter \@ref(MBgridspacing) I show how a spatial model can be used to optimise the spacing of a square grid given a requirement on the accuracy of the map. The grid spacing determines the number of sampling units, so this optimisation boils down to determining the required sample size. In Chapter \@ref(MBSamplePattern) I show how a sample of a given size can be further optimised through optimisation of the spatial coordinates of the sampling units.
+In model-based sampling designs\index{Model-based sampling} the samples are obtained by minimising a criterion that is defined in terms of variances of prediction errors. An example is the mean kriging variance criterion, i.e. the average of the kriging variances over all nodes of the prediction grid. Model-based sampling therefore requires prior knowledge of the model of spatial variation. Such a model must be specified and justified. Once this model is given the sample can be optimised. In Chapter \@ref(MBgridspacing) I will show how a spatial model can be used to optimise the spacing of a square grid given a requirement on the accuracy of the map. The grid spacing determines the number of sampling units, so this optimisation boils down to determining the required sample size. In Chapter \@ref(MBSamplePattern) I will show how a sample of a given size can be further optimised through optimisation of the spatial coordinates of the sampling units.
 
 In Chapter \@ref(GeneralIntro) the design-based and model-based approaches for sampling and statistical inference were introduced. Note that a model-based approach does not necessarily imply model-based sampling. The adjective model-based refers to the model-based inference, not to the selection of the units. In a model-based approach sampling units can be, but need not be, selected by model-based sampling. If they are, then both in selecting the units and in mapping a statistical model is used. In most cases the two models differ: once the  sample data are collected, these are used to update the postulated model used for sampling design. This updated model is then used for mapping.
 

@@ -12,7 +12,7 @@ A requirement of a valid selection method is that the same cluster is selected, 
 An example of an improper implementation of cluster random sampling is the following selection procedure. A cluster is defined as an E-W oriented transect of four units with a mutual spacing of 100 m. A cluster is selected by randomly selecting a starting unit. The remaining three units of the cluster are selected E of this starting unit. Units outside the study area are ignored. With this selection method the set of selected units is *not* independent of the starting unit, and therefore this selection method is invalid.
 ```
 
-Note that the size of the clusters, i.e. the number of units of a cluster, need not be constant. With the proper selection method described above the selection probability of a cluster is proportional to its size. With irregularly shaped study areas the size of the clusters can vary strongly. The size of the clusters can be controlled by subdividing the study area into blocks, for instance stripes perpendicular to the direction of the transects, or square blocks in case the clusters are grids. In this case, the remaining units are identified by extending the transect or grid until the boundary of the block. With irregularly shaped areas blocking will not entirely eliminate  the variation in cluster sizes\index{Cluster size}.
+Note that the size, i.e. the number of units, of a cluster need not be constant. With the proper selection method described above the selection probability of a cluster is proportional to its size. With irregularly shaped study areas the size of the clusters can vary strongly. The size of the clusters can be controlled by subdividing the study area into blocks, for instance stripes perpendicular to the direction of the transects, or square blocks in case the clusters are grids. In this case, the remaining units are identified by extending the transect or grid until the boundary of the block. With irregularly shaped areas blocking will not entirely eliminate  the variation in cluster sizes\index{Cluster size}.
 
 Cluster random sampling is illustrated with the selection of E-W oriented transects in Voorst. In order to delimit the length of the transects the study area is split into six 1 km $\times$ 1 km zones. In this case the zones have an equal size, but this is not needed. Note that these zones do not serve as strata. When used as strata, from each zone one or more clusters would be selected, see Section \@ref(StratifiedCl).  
 
@@ -54,16 +54,16 @@ M_cl <- tapply(grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
 grdVoorst$unit <- 1:nrow(grdVoorst)
 ```
 
-```{r clustersize, echo=FALSE, fig.cap="Frequency distribution of the size (number of units) of clusters in Voorst. Clusters are E-W oriented transects within zones, with a spacing of 100 m between units."}
+```{r clustersize, echo=FALSE, fig.cap="Frequency distribution of the size of clusters in Voorst. Clusters are E-W oriented transects within zones, with a spacing of 100 m between units."}
 cnts <- table(M_cl) %>% as.numeric(.)
 df <- data.frame(Size=seq(from=min(M_cl), to=max(M_cl), by=1), Count=cnts)
 ggplot(data = df) +
   geom_bar(aes(x=Size, y=Count), stat="identity")
 ```
 
-In total there are `r length(unique(grdVoorst$cluster))` clusters in the population. Figure \@ref(fig:clustersize) shows the frequency distribution of the size (number of grid cells) of the clusters.
+In total there are `r length(unique(grdVoorst$cluster))` clusters in the population. Figure \@ref(fig:clustersize) shows the frequency distribution of the size of the clusters.
 
-Clusters are selected with probabilities proportional to their size and with replacement (ppswr). So, the sizes of all clusters must be known, which explains that all clusters must be enumerated. Selection of clusters by ppswr can be done by simple random sampling with replacement of elementary units (centres of grid cells) and identifying the clusters to which these units belong. Finally, all units of the selected clusters are included in the sample. In the code chunk below a function is defined for selecting clusters by ppswr. Note the variable `cldraw`, that has value 1 for all units selected in the first draw, value 2 for all units selected in the second draw, etc. This variable is needed in estimating the population mean, as explained in Section \@ref(clustersamplingestimators).
+Clusters are selected with probabilities proportional to their size and with replacement (ppswr). So, the sizes of all clusters must be known, which explains that all clusters must be enumerated. Selection of clusters by ppswr can be done by simple random sampling with replacement of elementary units (centres of grid cells) and identifying the clusters to which these units belong. Finally, all units of the selected clusters are included in the sample. In the code chunk below a function is defined for selecting clusters by ppswr. Note variable `cldraw`, that has value 1 for all units selected in the first draw, value 2 for all units selected in the second draw, etc. This variable is needed in estimating the population mean, as explained in Section \@ref(clustersamplingestimators).
 
 ```{r}
 cl_ppswr <- function(sframe, n) {
@@ -211,7 +211,7 @@ A confidence interval estimate of the population mean can be computed with metho
 confint(svymean(~z, design_cluster, df=degf(design_cluster), level=0.95))
 ```
 
-Figure \@ref(fig:SamplingDistributionCl) shows the approximated sampling distribution of the pwr estimator of the mean with cluster random sampling and of the $\pi$ estimator with simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
+Figure \@ref(fig:SamplingDistributionCl) shows the approximated sampling distribution of the pwr estimator of the mean soil organic matter (SOM) concentration with cluster random sampling and of the $\pi$ estimator with simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
 
 ```{r, echo=FALSE, eval=FALSE}
 number_of_samples <- 10000
@@ -279,7 +279,7 @@ ggplot(n_df) +
 #### Exercises {-}
 
 1. Write an **R** script to compute the true sampling variance of the estimator of the mean SOM concentration in Voorst for cluster random sampling and clusters selected with ppswr, $n = 6$, see Equation \@ref(eq:TrueVarEstMeanCl). Compare the sampling variance for cluster random sampling with the sampling variance for simple random sampling with a sample size equal to the expected sample size of cluster random sampling.  
-2. As an alternative we may select three times a transect, using three 2 km $\times$ 1 km zones obtained by joining two neighbouring 1 km $\times$ 1 km zones of Figure \@ref(fig:ClVoorst). Do you expect that the sampling variance of the estimator of the  mean is equal to or larger or smaller than that of the sampling design with six transects of half the length?   
+2. As an alternative we may select three times a transect, using three 2 km $\times$ 1 km zones obtained by joining two neighbouring 1 km $\times$ 1 km zones of Figure \@ref(fig:ClVoorst). Do you expect that the sampling variance of the estimator of the population mean is equal to, larger, or smaller than that of the sampling design with six transects of half the length?   
 
 ## Clusters selected with probabilities proportional to size, without replacement
 
@@ -502,7 +502,7 @@ mz <- sum(w_h*mz_h)
 se_mz <- sqrt(sum(w_h^2*v_mz_h))
 ```
 
-The estimated mean equals `r round(mz,3)` g kg^-1^ and the estimated standard error equals 0.660 g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
+The estimated mean equals `r round(mz,3)` g kg^-1^, and the estimated standard error equals 0.660 g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
 
 ```{r}
 mysample$weights <- M_h[mysample$zonestratum]/

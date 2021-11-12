@@ -67,7 +67,7 @@ mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
 
 Figure \@ref(fig:TwostageVoorst) shows the selected sample.
 
-```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten SSus (points) are selected from that PSU by simple random sampling."}
+```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten SSUs (points) are selected from that PSU by simple random sampling."}
 ggplot(data=grdVoorst) +        
   geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(psu))) +
   scale_fill_viridis_d(alpha=0.5) +
@@ -87,7 +87,7 @@ The population total can be estimated by substituting the estimated cluster (PSU
 (\#eq:EstTotalTwostage)
 \end{equation}
 
-where $n$ is the number of PSU selections and $M_{j}$ is total number of SSUs in PSU $j$. This shows that the mean of cluster $j$, $\bar{z}_j$, is replaced by the estimated mean of PSU $j$, $\hat{\bar{z}}_j$. Dividing this estimator by the total number of population units $M$ gives the pwr  estimator of the population mean:
+where $n$ is the number of PSU selections and $M_{j}$ is the total number of SSUs in PSU $j$. This shows that the mean of cluster $j$, $\bar{z}_j$, is replaced by the estimated mean of PSU $j$, $\hat{\bar{z}}_j$. Dividing this estimator by the total number of population units $M$ gives the pwr  estimator of the population mean:
 
 \begin{equation}
 \hat{\bar{\bar{z}}}=
@@ -208,7 +208,7 @@ A confidence interval estimate of the population mean can be computed with metho
 confint(svymean(~z, design_2stage, df=degf(design_2stage), level=0.95))
 ```
 
-Figure \@ref(fig:SamplingDistributionTwostage) shows the approximated sampling distribution of the pwr estimator of the population mean with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
+Figure \@ref(fig:SamplingDistributionTwostage) shows the approximated sampling distribution of the pwr estimator of the mean soil organic matter (SOM) concentration with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
 
 ```{r, echo = FALSE, eval=FALSE}
 number_of_samples <- 10000
@@ -233,7 +233,7 @@ for (i in 1:number_of_samples) {
 save(mz, mz_SI, v_mz, file="results/Twostage_Voorst.RData")
 ```
 
-(ref:SamplingDistributionTwostagelabel) Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg^-1^) in Voorst with two-stage cluster random sampling (Twostage) and of the $\pi$ estimator with simple random sampling (SI). The sample size with both sampling designs is 40. In two-stage sampling four PSUs are selected by ppswr and ten SSus (points) are selected per PSU-draw by simple random sampling.
+(ref:SamplingDistributionTwostagelabel) Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg^-1^) in Voorst with two-stage cluster random sampling (Twostage) and of the $\pi$ estimator with simple random sampling (SI). The sample size with both sampling designs is 40. In two-stage sampling four PSUs are selected by ppswr and ten SSUs (points) are selected per PSU draw by simple random sampling.
 
 ```{r SamplingDistributionTwostage, echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionTwostagelabel)"}
 load(file="results/Twostage_Voorst.RData")
@@ -257,11 +257,11 @@ Optimal sample sizes for two-stage cluster random sampling (ppswr in first stage
 
 #### Exercises {-}
 
-1. Write an **R** script to compute for Voorst the true sampling variance of the estimator of the population mean for two-stage cluster random sampling, PSUs selected by ppswr, $n=4$, and $m=10$, see Equation \@ref(eq:TrueVarEstMeanTwostage).   
+1. Write an **R** script to compute for Voorst the true sampling variance of the estimator of the mean SOM concentration for two-stage cluster random sampling, PSUs selected by ppswr, $n=4$, and $m=10$, see Equation \@ref(eq:TrueVarEstMeanTwostage).   
 2. Do you expect that the standard error of the estimated population mean with ten PSU draws ($n=10$) and four SSUs per PSU draw ($m=4$) is larger or smaller than with four PSU draws ($n=4$) and ten SSUs per PSU draw ($m=10$)?  
-3. Compute the optimal sample sizes $n$ and $m$ for a maximum variance of the estimator of the population mean of 1, $c_1=2$ and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt) and \@ref(eq:mopt).  
-4. Compute the optimal sample sizes $n$ and $m$ for a budget of 100 monetary units,  $c_1=2$ monetary units and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt2) and \@ref(eq:mopt).  
-5. Use function `clusOpt2` of **R** package **PracTools** to compute optimal sample sizes given the precision requirement for the estimated population mean of Exercise 3 and given the budget of Exercise 4. First use function `BW2stagePPS` to compute the variance measures needed as input for function ` optClus2`. Note that the precision requirement of function `clusOpt2` is the coefficient of variation of the estimated population total, i.e. the standard deviation of the estimated population total divided by the population total. Compute this coefficient of variation from the maximum variance of the estimator of the population mean used in Exercise 3.  
+3. Compute the optimal sample sizes $n$ and $m$ for a maximum variance of the estimator of the mean SOM concentration of 1, $c_1=2$ monetary units and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt) and \@ref(eq:mopt).  
+4. Compute the optimal sample sizes $n$ and $m$ for a budget of 100 monetary units,  $c_1=2$ monetary units, and $c_2=1$ monetary unit, see Equations \@ref(eq:nopt2) and \@ref(eq:mopt).  
+5. Use function `clusOpt2` of **R** package **PracTools** to compute optimal sample sizes given the precision requirement for the estimated population mean of Exercise 3 and given the budget of Exercise 4. First use function `BW2stagePPS` to compute the variance measures needed as input for function `clusOpt2`. Note that the precision requirement of function `clusOpt2` is the coefficient of variation of the estimated population total, i.e. the standard deviation of the estimated population total divided by the population total. Compute this coefficient of variation from the maximum variance of the estimator of the population mean used in Exercise 3.  
 6. The variance of the estimator for the population total is [@coc77]:
 \begin{equation}
 V(\hat{t}(z)) = \frac{1}{n} \sum_{j=1}^N p_j\left(\frac{t_j(z)}{p_j}-t(z)\right)^2 + \frac{1}{n} \sum_{j=1}^N \frac{M_j^2 (1-f_{2j})S^2_j}{m_j p_j}  \;,
@@ -411,7 +411,7 @@ mysample$s1 <- jitter(mysample$s1, amount=cellsize/2)
 mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
 ```
 
-```{r STtwostage, echo=FALSE, out.width='100%', fig.cap="Stratified two-stage random sample from Voorst. Strata are groups of eight PSUs (0.5 km squares) within 2 km $\\times$ 1 km blocks. From each stratum two times a PSU is selected by ppswr, and six SSUs (points) are selected per PSU-draw by simple random sampling."}
+```{r STtwostage, echo=FALSE, out.width='100%', fig.cap="Stratified two-stage random sample from Voorst. Strata are groups of eight PSUs (0.5 km squares) within 2 km $\\times$ 1 km blocks. From each stratum two times a PSU is selected by ppswr, and six SSUs (points) are selected per PSU draw by simple random sampling."}
 ggplot(grdVoorst) +        
   geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(psu))) +
   scale_fill_viridis_d(alpha=0.5) +

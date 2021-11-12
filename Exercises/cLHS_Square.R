@@ -20,7 +20,7 @@ ggplot(data=grid) +
   coord_fixed()
 
 probs <- seq(from=0,to=1,length.out = 16 + 1)
-breaks <- apply(grid[,c(1,2,3)],MARGIN=2,FUN=function(x) quantile(x,probs=probs,type=3))
+breaks <- apply(grid[,c(1,2,3)],MARGIN=2,FUN=function(x) quantile(x,probs=probs))
 counts <- lapply(1:3, function (i) 
   hist(myclhsample[, i], breaks[,i], plot = FALSE)$counts
 )
@@ -40,4 +40,4 @@ ggplot(tracedf) +
   geom_line(mapping = aes(x=1:nrow(tracedf),y = trace), colour = "black",size=0.8) +
   scale_x_continuous(name = "Iteration") +
   scale_y_continuous(name = "Criterion")
-tail(trace)
+tail(trace, n=1)

@@ -2,7 +2,7 @@
 
 In Chapter \@ref(MBgridspacing) a model of the spatial variation is used to optimise the spacing of a regular grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size.
 
-This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by *k*-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm *k*-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
+This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Chapter \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD), which was minimised by k-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm k-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} (SSA) is used. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
 
 ## Spatial simulated annealing {#SSA}
 
@@ -62,7 +62,7 @@ grid.arrange(plt1, plt2, nrow=1)
 
 In ordinary kriging (OK) we assume a constant model-mean. No covariates are available that are related to the study variable. Optimisation of the sampling pattern for OK is illustrated with the Cotton Research Farm in Uzbekistan, which was used before to illustrate spatial response surface sampling (Chapter \@ref(SpatialResponseSurface)). The spatial coordinates of 50 sampling locations are optimised for mapping of the electrical conductivity (ECe) of the soil by OK. In this section the coordinates of the sampling points are optimised for OK. In Section \@ref(SamplePatternKED) this is done for kriging with an external drift. In that section a map of interpolated electromagnetic induction (EM) measurements is used to further optimise the coordinates of the sampling points. 
 
-Model-based optimisation of the sampling pattern for OK requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the years 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package [@peb04], because this function requires the output of function `variogram` as input, whereas the sample semivariogram is here computed in a different way.
+Model-based optimisation of the sampling pattern for OK requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the years 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural-log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package [@peb04], because this function requires the output of function `variogram` as input, whereas the sample semivariogram is here computed in a different way.
 
 ```{block2, type='rmdnote'}
 The sample semivariogram is computed by first estimating sample semivariograms for each of the eight surveys separately, followed by computing weighted averages of semivariances and distances per lag, using the numbers of pairs as weights (**R** code not shown).
@@ -141,8 +141,8 @@ candi <- EM_CRF[,c(1,2)]
 names(candi) <- c("x","y")
 schedule <- scheduleSPSANN(
   initial.acceptance=0.8,
-  initial.temperature=0.002, temperature.decrease=0.95,
-  chains=500, chain.length=5, stopping=20, cellsize=25)
+  initial.temperature=0.004, temperature.decrease=0.95,
+  chains=500, chain.length=5, stopping=20, cellsize=25) #20
 ```
 
 The **R** code for optimising the sampling pattern is as follows.
@@ -433,7 +433,7 @@ infillSample <- res$points[ids,]
 save(res, file="results/MBInfillSample_OK_Ethiopia.RData")
 ```
 
-Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the SOM concentration across the three woredas in Ethiopia. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range of `r round(vgm_ML$phi,1)` km of the semivariogram.
+Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the soil organic matter (SOM) concentration (wt%) across the three woredas in Ethiopia. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range of `r round(vgm_ML$phi,1)` km of the semivariogram.
 
 ```{r ModelBasedInfill, echo=FALSE, fig.cap="Model-based infill sample for ordinary kriging of the SOM concentration across three woredas of Ethiopia. Legacy units have free-value 0, infill units have free-value 1."}
 load("results/MBInfillSample_OK_Ethiopia.RData")

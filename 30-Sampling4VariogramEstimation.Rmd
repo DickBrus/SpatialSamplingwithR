@@ -49,7 +49,7 @@ SelectPair <- function(start, h, area){
 }
 ```
 
-The **R** code below shows the selection of a nested sample from Hunter Valley using both versions. Only one main station is selected. In total sixteen points are selected in four stages. The separation distances are 2000, 1000, 500 and 250 m. Sixteen points is not enough for estimating the semivariogram and a multiplier of two is rather small, but this example is for illustrative purpose only.
+The **R** code below shows the selection of a nested sample from Hunter Valley using both versions. Only one main station is selected. In total sixteen points are selected in four stages. The separation distances are 2,000, 1,000, 500 and 250 m. Sixteen points is not enough for estimating the semivariogram and a multiplier of two is rather small, but this example is for illustrative purpose only.
 
 Note that the separation distances are in descending order. The largest separation distance should not be chosen too large, because then, when the main station is somewhere in the middle of the study area, it may happen that using the first version no pair can be found with that separation distance. A similar problem may occur with the second version when in subsequent stages a station is selected near the border of the study area. A copy of the data frame `grd` is made because both the original data frame is needed, as well as a gridded version of this data frame.   
 
@@ -187,7 +187,7 @@ ggplot(df) +
 
 For unbalanced nested designs\index{Nested sampling!unbalanced nested sampling} the variance components can be estimated by restricted maximum likelihood\index{Restricted maximum likelihood estimation} (REML) [@Webster2006]. REML estimation is also recommended if in Equation \@ref(eq:ANOVAmodelnested) instead of a constant mean $\mu$ the mean is a linear combination of one or more covariates (fixed effects). The semivariances at the chosen separation distances are obtained by cumulating the estimated variance components.
 
-The **R** code below shows how the variance components and semivariances can be estimated, once the data are collected and added to the data frame, with function `lme` of the package **nlme** [@Pinheiro2014]. This function fits linear mixed-effects models and allows for nested random effects. It can be used both for balanced and unbalanced nested samples, and for a constant mean or a mean that is a linear combination of covariates. Argument `fixed` is a formula describing the fixed effects, with the response variable on the left-hand side of the  ~ operator and the covariates for the mean on the right-hand side. If a constant mean is assumed, as in our example, this is indicated by a 1 on the right-hand side of the  ~ operator. Argument `random` is a one-sided formula (no response variable is on the left-hand side of the ~ operator). On the right-hand side of the $|$ separator, the nested structure of the data is specified using the factors of Figure \@ref(fig:FactorLevelsBalancedNestedSample). The 1 on the left-hand side of the $|$ separator means that we assume that all regression coefficients associated with the covariates are fixed (non-random) quantities.
+The **R** code below shows how the variance components and semivariances can be estimated, once the data are collected and added to the data frame, with function `lme` of the package **nlme** [@nlme]. This function fits linear mixed-effects models and allows for nested random effects. It can be used both for balanced and unbalanced nested samples, and for a constant mean or a mean that is a linear combination of covariates. Argument `fixed` is a formula describing the fixed effects, with the response variable on the left-hand side of the  ~ operator and the covariates for the mean on the right-hand side. If a constant mean is assumed, as in our example, this is indicated by a 1 on the right-hand side of the  ~ operator. Argument `random` is a one-sided formula (no response variable is on the left-hand side of the ~ operator). On the right-hand side of the $|$ separator, the nested structure of the data is specified using the factors of Figure \@ref(fig:FactorLevelsBalancedNestedSample). The 1 on the left-hand side of the $|$ separator means that we assume that all regression coefficients associated with the covariates are fixed (non-random) quantities.
 
 ```{r EstimateVarianceComponents, eval=FALSE}
 library(nlme)
@@ -204,9 +204,9 @@ Random sampling of the points is not strictly needed because a model-based appro
 
 #### Exercises {-}
 
-1. Write an **R** script to select with the first version a balanced nested sample from Hunter Valley. Use as separation distances 1,000, 500, 200, 100 and 50 m.  
+1. Write an **R** script to select with the first version a balanced nested sample from Hunter Valley. Use as separation distances 1,000, 500, 200, 100, and 50 m.  
     + Add the factors that are needed for estimating the variance components to the `data.frame` with the selected sampling points.
-    + Overlay the sampling points with the `SpatialPixelsDataFrame` and estimate the semivariances for the attribute compound topographic index (cti).
+    + Overlay the sampling points with the `SpatialPixelsDataFrame`, and estimate the semivariances for the attribute compound topographic index (cti).
 
 ## Independent sampling of pairs of points
 
@@ -367,8 +367,8 @@ grid.arrange(plt1, plt2, plt3, nrow=2)
 
 #### Exercises {-}
 
-2. Write an **R** script to select simple random samples of pairs of points for estimating the semivariogram of cti in Hunter Valley. Use as separation distances 25, 50, 100, 200 and 400 m. Note that these separation distances are smaller than used above. Select 100 pairs per separation distance.
-    + Compute the sample semivariogram and estimate a spherical model with nugget using function `nls`.
+2. Write an **R** script to select simple random samples of pairs of points for estimating the semivariogram of cti in Hunter Valley. Use as separation distances 25, 50, 100, 200, and 400 m. Note that these separation distances are smaller than those used above. Select 100 pairs per separation distance.
+    + Compute the sample semivariogram, and estimate a spherical model with nugget using function `nls`.
     + Compare the estimated semivariogram parameters with the estimates obtained with the larger separation distances.
     + Estimate the variance-covariance matrix of the estimated semivariogram parameters by bootstrapping.
     + Compare the variances of the estimated semivariogram parameters with the variances obtained with the larger separation distances. Which variance is changed most?
@@ -446,7 +446,7 @@ logdet0 <- determinant(invI, logarithm=TRUE)$modulus
 
 The estimated standard error of the estimator of the ratio of spatial dependence parameter $\xi$ equals `r signif(sqrt(invI[1,1]),2)` (the square root of the value in the first column and first row of the inverse Fisher information matrix) and of the distance parameter $\phi$ the estimated standard error is  `r signif(sqrt(invI[2,2]),3)` m (the square root of the value in the second row and second column). The joint uncertainty about the semivariogram parameters, as quantified by the log of the determinant of the matrix equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the locations of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note that a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
 
-Function `optimUSER` of package **spsann** can be used to search for the sampling locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). Package **spsann** cannot deal with the `r nrow(grdHunterValley)` candidate grid nodes of Hunter Valley; these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. The objective function `logdet` is defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R). Argument `points` specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample (but this is not the simple random sample used above to illustrate the computations). Argument `model`  of function `optimUSER` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. `Argument` perturbation specifies how much the semivariogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
+Function `optimUSER` of package **spsann** can be used to search for the sampling locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). Package **spsann** cannot deal with the 22,124 candidate grid nodes of Hunter Valley; these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. The objective function `logdet` is defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R). Argument `points` specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample (but this is not the simple random sample used above to illustrate the computations). Argument `model`  of function `optimUSER` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. `Argument` perturbation specifies how much the semivariogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
 
 ```{r, echo=FALSE}
 grd <- grdHunterValley
@@ -916,7 +916,7 @@ plot(myStrata) +
 
 Figure \@ref(fig:FigMBEK) shows that with MAKV as a minimisation criterion there is one point that is very close to a spatial coverage sample point (distance $<2$ m). A histogram of the shortest distance to the spatial coverage sample is shown in Figure \@ref(fig:HistogramShortestDistance). With MEAC two points are at very short distance of the spatial coverage sample ($<3$ m). The average distance between neighbouring spatial coverage sampling points equals `r round(mDSCmin,0)`. 
 
-```{r HistogramShortestDistance, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Shortest distance to the spatial coverage sample of the supplemental sample, optimised with the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC), ."}
+```{r HistogramShortestDistance, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Shortest distance to the spatial coverage sample of the supplemental sample, optimised with the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC)."}
 
 df <- data.frame(MAKV=DminAV, MEAC=DminEAC)
 
