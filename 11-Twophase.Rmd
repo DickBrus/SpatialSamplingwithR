@@ -52,8 +52,8 @@ load("data/Voorst.RData")
 n1 <- 100
 set.seed(123)
 N <- nrow(grdVoorst)
-units <- sample(N, size=n1, replace=FALSE)
-mysample <- grdVoorst[units,]
+units <- sample(N, size = n1, replace = FALSE)
+mysample <- grdVoorst[units, ]
 ```
 
 The simple random sample is subsampled by stratified simple random sampling, using the soil-land use classes as strata. The total sample size of the second phase is set to 40. The number of points in the simple random sample per stratum is determined. Then the subsample size per stratum is computed for proportional allocation. Finally, function `strata` of package **sampling** [@Tille2016] is used to select a stratified simple random sample without replacement, see Chapter \@ref(STSI) for details. At the 40 points of the second-phase the soil organic matter concentration (SOM) is measured.
@@ -61,21 +61,21 @@ The simple random sample is subsampled by stratified simple random sampling, usi
 ```{r}
 library(sampling)
 n2 <- 40
-n1_h <- tapply(mysample$z, INDEX=mysample$stratum, FUN=length)
-n2_h <- round(n1_h/n1*n2, 0)
+n1_h <- tapply(mysample$z, INDEX = mysample$stratum, FUN = length)
+n2_h <- round(n1_h / n1 * n2, 0)
 n2_h_ord <- n2_h[unique(mysample$stratum)]
-units <- sampling::strata(mysample, stratanames="stratum",
-  size=n2_h_ord, method="srswor")
+units <- sampling::strata(mysample, stratanames = "stratum",
+  size = n2_h_ord, method = "srswor")
 mysubsample <- getdata(mysample, units)
 table(mysubsample$stratum)
 ```
 
-```{r DoubleSampleVoorst, echo=FALSE, out.width='100%', fig.cap="Two-phase sample for stratification from Voorst. Coloured dots: first-phase sample of 100 points selected by simple random sampling, with observations of the soil-land use combination.  Triangles: second-phase sample of 40 points selected by stratified simple random subsampling of the first-phase sample, using the soil-land use combinations as strata, with measurements of SOM."}
+```{r DoubleSampleVoorst, echo = FALSE, out.width = '100%', fig.cap = "Two-phase sample for stratification from Voorst. Coloured dots: first-phase sample of 100 points selected by simple random sampling, with observations of the soil-land use combination.  Triangles: second-phase sample of 40 points selected by stratified simple random subsampling of the first-phase sample, using the soil-land use combinations as strata, with measurements of SOM."}
 ggplot() +
-  geom_raster(data=grdVoorst,mapping = aes(x = s1/1000, y = s2/1000), fill="grey") +
-  geom_point(data=mysample,mapping = aes(x = s1/1000,y = s2/1000, colour=stratum), size = 1.5) +
-  scale_fill_manual(name = "", values = c(BA="darkgreen", EA="brown", PA="orange", RA="green", XF="grey")) +  
-  geom_point(data=mysubsample,mapping=aes(x = s1/1000, y = s2/1000), size=2.5, shape=2)+
+  geom_raster(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
+  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000, colour = stratum), size = 1.5) +
+  scale_fill_manual(name = "", values = c(BA = "darkgreen", EA = "brown", PA = "orange", RA = "green", XF = "grey")) +
+  geom_point(data = mysubsample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 2.5, shape = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
@@ -93,8 +93,8 @@ With simple random sampling in the first phase and stratified simple random samp
 where $H_{\mathcal{S}_1}$ is the number of strata used for stratification of the first-phase sample, $n_{1h}$ is the number of units in the first-phase sample that form stratum $h$ in the second phase, $n_{1}$ is the total number of units of the first-phase sample, and $\bar{z}_{\mathcal{S}_{2h}}$ is the mean of the subsample from stratum $h$.
 
 ```{r}
-mz_h_subsam <- tapply(mysubsample$z, INDEX=mysubsample$stratum, FUN=mean)
-mz <- sum(n1_h/n1*mz_h_subsam, na.rm=TRUE)
+mz_h_subsam <- tapply(mysubsample$z, INDEX = mysubsample$stratum, FUN = mean)
+mz <- sum(n1_h / n1 * mz_h_subsam, na.rm = TRUE)
 ```
 
 The estimated population mean equals `r round(mz,1)` g kg^-1^. The sampling variance over repeated sampling with both designs can be approximated^[In the approximation it is assumed that $N$ is much larger than $n_1$, and $(n_{1h}-1)/(n_1-1)$ is replaced by $n_{1h}/n_1$.] by (@sar92, Equation at bottom of p. 353)
@@ -110,11 +110,11 @@ with $\widehat{S^2}_{\mathcal{S}_{2h}}$ the variance of $z$ in the subsample fro
 
 
 ```{r}
-S2z_h_subsam <- tapply(mysubsample$z, INDEX=mysubsample$stratum, FUN=var)
-w1_h <- n1_h/n1
-v_mz_1 <- sum(w1_h^2*S2z_h_subsam/n2_h)
-v_mz_2 <- 1/n1*sum(w1_h*(mz_h_subsam-mz)^2)
-se_mz <- sqrt(v_mz_1+v_mz_2)
+S2z_h_subsam <- tapply(mysubsample$z, INDEX = mysubsample$stratum, FUN = var)
+w1_h <- n1_h / n1
+v_mz_1 <- sum(w1_h^2 * S2z_h_subsam / n2_h)
+v_mz_2 <- 1 / n1 * sum(w1_h * (mz_h_subsam - mz)^2)
+se_mz <- sqrt(v_mz_1 + v_mz_2)
 ```
 
 The estimated standard error equals `r round(se_mz,1)` g kg^-1^.
@@ -128,22 +128,22 @@ mysample$ind[units$ID_unit] <- TRUE
 mysample$fpc1 <- N
 labels <- sort(unique(mysample$stratum))
 fpc2 <- n1_h
-lut <- data.frame(stratum=labels, fpc2)
-mysample <- merge(x=mysample, y=lut)
+lut <- data.frame(stratum = labels, fpc2)
+mysample <- merge(x = mysample, y = lut)
 mysample$stratum <- as.factor(mysample$stratum)
 design_2phase <- survey::twophase(
-  id=list(~1,~1), strata=list(NULL,~stratum),
-  data=mysample, subset=~ind, fpc=list(~fpc1,~fpc2))
-svymean(~z, design_2phase)
+  id = list(~ 1, ~ 1), strata = list(NULL, ~ stratum),
+  data = mysample, subset = ~ ind, fpc = list(~ fpc1, ~ fpc2))
+svymean(~ z, design_2phase)
 ```
 
 As shown in the next code chunk the standard error is computed with the original variance estimator, without approximation (@sar92, Equation (9.4.14)).
 
 ```{r}
-v_mz_1 <- 1/N^2*N*(N-1)*
-  sum((((n1_h-1)/(n1-1))-((n2_h-1)/(N-1)))*w1_h*S2z_h_subsam/n2_h)
-v_mz_2 <- 1/N^2*(N*(N-n1))/(n1-1)*sum(w1_h*(mz_h_subsam-mz)^2)
-sqrt(v_mz_1+v_mz_2)
+v_mz_1 <- 1 / N^2 * N * (N - 1) *
+  sum((((n1_h - 1) / (n1 - 1)) - ((n2_h - 1) / (N - 1))) * w1_h * S2z_h_subsam / n2_h)
+v_mz_2 <- 1 / N^2 * (N * (N - n1)) / (n1 - 1) * sum(w1_h * (mz_h_subsam - mz)^2)
+sqrt(v_mz_1 + v_mz_2)
 ```
 
 ## Two-phase random sampling for regression  {#TwophaseRegression}
@@ -160,22 +160,22 @@ In the next code chunk a first-phase sample of 250 units (the dots in the plot) 
 load("data/Amazonia_1km.RData")
 n1 <- 250; n2 <- 100
 set.seed(314)
-units_1 <- sample(nrow(gridAmazonia), size=n1, replace=FALSE)
-mysample <- gridAmazonia[units_1,]
-units_2 <- sample(n1, size=n2, replace=FALSE)
-mysubsample <- mysample[units_2,]
+units_1 <- sample(nrow(gridAmazonia), size = n1, replace = FALSE)
+mysample <- gridAmazonia[units_1, ]
+units_2 <- sample(n1, size = n2, replace = FALSE)
+mysubsample <- mysample[units_2, ]
 ```
 
 Figure \@ref(fig:twophaseAmazonia) shows the selected two-phase sample. 
 
-```{r twophaseAmazonia, echo=FALSE, out.width='100%', fig.cap="Two-phase sample for the regression estimator of the mean AGB in Eastern Amazonia. Coloured dots: simple random sample without replacement of 250 units with measurements of covariate lnSWIR2 (first-phase sample). Triangles: simple random subsample without replacement of 100 units with measurements of AGB (second-phase sample)."}
+```{r twophaseAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Two-phase sample for the regression estimator of the mean AGB in Eastern Amazonia. Coloured dots: simple random sample without replacement of 250 units with measurements of covariate lnSWIR2 (first-phase sample). Triangles: simple random subsample without replacement of 100 units with measurements of AGB (second-phase sample)."}
 ggplot(data = gridAmazonia) +
-  geom_raster(mapping = aes(x = x1/1000, y = x2/1000), fill="grey") +
-  geom_point(data=mysample, mapping = aes(x=x1/1000, y = x2/1000, colour=lnSWIR2), size=1) +
-  scale_colour_continuous(name="lnSWIR2", type = "viridis") +
-  geom_point(data=mysubsample, mapping = aes(x=x1/1000, y = x2/1000), shape=2, size=3) +
-  scale_x_continuous(name="Easting (km)")+
-  scale_y_continuous(name="Northing (km)")+
+  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000), fill = "grey") +
+  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = lnSWIR2), size = 1) +
+  scale_colour_continuous(name = "lnSWIR2", type = "viridis") +
+  geom_point(data = mysubsample, mapping = aes(x = x1 / 1000, y = x2 / 1000), shape = 2, size = 3) +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
@@ -205,37 +205,37 @@ with $\widehat{S^{2}}(e)$ the variance of the regression residuals as estimated 
 The ratio's $(1-n_1/N)$ and $(1-n_2/n_1)$ in Equation \@ref(eq:VarianceRegressionEstimatorTwoPhase) are finite population corrections (fpcs). These fpcs account for the reduced variance due to sampling the finite population and subsampling the first-phase sample without replacement.
 
 ```{r}
-lm_subsample <- lm(AGB~lnSWIR2, data=mysubsample)
+lm_subsample <- lm(AGB ~ lnSWIR2, data = mysubsample)
 ab <- coef(lm_subsample)
 mx_sam <- mean(mysample$lnSWIR2)
 mx_subsam <- mean(mysubsample$lnSWIR2)
 mz_subsam <- mean(mysubsample$AGB)
-mz_reg2ph <- mz_subsam+ab[2]*(mx_sam-mx_subsam)
+mz_reg2ph <- mz_subsam + ab[2] * (mx_sam - mx_subsam)
 ```
 
 The estimated population mean equals `r round(mz_reg2ph,1)` 10^9^ kg ha^-1^. The standard error can be approximated as follows.
 
 ```{r}
 e <- residuals(lm_subsample)
-S2e <- sum(e^2)/(n2-1)
+S2e <- sum(e^2) / (n2 - 1)
 S2z <- var(mysubsample$AGB)
 N <- nrow(gridAmazonia)
-se_mz_reg2ph <- sqrt((1-n1/N)*S2z/n1 + (1-n2/n1)*S2e/n2)
+se_mz_reg2ph <- sqrt((1 - n1 / N) * S2z / n1 + (1 - n2 / n1) * S2e / n2)
 ```
 
 The estimated standard error equals `r round(se_mz_reg2ph,2)` 10^9^ kg ha^-1^.
 
-The regression estimator for two-phase sampling and its standard error can also be computed with package **survey**, as shown below. The standard error differs from the standard error computed above because it is computed with the g-weights, see Subsection \@ref(RegressionEstimator). Note argument `fpc=list(~N,NULL)`. There is no need to add the first-phase sample size as a second element of the list, because this sample size is simply the number of rows of the data frame. Setting the second element of the list to `NULL` does not mean that the standard error is computed for with replacement sampling in the second phase. Function `twophase` assumes that the second-phase units are always selected without replacement.
+The regression estimator for two-phase sampling and its standard error can also be computed with package **survey**, as shown below. The standard error differs from the standard error computed above because it is computed with the g-weights, see Subsection \@ref(RegressionEstimator). Note argument `fpc=list(~ N, NULL)`. There is no need to add the first-phase sample size as a second element of the list, because this sample size is simply the number of rows of the data frame. Setting the second element of the list to `NULL` does not mean that the standard error is computed for with replacement sampling in the second phase. Function `twophase` assumes that the second-phase units are always selected without replacement.
 
 ```{r}
 mysample$id <- 1:n1
 mysample$ind <- ifelse(mysample$id %in% units_2, TRUE, FALSE)
 mysample$N <- rep(N, n1)
 design_2phase <- survey::twophase(
-  id=list(~1,~1), data=mysample, subset=~ind, fpc=list(~N,NULL))
+  id = list(~ 1, ~ 1), data = mysample, subset = ~ ind, fpc = list(~ N, NULL))
 mysample_cal <- calibrate(
-  design_2phase, formula=~lnSWIR2, calfun="linear", phase=2)
-svymean(~AGB, mysample_cal)
+  design_2phase, formula = ~ lnSWIR2, calfun = "linear", phase = 2)
+svymean(~ AGB, mysample_cal)
 ```
 
 #### Exercises {-}
@@ -248,7 +248,7 @@ svymean(~AGB, mysample_cal)
     +  Compare the two variances and explain the difference.
     +  Compute the average of the 10,000 approximate variances and compare the result with the variance of the 10,000 estimated means, as estimated by the regression estimator for two-phase sampling. 
   
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```
 

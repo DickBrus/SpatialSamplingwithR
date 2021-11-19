@@ -27,9 +27,12 @@ Due to built-up areas, roads, etc., the PSUs in Voorst have unequal size, i.e. t
 ```{r}
 load("data/Voorst.RData")
 w <- 500 #width of PSUs
-s1bnd <- seq(from=min(grdVoorst$s1)+w, to=min(grdVoorst$s1)+(11*w), by=w)+12.5
-s1f <- findInterval(grdVoorst$s1,s1bnd)
-s2bnd <- min(grdVoorst$s2)+w+12.5
+s1bnd <- seq(
+  from = min(grdVoorst$s1) + w,
+  to = min(grdVoorst$s1) + (11 * w),
+  by = w) + 12.5
+s1f <- findInterval(grdVoorst$s1, s1bnd)
+s2bnd <- min(grdVoorst$s2) + w + 12.5
 s2f <- findInterval(grdVoorst$s2, s2bnd)
 grdVoorst$psu <- as.character(interaction(s1f, s2f))
 ```
@@ -38,15 +41,16 @@ In the next code  chunk a function is defined to select a two-stage cluster rand
 
 ```{r}
 twostage <- function(sframe, psu, n, m) {
-  units <- sample(nrow(sframe), size=n, replace=TRUE)
-  mypsusample <- sframe[units,psu]
+  units <- sample(nrow(sframe), size = n, replace = TRUE)
+  mypsusample <- sframe[units, psu]
   ssunits <- NULL
   for (psunit in mypsusample) {
-    ssunit <- sample(x = which(sframe[,psu]==psunit), size=m, replace=TRUE)
+    ssunit <- sample(
+      x = which(sframe[, psu] == psunit), size = m, replace = TRUE)
     ssunits <- c(ssunits, ssunit)
   }
-  psudraw <- rep(c(1:n), each=m)
-  mysample <- data.frame(ssunits,sframe[ssunits,], psudraw)
+  psudraw <- rep(c(1:n), each = m)
+  mysample <- data.frame(ssunits, sframe[ssunits, ], psudraw)
   mysample
 }
 ```
@@ -59,22 +63,22 @@ In the next code chunk function `twostage` is used to select four times a PSU ($
 n <- 4
 m <- 10
 set.seed(314)
-mysample <- twostage(sframe=grdVoorst, psu="psu", n=n, m=m)
+mysample <- twostage(sframe = grdVoorst, psu = "psu", n = n, m = m)
 cellsize <- 25
-mysample$s1 <- jitter(mysample$s1, amount=cellsize/2)
-mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
+mysample$s1 <- jitter(mysample$s1, amount = cellsize / 2)
+mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
 ```
 
 Figure \@ref(fig:TwostageVoorst) shows the selected sample.
 
-```{r TwostageVoorst, echo=FALSE, out.width='100%', fig.cap="Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten SSUs (points) are selected from that PSU by simple random sampling."}
-ggplot(data=grdVoorst) +        
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(psu))) +
-  scale_fill_viridis_d(alpha=0.5) +
-  geom_point(data=mysample, mapping = aes(x=s1/1000, y = s2/1000), size = 2) +
+```{r TwostageVoorst, echo = FALSE, out.width = '100%', fig.cap = "Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten SSUs (points) are selected from that PSU by simple random sampling."}
+ggplot(data = grdVoorst) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = as.factor(psu))) +
+  scale_fill_viridis_d(alpha = 0.5) +
+  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()+
+  coord_fixed() +
   theme(legend.position = "none")
 ```
 
@@ -179,9 +183,9 @@ and $m$ as above.
 In **R** the population mean and the sampling variance of the estimator of the mean can be estimated as follows.
 
 ```{r}
-mz_psu <- tapply(mysample$z, INDEX=mysample$psudraw, FUN=mean)
+mz_psu <- tapply(mysample$z, INDEX = mysample$psudraw, FUN = mean)
 mz <- mean(mz_psu)
-se_mz <- sqrt(var(mz_psu)/n)
+se_mz <- sqrt(var(mz_psu) / n)
 ```
 
 The estimated mean equals `r round(mz,1)` g kg^-1^, and the estimated standard error equals `r round(se_mz,1)` g kg^-1^. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.
@@ -195,9 +199,10 @@ The same estimate is obtained with functions `svydesign` and `svymean` of packag
 ```{r}
 library(survey)
 M <- nrow(grdVoorst)
-mysample$weights <- M/(n*m)
-design_2stage <- svydesign(id=~psudraw+ssunits, weight=~weights, data=mysample)
-svymean(~z, design_2stage, deff="replace")
+mysample$weights <- M / (n * m)
+design_2stage <- svydesign(
+  id = ~ psudraw + ssunits, weight = ~ weights, data = mysample)
+svymean(~ z, design_2stage, deff = "replace")
 ```
 
 Similar to (one-stage) cluster random sampling the estimated design effect\index{Design effect} is much larger than 1.
@@ -205,45 +210,45 @@ Similar to (one-stage) cluster random sampling the estimated design effect\index
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of PSU draws minus 1.
 
 ```{r}
-confint(svymean(~z, design_2stage, df=degf(design_2stage), level=0.95))
+confint(svymean(~ z, design_2stage, df = degf(design_2stage), level = 0.95))
 ```
 
 Figure \@ref(fig:SamplingDistributionTwostage) shows the approximated sampling distribution of the pwr estimator of the mean soil organic matter (SOM) concentration with two-stage cluster random sampling and of the $\pi$ estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to $n \times m$. 
 
-```{r, echo = FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 number_of_samples <- 10000
-mz <- v_mz <- mz_SI <- numeric(length=number_of_samples)
+mz <- v_mz <- mz_SI <- numeric(length = number_of_samples)
 
 set.seed(31415)
 SI <- function(sframe, n) {
-    units <- sample(nrow(sframe), size=n, replace=FALSE)
-    mysample <- sframe[units,]
+    units <- sample(nrow(sframe), size = n, replace = FALSE)
+    mysample <- sframe[units, ]
     mysample
 }
 
 for (i in 1:number_of_samples) {
   mysample <- twostage(grdVoorst, "psu", n, m)
-  psuMeans <- tapply(mysample$z, INDEX=mysample$psudraw, FUN=mean)
-  mz[i] <- mean(psuMeans, na.rm=TRUE)
-  v_mz[i] <- var(psuMeans, na.rm=TRUE)/n
-  mySIsample <- SI(grdVoorst, n=n*m)
+  psuMeans <- tapply(mysample$z, INDEX = mysample$psudraw, FUN = mean)
+  mz[i] <- mean(psuMeans, na.rm = TRUE)
+  v_mz[i] <- var(psuMeans, na.rm = TRUE) / n
+  mySIsample <- SI(grdVoorst, n = n * m)
   mz_SI[i] <- mean(mySIsample$z)
 }
 
-save(mz, mz_SI, v_mz, file="results/Twostage_Voorst.RData")
+save(mz, mz_SI, v_mz, file = "results/Twostage_Voorst.RData")
 ```
 
 (ref:SamplingDistributionTwostagelabel) Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg^-1^) in Voorst with two-stage cluster random sampling (Twostage) and of the $\pi$ estimator with simple random sampling (SI). The sample size with both sampling designs is 40. In two-stage sampling four PSUs are selected by ppswr and ten SSUs (points) are selected per PSU draw by simple random sampling.
 
-```{r SamplingDistributionTwostage, echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionTwostagelabel)"}
-load(file="results/Twostage_Voorst.RData")
+```{r SamplingDistributionTwostage, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionTwostagelabel)"}
+load(file = "results/Twostage_Voorst.RData")
 estimates <- data.frame(mz, mz_SI)
-names(estimates) <- c("Twostage","SI")
-df <- estimates %>% pivot_longer(.,cols=c("Twostage","SI"))
-df$name <- factor(df$name, levels=c("Twostage","SI"), ordered=TRUE )
+names(estimates) <- c("Twostage", "SI")
+df <- estimates %>% pivot_longer(., cols = c("Twostage", "SI"))
+df$name <- factor(df$name, levels = c("Twostage", "SI"), ordered = TRUE)
 ggplot(data = df) +
-    geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=mean(grdVoorst$z), colour="red")+
+    geom_boxplot(aes(y = value, x = name)) +
+    geom_hline(yintercept = mean(grdVoorst$z), colour = "red") +
     scale_x_discrete(name = "Sampling design") +
     scale_y_continuous(name = "Estimated mean SOM")
 v_mz_sim <- var(mz)
@@ -275,30 +280,30 @@ Similar to cluster random sampling, we may prefer to select the PSUs without rep
 
 ```{r}
 library(sampling)
-M_psu <- tapply(grdVoorst$z, INDEX=grdVoorst$psu, FUN=length)
+M_psu <- tapply(grdVoorst$z, INDEX = grdVoorst$psu, FUN = length)
 n <- 6
-pi <- n*M_psu/M
+pi <- n * M_psu / M
 set.seed(314)
-sampleind <- UPpivotal(pik=pi, eps=1e-6)
+sampleind <- UPpivotal(pik = pi, eps = 1e-6)
 psus <- sort(unique(grdVoorst$psu))
-sampledpsus <- psus[sampleind==1]
-mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus,]
-units <- sampling::strata(mysample_stage1, stratanames="psu",
-  size=rep(m,n), method="srswor")
+sampledpsus <- psus[sampleind == 1]
+mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus, ]
+units <- sampling::strata(mysample_stage1, stratanames = "psu",
+  size = rep(m, n), method = "srswor")
 mysample <- getdata(mysample_stage1, units)
 mysample$ssunits <- units$ID_unit
-mysample$pi <- n*m/M
-print(mean_HT <- sum(mysample$z/mysample$pi)/M)
+mysample$pi <- n * m / M
+print(mean_HT <- sum(mysample$z / mysample$pi) / M)
 ```
 
 The population mean can be estimated with function `svymean` of package **survey**. To estimate the variance, a simple solution is to treat the two-stage cluster random sample as a pps sample *with replacement*, so that variance can be estimated with Equation \@ref(eq:VarEstMeanTwostage). With small sampling fractions of PSUs the overestimation of the variance is negligible. With larger sampling fractions Brewer's method is recommended,  see @Berger2004 (option 2)\index{Brewer's variance estimator}.
 
 ```{r}
-mysample$fpc1 <- n*M_psu[mysample$psu]/M
-mysample$fpc2 <- m/M_psu[mysample$psu]
-design_2stageppswor <- svydesign(id=~psu+ssunits, data=mysample,
-  pps="brewer", fpc=~fpc1+fpc2)
-svymean(~z,design_2stageppswor)
+mysample$fpc1 <- n * M_psu[mysample$psu] / M
+mysample$fpc2 <- m / M_psu[mysample$psu]
+design_2stageppswor <- svydesign(id = ~ psu + ssunits, data = mysample,
+  pps = "brewer", fpc = ~ fpc1 + fpc2)
+svymean(~ z, design_2stageppswor)
 ```
 
 
@@ -319,11 +324,11 @@ Alternatively, we may estimate the population mean by dividing the estimate of t
 library(sampling)
 set.seed(314)
 psus <- sort(unique(grdVoorst$psu))
-ids_psu <- sample(length(psus), size=n, replace=FALSE) 
+ids_psu <- sample(length(psus), size = n, replace = FALSE)
 sampledpsus <- psus[ids_psu]
-mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus,]
-units <- sampling::strata(mysample_stage1, stratanames="psu",
-  size=rep(m,n), method="srswor")
+mysample_stage1 <- grdVoorst[grdVoorst$psu %in% sampledpsus, ]
+units <- sampling::strata(mysample_stage1, stratanames = "psu",
+  size = rep(m, n), method = "srswor")
 mysample <- getdata(mysample_stage1, units)
 mysample$ssunits <- units$ID_unit
 ```
@@ -332,23 +337,23 @@ The population mean is estimated by the $\pi$ estimator and the ratio estimator.
 
 ```{r}
 N <- length(unique(grdVoorst$psu))
-M_psu <- tapply(grdVoorst$z, INDEX=grdVoorst$psu, FUN=length)
-pi_psu <- n/N
-pi_ssu <- m/M_psu[mysample$psu]
-mysample$pi <- pi_psu*pi_ssu
-z_piexpanded <- with(mysample,z/pi)
+M_psu <- tapply(grdVoorst$z, INDEX = grdVoorst$psu, FUN = length)
+pi_psu <- n / N
+pi_ssu <- m / M_psu[mysample$psu]
+mysample$pi <- pi_psu * pi_ssu
+z_piexpanded <- with(mysample, z / pi)
 tz_HT <- sum(z_piexpanded)
-mz_HT <- tz_HT/M
-M_HT <- sum(1/mysample$pi)
-mz_ratio <- tz_HT/M_HT
+mz_HT <- tz_HT / M
+M_HT <- sum(1 / mysample$pi)
+mz_ratio <- tz_HT / M_HT
 ```
 
 The $\pi$ estimate equals 79.0, and the ratio estimate equals `r round(mz_ratio,1)` g kg^-1^. The $\pi$ estimate of the population mean can also be computed by first estimating totals of PSUs, see Equation \@ref(eq:EstTotalTwostageEqual). 
 
 ```{r}
-tz_psu <- tapply(mysample$z/pi_ssu, INDEX=mysample$psu, FUN=sum)
-tz_HT <- sum(tz_psu/pi_psu)
-(mz_HT <- tz_HT/M)
+tz_psu <- tapply(mysample$z / pi_ssu, INDEX = mysample$psu, FUN = sum)
+tz_HT <- sum(tz_psu / pi_psu)
+(mz_HT <- tz_HT / M)
 ```
 
 The variance of the $\pi$ estimator of the population mean can be estimated by first estimating the variance of the estimator of the PSU totals:
@@ -368,9 +373,9 @@ and dividing this variance by the squared number of population units:
 as shown in the code chunk below (the final line computes the standard error).
 
 ```{r}
-fpc <- 1-n/N
-v_tz <- N^2*fpc*var(tz_psu)/n
-(se_mz_HT <- sqrt(v_tz/M^2))
+fpc <- 1 - n / N
+v_tz <- N^2 * fpc * var(tz_psu) / n
+(se_mz_HT <- sqrt(v_tz / M^2))
 ```
 
 The ratio estimator of the population mean and its standard error can be computed with function `svymean` of package **survey**.
@@ -378,8 +383,9 @@ The ratio estimator of the population mean and its standard error can be compute
 ```{r}
 mysample$fpc1 <- N
 mysample$fpc2 <- M_psu[mysample$psu]
-design_2stage <- svydesign(id=~psu+ssunits, fpc=~fpc1+fpc2, data=mysample)
-svymean(~z, design_2stage)
+design_2stage <- svydesign(
+  id = ~ psu + ssunits, fpc = ~ fpc1 + fpc2, data = mysample)
+svymean(~ z, design_2stage)
 ```
 The estimated standard error of the ratio estimator is slightly smaller than the standard error of the $\pi$ estimator.
 
@@ -388,55 +394,57 @@ The estimated standard error of the ratio estimator is slightly smaller than the
 
 The basic sampling designs stratified random sampling (Chapter \@ref(STSI)) and two-stage cluster random sampling can be combined into stratified two-stage cluster random sampling\index{Stratified random sampling!stratified two-stage cluster random sampling}. Figure \@ref(fig:STtwostage) shows a stratified two-stage cluster random sample from Voorst. The strata are groups of eight PSUs within 2 km $\times$ 1 km blocks, as before in stratified cluster random sampling (Figure \@ref(fig:ClVoorst)). The PSUs are 0.5 km squares (built-up areas, roads, etc. excluded), as before in (unstratified) two-stage cluster random sampling (Figure \@ref(fig:TwostageVoorst)).  Within each stratum two times a PSU is selected by ppswr, and every time a PSU is selected, six SSUs (points) are selected by simple random sampling. The stratification avoids the clustering of the selected PSUs in one part of the study area. Compared to (unstratified) two-stage cluster random sampling, the geographical spreading of the PSUs is somewhat improved, which may lead to an increase of the precision of the estimated population mean.
 
-```{r, echo=FALSE}
+```{r, echo = FALSE}
 w <- 1000 #width of strata
-s1bnd <- seq(min(grdVoorst$s1)+w, min(grdVoorst$s1)+5*w, w)+12.5
+s1bnd <- seq(min(grdVoorst$s1) + w, min(grdVoorst$s1) + 5 * w, w) + 12.5
 grdVoorst$zonestratum <- as.factor(findInterval(grdVoorst$s1, s1bnd))
-levels(grdVoorst$zonestratum) <- rep(c("a","b","c"), each=2)
+levels(grdVoorst$zonestratum) <- rep(c("a", "b", "c"), each = 2)
 ```
 
 
 ```{r}
-n_h <- rep(2,3)
+n_h <- rep(2, 3)
 m <- 6
 set.seed(314)
 stratumlabels <- unique(grdVoorst$zonestratum)
 mysample <- NULL
 for (i in 1:3) {
-  grd_h <- grdVoorst[grdVoorst$zonestratum==stratumlabels[i],]
-  mysample_h <- twostage(sframe=grd_h, psu="psu", n=n_h[i], m=m)
+  grd_h <- grdVoorst[grdVoorst$zonestratum == stratumlabels[i], ]
+  mysample_h <- twostage(sframe = grd_h, psu = "psu", n = n_h[i], m = m)
   mysample <- rbind(mysample, mysample_h)
 }
-mysample$s1 <- jitter(mysample$s1, amount=cellsize/2)
-mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
+mysample$s1 <- jitter(mysample$s1, amount = cellsize / 2)
+mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
 ```
 
-```{r STtwostage, echo=FALSE, out.width='100%', fig.cap="Stratified two-stage random sample from Voorst. Strata are groups of eight PSUs (0.5 km squares) within 2 km $\\times$ 1 km blocks. From each stratum two times a PSU is selected by ppswr, and six SSUs (points) are selected per PSU draw by simple random sampling."}
-ggplot(grdVoorst) +        
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(psu))) +
-  scale_fill_viridis_d(alpha=0.5) +
-  geom_point(data=mysample, mapping = aes(x = s1/1000, y = s2/1000), size = 1.5) +
-  geom_vline(xintercept=s1bnd[c(2,4)]/1000)+
+```{r STtwostage, echo = FALSE, out.width = '100%', fig.cap = "Stratified two-stage random sample from Voorst. Strata are groups of eight PSUs (0.5 km squares) within 2 km $\\times$ 1 km blocks. From each stratum two times a PSU is selected by ppswr, and six SSUs (points) are selected per PSU draw by simple random sampling."}
+ggplot(grdVoorst) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = as.factor(psu))) +
+  scale_fill_viridis_d(alpha = 0.5) +
+  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1.5) +
+  geom_vline(xintercept = s1bnd[c(2, 4)] / 1000) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()+
+  coord_fixed() +
   theme(legend.position = "none")
 ```
 
 The population mean can be estimated in much the same way as with stratified cluster random sampling. With function `svymean` this is an easy task.  
 
 ```{r}
-N_h <- tapply(grdVoorst$psu, INDEX=grdVoorst$zonestratum,
-  FUN=function(x) {length(unique(x))})
-M_h <- tapply(grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
+N_h <- tapply(grdVoorst$psu, INDEX = grdVoorst$zonestratum,
+  FUN = function(x) {
+    length(unique(x))
+    })
+M_h <- tapply(grdVoorst$z, INDEX = grdVoorst$zonestratum, FUN = length)
 mysample$w1 <- N_h[mysample$zonestratum]
 mysample$w2 <- M_h[mysample$zonestratum]
-design_str2stage <- svydesign(id=~psudraw+ssunits, strata=~zonestratum,
-  weights=~w1+w2, data=mysample, nest=TRUE)
-svymean(~z, design_str2stage)
+design_str2stage <- svydesign(id = ~ psudraw + ssunits, strata = ~ zonestratum,
+  weights = ~ w1 + w2, data = mysample, nest = TRUE)
+svymean(~ z, design_str2stage)
 ```
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```
 

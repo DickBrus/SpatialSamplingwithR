@@ -16,84 +16,84 @@ Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
 
 with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $\text{Cov}(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate $x$. 
 
-```{r, echo=FALSE}
+```{r, echo = FALSE}
 library(gstat)
 #define discretisation grid
 s1 <- s2 <- 1:20 - 0.5
-grid <- expand.grid(s1,s2)
-names(grid) <- c("s1","s2")
+grid <- expand.grid(s1, s2)
+names(grid) <- c("s1", "s2")
 N <- nrow(grid)
 
 #define residual  semivariogram for simulation
-vgmodel <- vgm(model="Exp", psill=25, range=2, nugget=0)
+vgmodel <- vgm(model = "Exp", psill = 25, range = 2, nugget = 0)
 
 #compute matrix with covariances between discretisation points
-dists1 <- outer(grid$s1, grid$s1, FUN="-")
-dists2 <- outer(grid$s2, grid$s2, FUN="-")
+dists1 <- outer(grid$s1, grid$s1, FUN = "-")
+dists2 <- outer(grid$s2, grid$s2, FUN = "-")
 dist <- sqrt(dists1^2 + dists2^2)
 
 #compute matrix with covariances
-C <- variogramLine(vgmodel, dist_vector=dist, covariance=TRUE)
+C <- variogramLine(vgmodel, dist_vector = dist, covariance = TRUE)
 
 #now simulate values for grid by Cholesky decomposition
-Upper<-chol(C)
+Upper <- chol(C)
 
 #simulate random numbers from standard normal distribution
 set.seed(31415)
-G <- rnorm(n=nrow(grid),0,1)
-e <- crossprod(Upper,G)
+G <- rnorm(n = nrow(grid), 0, 1)
+e <- crossprod(Upper, G)
 
 mu <- 15
 grid$x <- e + mu
 
 ord <- order(grid$x)
-grid <- grid[ord,]
+grid <- grid[ord, ]
 grid$x[1] <- 4
 grid$x[400] <- 32
 
 #compute values of study variable as linear combination of covariate + white noise
 sigma_resid <- 2
 set.seed(31415)
-grid$z <- 2 + 0.5*grid$x + rnorm(n=nrow(grid), mean=0, sd=sigma_resid)
+grid$z <- 2 + 0.5 * grid$x + rnorm(n = nrow(grid), mean = 0, sd = sigma_resid)
 
-#save(grid,file="data/SimulatedSquare.RData")
+#save(grid,file = "data/SimulatedSquare.RData")
 
 #select simple random sample without replacement
-n<-16
-idsrandom <- sample(400,n)
-randomsample <- grid[idsrandom,]
+n <- 16
+idsrandom <- sample(400, n)
+randomsample <- grid[idsrandom, ]
 
-model.random <- lm(z~x, data=randomsample)
+model.random <- lm(z ~ x, data = randomsample)
 det.random <- det(vcov(model.random))
 
 #select optimal sample for simple linear regression model; grid cells are ordered on x
-optsample <- grid[c(1,2,3,4,5,6,7,8,393,394,395,396,397,398,399,400),]
-model.opt <- lm(z~x, data=optsample)
+optsample <- grid[c(1, 2, 3, 4, 5, 6, 7, 8, 393, 394, 395, 396, 397, 398, 399, 400), ]
+model.opt <- lm(z ~ x, data = optsample)
 det.opt <- det(vcov(model.opt))
 ```
 
-```{r twosamples, echo=FALSE, out.width='100%', fig.cap="Simple random sample and optimal sample for mapping with a simple linear regression model, plotted on a map of the covariate."}
-mysamples <- rbind(randomsample,optsample)
-mysamples$design <- factor(rep(c("Random","Optimal"),each=16), levels=c("Random","Optimal"), ordered=TRUE)
+```{r twosamples, echo = FALSE, out.width = '100%', fig.cap = "Simple random sample and optimal sample for mapping with a simple linear regression model, plotted on a map of the covariate."}
+mysamples <- rbind(randomsample, optsample)
+mysamples$design <- factor(rep(c("Random", "Optimal"), each = 16), levels = c("Random", "Optimal"), ordered = TRUE)
 
 ggplot(data = grid) +
   geom_raster(mapping = aes(x = s1, y = s2, fill = x)) +
-  geom_tile(data=mysamples, mapping = aes(x = s1, y = s2), colour="white", size=0.8, width=1, height=1, fill=NA)+
-  scale_fill_viridis_c(name="x") +
+  geom_tile(data = mysamples, mapping = aes(x = s1, y = s2), colour = "white", size = 0.8, width = 1, height = 1, fill = NA) +
+  scale_fill_viridis_c(name = "x") +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
-  facet_wrap(~ design, ncol=2, nrow=1) +
+  facet_wrap(~ design, ncol = 2, nrow = 1) +
   coord_fixed()
 ```
 
 The optimal sample for mapping with a simple linear regression model contains the units with the smallest and the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the regression coefficients estimators is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option.
 
-```{r sebetas, echo=FALSE}
-tbl <- data.frame(x=c("SI","Optimal"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
+```{r sebetas, echo = FALSE}
+tbl <- data.frame(x = c("SI", "Optimal"), y = c(1.70, 1.08), z = c(0.118, 0.051), d = c(0.00388, 0.000999))
 
 knitr::kable(
-  tbl, caption = 'Standard errors and determinant of the variance-covariance matrix of estimators of the regression coefficients for the simple random sample (SI) and the optimal sample.',
-  col.names=c("Sampling design", "se intercept","se slope","Determinant"),
+  tbl, caption = "Standard errors and determinant of the variance-covariance matrix of estimators of the regression coefficients for the simple random sample (SI) and the optimal sample.",
+  col.names = c("Sampling design", "se intercept", "se slope", "Determinant"),
   booktabs = TRUE
 ) %>%
 kable_classic()
@@ -116,12 +116,12 @@ As an illustration I selected a single sample of 500 units from Eastern Amazonia
 ```{r}
 load("data/Amazonia_5km.RData")
 gridAmazonia$Biome <- as.factor(gridAmazonia$Biome)
-biomes <- c("Mangrove","Forest.dry","Grassland","Forest.moist")
+biomes <- c("Mangrove", "Forest.dry", "Grassland", "Forest.moist")
 levels(gridAmazonia$Biome) <- biomes
 N_h <-  table(gridAmazonia$Biome)
 n <- 500
-n_h <- round(n*N_h/sum(N_h))
-n_h[3] <- n_h[3]+1
+n_h <- round(n * N_h / sum(N_h))
+n_h[3] <- n_h[3] + 1
 print(n_h)
 ```
 
@@ -131,28 +131,28 @@ In the next code chunk a balanced sample is selected with equal inclusion probab
 
 ```{r BalancedStratified}
 library(BalancedSampling)
-pi <- n_h/N_h
+pi <- n_h / N_h
 stratalabels <- levels(gridAmazonia$Biome)
-lut <- data.frame(Biome=stratalabels, pi=as.numeric(pi))
-gridAmazonia <- merge(x=gridAmazonia, y=lut)
-Xbal <- model.matrix(~Biome-1, data=gridAmazonia)
+lut <- data.frame(Biome = stratalabels, pi = as.numeric(pi))
+gridAmazonia <- merge(x = gridAmazonia, y = lut)
+Xbal <- model.matrix(~ Biome - 1, data = gridAmazonia)
 Xbal <- cbind(Xbal, gridAmazonia$lnSWIR2)
 Xspread <- cbind(gridAmazonia$x1, gridAmazonia$x2)
 set.seed(314)
-units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=gridAmazonia$pi)
-mysample <- gridAmazonia[units,]
+units <- lcube(Xbal = Xbal, Xspread = Xspread, prob = gridAmazonia$pi)
+mysample <- gridAmazonia[units, ]
 ```
 
 Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
 
-```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced sample of size 500 from Eastern Amazonia, balanced on biome and lnSWIR2, with geographical spreading. Equal inclusion probabilities are used."}
-ggplot(data=gridAmazonia) +
-  geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
-  scale_fill_viridis_c(name="lnSWIR2") +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000, shape=Biome), size=1.5)+
-  scale_shape_manual(values=c(0,1,2,3), name="") +
-  scale_x_continuous(name="Easting (km)") +
-  scale_y_continuous(name="Northing (km)") +
+```{r Sample4MappingandEstimationAmazonia, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "Balanced sample of size 500 from Eastern Amazonia, balanced on biome and lnSWIR2, with geographical spreading. Equal inclusion probabilities are used."}
+ggplot(data = gridAmazonia) +
+  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
+  scale_fill_viridis_c(name = "lnSWIR2") +
+  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = Biome), size = 1.5) +
+  scale_shape_manual(values = c(0, 1, 2, 3), name = "") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
@@ -178,6 +178,6 @@ Besides geometric and model-based sampling designs for spatial survey a third ca
 
 In a full factorial design\index{Full factorial design} all combinations of factor levels are observed. For instance, suppose we have only two covariates, e.g. application rates for N and P in an agricultural experiment, and four levels for each covariate. To account for possible non-linear effects, a good option is to have multiple plots for all $4 \times 4$ combinations. This is referred to as a full factorial design. With $k$ factors and $l$ levels per factor the total number of observations is $l^k$. With numerous factors and/or numerous levels per factor this becomes unfeasible in practice. Alternative designs have been developed that need fewer observations but still provide detailed information about how the study variable responds to changes in the factor levels. Examples are Latin hypercube samples\index{Latin hypercube sample} and response surface designs\index{Response surface design}. The survey sampling analogues of these experimental designs are described in Chapters \@ref(cLHS) and \@ref(SpatialResponseSurface), respectively.  
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```

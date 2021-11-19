@@ -6,18 +6,18 @@ A simple way of drawing probability samples whose units are spread uniformly ove
 load("data/Voorst.RData")
 set.seed(777)
 #change class of grdVoorst to SpatialPixelsDataFrame
-gridded(grdVoorst) <- ~s1+s2
+gridded(grdVoorst) <- ~s1 + s2
 n <- 40
-mySYsample <- spsample(x=grdVoorst, n=n, type="regular") %>%
-  as(.,"data.frame")
+mySYsample <- spsample(x = grdVoorst, n = n, type = "regular") %>%
+  as(., "data.frame")
 ```
 
 Figure \@ref(fig:sampleSY) shows the randomly selected systematic sample. The shape of the grid is square\index{Square grid}, and the orientation is East-West (E-W), North-South (N-S). There is no strict need for random selection of the orientation of the grid. Random placement of the grid on the study area suffices for design-based estimation.
 
 ```{r sampleSY, echo=FALSE, out.width='100%', fig.cap="Systematic random sample (square grid) from Voorst."}
-ggplot()+
-  geom_raster(data=as(grdVoorst,"data.frame"), mapping = aes(x = s1/1000, y = s2/1000), fill="grey")+
-  geom_point(data=mySYsample, mapping = aes(x = x1/1000,y = x2/1000), size = 2) +
+ggplot() +
+  geom_raster(data = as(grdVoorst, "data.frame"), mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
+  geom_point(data = mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
@@ -27,8 +27,8 @@ Argument `n` in function `spsample` is used to set the sample size. Note that th
 
 ```{r}
 gridtop <- as(getGridTopology(grdVoorst), "data.frame")
-A <- nrow(grdVoorst)*gridtop$cellsize[1]*gridtop$cellsize[2]
-(spacing <- sqrt(A/n))
+A <- nrow(grdVoorst) * gridtop$cellsize[1] * gridtop$cellsize[2]
+(spacing <- sqrt(A / n))
 ```
 
 Instead of argument `n` we may use argument `cellsize` to select a grid with a specified spacing. The expected sample size of a square grid can then be computed with $A/spacing^2$. 
@@ -40,18 +40,20 @@ However, there are also two disadvantages of systematic random sampling compared
 ```{r, echo=FALSE}
 .kmeans_equal_size <- function(s1, s2, k) {
   n <- length(s1)
-  cluster_id <- rep(1:k, times=ceiling(n/k))
+  cluster_id <- rep(1:k, times = ceiling(n / k))
   cluster_id <- cluster_id[1:n]
-  cluster_id <- cluster_id[sample(n, size=n)]
-  s1_c <- tapply(s1, INDEX=cluster_id, FUN=mean)
-  s2_c <- tapply(s2, INDEX=cluster_id, FUN=mean)
+  cluster_id <- cluster_id[sample(n, size = n)]
+  s1_c <- tapply(s1, INDEX = cluster_id, FUN = mean)
+  s2_c <- tapply(s2, INDEX = cluster_id, FUN = mean)
   repeat {
     n_swop <- 0
-    for (i in 1:(n-1)) {
+    for (i in 1:(n - 1)) {
       ci <- cluster_id[i]
-      for (j in (i+1):n) {
+      for (j in (i + 1):n) {
         cj <- cluster_id[j]
-        if(ci==cj) {next}
+        if (ci == cj) {
+          next
+          }
         d1 <- (s1[i] - s1_c[ci])^2 + (s2[i] - s2_c[ci])^2 +
           (s1[j] - s1_c[cj])^2 + (s2[j] - s2_c[cj])^2
         d2 <- (s1[i] - s1_c[cj])^2 + (s2[i] - s2_c[cj])^2 +
@@ -65,12 +67,14 @@ However, there are also two disadvantages of systematic random sampling compared
         }
       }
     }
-    if(n_swop==0) {break}
+    if (n_swop == 0) {
+      break
+      }
   }
-  D <- fields::rdist(x1=cbind(s1_c,s2_c), x2=cbind(s1,s2))
-  dmin <- apply(D, MARGIN=2, FUN=min)
+  D <- fields::rdist(x1 = cbind(s1_c, s2_c), x2 = cbind(s1, s2))
+  dmin <- apply(D, MARGIN = 2, FUN = min)
   MSSD <- mean(dmin^2)
-  list(clusters=cluster_id, MSSD=MSSD)
+  list(clusters = cluster_id, MSSD = MSSD)
 }
 
 kmeans_equal_size <- function(s1, s2, k, ntry) {
@@ -90,68 +94,68 @@ kmeans_equal_size <- function(s1, s2, k, ntry) {
 
 
 ```{r, echo=FALSE}
-matern <- function(s){
-  g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[,c('gr','gs','z11')]
-  g_12 <- within(s, {gr <- i; gs <- j-1; z12 <- z})[,c('gr','gs','z12')]
-  g_21 <- within(s, {gr <- i-1; gs <- j; z21 <- z})[,c('gr','gs','z21')]
-  g_22 <- within(s, {gr <- i-1; gs <- j-1; z22 <- z})[,c('gr','gs','z22')]
-  g <- Reduce(function(x,y) merge(x = x, y = y, by = c('gr','gs'), all=TRUE), 
+matern <- function(s) {
+  g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[, c("gr", "gs", "z11")]
+  g_12 <- within(s, {gr <- i; gs <- j - 1; z12 <- z})[, c("gr", "gs", "z12")]
+  g_21 <- within(s, {gr <- i - 1; gs <- j; z21 <- z})[, c("gr", "gs", "z21")]
+  g_22 <- within(s, {gr <- i - 1; gs <- j - 1; z22 <- z})[, c("gr", "gs", "z22")]
+  g <- Reduce(function(x, y) merge(x = x, y = y, by = c("gr", "gs"), all = TRUE),
               list(g_11, g_12, g_21, g_22))
   g[is.na(g)] <- mean(s$z)
-  g <- within(g, T <- (z11-z12-z21+z22)^2/4)
-  sum(g$T)/((nrow(s))^2)
+  g <- within(g, T <- (z11 - z12 - z21 + z22)^2 / 4)
+  sum(g$T) / ((nrow(s))^2)
 }
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
 number_of_samples <- 10000
 
-mz_SY_HT <- mz_SY_ratio <- mz_SI <- sampleSizes <- numeric(length=number_of_samples)
-av_SI_mz <- av_STSI_mz <- av_Matern_mz <- numeric(length=number_of_samples)
+mz_SY_HT <- mz_SY_ratio <- mz_SI <- sampleSizes <- numeric(length = number_of_samples)
+av_SI_mz <- av_STSI_mz <- av_Matern_mz <- numeric(length = number_of_samples)
 
 set.seed(314)
 for (i in 1:number_of_samples) {
-  mysample <- spsample(x=grdVoorst, n=n, type="regular")
+  mysample <- spsample(x = grdVoorst, n = n, type = "regular")
   res <- over(mysample, grdVoorst)
   mysample <- as(mysample, "data.frame")
   mysample$z <- res$z
-  sampleSizes[i]<-nrow(mysample)
-  mz_SY_HT[i] <- sum(mysample$z)/n
+  sampleSizes[i] <- nrow(mysample)
+  mz_SY_HT[i] <- sum(mysample$z) / n
   mz_SY_ratio[i] <- mean(mysample$z)
-  
+
   #SI variance approximation
-  av_SI_mz[i] <- var(mysample$z)/nrow(mysample)
-  
+  av_SI_mz[i] <- var(mysample$z) / nrow(mysample)
+
   #STSI variance approximation
-  k <- floor(sampleSizes[i]/2)
-  res <- kmeans_equal_size(s1=mysample$x1/1000, s2=mysample$x2/1000, k=k, ntry=20)
+  k <- floor(sampleSizes[i] / 2)
+  res <- kmeans_equal_size(s1 = mysample$x1 / 1000, s2 = mysample$x2 / 1000, k = k, ntry = 20)
   mysample$cluster <- res$clusters
-  S2z_h <- tapply(mysample$z, INDEX=mysample$cluster, FUN=var)
-  nh <- tapply(mysample$z, INDEX=mysample$cluster, FUN=length)
-  v_mz_h <- S2z_h/nh
-  w_h <- nh/sum(nh)
-  av_STSI_mz[i] <- sum(w_h^2*v_mz_h)
-  
+  S2z_h <- tapply(mysample$z, INDEX = mysample$cluster, FUN = var)
+  nh <- tapply(mysample$z, INDEX = mysample$cluster, FUN = length)
+  v_mz_h <- S2z_h / nh
+  w_h <- nh / sum(nh)
+  av_STSI_mz[i] <- sum(w_h^2 * v_mz_h)
+
   #Matern variance approximation
   mysample <- mysample %>%
-    mutate(i=round((x1-min(x1))/spacing), j=round((x2-min(x2))/spacing))
+    mutate(i = round((x1 - min(x1)) / spacing), j = round((x2 - min(x2)) / spacing))
   av_Matern_mz[i] <- matern(mysample)
-  
+
   units <- sample(nrow(grdVoorst), size = n, replace = FALSE)
   mz_SI[i] <- mean(grdVoorst$z[units])
 }
 
-save(mz_SY_HT, mz_SY_ratio, mz_SI, av_SI_mz, av_STSI_mz, av_Matern_mz, sampleSizes, file="results/SYVoorst_square.RData")
+save(mz_SY_HT, mz_SY_ratio, mz_SI, av_SI_mz, av_STSI_mz, av_Matern_mz, sampleSizes, file = "results/SYVoorst_square.RData")
 ```
 
-```{r samplesizeSY, echo=FALSE, fig.cap="Approximated sampling distribution of the sample size of systematic random samples from Voorst. The expected sample size is 40."}
-load(file="results/SYVoorst_square.RData")
+```{r samplesizeSY, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample size of systematic random samples from Voorst. The expected sample size is 40."}
+load(file = "results/SYVoorst_square.RData")
 
-df <- data.frame(size=sampleSizes)
+df <- data.frame(size = sampleSizes)
 
 ggplot(data = df) +
-  geom_histogram(aes(x=size, y=..density..), binwidth=1, fill="black", alpha=0.5, colour="black", breaks=19.5:49.5) +
-  geom_density(aes(x=size, y=..density..), adjust=2, lwd=1) +
+  geom_histogram(aes(x = size, y = ..density..), binwidth = 1, fill = "black", alpha = 0.5, colour = "black", breaks = 19.5:49.5) +
+  geom_density(aes(x = size, y = ..density..), adjust = 2, lwd = 1) +
   scale_x_continuous(name = "Sample size") +
   scale_y_continuous(name = "Density")
 ```
@@ -159,53 +163,54 @@ ggplot(data = df) +
 A large variation in sample size over repeated selection with the sampling design under study is undesirable and should be avoided when possible. In the case of Voorst a simple solution is to  select a rectangular grid\index{Rectangular grid} instead of a square grid, with a spacing in the N-S direction that results in  a fixed number of E-W oriented rows of sampling points over repeated selection of grids.  This is achieved with a N-S spacing equal to the dimension of the study area in N-S direction divided by an integer. The spacing in E-W direction is then adapted so that on average a given number of sampling points is selected. As the N-S dimension of Voorst is 1,000 m,  a N-S spacing of 1,000/3 m is chosen, so that the number of E-W oriented rows of sampling points in the systematic sample equals three for any randomly selected rectangular grid.
 
 ```{r}
-dy <- 1000/3
-dx <- A/(n*dy)
-mySYsample_rect <- spsample(x=grdVoorst, cellsize=c(dx,dy), type="regular")
+dy <- 1000 / 3
+dx <- A / (n * dy)
+mySYsample_rect <- spsample(
+  x = grdVoorst, cellsize = c(dx, dy), type = "regular")
 ```
 
 The E-W spacing is somewhat larger than the N-S spacing: `r dx` m versus 333.333 m. The variation in sample size with the random rectangular grid is much smaller than that of the square grid. The sample size now ranges from 33 to 46, whereas with the square grid the range varies from 20 to 48.
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 set.seed(314)
 for (i in 1:number_of_samples) {
-  mysample <- spsample(x=grdVoorst, cellsize=c(dx,dy), type="regular")
+  mysample <- spsample(x = grdVoorst, cellsize = c(dx, dy), type = "regular")
   sampleSizes[i] <- length(mysample)
 }
-save(sampleSizes, file="results/SYVoorst_rectangular.RData")
+save(sampleSizes, file = "results/SYVoorst_rectangular.RData")
 ```
 
-```{r, echo=FALSE}
-load(file="results/SYVoorst_rectangular.RData")
+```{r, echo = FALSE}
+load(file = "results/SYVoorst_rectangular.RData")
 ```
 
 ```{r}
 summary(sampleSizes)
 ```
 
-An alternative shape for the sampling grid is triangular\index{Triangular grid}. Triangular grids can be selected with argument `type="hexagonal"`. The centres of hexagonal sampling grid cells form a triangular grid. The triangular grid  was shown to yield most precise estimates of the population mean given the expected sample size [@mat86]. Given the spacing of a triangular grid, the expected sample size can be computed by the area $A$ of the study area divided by the area of hexagonal grid cells with the sampling points at their centres. The area of a hexagon equals $6\sqrt{3}/4\;r^2$, with $r$ the radius of the circle circumscribing the hexagon (distance from centre to a corner of the hexagon). So, by choosing a radius of $\sqrt{A/(6\sqrt{3}/4)\;n}$ the expected sample equals $n$. The distance between neighbouring points of the triangular grid in the E-W direction, $dx$, then  equals $r \sqrt{3}$. The N-S distance equals $\sqrt{3}/2 \; dx$.
+An alternative shape for the sampling grid is triangular\index{Triangular grid}. Triangular grids can be selected with argument `type = "hexagonal"`. The centres of hexagonal sampling grid cells form a triangular grid. The triangular grid  was shown to yield most precise estimates of the population mean given the expected sample size [@mat86]. Given the spacing of a triangular grid, the expected sample size can be computed by the area $A$ of the study area divided by the area of hexagonal grid cells with the sampling points at their centres. The area of a hexagon equals $6\sqrt{3}/4\;r^2$, with $r$ the radius of the circle circumscribing the hexagon (distance from centre to a corner of the hexagon). So, by choosing a radius of $\sqrt{A/(6\sqrt{3}/4)\;n}$ the expected sample equals $n$. The distance between neighbouring points of the triangular grid in the E-W direction, $dx$, then  equals $r \sqrt{3}$. The N-S distance equals $\sqrt{3}/2 \; dx$.
 
 ```{r}
-cnst <- 6*sqrt(3)/4
-r <- sqrt(A/(cnst*n))
-dx <- r*sqrt(3)
-dy <- sqrt(3)/2*dx
+cnst <- 6 * sqrt(3) / 4
+r <- sqrt(A / (cnst * n))
+dx <- r * sqrt(3)
+dy <- sqrt(3) / 2 * dx
 ```
 
-Function `spsample` does not work properly in combination with argument `type="hexagonal"`. Over repeated sampling the average sample size is not equal to the chosen sample size passed to argument `n`. The same problem remains when using argument `cellsize`.
+Function `spsample` does not work properly in combination with argument `type = "hexagonal"`. Over repeated sampling the average sample size is not equal to the chosen sample size passed to argument `n`. The same problem remains when using argument `cellsize`.
 
-```{r, eval=FALSE, echo=FALSE}
-sampleSizes <- numeric(length=10000)
+```{r, eval = FALSE, echo = FALSE}
+sampleSizes <- numeric(length = 10000)
 set.seed(314)
 for (i in 1:10000) {
-  mysample <- spsample(x=grdVoorst, n=n, type="hexagonal")
+  mysample <- spsample(x = grdVoorst, n = n, type = "hexagonal")
   sampleSizes[i] <- length(mysample)
 }
-save(sampleSizes, file="results/SYVoorst_hexagonal.RData")
+save(sampleSizes, file = "results/SYVoorst_hexagonal.RData")
 ```
 
-```{r, echo=FALSE}
-load(file="results/SYVoorst_hexagonal.RData")
+```{r, echo = FALSE}
+load(file = "results/SYVoorst_hexagonal.RData")
 summary(sampleSizes)
 ```
 
@@ -213,71 +218,71 @@ The following code can be used for random selection of triangular grids.
 
 ```{r}
 SY_triangular <- function(dx, grd) {
-  dy <- sqrt(3)/2*dx
-  # randomly select offset 
-  offset_x <- runif(1, min=0, max=dx)
-  offset_y <- runif(1, min=0, max=dy)
+  dy <- sqrt(3) / 2 * dx
+  # randomly select offset
+  offset_x <- runif(1, min = 0, max = dx)
+  offset_y <- runif(1, min = 0, max = dy)
   #compute x-coordinates of 1 row and y-coordinates of 1 column
   bbox <- bbox(grd)
-  nx <- ceiling((bbox[1,2]-bbox[1,1])/dx)
-  ny <- ceiling((bbox[2,2]-bbox[2,1])/dy)
-  x <- (-1:nx)*dx+offset_x
-  y <- (0:ny)*dy+offset_y
+  nx <- ceiling((bbox[1, 2] - bbox[1, 1]) / dx)
+  ny <- ceiling((bbox[2, 2] - bbox[2, 1]) / dy)
+  x <- (-1:nx) * dx + offset_x
+  y <- (0:ny) * dy + offset_y
   #compute coordinates of rectangular grid
   xy <- expand.grid(x, y)
-  names(xy) <- c("x","y")
+  names(xy) <- c("x", "y")
   #shift points of even rows in horizontal direction
-  units <- which(xy$y %in% y[seq(from=2, to=ny, by=2)])
-  xy$x[units] <- xy$x[units] + dx/2
+  units <- which(xy$y %in% y[seq(from = 2, to = ny, by = 2)])
+  xy$x[units] <- xy$x[units] + dx / 2
   #add coordinates of origin
-  xy$x <- xy$x+bbox[1,1]
-  xy$y <- xy$y+bbox[2,1]
+  xy$x <- xy$x + bbox[1, 1]
+  xy$y <- xy$y + bbox[2, 1]
   #overlay with grid
-  coordinates(xy) <- ~x+y
+  coordinates(xy) <- ~ x + y
   mysample <- data.frame(coordinates(xy), over(xy, grd))
   #delete points with NA
-  mysample <- mysample[!is.na(mysample[,3]),]
+  mysample <- mysample[!is.na(mysample[, 3]), ]
 }
 set.seed(314)
-mySYsample_tri <- SY_triangular(dx=dx, grd=grdVoorst)
+mySYsample_tri <- SY_triangular(dx = dx, grd = grdVoorst)
 ```
 
 Figure \@ref(fig:Triangulargrid) shows a triangular grid, selected randomly from Voorst with an expected sample size of 40. The selected triangular grid has 42 points.
 
-```{r Triangulargrid, echo=FALSE, out.width='100%', fig.cap="Systematic random sample (triangular grid) from Voorst."}
-ggplot(as(grdVoorst,"data.frame")) +
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000), fill="grey") +
-  geom_point(mySYsample_tri, mapping=aes(x=x/1000, y=y/1000), size=2) +
+```{r Triangulargrid, echo = FALSE, out.width = '100%', fig.cap = "Systematic random sample (triangular grid) from Voorst."}
+ggplot(as(grdVoorst, "data.frame")) +
+  geom_raster(mapping = aes(x = s1  / 1000, y = s2 / 1000), fill = "grey") +
+  geom_point(mySYsample_tri, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   theme(legend.position = "none") +
   coord_fixed()
 ```
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 number_of_samples <- 10000
-mz_SY_ratio <- av_SI_mz <- av_STSI_mz <- sampleSizes <- numeric(length=number_of_samples)
+mz_SY_ratio <- av_SI_mz <- av_STSI_mz <- sampleSizes <- numeric(length = number_of_samples)
 set.seed(314)
 for (i in 1:number_of_samples) {
-  mysample <- SY_triangular(dx=dx, grd=grdVoorst)
+  mysample <- SY_triangular(dx = dx, grd = grdVoorst)
   sampleSizes[i] <- nrow(mysample)
   mz_SY_ratio[i] <- mean(mysample$z)
-  av_SI_mz <- var(mysample$z)/nrow(mysample)
+  av_SI_mz <- var(mysample$z) / nrow(mysample)
   #STSI-approximation
-  k <- floor(sampleSizes[i]/2)
-  res <- kmeans_equal_size(s1=mysample$x/1000, s2=mysample$y/1000, k=k, ntry=10)
+  k <- floor(sampleSizes[i] / 2)
+  res <- kmeans_equal_size(s1 = mysample$x / 1000, s2 = mysample$y / 1000, k = k, ntry = 10)
   mysample$cluster <- res$clusters
-  S2z_h <- tapply(mysample$z, INDEX=mysample$cluster, FUN=var)
-  nh <- tapply(mysample$z, INDEX=mysample$cluster, FUN=length)
-  v_mz_h <- S2z_h/nh
-  w_h <- nh/sum(nh)
-  av_STSI_mz[i] <- sum(w_h^2*v_mz_h)
+  S2z_h <- tapply(mysample$z, INDEX = mysample$cluster, FUN = var)
+  nh <- tapply(mysample$z, INDEX = mysample$cluster, FUN = length)
+  v_mz_h <- S2z_h / nh
+  w_h <- nh / sum(nh)
+  av_STSI_mz[i] <- sum(w_h^2 * v_mz_h)
 }
-save(mz_SY_ratio, av_SI_mz, av_STSI_mz, sampleSizes, file="results/SYVoorst_triangular.RData")
+save(mz_SY_ratio, av_SI_mz, av_STSI_mz, sampleSizes, file = "results/SYVoorst_triangular.RData")
 ```
 
-```{r, echo=FALSE}
-load(file="results/SYVoorst_triangular.RData")
+```{r, echo = FALSE}
+load(file = "results/SYVoorst_triangular.RData")
 v_mz_SYtriangular <- var(mz_SY_ratio)
 m_av_SI_mz_SYtri <- mean(av_SI_mz)
 m_av_STSI_mz_SYtri <- mean(av_STSI_mz)
@@ -321,14 +326,14 @@ Recall that for Voorst we have exhaustive knowledge of the study variable $z$: v
 
 ```{r, echo=FALSE}
 set.seed(777)
-mySYsample <- spsample(x=grdVoorst, n=n, type="regular")
+mySYsample <- spsample(x = grdVoorst, n = n, type = "regular")
 ```
 
 ```{r}
 res <- over(mySYsample, grdVoorst)
 mySYsample <- as(mySYsample, "data.frame")
 mySYsample$z <- res$z
-mz_HT <- sum(mySYsample$z)/n
+mz_HT <- sum(mySYsample$z) / n
 mz_ratio <- mean(mySYsample$z)
 ```
 
@@ -339,7 +344,7 @@ Using the systematic random sample of Figure \@ref(fig:sampleSY) the $\pi$ estim
 An unbiased estimator of the sampling variance of the estimator of the mean is not available. A simple, often applied procedure is to calculate the sampling variance as if the sample were a simple random sample (Equation \@ref(eq:EstVarMeanSIR) or \@ref(eq:EstVarMeanSI)). In general this procedure overestimates the sampling variance, so that we are on the safe side.
 
 ```{r}
-av_SI_mz <- var(mySYsample$z)/nrow(mySYsample)
+av_SI_mz <- var(mySYsample$z) / nrow(mySYsample)
 ```
 
 The approximated variance equals `r round(av_SI_mz,1)` (g kg^-1^)^2^.
@@ -349,18 +354,20 @@ Alternatively, the sampling variance can be estimated by treating the systematic
 ```{r}
 .kmeans_equal_size <- function(s1, s2, k) {
   n <- length(s1)
-  cluster_id <- rep(1:k, times=ceiling(n/k))
+  cluster_id <- rep(1:k, times = ceiling(n / k))
   cluster_id <- cluster_id[1:n]
-  cluster_id <- cluster_id[sample(n, size=n)]
-  s1_c <- tapply(s1, INDEX=cluster_id, FUN=mean)
-  s2_c <- tapply(s2, INDEX=cluster_id, FUN=mean)
+  cluster_id <- cluster_id[sample(n, size = n)]
+  s1_c <- tapply(s1, INDEX = cluster_id, FUN = mean)
+  s2_c <- tapply(s2, INDEX = cluster_id, FUN = mean)
   repeat {
     n_swop <- 0
-    for (i in 1:(n-1)) {
+    for (i in 1:(n - 1)) {
       ci <- cluster_id[i]
-      for (j in (i+1):n) {
+      for (j in (i + 1):n) {
         cj <- cluster_id[j]
-        if(ci==cj) {next}
+        if (ci == cj) {
+          next
+          }
         d1 <- (s1[i] - s1_c[ci])^2 + (s2[i] - s2_c[ci])^2 +
           (s1[j] - s1_c[cj])^2 + (s2[j] - s2_c[cj])^2
         d2 <- (s1[i] - s1_c[cj])^2 + (s2[i] - s2_c[cj])^2 +
@@ -375,16 +382,18 @@ Alternatively, the sampling variance can be estimated by treating the systematic
         }
       }
     }
-    if(n_swop==0) {break}
+    if (n_swop == 0) {
+      break
+      }
   }
-  D <- fields::rdist(x1=cbind(s1_c,s2_c), x2=cbind(s1,s2))
-  dmin <- apply(D, MARGIN=2, FUN=min)
+  D <- fields::rdist(x1 = cbind(s1_c, s2_c), x2 = cbind(s1, s2))
+  dmin <- apply(D, MARGIN = 2, FUN = min)
   MSSD <- mean(dmin^2)
-  list(clusters=cluster_id, MSSD=MSSD)
+  list(clusters = cluster_id, MSSD = MSSD)
 }
 ```
 
-The clustering is repeated 100 times (`ntry=100`). The clustering with the smallest mean of the squared distances of the sampling units to their cluster centres (mean of squared shortest distances, MSSD) is selected. 
+The clustering is repeated 100 times (`ntry = 100`). The clustering with the smallest mean of the squared distances of the sampling units to their cluster centres (mean of squared shortest distances, MSSD) is selected. 
 
 ```{r}
 kmeans_equal_size <- function(s1, s2, k, ntry) {
@@ -399,28 +408,28 @@ kmeans_equal_size <- function(s1, s2, k, ntry) {
   }
   res_opt
 }
-n <- nrow(mySYsample); k <- floor(n/2)
+n <- nrow(mySYsample); k <- floor(n / 2)
 set.seed(314)
-res <- kmeans_equal_size(s1=mySYsample$x1/1000, s2=mySYsample$x2/1000,
-  k=k, ntry=100)
+res <- kmeans_equal_size(s1 = mySYsample$x1 / 1000, s2 = mySYsample$x2 / 1000,
+  k = k, ntry = 100)
 mySYsample$cluster <- res$clusters
 ```
 
 Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. The weights are computed by $w_h=n_h/n$. With $n$ even the stratum weights are $1/H$ for all strata. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
 
 ```{r}
-S2z_h <- tapply(mySYsample$z, INDEX=mySYsample$cluster, FUN=var)
-nh <- tapply(mySYsample$z, INDEX=mySYsample$cluster, FUN=length)
-v_mz_h <- S2z_h/nh
-w_h <- nh/sum(nh)
-av_STSI_mz <- sum(w_h^2*v_mz_h)
+S2z_h <- tapply(mySYsample$z, INDEX = mySYsample$cluster, FUN = var)
+nh <- tapply(mySYsample$z, INDEX = mySYsample$cluster, FUN = length)
+v_mz_h <- S2z_h / nh
+w_h <- nh / sum(nh)
+av_STSI_mz <- sum(w_h^2 * v_mz_h)
 ```
 
 
-```{r varapproxSY, echo=FALSE, out.width='100%', fig.asp=.2, fig.cap="Clustering of grid points for approximating the variance of the ratio estimator of the mean SOM concentration in Voorst."}
-ggplot(as(grdVoorst,"data.frame")) +
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000), fill="grey") +
-  geom_point(mySYsample, mapping=aes(x=x1/1000, y=x2/1000, colour=as.factor(cluster)), size=2) +
+```{r varapproxSY, echo = FALSE, out.width = '100%', fig.asp = .2, fig.cap = "Clustering of grid points for approximating the variance of the ratio estimator of the mean SOM concentration in Voorst."}
+ggplot(as(grdVoorst, "data.frame")) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
+  geom_point(mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = as.factor(cluster)), size = 2) +
   scale_colour_viridis_d() +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
@@ -452,16 +461,16 @@ with $d^2_g$ the squared difference of group unit $g$ and $G$ the total number o
 To approximate the variance with Mat&eacute;rn's method\index{Mat$\text{{\'e}}$rn's variance approximation method} a function is defined. 
 
 ```{r}
-matern <- function(s){
-  g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[,c('gr','gs','z11')]
-  g_12 <- within(s, {gr <- i; gs <- j-1; z12 <- z})[,c('gr','gs','z12')]
-  g_21 <- within(s, {gr <- i-1; gs <- j; z21 <- z})[,c('gr','gs','z21')]
-  g_22 <- within(s, {gr <- i-1; gs <- j-1; z22 <- z})[,c('gr','gs','z22')]
-  g <- Reduce(function(x,y) merge(x = x, y = y, by = c('gr','gs'), all=TRUE), 
+matern <- function(s) {
+  g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[, c("gr","gs","z11")]
+  g_12 <- within(s, {gr <- i; gs <- j - 1; z12 <- z})[, c("gr","gs","z12")]
+  g_21 <- within(s, {gr <- i - 1; gs <- j; z21 <- z})[, c("gr","gs","z21")]
+  g_22 <- within(s, {gr <- i - 1; gs <- j-1; z22 <- z})[, c("gr","gs","z22")]
+  g <- Reduce(function(x, y) merge(x = x, y = y, by = c("gr","gs"), all = TRUE),
               list(g_11, g_12, g_21, g_22))
   g[is.na(g)] <- mean(s$z)
-  g <- within(g, T <- (z11-z12-z21+z22)^2/4)
-  sum(g$T)/((nrow(s))^2)
+  g <- within(g, T <- (z11 - z12 - z21 + z22)^2 / 4)
+  sum(g$T) / ((nrow(s))^2)
 }
 ```
 
@@ -469,7 +478,9 @@ Before using this function the data frame with the sample data must be extended 
 
 ```{r}
 mySYsample <- mySYsample %>%
-  mutate(i=round((x1-min(x1))/spacing), j=round((x2-min(x2))/spacing))
+  mutate(
+    i = round((x1 - min(x1)) / spacing),
+    j = round((x2 - min(x2)) / spacing))
 matern(mySYsample)
 ```
  
@@ -477,19 +488,19 @@ Figure \@ref(fig:SamplingDistributionSY) shows the approximated sampling distrib
 
 (ref:SamplingDistributionSYlabel) Approximated sampling distribution of estimators of the mean SOM concentration (g kg^-1^) in Voorst, for systematic random sampling (square grid) and simple random sampling and an (expected) sample size of 40. With systematic random sampling both the $\pi$ estimator (SY.HT) and the ratio estimator (SY.ratio) are used in estimation.
 
-```{r SamplingDistributionSY,  echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionSYlabel)"}
-load(file="results/SYVoorst_square.RData")
+```{r SamplingDistributionSY,  echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionSYlabel)"}
+load(file = "results/SYVoorst_square.RData")
 estimates <- data.frame(mz_SY_HT, mz_SY_ratio, mz_SI)
-names(estimates) <- c("SY.HT","SY.ratio","SI")
-df <- estimates %>% pivot_longer(.,cols=c("SY.HT","SY.ratio","SI"))
-df$name <- factor(df$name, levels=c("SY.ratio","SY.HT","SI"), ordered=TRUE )
+names(estimates) <- c("SY.HT", "SY.ratio", "SI")
+df <- estimates %>% pivot_longer(.,cols = c("SY.HT", "SY.ratio", "SI"))
+df$name <- factor(df$name, levels = c("SY.ratio", "SY.HT", "SI"), ordered = TRUE)
 ggplot(data = df) +
-    geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=mean(grdVoorst$z), colour="red")+
+    geom_boxplot(aes(y = value, x = name)) +
+    geom_hline(yintercept = mean(grdVoorst$z), colour = "red") +
     scale_x_discrete(name = "Sampling design") +
     scale_y_continuous(name = "Estimated mean SOM")
 
-grdVoorst <- as(grdVoorst,"data.frame")
+grdVoorst <- as(grdVoorst, "data.frame")
 ```
 
 The boxplots of the estimated means indicate that systematic random sampling in combination with the ratio estimator is more precise than simple random sampling. The variance of the 10,000 ratio estimates equals `r round(var(mz_SY_ratio),1)` (g kg^-1^)^2^, whereas for simple random sampling this variance equals `r round(var(mz_SI),1)` (g kg^-1^)^2^. Systematic random sampling in combination with the $\pi$ estimator performs very poor: the variance equals `r round(var(mz_SY_HT),1)` (g kg^-1^)^2^. This can be explained by the strong variation in sample size (Figure \@ref(fig:samplesizeSY)), which is not accounted for in the $\pi$  estimator.
@@ -500,36 +511,36 @@ The average of the 10,000 approximated variances treating the systematic sample 
 
 (ref:SamplingDistributionApproxVarSYlabel) Sampling distribution of the approximated standard error of the ratio estimator of the mean SOM concentration (g kg^-1^) in Voorst, with systematic random sampling (square grid) and an expected sample size of 40. Approximations are obtained by treating the systematic sample as a simple random sample (SI) or a stratified simple random sample (STSI), and with  Mat&eacute;rn's method (Mat).
 
-```{r SamplingDistributionApproxVarSY,  echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionApproxVarSYlabel)"}
-estimates <- data.frame(SI=sqrt(av_SI_mz),STSI=sqrt(av_STSI_mz),
-                        Mat=sqrt(av_Matern_mz))
-df <- estimates %>% pivot_longer(.,cols=c("SI","STSI","Mat"))
-df$name <- factor(df$name, levels=c("SI","STSI","Mat"), ordered=TRUE)
+```{r SamplingDistributionApproxVarSY,  echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionApproxVarSYlabel)"}
+estimates <- data.frame(SI = sqrt(av_SI_mz), STSI = sqrt(av_STSI_mz),
+                        Mat = sqrt(av_Matern_mz))
+df <- estimates %>% pivot_longer(., cols = c("SI", "STSI", "Mat"))
+df$name <- factor(df$name, levels = c("SI", "STSI", "Mat"), ordered = TRUE)
 ggplot(data = df) +
-    geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=sqrt(var(mz_SY_ratio)), colour="red")+
+    geom_boxplot(aes(y = value, x = name)) +
+    geom_hline(yintercept = sqrt(var(mz_SY_ratio)), colour = "red") +
     scale_x_discrete(name = "Approximation method") +
     scale_y_continuous(name = "Approximated standard error")
 ```
 
 The variance of the 10,000 ratio estimates of the population mean with the triangular grid and an expected sample size of 40 equals `r round(v_mz_SYtriangular,1)` (g kg^-1^)^2^. Treating the triangular grid as a simple random sample strongly overestimates the variance: the average approximated variance equals `r round(m_av_SI_mz_SYtri,1)` (g kg^-1^)^2^. The stratified simple random sample approximation performs much better in this case: the average of the 10,000 approximated variances equals `r round(m_av_STSI_mz_SYtri,1)` (g kg^-1^)^2^. Mat&eacute;rn's method cannot be used to approximate the variance with a triangular grid.
 
-```{r, echo=FALSE}
+```{r, echo = FALSE}
 n <- nrow(mySYsample_tri)
-k <- floor(nrow(mySYsample_tri)/2)
+k <- floor(nrow(mySYsample_tri) / 2)
 set.seed(314)
 res <- kmeans_equal_size(
-  s1=mySYsample_tri$x/1000, s2=mySYsample_tri$y/1000,
-  k=k, ntry=100)
+  s1 = mySYsample_tri$x / 1000, s2 = mySYsample_tri$y / 1000,
+  k = k, ntry = 100)
 mySYsample_tri$cluster <- res$clusters
 ```
 
-```{r, echo=FALSE}
-S2z_h <- tapply(mySYsample_tri$z, INDEX=mySYsample_tri$cluster, FUN=var)
-nh <- tapply(mySYsample_tri$z, INDEX=mySYsample_tri$cluster, FUN=length)
-v_mz_h <- S2z_h/nh
-w_h <- nh/sum(nh)
-av_STSI_mz_SYtri <- sum(w_h^2*v_mz_h)
+```{r, echo = FALSE}
+S2z_h <- tapply(mySYsample_tri$z, INDEX = mySYsample_tri$cluster, FUN = var)
+nh <- tapply(mySYsample_tri$z, INDEX = mySYsample_tri$cluster, FUN = length)
+v_mz_h <- S2z_h / nh
+w_h <- nh / sum(nh)
+av_STSI_mz_SYtri <- sum(w_h^2 * v_mz_h)
 ```
 
 The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`
@@ -548,7 +559,7 @@ The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`
     + Estimate the sampling variance of the final estimate of the population mean.  
 2. Do you like this solution? What about the variance of the estimator of the mean, obtained by selecting two systematic random samples of half the expected size, as compared with the variance of the estimator of the mean, obtained with a single systematic random sample?  Hint: plot the two random square grids. What do you think of the spatial coverage of the two samples? 
   
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```
  

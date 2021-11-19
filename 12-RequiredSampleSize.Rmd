@@ -95,15 +95,15 @@ As an example the required sample size is computed for estimating the population
 ```{r}
 cv <- 0.5
 rmax <- 0.1
-u <- qnorm(p=1-0.05/2, mean=0, sd=1)
-n <- ceiling((u*cv/rmax)^2)
+u <- qnorm(p = 1 - 0.05 / 2, mean = 0, sd = 1)
+n <- ceiling((u * cv / rmax)^2)
 ```
 
 The required sample size is 97. The same result is obtained with function `nContMoe` of package **PracTools** (@PracTools, @Vaillant2018).
 
 ```{r}
 library(PracTools)
-print(ceiling(nContMoe(moe.sw=2, e=rmax, alpha=0.05, CVpop=cv)))
+print(ceiling(nContMoe(moe.sw = 2, e = rmax, alpha = 0.05, CVpop = cv)))
 ```
 
 ### Length of confidence interval for a proportion
@@ -126,15 +126,15 @@ Argument `d` in the functions below is *half* the length of the confidence inter
 ```{r}
 library(binomSamSize)
 p_prior <- 0.2
-n_prop_wald <- ciss.wald(p0=p_prior, d=0.1, alpha=0.05)
-n_prop_agrcll <- ciss.agresticoull(p0=p_prior, d=0.1, alpha=0.05)
-n_prop_wilson <- ciss.wilson(p0=p_prior, d=0.1, alpha=0.05)
+n_prop_wald <- ciss.wald(p0 = p_prior, d = 0.1, alpha = 0.05)
+n_prop_agrcll <- ciss.agresticoull(p0 = p_prior, d = 0.1, alpha = 0.05)
+n_prop_wilson <- ciss.wilson(p0 = p_prior, d = 0.1, alpha = 0.05)
 ```
 
 The required sample sizes are `r n_prop_wald`, `r n_prop_agrcll`, and `r n_prop_wilson`, for the Wald,  Agresti-Coull, and Wilson approximation of the binomial proportion confidence interval, respectively. The required sample size with function `ciss.wald` is one unit smaller than as computed with Equation \@ref(eq:nreqwidthCIprop), as shown in the code chunk below.
 
 ```{r}
-ceiling((qnorm(0.975)*sqrt(p_prior*(1-p_prior))/0.1)^2+1)
+ceiling((qnorm(0.975) * sqrt(p_prior * (1 - p_prior)) / 0.1)^2 + 1)
 ```
 
 ## Statistical testing of hypothesis
@@ -153,10 +153,10 @@ In the next code chunk the sample size required for a given target power is comp
 ```{r}
 library(pwr)
 sd <- 4; delta <- 1; alpha <- 0.05; beta <- 0.2
-n_norm <- (sd/delta)^2*(qnorm(1-alpha)+qnorm(1-beta))^2
+n_norm <- (sd / delta)^2 * (qnorm(1 - alpha) + qnorm(1 - beta))^2
 n_t <- pwr.t.test(
-  d=delta/sd, sig.level=alpha, power=(1-beta),
-  type="one.sample", alternative="greater")
+  d = delta / sd, sig.level = alpha, power = (1 - beta),
+  type = "one.sample", alternative = "greater")
 ```
 
 In this example the required sample size computed with the *t* distribution is two units larger than that obtained with the standard normal distribution: `r ceiling(n_t$n)` versus `r (ceiling(n_norm))`. Package **pwr** has various functions for computing the power of a test given the sample size, or reversely, the sample size for a given power, such as for the two independent samples *t* test, binomial test (for one proportion), test for two proportions, etc. 
@@ -168,24 +168,25 @@ For testing a proportion a graph is computed with the power of a binomial test\i
 ```{r}
 p_test <- 0.20; alpha <- 0.10; delta <- 0.10
 n <- 1:150
-power <- k_min <- numeric(length=length(n))
-for (i in 1:length(n)) {
-  k_min[i] <- qbinom(p=1-alpha, size=n[i], prob=p_test)
-  power[i] <- pbinom(q=k_min[i], size=n[i], prob=p_test+delta, lower.tail=FALSE)
+power <- k_min <- numeric(length = length(n))
+for (i in seq_len(length(n))) {
+  k_min[i] <- qbinom(p = 1 - alpha, size = n[i], prob = p_test)
+  power[i] <- pbinom(
+    q = k_min[i], size = n[i], prob = p_test + delta, lower.tail = FALSE)
 }
 ```
 
-As can be seen in the **R** code, as a first step for each total sample size the smallest number of successes $k_{\mathrm{min}}$ is computed at which the null hypothesis is rejected. Then the binomial probability is computed of $k_{\mathrm{min}}+1$ or more successes for a probability of success equal to $p_{\mathrm{test}}+\Delta$. Note that there is no need to add 1 to `k_min` as with argument `lower.tail=FALSE` the value passed to argument `q` is not included.
+As can be seen in the **R** code, as a first step for each total sample size the smallest number of successes $k_{\mathrm{min}}$ is computed at which the null hypothesis is rejected. Then the binomial probability is computed of $k_{\mathrm{min}}+1$ or more successes for a probability of success equal to $p_{\mathrm{test}}+\Delta$. Note that there is no need to add 1 to `k_min` as with argument `lower.tail = FALSE` the value passed to argument `q` is not included.
 
-```{r powerbinomialtest, echo=FALSE, fig.asp=0.7, fig.cap="Power of right-tail binomial test (test proportion: 0.2; significance level: 0.10)."}
-beta <- 0.20 
-df <- data.frame(n=n, dmin=k_min, power=power)
-ggplot(df)+
-  geom_point(mapping=aes(x=n, y=power))+
-  geom_line(mapping=aes(x=n, y=power))+
-  geom_hline(mapping=aes(yintercept=1-beta), lty=2) +
-  scale_x_continuous(name="Sample size") +
-  scale_y_continuous(name="Power")
+```{r powerbinomialtest, echo = FALSE, fig.asp = 0.7, fig.cap = "Power of right-tail binomial test (test proportion: 0.2; significance level: 0.10)."}
+beta <- 0.20
+df <- data.frame(n = n, dmin = k_min, power = power)
+ggplot(df) +
+  geom_point(mapping = aes(x = n, y = power)) +
+  geom_line(mapping = aes(x = n, y = power)) +
+  geom_hline(mapping = aes(yintercept = 1 - beta), lty = 2) +
+  scale_x_continuous(name = "Sample size") +
+  scale_y_continuous(name = "Power")
 ```
 
 Figure \@ref(fig:powerbinomialtest) shows that the power does not increase monotonically with the sample size. The graph shows a saw-toothed behaviour. This is caused by the step-wise increase of the critical number of successes (`k_min`) with the total sample size.
@@ -193,13 +194,13 @@ Figure \@ref(fig:powerbinomialtest) shows that the power does not increase monot
 The required sample size can be computed in two ways. The first option is to compute the smallest sample size for which the power is larger than or equal to the required power $1-\beta$. The alternative is to compute the smallest sample size for which the power is larger than or equal to $1-\beta$ *for all sample sizes larger than this*.
 
 ```{r}
-n1 <- min(n[which(power > 1-beta)])
-ind <- (power > 1-beta)
-for(i in 1:length(n)) {
-  if(ind[length(n)-i]==FALSE)
+n1 <- min(n[which(power > 1 - beta)])
+ind <- (power > 1 - beta)
+for (i in seq_len(length(n))) {
+  if (ind[length(n) - i] == FALSE)
     break
 }
-n2 <- n[length(n)-i+1]
+n2 <- n[length(n) - i + 1]
 ```
 
 The smallest sample size at which the desired level of 0.8 is reached is `r n1`. However, as can be seen in Figure \@ref(fig:powerbinomialtest) for sample sizes 89, 90, 93, 94, and 97, the power drops below the desired level of  0.80. The smallest sample size at which the power stays above the level of 0.8 is `r n2`.
@@ -207,9 +208,9 @@ The smallest sample size at which the desired level of 0.8 is reached is `r n1`.
 Alternatively, we may use function `pwr.p.test` of package **pwr**. This is an approximation, using an arcsine transformation of proportions. The first step is to compute Cohen's $h$\index{Cohen's $h$}, which is a measure of the distance between two proportions: $h = 2\;arcsin(\sqrt{p_1})-2\;arcsin(\sqrt{p_2})$. This can be done with function `ES.h`. The value of $h$ must be positive, which is achieved when the proportion passed to argument `p1` is larger than the proportion assigned to argument `p2`.
 
 ```{r}
-h <- ES.h(p1=0.30,p2=0.20)
+h <- ES.h(p1 = 0.30, p2 = 0.20)
 n_approx <- pwr.p.test(
-  h, power=(1-beta), sig.level=alpha, alternative="greater")
+  h, power = (1 - beta), sig.level = alpha, alternative = "greater")
 ```
 
 The approximated sample size equals `r ceiling(n_approx$n)`, which is somewhat smaller than the required sample sizes computed above.
@@ -329,11 +330,11 @@ The three criteria (ALC, ACC, and WOC) described above are now used to compute t
 
 The gamma distribution\index{Gamma distribution} has two parameters $a$ and $b$. Figure \@ref(fig:gammaprior) shows the gamma distribution for $a=5$ and $b=100$.
 
-```{r gammaprior, fig.asp=0.7,  fig.cap="Prior gamma distribution for the precision parameter for a shape parameter $a=5$ and a scale parameter $1/b=1/100$."}
+```{r gammaprior, fig.asp = 0.7,  fig.cap = "Prior gamma distribution for the precision parameter for a shape parameter $a=5$ and a scale parameter $1/b=1/100$."}
 a <- 5; b <- 100
-x <- seq(from=0, to=0.2, length=1000)
-dg <- dgamma(x=x, shape=a, scale=1/b)
-plot(x=x, y=dg, type="l", ylab="Density", xlab="Precision")
+x <- seq(from = 0, to = 0.2, length = 1000)
+dg <- dgamma(x = x, shape = a, scale = 1 / b)
+plot(x = x, y = dg, type = "l", ylab = "Density", xlab = "Precision")
 ```
 
 The mean of the precision parameter $\lambda$ is given by $a/b$ and its standard deviation by $\sqrt{a/b^2}$.
@@ -354,22 +355,22 @@ Package **SampleSizeMeans** [@Joseph2012] is used to compute Bayesian required s
 ```{r}
 library(SampleSizeMeans)
 lmax <- 2
-n_freq <- mu.freq(len=lmax, lambda=a/b, level=0.95)
-n_alc <- mu.alc(len=lmax, alpha=a, beta=b, n0=0, level=0.95)
-n_alcmbl <- mu.mblalc(len=lmax, alpha=a, beta=b, level=0.95)
-n_acc <- mu.acc(len=lmax, alpha=a, beta=b, n0=0, level=0.95)
-n_accmbl <- mu.mblacc(len=lmax, alpha=a, beta=b, level=0.95)
+n_freq <- mu.freq(len = lmax, lambda = a / b, level = 0.95)
+n_alc <- mu.alc(len = lmax, alpha = a, beta = b, n0 = 0, level = 0.95)
+n_alcmbl <- mu.mblalc(len = lmax, alpha = a, beta = b, level = 0.95)
+n_acc <- mu.acc(len = lmax, alpha = a, beta = b, n0 = 0, level = 0.95)
+n_accmbl <- mu.mblacc(len = lmax, alpha = a, beta = b, level = 0.95)
 n_woc <- mu.modwoc(
-  len=lmax, alpha=a, beta=b, n0=0, level=0.95, worst.level=0.95)
+  len = lmax, alpha = a, beta = b, n0 = 0, level = 0.95, worst.level = 0.95)
 n_wocmbl <- mu.mblmodwoc(
-  len=lmax, alpha=a, beta=b, level=0.95, worst.level=0.95)
+  len = lmax, alpha = a, beta = b, level = 0.95, worst.level = 0.95)
 ```
 
-```{r requiredsamplesizesnormalmean, tidy=FALSE, echo=FALSE}
+```{r requiredsamplesizesnormalmean, tidy = FALSE, echo = FALSE}
 df <- data.frame(n_freq, n_alc, n_alcmbl, n_acc, n_accmbl, n_woc, n_wocmbl)
 knitr::kable(
-  df, caption = 'Required sample sizes for estimating a normal mean, computed with three criteria for the fully Bayesian and the mixed Bayesian-likelihood (MBL) approach. Freq refers to the required sample size computed with the frequentist approach.',
-  col.names = c("Freq","ALC","ALC-MBL","ACC","ACC-MBL","WOC","WOC-MBL"),
+  df, caption = "Required sample sizes for estimating a normal mean, computed with three criteria for the fully Bayesian and the mixed Bayesian-likelihood (MBL) approach. Freq refers to the required sample size computed with the frequentist approach.",
+  col.names = c("Freq", "ALC", "ALC-MBL", "ACC", "ACC-MBL", "WOC", "WOC-MBL"),
   booktabs = TRUE
 ) %>%
   kable_classic()
@@ -379,9 +380,9 @@ Table \@ref(tab:requiredsamplesizesnormalmean) shows that all six required sampl
 
 ```{r}
 n_woc80 <- mu.modwoc(
-  len=lmax, alpha=a, beta=b, n0=0, level=0.95, worst.level=0.80)
+  len = lmax, alpha = a, beta = b, n0 = 0, level = 0.95, worst.level = 0.80)
 n_wocmbl80 <- mu.mblmodwoc(
-  len=lmax, alpha=a, beta=b, level=0.95, worst.level=0.80)
+  len = lmax, alpha = a, beta = b, level = 0.95, worst.level = 0.80)
 ```
 
 The required sample sizes with this criterion are `r n_woc80` and `r n_wocmbl80` using the fully Bayesian and the mixed Bayesian-likelihood approach, respectively.
@@ -399,11 +400,11 @@ p \sim \frac{1}{B(c,d)} \pi^{c-1} (1-\pi)^{d-1} \;,
 
 where $B(c,d)$ is the beta function. The two parameters $c$ and $d$ correspond to the number of 'successes' and 'failures' in the problem context. The larger these numbers, the more the prior information, and the more sharply defined the probability distribution. The plot below shows this distribution for $c=0.6$ and $d=2.4$.
 
-```{r betaprior, fig.asp=0.7,  fig.cap="Prior beta distribution for the binomial proportion for a beta function $B(0.6,2.4)$."}
+```{r betaprior, fig.asp = 0.7,  fig.cap = "Prior beta distribution for the binomial proportion for a beta function $B(0.6,2.4)$."}
 c <- 0.6; d <- 2.4
-x <- seq(from=0, to=1, length=1000)
-dbt <- dbeta(x=x, shape1=c, shape2=d)
-plot(x=x, y=dbt, type="l", ylab="Density", xlab="Proportion")
+x <- seq(from = 0, to = 1, length = 1000)
+dbt <- dbeta(x = x, shape1 = c, shape2 = d)
+plot(x = x, y = dbt, type = "l", ylab = "Density", xlab = "Proportion")
 ```
 
 The mean of the binomial proportion equals $c/(c+d)$ and its standard deviation $\sqrt{cd/\{(c+d+1)(c+d)^2\}}$.
@@ -459,30 +460,36 @@ The required sample sizes for ALC, ACC, and WOC described in the previous subsec
 
 ```{r}
 library(SampleSizeBinomial)
-n_alc <- prop.alc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_alcmbl <- prop.mblalc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_acc <- prop.acc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
-n_accmbl <- prop.mblacc(len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE)$n
+n_alc <- prop.alc(
+  len = 0.2, alpha = c, beta = d, level = 0.95, exact = TRUE)$n
+n_alcmbl <- prop.mblalc(
+  len = 0.2, alpha = c, beta = d, level = 0.95, exact = TRUE)$n
+n_acc <- prop.acc(
+  len = 0.2, alpha = c, beta = d, level = 0.95, exact = TRUE)$n
+n_accmbl <- prop.mblacc(
+  len = 0.2, alpha = c, beta = d, level = 0.95, exact = TRUE)$n
 n_woc <- prop.modwoc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE, worst.level=0.80)$n
+  len = 0.2, alpha = c, beta = d, level = 0.95, exact = TRUE,
+  worst.level = 0.80)$n
 n_wocmbl <- prop.mblmodwoc(
-  len=0.2, alpha=c, beta=d, level=0.95, exact=TRUE, worst.level=0.80)$n
+  len = 0.2, alpha = c, beta = d, level = 0.95, exact = TRUE,
+  worst.level = 0.80)$n
 library(binomSamSize)
-n_freq <- ciss.wald(p0=c/(c+d), d=0.1, alpha=0.05)
+n_freq <- ciss.wald(p0 = c / (c + d), d = 0.1, alpha = 0.05)
 ```
 
 The required sample sizes are shown in Table \@ref(tab:requiredsamplesizesbinomialproportion).
 )
-```{r requiredsamplesizesbinomialproportion, echo=FALSE}
-df <- data.frame(n_freq,n_alc,n_alcmbl,n_acc,n_accmbl,n_woc,n_wocmbl)
+```{r requiredsamplesizesbinomialproportion, echo = FALSE}
+df <- data.frame(n_freq, n_alc, n_alcmbl, n_acc, n_accmbl, n_woc, n_wocmbl)
 knitr::kable(
-  df, caption = 'Required sample sizes for estimating a binomial proportion, computed with three criteria for the fully Bayesian and the mixed Bayesian-likelihood (MBL) approach. Freq refers to the required sample size computed with the frequentist approach.',
-  col.names = c("Freq","ALC","ALC-MBL","ACC","ACC-MBL","WOC","WOC-MBL"),
+  df, caption = "Required sample sizes for estimating a binomial proportion, computed with three criteria for the fully Bayesian and the mixed Bayesian-likelihood (MBL) approach. Freq refers to the required sample size computed with the frequentist approach.",
+  col.names = c("Freq", "ALC", "ALC-MBL", "ACC", "ACC-MBL", "WOC", "WOC-MBL"),
   booktabs = TRUE
 ) %>%
   kable_classic()
 ```
 
 ```{r, echo=FALSE}
-rm(list=ls())
+rm(list = ls())
 ```

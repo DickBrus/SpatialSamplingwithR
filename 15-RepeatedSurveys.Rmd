@@ -10,25 +10,25 @@ In the static-synchronous (SS) design\index{Space-time design!static-synchronous
 
 Two other compromise designs are a supplemented panel (SP) design\index{Space-time design!supplemented panel design} and a rotating panel (RP) design\index{Space-time design!rotating panel design}. In an SP design only a subset of the sampling locations of the first survey is revisited in the subsequent surveys. These are the permanent sampling locations observed in all subsequent surveys. The permanent sampling locations are supplemented by samples that are selected independently from the samples in the previous surveys. In Figure \@ref(fig:SpaceTimeDesigns), half of the sampling locations (ten locations) is permanent (panel a), i.e. revisited in all surveys, but the proportion of permanent sampling locations can be smaller or larger and, if prior information on the variation in space and time is available, even can be optimised for estimating the current mean. Also in an RP design sampling units of the previous survey are partially replaced by new units. The difference with an SP design is that there are no permanent sampling units, i.e. no units observed in all surveys. All sampling units are sequentially rotated out and in again at the subsequent sampling times.
 
-```{r SpaceTimeDesigns, echo=FALSE, out.width="100%", fig.asp=1, fig.cap="Space-time designs for monitoring population parameters. The sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemented panel design; RP: rotating panel design."}
+```{r SpaceTimeDesigns, echo = FALSE, out.width = "100%", fig.asp = 1, fig.cap = "Space-time designs for monitoring population parameters. The sampling locations in 2D are plotted in one dimension, along the horizontal axis. A selected unit along this axis actually represents a sampling location in 2D. Twenty sampling locations are selected by simple random sampling. SS: static-synchronous design; IS: independent synchronous design; SA: serially alternating design; SP: supplemented panel design; RP: rotating panel design."}
 
 #pure panel
 set.seed(314)
-Space <- sample(1000, size=20, replace=FALSE)
+Space <- sample(1000, size = 20, replace = FALSE)
 mysampleSS <- data.frame(
-    Space=rep(x=Space, times=4),
-    Time=rep(x=c(1, 2, 3, 4), each=length(Space)),
-    Panel=rep("a", 4*length(Space)) 
+    Space = rep(x = Space, times = 4),
+    Time = rep(x = c(1, 2, 3, 4), each = length(Space)),
+    Panel = rep("a", 4 * length(Space))
 )
-mysampleSS$design<-"SS"
+mysampleSS$design <- "SS"
 
 #independent synchronous
-Space <- sample(1000, size=80, replace=FALSE)
+Space <- sample(1000, size = 80, replace = FALSE)
 mysampleIS <- data.frame(
     Space,
-    Time=rep(x=c(1, 2, 3, 4), each=20)
+    Time = rep(x = c(1, 2, 3, 4), each = 20)
 )
-mysampleIS$Panel <- rep(x=c("a","b","c","d"), each=20)
+mysampleIS$Panel <- rep(x = c("a", "b", "c", "d"), each = 20)
 mysampleIS$design <- "IS"
 
 #serially alternating
@@ -37,9 +37,9 @@ p <- 2
 # construct data.frame
 mysample1 <- NULL
 for (i in seq_len(p)) {
-    mysample1 <- 
+    mysample1 <-
       rbind(mysample1,
-            data.frame(Space=sample(1000, size=20, replace=FALSE), Time=i, Panel=letters[i]))
+            data.frame(Space = sample(1000, size = 20, replace = FALSE), Time = i, Panel = letters[i]))
 }
 mysample2 <- mysample1
 mysample2$Time <- mysample1$Time + p
@@ -54,20 +54,20 @@ for (i in seq_len(p)) {
     mysample1 <- rbind(
         mysample1,
         data.frame(
-            Space=sample(1000, size=10, replace=FALSE),
-            Time=(i==1)*1+(i>1)*(i-1),
-            Panel=letters[i])
+            Space = sample(1000, size = 10, replace = FALSE),
+            Time = (i == 1) * 1 + (i > 1) * (i - 1),
+            Panel = letters[i])
     )
 }
-mysample2<-NULL
+mysample2 <- NULL
 mysample2$Space[1:10] <- mysample1$Space[1:10]
 mysample2$Space[11:20] <- mysample1$Space[1:10]
 mysample2$Space[21:30] <- mysample1$Space[1:10]
 
-mysample2$Time <- rep(x=c(2, 3, 4), each=10)
-mysample2$Panel <- rep(x="a", each=30)
+mysample2$Time <- rep(x = c(2, 3, 4), each = 10)
+mysample2$Panel <- rep(x = "a", each = 30)
 mysampleSP <- rbind(mysample1, mysample2)
-mysampleSP$design<-"SP"
+mysampleSP$design <- "SP"
 
 #rotating panel
 p <- 5 #number of panels
@@ -76,32 +76,32 @@ for (i in seq_len(p)) {
     mysample1 <- rbind(
         mysample1,
         data.frame(
-            Space=sample(1000, size=10, replace=FALSE),
-            Time=(i==1)*1+(i>1)*(i-1),
-            Panel=letters[i])
+            Space = sample(1000, size = 10, replace = FALSE),
+            Time = (i == 1) * 1 + (i > 1) * (i - 1),
+            Panel = letters[i])
         )
 }
-mysample2<-NULL
+mysample2 <- NULL
 mysample2$Space[1:10] <- mysample1$Space[11:20]
 mysample2$Space[11:20] <- mysample1$Space[21:30]
 mysample2$Space[21:30] <- mysample1$Space[31:40]
 
-mysample2$Time <- rep(x=c(2, 3, 4), each=10)
-mysample2$Panel <- rep(x=c("b", "c", "d"), each=10)
+mysample2$Time <- rep(x = c(2, 3, 4), each = 10)
+mysample2$Panel <- rep(x = c("b", "c", "d"), each = 10)
 mysampleRP <- rbind(mysample1, mysample2)
-mysampleRP$design<-"RP"
+mysampleRP$design <- "RP"
 
-mysample<-rbind(mysampleSS,mysampleIS,mysampleSA,mysampleSP,mysampleRP)
-mysample$design<-factor(x=mysample$design,levels=c("SS","IS","SA","SP","RP"),ordered=TRUE)
+mysample <- rbind(mysampleSS, mysampleIS, mysampleSA, mysampleSP, mysampleRP)
+mysample$design <- factor(x = mysample$design, levels = c("SS", "IS", "SA", "SP", "RP"), ordered = TRUE)
 
 # create plot
-ggplot(data=mysample) +
-            geom_point(mapping=aes(x=Space, y=Time, shape=factor(Panel), colour=factor(Panel)), size=2) +
-            scale_x_continuous(limits=c(0, 1000)) +
-            scale_y_continuous(breaks=1:4) +
-            scale_shape(name="panel", solid=FALSE) +
-            scale_colour_viridis_d(name="panel")+
-            facet_wrap(~design, nrow=3, ncol=2)
+ggplot(data = mysample) +
+            geom_point(mapping = aes(x = Space, y = Time, shape = factor(Panel), colour = factor(Panel)), size = 2) +
+            scale_x_continuous(limits = c(0, 1000)) +
+            scale_y_continuous(breaks = 1:4) +
+            scale_shape(name = "panel", solid = FALSE) +
+            scale_colour_viridis_d(name = "panel") +
+            facet_wrap(~design, nrow = 3, ncol = 2)
 ```
 In Figure \@ref(fig:SpaceTimeDesigns) the shape and colour of the symbols represent a panel. A panel is a group of sampling locations that is observed in the same surveys. In the SS design there is only one panel. All locations are observed in all surveys, so all locations are in the same panel. In the IS design there are as many panels as there are surveys. In the SA design with a period of two the number of panels equals the number of surveys divided by two. In these three space-time designs (SS, IS, and SA) all sampling locations of a given survey are in the same panel. This is not the case in the SP and RP designs. In Figure \@ref(fig:SpaceTimeDesigns) in each survey two panels are observed. In the SP sample there is one panel of permanent sampling locations (pure panel part of sample) and another panel of swarming sampling locations observed in one survey only. In the RP sample of Figure \@ref(fig:SpaceTimeDesigns) the sampling locations are observed in two consecutive surveys, however this number can be increased. For instance, in an 'in-for-three' rotational sample [@McLaren2001] the sampling locations stay in the sample for three consecutive surveys. The number of panels per sampling time is then three. Also, similar to an SA design, in an IS, SP, and RP design we may decide after several surveys to stop selecting new sampling locations and to revisit existing locations. The concept of panels is needed hereafter in estimating space-time population parameters.  
 
@@ -351,36 +351,36 @@ For design-based estimation of the space-time mean of a continuous temporal univ
 
 #pure panel
 set.seed(314)
-Space <- sample(1000, size=20, replace=FALSE)
-Time <- sample(365, size=6, replace=FALSE)
+Space <- sample(1000, size = 20, replace = FALSE)
+Time <- sample(365, size = 6, replace = FALSE)
 mysampleSS <- data.frame(
-    Space=rep(x=Space, times=length(Time)),
-    Time=rep(Time, each=length(Space)),
-    Panel=rep("a", length(Time)*length(Space))
+    Space = rep(x = Space, times = length(Time)),
+    Time = rep(Time, each = length(Space)),
+    Panel = rep("a", length(Time) * length(Space))
 )
 
-mysampleSS$design<-"SS"
+mysampleSS$design <- "SS"
 
 #independent synchronous
-Space <- sample(1000, size=length(Space)*length(Time), replace=FALSE)
+Space <- sample(1000, size = length(Space) * length(Time), replace = FALSE)
 mysampleIS <- data.frame(
     Space,
-    Time=rep(Time, each=length(Space)/length(Time))
+    Time = rep(Time, each = length(Space) / length(Time))
 )
-mysampleIS$Panel <- rep(x=c("a","b","c","d","e","f"), each=length(Space)/length(Time))
+mysampleIS$Panel <- rep(x = c("a", "b", "c", "d", "e", "f"), each = length(Space) / length(Time))
 mysampleIS$design <- "IS"
 
-mysample<-rbind(mysampleSS,mysampleIS)
-mysample$design<-factor(x=mysample$design,levels=c("SS","IS"), ordered=TRUE)
+mysample <- rbind(mysampleSS, mysampleIS)
+mysample$design <- factor(x = mysample$design, levels = c("SS", "IS"), ordered = TRUE)
 
 # create plot
-ggplot(data=mysample) +
-            geom_point(mapping=aes(x=Space, y=Time, shape=factor(Panel), colour=factor(Panel)), size=2) +
-            scale_x_continuous(limits=c(0, 1000)) +
-            scale_y_continuous(limits=c(0, 365)) +
-            scale_shape(name="panel", solid=FALSE) +
-            scale_colour_viridis_d(name="panel") +
-            facet_wrap(~design, nrow=3, ncol=2)
+ggplot(data = mysample) +
+            geom_point(mapping = aes(x = Space, y = Time, shape = factor(Panel), colour = factor(Panel)), size = 2) +
+            scale_x_continuous(limits = c(0, 1000)) +
+            scale_y_continuous(limits = c(0, 365)) +
+            scale_shape(name = "panel", solid = FALSE) +
+            scale_colour_viridis_d(name = "panel") +
+            facet_wrap(~design, nrow = 3, ncol = 2)
 ```
 
 An IS sample in which both locations and times are selected by probability sampling can be considered as a two-stage cluster random sample from a space-time universe (Chapter \@ref(Twostage)). The primary sampling units (PSUs) are the spatial sections of that universe (horizontal lines in Figure \@ref(fig:SpaceTimeDesignProb)), the secondary sampling units (SSUs) are the sampling locations. The space-time mean can therefore be estimated by Equation \@ref(eq:EstMeanTwostage), and its variance by Equation \@ref(eq:VarEstMeanTwostage). For simple random sampling, both in space and in time, and a linear costs model $C = c_0 + c_1n + c_2nm$ Equations \@ref(eq:nopt) and \@ref(eq:mopt) can be used to optimise the number of sampling times (PSUs, $n$) and the number of sampling locations (SSUs, $m$) per time. The pooled within-unit variance, $S^2_\text{w}$, is in this case the time-averaged spatial variance of the study variable at a given time, and the between-unit variance, $S^2_\text{b}$, is the variance of the spatial means over time.
@@ -400,49 +400,49 @@ Sampling locations are selected by simple random sampling. The sample size is 10
 Selecting an SS space-time sample, using simple random sampling as a spatial design, is straightforward. We can simply select a single simple random sample of size $n=100$. The locations of this sample are observed at all times (Figure \@ref(fig:sampleSpainPortugalSS)).
 
 ```{r}
-load(file="data/SpainPortugal_TAS.RData")
-df$x <- df$x/1000; df$y <- df$y/1000
+load(file = "data/SpainPortugal_TAS.RData")
+df$x <- df$x / 1000; df$y <- df$y / 1000
 set.seed(314)
 n <- 100
-units <- sample(nrow(df), size=n, replace=TRUE)
-mysample_SS <- df[units,]
+units <- sample(nrow(df), size = n, replace = TRUE)
+mysample_SS <- df[units, ]
 ```
 
-```{r sampleSpainPortugalSS, echo=FALSE, out.width='100%', fig.cap="Static-synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
-df_lf <- df %>% pivot_longer(cols=c("TAS2004","TAS2009","TAS2014","TAS2019"))
+```{r sampleSpainPortugalSS, echo = FALSE, out.width = '100%', fig.cap = "Static-synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+df_lf <- df %>% pivot_longer(cols = c("TAS2004", "TAS2009", "TAS2014", "TAS2019"))
 ggplot(df_lf) +
-  geom_raster(mapping = aes(x = x, y = y, fill=value)) +
-  geom_point(mysample_SS, mapping=aes(x=x,y=y)) +
-  scale_fill_viridis_c(name="TAS") + 
+  geom_raster(mapping = aes(x = x, y = y, fill = value)) +
+  geom_point(mysample_SS, mapping = aes(x = x, y = y)) +
+  scale_fill_viridis_c(name = "TAS") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  facet_wrap(~ name, ncol=2, nrow=2) +
+  facet_wrap(~ name, ncol = 2, nrow = 2) +
   coord_fixed()
 ```
 
 The spatial means at the four times can be estimated by the sample means (Equation \@ref(eq:HTMeanSI)), the variances of the mean estimators by Equation \@ref(eq:EstVarMeanSIR). The covariances of the estimators of the means at two different times can be estimated by Equation \@ref(eq:covartwoelementaryestimates) with $m$ equal to the sample size $n$. The estimated current mean (the spatial mean at the fourth survey) and the estimated standard error of the estimator of the current mean can be simply extracted from the vector with estimated means and from the matrix with estimated variances and covariances.
 
 ```{r}
-mz <- apply(mysample_SS[,-c(1,2)], MARGIN=2, FUN=mean)
-C <- var(mysample_SS[,-c(1,2)])/n
+mz <- apply(mysample_SS[, -c(1, 2)], MARGIN = 2, FUN = mean)
+C <- var(mysample_SS[, -c(1, 2)]) / n
 #current mean
 mz_cur_SS <- mz[4]
-se_mz_cur_SS <- sqrt(C[4,4])
+se_mz_cur_SS <- sqrt(C[4, 4])
 ```
 
 The change of the spatial mean from the first to the fourth survey can simply be estimated by subtracting the estimated spatial mean of the first survey from the estimated mean of the fourth survey. The standard error of this estimator can be estimated by the sum of the estimated variances of the two spatial mean estimators, minus two times the estimated covariance of the two mean estimators, and finally taking the square root.
 
 ```{r}
 d_mz_SS <- mz[4] - mz[1]
-se_d_mz_SS <- sqrt(C[4,4] + C[1,1] - 2*C[1,4])
+se_d_mz_SS <- sqrt(C[4, 4] + C[1, 1] - 2 * C[1, 4])
 ```
 
 The same estimates are obtained by defining a weight vector with values -1 and 1 for the first and last element, respectively, and 0 for the other two elements.
 
 ```{r}
-w <- c(-1,0,0,1)
-d_mz_SS <- t(w)%*%mz
-se_d_mz_SS <- sqrt(t(w)%*%C%*%w)
+w <- c(-1, 0, 0, 1)
+d_mz_SS <- t(w) %*% mz
+se_d_mz_SS <- sqrt(t(w) %*% C %*% w)
 ```
 
 <!--The estimated change equals `r round(d_mz_SS,3)` $^\circ$C, and the estimated standard error equals `r round(se_d_mz_SS,4)` $^\circ$C.-->
@@ -450,26 +450,26 @@ se_d_mz_SS <- sqrt(t(w)%*%C%*%w)
 The temporal trend of the spatial means can be estimated much in the same way, but using a different vector with weights (Equation \@ref(eq:weightsTrendofMean)). 
 
 ```{r}
-t <- seq(from=2004, to=2019, by=5)
-w <- (t-mean(t))/sum((t-mean(t))^2)
-mz_trend_SS <- t(w)%*%mz
-se_mz_trend_SS <- sqrt(t(w)%*%C%*%w)
+t <- seq(from = 2004, to = 2019, by = 5)
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+mz_trend_SS <- t(w) %*% mz
+se_mz_trend_SS <- sqrt(t(w) %*% C %*% w)
 ```
 
 The estimated temporal trend equals `r round(mz_trend_SS,4)` $^\circ$C $y^{-1}$, and the estimated standard error equals `r se_mz_trend_SS` $^\circ$C $y^{-1}$. Using `t = 1:4` yields the estimated average change in annual mean temperature *per five years*.
 
 ```{r}
 t <- 1:4
-w <- (t-mean(t))/sum((t-mean(t))^2)
-print(mz_trend_SS <- t(w)%*%mz)
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+print(mz_trend_SS <- t(w) %*% mz)
 ```
 
 Using a constant weight vector with values 1/4 yields the estimated space-time mean and the standard error of the space-time mean estimator.
 
 ```{r}
-w <- rep(1/4,4)
-mz_st_SS <- t(w)%*%mz
-se_mz_st_SS <- sqrt(t(w)%*%C%*%w)
+w <- rep(1 / 4, 4)
+mz_st_SS <- t(w) %*% mz
+se_mz_st_SS <- sqrt(t(w) %*% C %*% w)
 ```
 
 <!-- The estimated space-time mean equals `r mz_st_SS` and the estimated standard error equals `r se_mz_st_SS`.-->
@@ -479,73 +479,73 @@ se_mz_st_SS <- sqrt(t(w)%*%C%*%w)
 To select an IS space-time sample with four sampling times, we simply select $4n=400$ sampling locations. Figure \@ref(fig:sampleSpainPortugalIS) shows the selected IS space-time sample. A variable identifying the panel of the selected sampling units is added to the data frame.
 
 ```{r}
-units <- sample(nrow(df), size=4*n, replace=TRUE)
-mysample_IS <- df[units,]
-mysample_IS$panel <- rep(c("a","b","c","d"), each=n)
+units <- sample(nrow(df), size = 4 * n, replace = TRUE)
+mysample_IS <- df[units, ]
+mysample_IS$panel <- rep(c("a", "b", "c", "d"), each = n)
 ```
 
-```{r sampleSpainPortugalIS, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="Independent synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleSpainPortugalIS, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "Independent synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
 plt1 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2004)) +
-  geom_point(mysample_IS[mysample_IS$panel=="a",], mapping=aes(x=x,y=y), shape=1) +
-  scale_fill_viridis_c(name="T2004", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
+  geom_point(mysample_IS[mysample_IS$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+  scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 
 plt2 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2009)) +
-  geom_point(mysample_IS[mysample_IS$panel=="b",], mapping=aes(x=x,y=y), shape=2) +
-  scale_fill_viridis_c(name="T2009", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
+  geom_point(mysample_IS[mysample_IS$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+  scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt3 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2014)) +
-  geom_point(mysample_IS[mysample_IS$panel=="c",], mapping=aes(x=x,y=y), shape=3) +
-  scale_fill_viridis_c(name="T2014", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
+  geom_point(mysample_IS[mysample_IS$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+  scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt4 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2019)) +
-  geom_point(mysample_IS[mysample_IS$panel=="d",], mapping=aes(x=x,y=y), shape=4) +
-  scale_fill_viridis_c(name="T2019", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
+  geom_point(mysample_IS[mysample_IS$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+  scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-grid.arrange(plt1, plt2, plt3, plt4, nrow=2)
+grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
 
 The spatial means are estimated with the $\pi$ estimator as there is no partial overlap of the spatial samples. All covariances of the mean estimators are zero. Estimation of the space-time parameters is as before with the SS space-time sample. Four data frames of $n$ rows are first made with the data observed in a specific panel. The columns of these four data frames are then joined into a single data frame. The spatial means at the four times are then estimated by the sample means, computed with function `apply`.
 
 ```{r}
-panel_a <- filter(mysample_IS, panel=="a")[,c("TAS2004")]
-panel_b <- filter(mysample_IS, panel=="b")[,c("TAS2009")]
-panel_c <- filter(mysample_IS, panel=="c")[,c("TAS2014")]
-panel_d <- filter(mysample_IS, panel=="d")[,c("TAS2019")]
-panel_abcd <- cbind(panel_a,panel_b,panel_c,panel_d)
-mz <- apply(panel_abcd, MARGIN=2, FUN=mean)
-C <- var(panel_abcd)/n
-C[row(C)!=col(C)] <- 0
+panel_a <- filter(mysample_IS, panel == "a")[, c("TAS2004")]
+panel_b <- filter(mysample_IS, panel == "b")[, c("TAS2009")]
+panel_c <- filter(mysample_IS, panel == "c")[, c("TAS2014")]
+panel_d <- filter(mysample_IS, panel == "d")[, c("TAS2019")]
+panel_abcd <- cbind(panel_a, panel_b, panel_c, panel_d)
+mz <- apply(panel_abcd, MARGIN = 2, FUN = mean)
+C <- var(panel_abcd) / n
+C[row(C) != col(C)] <- 0
 #current mean
 mz_cur_IS <- mz[4]
-se_mz_cur_IS <- sqrt(C[4,4])
+se_mz_cur_IS <- sqrt(C[4, 4])
 #change of mean
-w <- c(-1,0,0,1)
-d_mz_IS <- t(w)%*%mz
-se_d_mz_IS <- sqrt(t(w)%*%C%*%w)
+w <- c(-1, 0, 0, 1)
+d_mz_IS <- t(w) %*% mz
+se_d_mz_IS <- sqrt(t(w) %*% C %*% w)
 #trend of mean
-w <- (t-mean(t))/sum((t-mean(t))^2)
-mz_trend_IS <- t(w)%*%mz
-se_mz_trend_IS <- sqrt(t(w)%*%C%*%w)
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+mz_trend_IS <- t(w) %*% mz
+se_mz_trend_IS <- sqrt(t(w) %*% C %*% w)
 #space-time mean
-w <- rep(1/4,4)
-mz_st_IS <- t(w)%*%mz
-se_mz_st_IS <- sqrt(t(w)%*%C%*%w)
+w <- rep(1 / 4, 4)
+mz_st_IS <- t(w) %*% mz
+se_mz_st_IS <- sqrt(t(w) %*% C %*% w)
 ```
 
 ### Serially alternating design
@@ -553,80 +553,80 @@ se_mz_st_IS <- sqrt(t(w)%*%C%*%w)
 To select an SA space-time sample with a period of two, $2n=200$ sampling locations are selected. A variable is added to `data.frame` `mysample_SA` indicating the panel of the sampling locations. Figure \@ref(fig:sampleSpainPortugalSA) shows the selected SA space-time sample.
 
 ```{r}
-units <- sample(nrow(df), size=2*n, replace=TRUE)
-mysample_SA <- df[units,]
-mysample_SA$panel <- rep(c("a","b"), each=n)
+units <- sample(nrow(df), size = 2 * n, replace = TRUE)
+mysample_SA <- df[units, ]
+mysample_SA$panel <- rep(c("a", "b"), each = n)
 ```
 
-```{r sampleSpainPortugalSA, echo=FALSE, fig.asp=0.6, out.width='100%', fig.cap="Serially alternating space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleSpainPortugalSA, echo = FALSE, fig.asp = 0.6, out.width = '100%', fig.cap = "Serially alternating space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
 
 plt1 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2004)) +
-  geom_point(mysample_SA[mysample_SA$panel=="a",], mapping=aes(x=x,y=y), shape=1) +
-  scale_fill_viridis_c(name="T2004", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
+  geom_point(mysample_SA[mysample_SA$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+  scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt2 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2009)) +
-  geom_point(mysample_SA[mysample_SA$panel=="b",], mapping=aes(x=x,y=y), shape=2) +
-  scale_fill_viridis_c(name="T2009", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
+  geom_point(mysample_SA[mysample_SA$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+  scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt3 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2014)) +
-  geom_point(mysample_SA[mysample_SA$panel=="a",], mapping=aes(x=x,y=y), shape=1) +
-  scale_fill_viridis_c(name="T2014", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
+  geom_point(mysample_SA[mysample_SA$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+  scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt4 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2019)) +
-  geom_point(mysample_SA[mysample_SA$panel=="b",], mapping=aes(x=x,y=y), shape=2) +
-  scale_fill_viridis_c(name="T2019", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
+  geom_point(mysample_SA[mysample_SA$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+  scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-grid.arrange(plt1, plt2, plt3, plt4, nrow=2)
+grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
 
 In SA sampling there is no partial overlap of the spatial samples at different times: there is either no overlap or full overlap. Spatial means therefore can estimated by the usual $\pi$ estimator. Two data frames of $n$ rows are first made with the data observed in a specific panel. The columns of these two data frames are then joined into a single data frame. The spatial means at the four times are then estimated by the sample means, computed with function `apply`.
 
 ```{r}
-panel_a <- filter(mysample_SA, panel=="a")[,c("TAS2004","TAS2014")]
-panel_b <- filter(mysample_SA, panel=="b")[,c("TAS2009","TAS2019")]
-panel_ab <- cbind(panel_a[1],panel_b[1],panel_a[2],panel_b[2])
-mz <- apply(panel_ab, MARGIN=2, FUN=mean)
+panel_a <- filter(mysample_SA, panel == "a")[, c("TAS2004", "TAS2014")]
+panel_b <- filter(mysample_SA, panel == "b")[, c("TAS2009", "TAS2019")]
+panel_ab <- cbind(panel_a[1], panel_b[1], panel_a[2], panel_b[2])
+mz <- apply(panel_ab, MARGIN = 2, FUN = mean)
 ```
 
 To compute the matrix with estimated variances and covariances of the spatial mean estimators, first the full matrix is computed. Then the estimated covariances of spatial means of consecutive surveys are replaced by zeroes as the samples of these consecutive surveys are selected independently from each other, so that the two estimators are independent. Estimation of the space-time parameters is as before with the SS space-time sample.
 
 ```{r}
-C <- var(panel_ab)/n
-odd <- c(1,3)
+C <- var(panel_ab) / n
+odd <- c(1, 3)
 C[row(C) %in% odd & !(col(C) %in% odd)] <- 0
 C[!(row(C) %in% odd) & col(C) %in% odd] <- 0
 
 #current mean
 mz_cur_SA <- mz[4]
-se_mz_cur_SA <- sqrt(C[4,4]/n)
+se_mz_cur_SA <- sqrt(C[4, 4] / n)
 #change of mean from time 1 to time 4
-w <- c(-1,0,0,1)
-d_mz_SA <- t(w)%*%mz
-se_d_mz_SA <- sqrt(t(w)%*%C%*%w)
+w <- c(-1, 0, 0, 1)
+d_mz_SA <- t(w) %*% mz
+se_d_mz_SA <- sqrt(t(w) %*% C %*% w)
 #trend of mean
-w <- (t-mean(t))/sum((t-mean(t))^2)
-mz_trend_SA <- t(w)%*%mz
-se_mz_trend_SA <- sqrt(t(w)%*%C%*%w)
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+mz_trend_SA <- t(w) %*% mz
+se_mz_trend_SA <- sqrt(t(w) %*% C %*% w)
 #space-time mean
 mz_st_SA <- mean(mz)
-w <- rep(1/4,4)
-se_mz_st_SA <- sqrt(t(w)%*%C%*%w)
+w <- rep(1 / 4, 4)
+se_mz_st_SA <- sqrt(t(w) %*% C %*% w)
 ```
 
 ### Supplemented panel design
@@ -634,89 +634,94 @@ se_mz_st_SA <- sqrt(t(w)%*%C%*%w)
 With SP sampling and four sampling times we have five panels, one panel with fixed sampling locations and four panels with swarming locations (Figure \@ref(fig:SpaceTimeDesigns)). Each panel consists of $n/2$ sampling locations, so in total $5n/2=250$ locations are selected. A variable indicating the panel is added to the data frame with the selected sampling locations. Figure \@ref(fig:sampleSpainPortugalSP) shows the selected SP sample. 
 
 ```{r}
-units <- sample(nrow(df), size=5*n/2, replace=TRUE)
-mysample_SP <- df[units,]
-mysample_SP$panel <- rep(c("a","b","c","d","e"), each=n/2)
+units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
+mysample_SP <- df[units, ]
+mysample_SP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
-```{r sampleSpainPortugalSP, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="Supplemented panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
+```{r sampleSpainPortugalSP, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "Supplemented panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
 plt1 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2004)) +
-  geom_point(mysample_SP[mysample_SP$panel=="a",], mapping=aes(x=x,y=y)) +
-  geom_point(mysample_SP[mysample_SP$panel=="b",], mapping=aes(x=x,y=y), shape=2) +
-  scale_fill_viridis_c(name="T2004", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
+  geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
+  geom_point(mysample_SP[mysample_SP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+  scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt2 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2009)) +
-  geom_point(mysample_SP[mysample_SP$panel=="a",], mapping=aes(x=x,y=y)) +
-  geom_point(mysample_SP[mysample_SP$panel=="c",], mapping=aes(x=x,y=y), shape=3) +
-  scale_fill_viridis_c(name="T2009", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
+  geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
+  geom_point(mysample_SP[mysample_SP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+  scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt3 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2014)) +
-  geom_point(mysample_SP[mysample_SP$panel=="a",], mapping=aes(x=x,y=y)) +
-  geom_point(mysample_SP[mysample_SP$panel=="d",], mapping=aes(x=x,y=y), shape=4) +
-  scale_fill_viridis_c(name="T2014", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
+  geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
+  geom_point(mysample_SP[mysample_SP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+  scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt4 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2019)) +
-  geom_point(mysample_SP[mysample_SP$panel=="a",], mapping=aes(x=x,y=y)) +
-  geom_point(mysample_SP[mysample_SP$panel=="e",], mapping=aes(x=x,y=y), shape=5) +
-  scale_fill_viridis_c(name="T2019", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
+  geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
+  geom_point(mysample_SP[mysample_SP$panel == "e", ], mapping = aes(x = x, y = y), shape = 5) +
+  scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-grid.arrange(plt1, plt2, plt3, plt4, nrow=2)
+grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
 
 With SP sampling the spatial means are estimated by the design-based GLS estimator (Equation \@ref(eq:DBGLS)). As a first step the eight elementary estimates (two per sampling time) are computed and collected in a vector. Note the order of the elementary estimates: first the estimated spatial means of 2004, 2009, 2014, and 2019, estimated from the panel with fixed sampling locations, then the estimated spatial means estimated from the panels with swarming locations. The design matrix $\mathbf{X}$ corresponding to this order of elementary estimates is constructed.
 
-```{block2, type='rmdnote'}
+```{block2, type = 'rmdnote'}
 Ordering the elementary estimates by sampling time is also fine, but then the design matrix $\mathbf{X}$ should be adapted to this order.
 ```
 
 ```{r}
-mz_1 <- tapply(mysample_SP$TAS2004, INDEX=mysample_SP$panel, FUN=mean)[c(1,2)]
-mz_2 <- tapply(mysample_SP$TAS2009, INDEX=mysample_SP$panel, FUN=mean)[c(1,3)]
-mz_3 <- tapply(mysample_SP$TAS2014, INDEX=mysample_SP$panel, FUN=mean)[c(1,4)]
-mz_4 <- tapply(mysample_SP$TAS2019, INDEX=mysample_SP$panel, FUN=mean)[c(1,5)]
-mz_el <- c(mz_1["a"],mz_2["a"],mz_3["a"],mz_4["a"],
-           mz_1["b"],mz_2["c"],mz_3["d"],mz_4["e"])
-X <- rbind(diag(4),diag(4))
+mz_1 <- tapply(
+  mysample_SP$TAS2004, INDEX = mysample_SP$panel, FUN = mean)[c(1, 2)]
+mz_2 <- tapply(
+  mysample_SP$TAS2009, INDEX = mysample_SP$panel, FUN = mean)[c(1, 3)]
+mz_3 <- tapply(
+  mysample_SP$TAS2014, INDEX = mysample_SP$panel, FUN = mean)[c(1, 4)]
+mz_4 <- tapply(
+  mysample_SP$TAS2019, INDEX = mysample_SP$panel, FUN = mean)[c(1, 5)]
+mz_el <- c(mz_1["a"], mz_2["a"], mz_3["a"], mz_4["a"],
+           mz_1["b"], mz_2["c"], mz_3["d"], mz_4["e"])
+X <- rbind(diag(4), diag(4))
 ```
 
 The variances and covariances of the elementary estimates of the panel with fixed locations (SS subsample) are estimated, as well as the variances of the elementary estimates of the panels with swarming locations (IS subsample). The two variance-covariance matrices and a $4 \times 4$ submatrix with all zeroes are combined into a single matrix, see matrix \@ref(eq:CmatrixSP).
 
 ```{r}
-mysubsample_SS <- mysample_SP[mysample_SP$panel=="a",]
-C_SS <- var(mysubsample_SS[,c("TAS2004","TAS2009","TAS2014","TAS2019")])/(n/2)
-mysubsample_IS <- cbind(mysample_SP$TAS2004[mysample_SP$panel=="b"],
-                        mysample_SP$TAS2009[mysample_SP$panel=="c"],
-                        mysample_SP$TAS2014[mysample_SP$panel=="d"],
-                        mysample_SP$TAS2019[mysample_SP$panel=="e"])
-C_IS <- var(mysubsample_IS)/(n/2)
-C_IS[row(C_IS)!=col(C_IS)] <- 0
-zeroes <- matrix(0, nrow=4, ncol=4)
-C <- rbind(cbind(C_SS,zeroes),cbind(zeroes,C_IS))
+mysubsample_SS <- mysample_SP[mysample_SP$panel == "a", ]
+C_SS <- var(
+  mysubsample_SS[, c("TAS2004", "TAS2009", "TAS2014", "TAS2019")]) / (n / 2)
+mysubsample_IS <- cbind(mysample_SP$TAS2004[mysample_SP$panel == "b"],
+                        mysample_SP$TAS2009[mysample_SP$panel == "c"],
+                        mysample_SP$TAS2014[mysample_SP$panel == "d"],
+                        mysample_SP$TAS2019[mysample_SP$panel == "e"])
+C_IS <- var(mysubsample_IS) / (n / 2)
+C_IS[row(C_IS) != col(C_IS)] <- 0
+zeroes <- matrix(0, nrow = 4, ncol = 4)
+C <- rbind(cbind(C_SS, zeroes), cbind(zeroes, C_IS))
 ```
 
 The design-based GLS estimates of the spatial means can be computed as follows, see Equation \@ref(eq:DBGLS).
 
 ```{r}
 Cinv <- solve(C)
-XCXinv <- solve(crossprod(X, Cinv)%*%X)
-XCz <- crossprod(X, Cinv)%*%mz_el
-mz_GLS <- XCXinv%*%XCz
+XCXinv <- solve(crossprod(X, Cinv) %*% X)
+XCz <- crossprod(X, Cinv) %*% mz_el
+mz_GLS <- XCXinv %*% XCz
 ```
 
 Computing the estimated space-time parameters from the design-based GLS estimated spatial means is straightforward.
@@ -724,19 +729,19 @@ Computing the estimated space-time parameters from the design-based GLS estimate
 ```{r}
 #current mean
 mz_cur_SP <- mz_GLS[4]
-se_mz_cur_SP <- sqrt(XCXinv[4,4])
+se_mz_cur_SP <- sqrt(XCXinv[4, 4])
 #change of mean
-w <- c(-1,0,0,1)
-d_mz_SP <- t(w)%*%mz_GLS
-se_d_mz_SP <- sqrt(t(w)%*%XCXinv%*%w)
+w <- c(-1, 0, 0, 1)
+d_mz_SP <- t(w) %*% mz_GLS
+se_d_mz_SP <- sqrt(t(w) %*% XCXinv %*% w)
 #trend of mean
-w <- (t-mean(t))/sum((t-mean(t))^2)
-mz_trend_SP <- t(w)%*%mz_GLS
-se_mz_trend_SP <- sqrt(t(w)%*%XCXinv%*%w)
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+mz_trend_SP <- t(w) %*% mz_GLS
+se_mz_trend_SP <- sqrt(t(w) %*% XCXinv %*% w)
 #space-time mean
-w <- rep(1/4,4)
-mz_st_SP <- t(w)%*%mz_GLS
-se_mz_st_SP <- sqrt(t(w)%*%XCXinv%*%w)
+w <- rep(1 / 4, 4)
+mz_st_SP <- t(w) %*% mz_GLS
+se_mz_st_SP <- sqrt(t(w) %*% XCXinv %*% w)
 ```
 
 ### Rotating panel design
@@ -744,81 +749,85 @@ se_mz_st_SP <- sqrt(t(w)%*%XCXinv%*%w)
 Similar to the SP design, with an in-for-two RP design and four sampling times we have five panels, each consisting of $n/2$ sampling locations, so that in total $5n/2=250$ locations are selected. Figure \@ref(fig:sampleSpainPortugalRP) shows the selected space-time sample.
 
 ```{r}
-units <- sample(nrow(df), size=5*n/2, replace=TRUE)
-mysample_RP <- df[units,]
-mysample_RP$panel <- rep(c("a","b","c","d","e"), each=n/2)
+units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
+mysample_RP <- df[units, ]
+mysample_RP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
-```{r sampleSpainPortugalRP, echo=FALSE, fig.asp=0.6, out.width="100%", fig.cap="In-for-two rotating panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
+```{r sampleSpainPortugalRP, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "In-for-two rotating panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
 
 plt1 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2004)) +
-  geom_point(mysample_RP[mysample_RP$panel=="a",], mapping=aes(x=x,y=y), shape=1) +
-  geom_point(mysample_RP[mysample_RP$panel=="b",], mapping=aes(x=x,y=y), shape=2) +
-  scale_fill_viridis_c(name="T2004", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
+  geom_point(mysample_RP[mysample_RP$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+  geom_point(mysample_RP[mysample_RP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+  scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt2 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2009)) +
-  geom_point(mysample_RP[mysample_RP$panel=="b",], mapping=aes(x=x,y=y), shape=2) +
-  geom_point(mysample_RP[mysample_RP$panel=="c",], mapping=aes(x=x,y=y), shape=3) +
-  scale_fill_viridis_c(name="T2009", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
+  geom_point(mysample_RP[mysample_RP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+  geom_point(mysample_RP[mysample_RP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+  scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt3 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2014)) +
-  geom_point(mysample_RP[mysample_RP$panel=="c",], mapping=aes(x=x,y=y), shape=3) +
-  geom_point(mysample_RP[mysample_RP$panel=="d",], mapping=aes(x=x,y=y), shape=4) +
-  scale_fill_viridis_c(name="T2014", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
+  geom_point(mysample_RP[mysample_RP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+  geom_point(mysample_RP[mysample_RP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+  scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
 plt4 <- ggplot(df) +
-  geom_raster(mapping = aes(x = x, y = y, fill=TAS2019)) +
-  geom_point(mysample_RP[mysample_RP$panel=="d",], mapping=aes(x=x,y=y), shape=4) +
-  geom_point(mysample_RP[mysample_RP$panel=="e",], mapping=aes(x=x,y=y), shape=5) +
-  scale_fill_viridis_c(name="T2019", limits=c(-2,20)) + 
+  geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
+  geom_point(mysample_RP[mysample_RP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+  geom_point(mysample_RP[mysample_RP$panel == "e", ], mapping = aes(x = x, y = y), shape = 5) +
+  scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-grid.arrange(plt1, plt2, plt3, plt4, nrow=2)
+grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
 
 Two elementary estimates per sampling time are computed and collected in a vector. Note that now the elementary estimates are ordered by sampling time. The design matrix corresponding to this order is constructed.
 
 ```{r}
-mz_1 <- tapply(mysample_RP$TAS2004, INDEX=mysample_RP$panel, FUN=mean)[c(1,2)]
-mz_2 <- tapply(mysample_RP$TAS2009, INDEX=mysample_RP$panel, FUN=mean)[c(2,3)]
-mz_3 <- tapply(mysample_RP$TAS2014, INDEX=mysample_RP$panel, FUN=mean)[c(3,4)]
-mz_4 <- tapply(mysample_RP$TAS2019, INDEX=mysample_RP$panel, FUN=mean)[c(4,5)]
-mz_el <- c(mz_1,mz_2,mz_3,mz_4)
-X <- matrix(c(rep(c(1,0,0,0),2),
-              rep(c(0,1,0,0),2),
-              rep(c(0,0,1,0),2),
-              rep(c(0,0,0,1),2)), nrow=8, ncol=4, byrow=TRUE)
+mz_1 <- tapply(
+  mysample_RP$TAS2004, INDEX = mysample_RP$panel, FUN = mean)[c(1, 2)]
+mz_2 <- tapply(
+  mysample_RP$TAS2009, INDEX = mysample_RP$panel, FUN = mean)[c(2, 3)]
+mz_3 <- tapply(
+  mysample_RP$TAS2014, INDEX = mysample_RP$panel, FUN = mean)[c(3, 4)]
+mz_4 <- tapply(
+  mysample_RP$TAS2019, INDEX = mysample_RP$panel, FUN = mean)[c(4, 5)]
+mz_el <- c(mz_1, mz_2, mz_3, mz_4)
+X <- matrix(c(rep(c(1, 0, 0, 0), 2),
+              rep(c(0, 1, 0, 0), 2),
+              rep(c(0, 0, 1, 0), 2),
+              rep(c(0, 0, 0, 1), 2)), nrow = 8, ncol = 4, byrow = TRUE)
 ```
 
 To construct the variance-covariance matrix of the eight elementary estimates, first the $2 \times 2$ matrices with estimated variances and covariances are computed for panels b, c, and d. These three panels are used to estimate the spatial means of two consecutive years: the locations of panel b are used to estimate the spatial means of the years 2004 and 2009, panel c for the years 2009 and 2014, and panel d for the years 2014 and 2019 (Figure \@ref(fig:SpaceTimeDesigns)). These three matrices are copied into the $8 \times 8$ matrix, see matrix \@ref(eq:CmatrixRP). Finally, the estimated variances of the estimators of the spatial means in 2004 and 2019 are computed and copied to the upper-left and bottom-right entry of the variance-covariance matrix, respectively.
 
 ```{r}
-mysubsample <- mysample_RP[mysample_RP$panel=="b",c("TAS2004","TAS2009")] 
-C_b <- var(mysubsample)/(n/2)
-mysubsample <- mysample_RP[mysample_RP$panel=="c",c("TAS2009","TAS2014")] 
-C_c <- var(mysubsample)/(n/2)
-mysubsample <- mysample_RP[mysample_RP$panel=="d",c("TAS2014","TAS2019")] 
-C_d <- var(mysubsample)/(n/2)
-C <- matrix(data=0, ncol=8, nrow=8)
-C[2:3,2:3] <- C_b
-C[4:5,4:5] <- C_c
-C[6:7,6:7] <- C_d
-C[1,1] <- var(mysample_RP[mysample_RP$panel=="a","TAS2004"])/(n/2)
-C[8,8] <- var(mysample_RP[mysample_RP$panel=="e","TAS2019"])/(n/2)
+mysubsample <- mysample_RP[mysample_RP$panel == "b", c("TAS2004", "TAS2009")]
+C_b <- var(mysubsample) / (n / 2)
+mysubsample <- mysample_RP[mysample_RP$panel == "c", c("TAS2009", "TAS2014")]
+C_c <- var(mysubsample) / (n / 2)
+mysubsample <- mysample_RP[mysample_RP$panel == "d", c("TAS2014", "TAS2019")]
+C_d <- var(mysubsample) / (n / 2)
+C <- matrix(data = 0, ncol = 8, nrow = 8)
+C[2:3, 2:3] <- C_b
+C[4:5, 4:5] <- C_c
+C[6:7, 6:7] <- C_d
+C[1, 1] <- var(mysample_RP[mysample_RP$panel == "a", "TAS2004"]) / (n / 2)
+C[8, 8] <- var(mysample_RP[mysample_RP$panel == "e", "TAS2019"]) / (n / 2)
 ```
 
 The design-based GLS estimates of the spatial means for the four sampling times are computed as before, followed by computing the estimated space-time parameters.
@@ -830,28 +839,28 @@ XCz <- crossprod(X, Cinv) %*% mz_el
 mz_GLS <- XCXinv %*% XCz
 #current mean
 mz_cur_RP <- mz_GLS[4]
-se_mz_cur_RP <- sqrt(XCXinv[4,4])
+se_mz_cur_RP <- sqrt(XCXinv[4, 4])
 #change of mean
-w <- c(-1,0,0,1)
-d_mz_RP <- t(w)%*%mz_GLS
+w <- c(-1, 0, 0, 1)
+d_mz_RP <- t(w) %*% mz_GLS
 se_d_mz_RP <- sqrt(t(w) %*% XCXinv %*% w)
 #trend of mean
-w <- (t-mean(t))/sum((t-mean(t))^2)
-mz_trend_RP <- t(w)%*%mz_GLS
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+mz_trend_RP <- t(w) %*% mz_GLS
 se_mz_trend_RP <- sqrt(t(w) %*% XCXinv %*% w)
 #space-time mean
-w <- rep(1/4,4)
+w <- rep(1 / 4, 4)
 mz_st_RP <- t(w) %*% mz_GLS
 se_mz_st_RP <- sqrt(t(w) %*% XCXinv %*% w)
 ```
 
-```{r, echo=FALSE}
-mz <- apply(df[,-c(1,2)],MARGIN=2, FUN=mean)
+```{r, echo = FALSE}
+mz <- apply(df[, -c(1, 2)], MARGIN = 2, FUN = mean)
 mz_2019_pop <- mz[4]
-d_mz_pop <- mz[4]-mz[1]
+d_mz_pop <- mz[4] - mz[1]
 t <- 1:4
-w <- (t-mean(t))/sum((t-mean(t))^2)
-mz_trend_pop <- t(w)%*%mz
+w <- (t - mean(t)) / sum((t - mean(t))^2)
+mz_trend_pop <- t(w) %*% mz
 mz_st <- mean(mz)
 ```
 
@@ -861,155 +870,155 @@ The random sampling with the five space-time designs and estimation of the four 
 
 As a reference for the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters): the current mean (spatial mean air temperature in 2019) equals `r round(mz_2019_pop,2)` $^\circ$C, the change of the mean from 2004 to 2019 equals `r round(d_mz_pop,3)` $^\circ$C, the temporal trend equals `r round(mz_trend_pop,3)` $^\circ$C *per five years*, and the space-time mean equals `r round(mz_st,2)` $^\circ$C.
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 R <- 10000
-mz_cur_SS <- d_mz_SS <- mz_trend_SS <- mz_st_SS <- mz_cur_SA <- d_mz_SA <- mz_trend_SA <- mz_st_SA <- mz_cur_SP <- d_mz_SP <- mz_trend_SP <- mz_st_SP <- mz_cur_RP <- d_mz_RP <- mz_trend_RP <- mz_st_RP <- mz_cur_IS <- d_mz_IS <- mz_trend_IS <- mz_st_IS <- d_mz_SP_HT <- numeric(length=R)
+mz_cur_SS <- d_mz_SS <- mz_trend_SS <- mz_st_SS <- mz_cur_SA <- d_mz_SA <- mz_trend_SA <- mz_st_SA <- mz_cur_SP <- d_mz_SP <- mz_trend_SP <- mz_st_SP <- mz_cur_RP <- d_mz_RP <- mz_trend_RP <- mz_st_RP <- mz_cur_IS <- d_mz_IS <- mz_trend_IS <- mz_st_IS <- d_mz_SP_HT <- numeric(length = R)
 
-odd <- c(1,3)
+odd <- c(1, 3)
 
 set.seed(314)
 n <- 100
 for (i in 1:R) {
   #Design SS
-  units <- sample(nrow(df), size=n, replace=TRUE)
-  mysample_SS <- df[units,]
-  mz <- apply(mysample_SS[,-c(1,2)], MARGIN=2, FUN=mean)
-  C <- var(mysample_SS[,-c(1,2)])/n
+  units <- sample(nrow(df), size = n, replace = TRUE)
+  mysample_SS <- df[units, ]
+  mz <- apply(mysample_SS[, -c(1, 2)], MARGIN = 2, FUN = mean)
+  C <- var(mysample_SS[, -c(1, 2)]) / n
 #current mean
   mz_cur_SS[i] <- mz[4]
 #change of mean from time 1 to time 4
-  w <- c(-1,0,0,1)
-  d_mz_SS[i] <- t(w)%*%mz
+  w <- c(-1, 0, 0, 1)
+  d_mz_SS[i] <- t(w) %*% mz
 #trend of mean
   t <- 1:4
-  w <- (t-mean(t))/sum((t-mean(t))^2)
-  mz_trend_SS[i] <- t(w)%*%mz
+  w <- (t - mean(t)) / sum((t - mean(t))^2)
+  mz_trend_SS[i] <- t(w) %*% mz
 #space-time mean
   mz_st_SS[i] <- mean(mz)
 
 #Design IS
-  units <- sample(nrow(df), size=4*n, replace=TRUE)
-  mysample_IS <- df[units,]
-  mysample_IS$panel <- rep(c("a","b","c","d"), each=n)
-  panel_a <- filter(mysample_IS, panel=="a")[,c("TAS2004")]
-  panel_b <- filter(mysample_IS, panel=="b")[,c("TAS2009")]
-  panel_c <- filter(mysample_IS, panel=="c")[,c("TAS2014")]
-  panel_d <- filter(mysample_IS, panel=="d")[,c("TAS2019")]
-  panel_abcd <- cbind(panel_a,panel_b,panel_c,panel_d)
-  mz <- apply(panel_abcd, MARGIN=2, FUN=mean)
-  C <- var(panel_abcd)/n
-  C[row(C)!=col(C)] <- 0
+  units <- sample(nrow(df), size = 4 * n, replace = TRUE)
+  mysample_IS <- df[units, ]
+  mysample_IS$panel <- rep(c("a", "b", "c", "d"), each = n)
+  panel_a <- filter(mysample_IS, panel == "a")[, c("TAS2004")]
+  panel_b <- filter(mysample_IS, panel == "b")[, c("TAS2009")]
+  panel_c <- filter(mysample_IS, panel == "c")[, c("TAS2014")]
+  panel_d <- filter(mysample_IS, panel == "d")[, c("TAS2019")]
+  panel_abcd <- cbind(panel_a, panel_b, panel_c, panel_d)
+  mz <- apply(panel_abcd, MARGIN = 2, FUN = mean)
+  C <- var(panel_abcd) / n
+  C[row(C) != col(C)] <- 0
 #current mean
   mz_cur_IS[i] <- mz[4]
 #change of mean
   d_mz_IS[i] <- mz[4] - mz[1]
 #trend of mean
   t <- 1:4
-  w <- (t-mean(t))/sum((t-mean(t))^2)
-  mz_trend_IS[i] <- t(w)%*%mz
+  w <- (t - mean(t)) / sum((t - mean(t))^2)
+  mz_trend_IS[i] <- t(w) %*% mz
 #space-time mean
   mz_st_IS[i] <- mean(mz)
 
 #Design SA
-  units <- sample(nrow(df), size=2*n, replace=TRUE)
-  mysample_SA <- df[units,]
-  mysample_SA$panel <- rep(c("a","b"), each=n)
-  panel_a <- filter(mysample_SA, panel=="a")[,c("TAS2004","TAS2014")]
-  panel_b <- filter(mysample_SA, panel=="b")[,c("TAS2009","TAS2019")]
-  panel_ab <- cbind(panel_a[1],panel_b[1],panel_a[2],panel_b[2])
-  mz <- apply(panel_ab, MARGIN=2, FUN=mean)
-  C <- var(panel_ab)/n
+  units <- sample(nrow(df), size = 2 * n, replace = TRUE)
+  mysample_SA <- df[units, ]
+  mysample_SA$panel <- rep(c("a", "b"), each = n)
+  panel_a <- filter(mysample_SA, panel == "a")[, c("TAS2004", "TAS2014")]
+  panel_b <- filter(mysample_SA, panel == "b")[, c("TAS2009", "TAS2019")]
+  panel_ab <- cbind(panel_a[1], panel_b[1], panel_a[2], panel_b[2])
+  mz <- apply(panel_ab, MARGIN = 2, FUN = mean)
+  C <- var(panel_ab) / n
   C[row(C) %in% odd & !(col(C) %in% odd)] <- 0
   C[!(row(C) %in% odd) & col(C) %in% odd] <- 0
 
 #current mean
   mz_cur_SA[i] <- mz[4]
 #change of mean from time 1 to time 4
-  w <- c(-1,0,0,1)
-  d_mz_SA[i] <- t(w)%*%mz
+  w <- c(-1, 0, 0, 1)
+  d_mz_SA[i] <- t(w) %*% mz
 #trend of mean
   t <- 1:4
-  w <- (t-mean(t))/sum((t-mean(t))^2)
-  mz_trend_SA[i] <- t(w)%*%mz
+  w <- (t - mean(t)) / sum((t - mean(t))^2)
+  mz_trend_SA[i] <- t(w) %*% mz
 #space-time mean
   mz_st_SA[i] <- mean(mz)
 
   #Design SP
-  units <- sample(nrow(df), size=5*n/2, replace=TRUE)
-  mysample_SP <- df[units,]
-  mysample_SP$panel <- rep(c("a","b","c","d","e"), each=n/2)
+  units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
+  mysample_SP <- df[units, ]
+  mysample_SP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 #compute eight elementary estimates
-  mz_1 <- tapply(mysample_SP$TAS2004, INDEX=mysample_SP$panel,
-               FUN=mean)[c(1,2)]
-  mz_2 <- tapply(mysample_SP$TAS2009, INDEX=mysample_SP$panel,
-               FUN=mean)[c(1,3)]
-  mz_3 <- tapply(mysample_SP$TAS2014, INDEX=mysample_SP$panel,
-               FUN=mean)[c(1,4)]
-  mz_4 <- tapply(mysample_SP$TAS2019, INDEX=mysample_SP$panel,
-               FUN=mean)[c(1,5)]
+  mz_1 <- tapply(mysample_SP$TAS2004, INDEX = mysample_SP$panel,
+               FUN = mean)[c(1, 2)]
+  mz_2 <- tapply(mysample_SP$TAS2009, INDEX = mysample_SP$panel,
+               FUN = mean)[c(1, 3)]
+  mz_3 <- tapply(mysample_SP$TAS2014, INDEX = mysample_SP$panel,
+               FUN = mean)[c(1, 4)]
+  mz_4 <- tapply(mysample_SP$TAS2019, INDEX = mysample_SP$panel,
+               FUN = mean)[c(1, 5)]
 #collect elementary estimates in vector; estimates from pure panel first
-  mz_el <- c(mz_1["a"],mz_2["a"],mz_3["a"],mz_4["a"],
-           mz_1["b"],mz_2["c"],mz_3["d"],mz_4["e"])
-  X <- rbind(diag(4),diag(4))
+  mz_el <- c(mz_1["a"], mz_2["a"], mz_3["a"], mz_4["a"],
+           mz_1["b"], mz_2["c"], mz_3["d"], mz_4["e"])
+  X <- rbind(diag(4), diag(4))
 #estimate covariances of elementary estimates of pure panel subsample
-  mysubsample_SS <- mysample_SP[mysample_SP$panel=="a",]
-  C_SS <- var(mysubsample_SS[,c("TAS2004","TAS2009","TAS2014","TAS2019")])/(n/2)
+  mysubsample_SS <- mysample_SP[mysample_SP$panel == "a", ]
+  C_SS <- var(mysubsample_SS[, c("TAS2004", "TAS2009", "TAS2014", "TAS2019")]) / (n / 2)
 #estimate variances of elementary estimates of independent synchronous subsample
-  mysubsample_IS <- cbind(mysample_SP$TAS2004[mysample_SP$panel=="b"],
-                        mysample_SP$TAS2009[mysample_SP$panel=="c"],
-                        mysample_SP$TAS2014[mysample_SP$panel=="d"],
-                        mysample_SP$TAS2019[mysample_SP$panel=="e"])
-  C_IS <- var(mysubsample_IS)/(n/2)
-  C_IS[row(C_IS)!=col(C_IS)] <- 0
-  zeroes <- matrix(0,4,4)
-  C <- rbind(cbind(C_SS,zeroes),cbind(zeroes,C_IS))
+  mysubsample_IS <- cbind(mysample_SP$TAS2004[mysample_SP$panel == "b"],
+                        mysample_SP$TAS2009[mysample_SP$panel == "c"],
+                        mysample_SP$TAS2014[mysample_SP$panel == "d"],
+                        mysample_SP$TAS2019[mysample_SP$panel == "e"])
+  C_IS <- var(mysubsample_IS) / (n / 2)
+  C_IS[row(C_IS) != col(C_IS)] <- 0
+  zeroes <- matrix(0, 4, 4)
+  C <- rbind(cbind(C_SS, zeroes), cbind(zeroes, C_IS))
   Cinv <- solve(C)
-  XCXinv <- solve(crossprod(X, Cinv)%*%X)
-  XCz <- crossprod(X, Cinv)%*%mz_el
-  mz_GLS <- XCXinv%*%XCz
+  XCXinv <- solve(crossprod(X, Cinv) %*% X)
+  XCz <- crossprod(X, Cinv) %*% mz_el
+  mz_GLS <- XCXinv %*% XCz
 #current mean
   mz_cur_SP[i] <- mz_GLS[4]
 #change of mean
-  w <- c(-1,0,0,1)
-  d_mz_SP[i] <- t(w)%*%mz_GLS
+  w <- c(-1, 0, 0, 1)
+  d_mz_SP[i] <- t(w) %*% mz_GLS
 #change of mean, estimated by difference of HT estimators
   d_mz_SP_HT[i] <- mean(mz_4) - mean(mz_1)
 #trend of mean
   t <- 1:4
-  w <- (t-mean(t))/sum((t-mean(t))^2)
-  mz_trend_SP[i] <- t(w)%*%mz_GLS
+  w <- (t - mean(t)) / sum((t - mean(t))^2)
+  mz_trend_SP[i] <- t(w) %*% mz_GLS
 #space-time mean
   mz_st_SP[i] <- mean(mz_GLS)
 
 #Design RP
-  units <- sample(nrow(df), size=5*n/2, replace=TRUE)
-  mysample_RP <- df[units,]
-  mysample_RP$panel <- rep(c("a","b","c","d","e"), each=n/2)
-  mz_1 <- tapply(mysample_RP$TAS2004, INDEX=mysample_RP$panel,
-               FUN=mean)[c(1,2)]
-  mz_2 <- tapply(mysample_RP$TAS2009, INDEX=mysample_RP$panel,
-               FUN=mean)[c(2,3)]
-  mz_3 <- tapply(mysample_RP$TAS2014, INDEX=mysample_RP$panel,
-               FUN=mean)[c(3,4)]
-  mz_4 <- tapply(mysample_RP$TAS2019, INDEX=mysample_RP$panel,
-               FUN=mean)[c(4,5)]
-  mz_el <- c(mz_1,mz_2,mz_3,mz_4)
-  X <- matrix(c(rep(c(1,0,0,0),2),
-              rep(c(0,1,0,0),2),
-              rep(c(0,0,1,0),2),
-              rep(c(0,0,0,1),2)), nrow=8, ncol=4, byrow=TRUE)
-  mysubsample <- mysample_RP[mysample_RP$panel=="b",c("TAS2004","TAS2009")] 
-  C_b <- var(mysubsample)/(n/2)
-  mysubsample <- mysample_RP[mysample_RP$panel=="c",c("TAS2009","TAS2014")] 
-  C_c <- var(mysubsample)/(n/2)
-  mysubsample <- mysample_RP[mysample_RP$panel=="d",c("TAS2014","TAS2019")] 
-  C_d <- var(mysubsample)/(n/2)
-  C <- matrix(data=0, ncol=8, nrow=8)
-  C[2:3,2:3] <- C_b
-  C[4:5,4:5] <- C_c
-  C[6:7,6:7] <- C_d
-  C[1,1] <- var(mysample_RP[mysample_RP$panel=="a","TAS2004"])/(n/2)
-  C[8,8] <- var(mysample_RP[mysample_RP$panel=="e","TAS2019"])/(n/2)
+  units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
+  mysample_RP <- df[units, ]
+  mysample_RP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
+  mz_1 <- tapply(mysample_RP$TAS2004, INDEX = mysample_RP$panel,
+               FUN = mean)[c(1, 2)]
+  mz_2 <- tapply(mysample_RP$TAS2009, INDEX = mysample_RP$panel,
+               FUN = mean)[c(2, 3)]
+  mz_3 <- tapply(mysample_RP$TAS2014, INDEX = mysample_RP$panel,
+               FUN = mean)[c(3, 4)]
+  mz_4 <- tapply(mysample_RP$TAS2019, INDEX = mysample_RP$panel,
+               FUN = mean)[c(4, 5)]
+  mz_el <- c(mz_1, mz_2, mz_3, mz_4)
+  X <- matrix(c(rep(c(1, 0, 0, 0), 2),
+              rep(c(0, 1, 0, 0), 2),
+              rep(c(0, 0, 1, 0), 2),
+              rep(c(0, 0, 0, 1), 2)), nrow = 8, ncol = 4, byrow = TRUE)
+  mysubsample <- mysample_RP[mysample_RP$panel == "b", c("TAS2004", "TAS2009")]
+  C_b <- var(mysubsample) / (n / 2)
+  mysubsample <- mysample_RP[mysample_RP$panel == "c", c("TAS2009", "TAS2014")]
+  C_c <- var(mysubsample)  / (n / 2)
+  mysubsample <- mysample_RP[mysample_RP$panel == "d", c("TAS2014", "TAS2019")]
+  C_d <- var(mysubsample) / (n / 2)
+  C <- matrix(data = 0, ncol = 8, nrow = 8)
+  C[2:3, 2:3] <- C_b
+  C[4:5, 4:5] <- C_c
+  C[6:7, 6:7] <- C_d
+  C[1, 1] <- var(mysample_RP[mysample_RP$panel == "a", "TAS2004"]) / (n / 2)
+  C[8, 8] <- var(mysample_RP[mysample_RP$panel == "e", "TAS2019"]) / (n / 2)
   Cinv <- solve(C)
   XCXinv <- solve(crossprod(X, Cinv) %*% X)
   XCz <- crossprod(X, Cinv) %*% mz_el
@@ -1017,30 +1026,30 @@ for (i in 1:R) {
 #current mean
   mz_cur_RP[i] <- mz_GLS[4]
 #change of mean
-  w <- c(-1,0,0,1)
-  d_mz_RP[i] <- t(w)%*%mz_GLS
+  w <- c(-1, 0, 0, 1)
+  d_mz_RP[i] <- t(w) %*% mz_GLS
 #trend of mean
   t <- 1:4
-  w <- (t-mean(t))/sum((t-mean(t))^2)
-  mz_trend_RP[i] <- t(w)%*%mz_GLS
+  w <- (t - mean(t)) / sum((t - mean(t))^2)
+  mz_trend_RP[i] <- t(w) %*% mz_GLS
 #space-time mean
   mz_st_RP[i] <- mean(mz_GLS)
 }
 
 res <- data.frame(mz_cur_SS, d_mz_SS, mz_trend_SS, mz_st_SS, mz_cur_IS, d_mz_IS, mz_trend_IS, mz_st_IS, mz_cur_SA, d_mz_SA, mz_trend_SA, mz_st_SA, mz_cur_SP, d_mz_SP, mz_trend_SP, mz_st_SP, mz_cur_RP, d_mz_RP, mz_trend_RP, mz_st_RP, d_mz_SP_HT)
-save(res, file="results/EstimatesSpaceTimeDesigns.RData")
+save(res, file = "results/EstimatesSpaceTimeDesigns.RData")
 ```
 
-```{r TableRepeatedEstimatesSpaceTimeParameters, echo=FALSE}
-load(file="results/EstimatesSpaceTimeDesigns.RData")
-v_pars <- apply(res, MARGIN=2, FUN=var)
+```{r TableRepeatedEstimatesSpaceTimeParameters, echo = FALSE}
+load(file = "results/EstimatesSpaceTimeDesigns.RData")
+v_pars <- apply(res, MARGIN = 2, FUN = var)
 se_pars <- sqrt(v_pars)
 
-estimates <- data.frame(c("SS","IS","SA","SP","RP"),round(se_pars[c(1,5,9,13,17)],4), round(se_pars[c(2,6,10,14,18)],4), round(se_pars[c(3,7,11,15,19)],4), round(se_pars[c(4,8,12,16,20)],4),row.names=NULL)
+estimates <- data.frame(c("SS", "IS", "SA", "SP", "RP"), round(se_pars[c(1, 5, 9, 13, 17)], 4), round(se_pars[c(2, 6, 10, 14, 18)], 4), round(se_pars[c(3, 7, 11, 15, 19)], 4), round(se_pars[c(4, 8, 12, 16, 20)], 4), row.names = NULL)
 
 knitr::kable(
-  estimates, caption = 'Standard deviations of 10,000 estimates of space-time parameters of annual mean temperature in Spain and Portugal, with static-synchronous (SS), independent synchronous (IS), serially alternating (SA), supplemented panel (SP), and rotating panel (RP) space-time sampling, and simple random sampling with replacement of 100 locations per sampling time.',
-  col.names = c("","Current mean","Change of mean","Trend of mean","Space-time mean"),
+  estimates, caption = "Standard deviations of 10,000 estimates of space-time parameters of annual mean temperature in Spain and Portugal, with static-synchronous (SS), independent synchronous (IS), serially alternating (SA), supplemented panel (SP), and rotating panel (RP) space-time sampling, and simple random sampling with replacement of 100 locations per sampling time.",
+  col.names = c("", "Current mean", "Change of mean", "Trend of mean", "Space-time mean"),
   booktabs = TRUE
 ) %>%
   kable_classic()
@@ -1049,7 +1058,7 @@ knitr::kable(
 Estimates of the current mean with the SP and RP designs are much more precise than with the SS, IS, and SA designs. This is because with designs SP and RP there is partial overlap with the samples of the other years. If the study variable at different years is correlated, we can profit from the data of previous years. In our case this correlation is very strong:
 
 ```{r}
-cor(df[,-c(1,2)])
+cor(df[, -c(1, 2)])
 ```
 
 The small differences in standard deviations of the estimated current means among the SS, IS, and SA designs are due to random variation: the true standard errors of the current mean estimator are equal for these three space-time designs.
@@ -1085,6 +1094,6 @@ V(\bar{d}_{ab})=\frac{S^2_a}{n} + \frac{S^2_b}{n} - 2\frac{m\;S^2_{ab}}{n^2}\;,
 \end{equation}
 with $S^2_a$ and $S^2_b$ the spatial variance at time $t_a$ and $t_b$, respectively, $S^2_{ab}$ the spatial covariance of the study variable at times $t_a$ and $t_b$, $n$ the size of the simple random samples, and $m$ the number of units observed at both times. Compute for Spain and Portugal the standard error of the estimator of the change of the mean with Equation \@ref(eq:varChangeofMeanHT), using the *true* spatial variances and covariances for the years 2004 and 2019, for simple random samples of size 100 ($n=100$) and a matching proportion of 0.5 ($m=50$). Compare with the true standard error of the estimator of the change of the mean using the GLS estimators computed in the previous exercise. Explain that the standard error of the $\pi$ estimators is larger than the standard error with the GLS estimators.
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```

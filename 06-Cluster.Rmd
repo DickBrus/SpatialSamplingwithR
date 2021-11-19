@@ -8,7 +8,7 @@ The implementation of cluster random sampling is not straightforward. Frequently
 
 A requirement of a valid selection method is that the same cluster is selected, regardless of which of its units is used as a starting unit. In the example above this is the case: regardless of which of the units of the transect is selected first, the final set of units selected is the same because, as stated above, all units E and W of the starting unit are selected.
 
-```{block2, type='rmdnote'}
+```{block2, type = 'rmdnote'}
 An example of an improper implementation of cluster random sampling is the following selection procedure. A cluster is defined as an E-W oriented transect of four units with a mutual spacing of 100 m. A cluster is selected by randomly selecting a starting unit. The remaining three units of the cluster are selected E of this starting unit. Units outside the study area are ignored. With this selection method the set of selected units is *not* independent of the starting unit, and therefore this selection method is invalid.
 ```
 
@@ -21,13 +21,13 @@ In the code chunk below the zones are constructed by first computing a vector wi
 ```{r}
 library(sp)
 load("data/Voorst.RData")
-gridded(grdVoorst) <- ~s1+s2 
+gridded(grdVoorst) <- ~ s1 + s2
 gridtop <- as(getGridTopology(grdVoorst), "data.frame")
 cellsize <- gridtop$cellsize[1]
 grdVoorst <- as(grdVoorst, "data.frame")
 w <- 1000 #width of zones
-s1bnd <- seq(from=min(grdVoorst$s1)+w, to=min(grdVoorst$s1)+5*w,
-             by=w)+cellsize/2
+s1bnd <- seq(from = min(grdVoorst$s1) + w, to = min(grdVoorst$s1) + 5 * w,
+             by = w) + cellsize / 2
 grdVoorst$zone <- findInterval(grdVoorst$s1, s1bnd)
 ```
 
@@ -41,24 +41,24 @@ Factor 1 has four levels, as the modulus of the s1-coordinates and a spacing of 
 
 ```{r SampleCl}
 #compute local coordinates
-s1local <- grdVoorst$s1-min(grdVoorst$s1)
-s2local <- grdVoorst$s2-min(grdVoorst$s2)
-spacing <- 100 
+s1local <- grdVoorst$s1 - min(grdVoorst$s1)
+s2local <- grdVoorst$s2 - min(grdVoorst$s2)
+spacing <- 100
 mods1 <- s1local %% spacing
 #construct clusters (E-W oriented transects within zones)
 grdVoorst$cluster <- interaction(
   as.factor(mods1),
   as.factor(s2local),
   as.factor(grdVoorst$zone)) %>%  as.character(.)
-M_cl <- tapply(grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
-grdVoorst$unit <- 1:nrow(grdVoorst)
+M_cl <- tapply(grdVoorst$z, INDEX = grdVoorst$cluster, FUN = length)
+grdVoorst$unit <- seq_len(nrow(grdVoorst))
 ```
 
-```{r clustersize, echo=FALSE, fig.cap="Frequency distribution of the size of clusters in Voorst. Clusters are E-W oriented transects within zones, with a spacing of 100 m between units."}
+```{r clustersize, echo = FALSE, fig.cap = "Frequency distribution of the size of clusters in Voorst. Clusters are E-W oriented transects within zones, with a spacing of 100 m between units."}
 cnts <- table(M_cl) %>% as.numeric(.)
-df <- data.frame(Size=seq(from=min(M_cl), to=max(M_cl), by=1), Count=cnts)
+df <- data.frame(Size = seq(from = min(M_cl), to = max(M_cl), by = 1), Count = cnts)
 ggplot(data = df) +
-  geom_bar(aes(x=Size, y=Count), stat="identity")
+  geom_bar(aes(x = Size, y = Count), stat = "identity")
 ```
 
 In total there are `r length(unique(grdVoorst$cluster))` clusters in the population. Figure \@ref(fig:clustersize) shows the frequency distribution of the size of the clusters.
@@ -67,11 +67,11 @@ Clusters are selected with probabilities proportional to their size and with rep
 
 ```{r}
 cl_ppswr <- function(sframe, n) {
-  units <- sample(nrow(sframe), size=n, replace=TRUE)
+  units <- sample(nrow(sframe), size = n, replace = TRUE)
   units_cl <- sframe$cluster[units]
   mysamples <- NULL
-  for (i in 1:length(units_cl)) {
-    mysample <- sframe[sframe$cluster %in% units_cl[i],]
+  for (i in seq_len(length(units_cl))) {
+    mysample <- sframe[sframe$cluster %in% units_cl[i], ]
     mysample$start <- 0
     mysample$start[mysample$unit %in% units[i]] <- 1
     mysample$cldraw <- rep(i, nrow(mysample))
@@ -84,31 +84,31 @@ cl_ppswr <- function(sframe, n) {
 Function `cl_ppswr` is now used to select six times a cluster by ppswr.
 
 ```{r}
-n <- 6 
+n <- 6
 set.seed(314)
-mysample <- cl_ppswr(sframe=grdVoorst, n=n)
+mysample <- cl_ppswr(sframe = grdVoorst, n = n)
 ```
 
 As our population actually is infinite, the centres of the selected grid cells are jittered to a random point within the selected grid cells. Note that the same noise is added to all units of a given cluster.
 
 ```{r}
 for (i in 1:n) {
-  units <- which(mysample$cldraw==i)
-  mysample$s1[units] <- mysample$s1[units] + runif(1, min=-12.5, max=12.5)
-  mysample$s2[units] <- mysample$s2[units] + runif(1, min=-12.5, max=12.5)
+  units <- which(mysample$cldraw == i)
+  mysample$s1[units] <- mysample$s1[units] + runif(1, min = -12.5, max = 12.5)
+  mysample$s2[units] <- mysample$s2[units] + runif(1, min = -12.5, max = 12.5)
 }
 ```
 
 Figure \@ref(fig:ClVoorst) shows the selected sample. Note that in this case the second west-most zone has two transects (clusters) whereas one zone has none, showing that the zones are not used as strata. The total number of selected points equals `r nrow(mysample)`. Similar to systematic random sampling, with cluster random sampling  the total sample size is random, so that we do not have perfect control of the total sample size. This is because in this case the size (number of points) of the clusters is not constant but varies.
 
-```{r ClVoorst, echo=FALSE, out.width='100%', fig.cap="Cluster random sample from Voorst selected by ppswr."}
-ggplot(grdVoorst) +        
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=as.factor(zone))) +
-  scale_fill_viridis_d(alpha=0.5) +
-  geom_point(data=mysample, mapping = aes(x = s1/1000, y = s2/1000), size = 1.5) +
+```{r ClVoorst, echo = FALSE, out.width = '100%', fig.cap = "Cluster random sample from Voorst selected by ppswr."}
+ggplot(grdVoorst) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = as.factor(zone))) +
+  scale_fill_viridis_d(alpha = 0.5) +
+  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1.5) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()+
+  coord_fixed() +
   theme(legend.position = "none")
 ```
 
@@ -186,9 +186,9 @@ In **R** the population mean and the sampling variance of the estimator of the p
 
 ```{r}
 mz_cl <- tapply(
-  mysample$z, INDEX=mysample$cldraw, FUN=mean)
+  mysample$z, INDEX = mysample$cldraw, FUN = mean)
 mz <- mean(mz_cl)
-se_mz <- sqrt(var(mz_cl)/n)
+se_mz <- sqrt(var(mz_cl) / n)
 ```
 
 The estimated mean equals `r round(mz,1)` g kg^-1^, and the estimated standard error equals `r round(se_mz,1)` g kg^-1^. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
@@ -198,9 +198,9 @@ The same estimates are obtained with functions `svydesign` and `svymean` of pack
 ```{r}
 library(survey)
 M <- nrow(grdVoorst)
-mysample$weights <- M/(M_cl[mysample$cluster]*n)
-design_cluster <- svydesign(id=~cldraw, weights=~weights, data=mysample)
-svymean(~z, design_cluster, deff="replace")
+mysample$weights <- M / (M_cl[mysample$cluster] * n)
+design_cluster <- svydesign(id = ~ cldraw, weights = ~ weights, data = mysample)
+svymean(~ z, design_cluster, deff = "replace")
 ```
 
 The design effect\index{Design effect} `DEff` as estimated from the selected cluster sample is considerably larger than 1. About 4 times more sampling points are needed with cluster random sampling compared to simple random sampling to estimate the population mean with the same precision.
@@ -208,52 +208,52 @@ The design effect\index{Design effect} `DEff` as estimated from the selected clu
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of cluster draws minus 1.
 
 ```{r}
-confint(svymean(~z, design_cluster, df=degf(design_cluster), level=0.95))
+confint(svymean(~ z, design_cluster, df = degf(design_cluster), level = 0.95))
 ```
 
 Figure \@ref(fig:SamplingDistributionCl) shows the approximated sampling distribution of the pwr estimator of the mean soil organic matter (SOM) concentration with cluster random sampling and of the $\pi$ estimator with simple random sampling, obtained by repeating the random sampling with each design and estimation 10,000 times. The size of the simple random samples is equal to the expected sample size of the cluster random sampling design (rounded to nearest integer).
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 number_of_samples <- 10000
-mz <- v_mz <- mz_SI <- sampleSizes <- numeric(length=number_of_samples)
+mz <- v_mz <- mz_SI <- sampleSizes <- numeric(length = number_of_samples)
 
 #compute size of clusters
-M_cl <- tapply(grdVoorst$z, INDEX=grdVoorst$cluster, FUN=length)
+M_cl <- tapply(grdVoorst$z, INDEX = grdVoorst$cluster, FUN = length)
 
 #compute expected sample size
-p <- M_cl/sum(M_cl)
-m_n <- round(n*sum(p*M_cl),0)
+p <- M_cl / sum(M_cl)
+m_n <- round(n * sum(p * M_cl), 0)
 
 SI <- function(sframe, n) {
     units <- sample(nrow(sframe), size = n, replace = TRUE)
-    mysample <- sframe[units,]
+    mysample <- sframe[units, ]
     mysample
 }
 
 set.seed(314)
 for (i in 1:number_of_samples) {
-    mysample <- cl_ppswr(sframe=grdVoorst, n=n)
-    clusterMeans <- tapply(mysample$z, INDEX=mysample$cldraw, FUN=mean)
+    mysample <- cl_ppswr(sframe = grdVoorst, n = n)
+    clusterMeans <- tapply(mysample$z, INDEX = mysample$cldraw, FUN = mean)
     mz[i] <- mean(clusterMeans)
-    v_mz[i] <- var(clusterMeans)/n
+    v_mz[i] <- var(clusterMeans) / n
     sampleSizes[i] <- nrow(mysample)
-    mySIsample <- SI(grdVoorst,n=m_n)
+    mySIsample <- SI(grdVoorst, n = m_n)
     mz_SI[i] <- mean(mySIsample$z)
 }
 
-save(mz, mz_SI, v_mz, sampleSizes, m_n, file="results/Cl_Voorst.RData")
+save(mz, mz_SI, v_mz, sampleSizes, m_n, file = "results/Cl_Voorst.RData")
 ```
 
 (ref:SamplingDistributionCllabel) Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg^-1^) in Voorst with cluster random sampling (Cl) and of the $\pi$ estimator with simple random sampling (SI). In Cl six clusters are selected by ppswr. The (expected) sample size is 49 units.
 
-```{r SamplingDistributionCl, echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionCllabel)"}
-load(file="results/Cl_Voorst.RData")
+```{r SamplingDistributionCl, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionCllabel)"}
+load(file = "results/Cl_Voorst.RData")
 estimates <- data.frame(mz, mz_SI)
-names(estimates) <- c("Cl","SI")
-df <- estimates %>% pivot_longer(.,cols=c("Cl","SI"))
+names(estimates) <- c("Cl", "SI")
+df <- estimates %>% pivot_longer(., cols = c("Cl", "SI"))
 ggplot(data = df) +
-    geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=mean(grdVoorst$z), colour="red")+
+    geom_boxplot(aes(y = value, x = name)) +
+    geom_hline(yintercept = mean(grdVoorst$z), colour = "red") +
     scale_x_discrete(name = "Sampling design") +
     scale_y_continuous(name = "Estimated mean SOM")
 ```
@@ -261,17 +261,17 @@ ggplot(data = df) +
 The variance of the 10,000 estimated population means with cluster random sampling equals `r as.character(round(var(estimates$Cl),1))` (g kg^-1^)^2^.  This is considerably larger than with simple random sampling: `r as.character(round(var(estimates$SI),1))` (g kg^-1^)^2^. The large variance is caused by the strong spatial clustering of points. This may save travel time in large study areas, but in Voorst the saved travel time will be very limited, and therefore cluster random sampling in Voorst is not a good idea. The average of the estimated variances with cluster random sampling equals `r as.character(round(mean(v_mz),1))` (g kg^-1^)^2^. The difference with the variance of the 10,000 estimated means is small because the estimator of the variance, Equation \@ref(eq:VarEstMeanCl), is unbiased. Figure \@ref(fig:histsamplesizeCl) shows the approximated sampling distribution of the sample size. The expected sample size can be computed as follows:
 
 ```{r}
-p <- M_cl/sum(M_cl)
-print(m_n <- n*sum(p*M_cl))
+p <- M_cl / sum(M_cl)
+print(m_n <- n * sum(p * M_cl))
 ```
 
 So, the unequal draw-by-draw selection probabilities of the clusters are accounted for in computing the expected sample size\index{Expected sample size}. 
 
-```{r histsamplesizeCl, echo=FALSE, fig.cap="Approximated sampling distribution of the sample size with cluster random sampling from Voorst, for six clusters selected by ppswr."}
-n_df <- data.frame(n=sampleSizes)
+```{r histsamplesizeCl, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample size with cluster random sampling from Voorst, for six clusters selected by ppswr."}
+n_df <- data.frame(n = sampleSizes)
 ggplot(n_df) +
-  geom_histogram(aes(x=n, y=..density..), fill="black", alpha=0.5, breaks= 33.5:60.5, colour="black") +
-  geom_density(aes(x=n, y=..density..), lwd=1, adjust=2) +
+  geom_histogram(aes(x = n, y = ..density..), fill = "black", alpha = 0.5, breaks = 33.5:60.5, colour = "black") +
+  geom_density(aes(x = n, y = ..density..), lwd = 1, adjust = 2) +
   scale_x_continuous(name = "Sample size") +
   scale_y_continuous(name = "Density")
 ```
@@ -294,29 +294,31 @@ Many algorithms have been developed for ppswor sampling, see @Tille2006 for an o
 ```{r}
 library(sampling)
 n <- 6
-pi <- n*M_cl/M
+pi <- n * M_cl / M
 set.seed(314)
 eps <- 1e-6
-sampleind <- UPpivotal(pik=pi, eps=eps)
+sampleind <- UPpivotal(pik = pi, eps = eps)
 clusters <- sort(unique(grdVoorst$cluster))
-sampledclusters <- clusters[sampleind==1]
-mysample <- grdVoorst[grdVoorst$cluster %in% sampledclusters,]
+sampledclusters <- clusters[sampleind == 1]
+mysample <- grdVoorst[grdVoorst$cluster %in% sampledclusters, ]
 ```
 
 The population mean can be estimated by the $\pi$ estimator by writing a few lines of **R** code yourself or by using function `svymean` of package **survey** as shown hereafter. Estimation of the sampling variance in pps sampling of clusters without replacement is difficult^[The problem is the computation of the joint inclusion probabilities of pairs of points.]. A simple solution is to treat the cluster sample as a ppswr sample and to estimate the variance with Equation \@ref(eq:VarEstMeanCl). With small sampling fractions this variance approximation is fine: the overestimation of the variance is negligible. For larger sampling fractions various alternative variance approximations are developed, see @Berger2004 for details. One of the methods is Brewer's method\index{Brewer's variance estimator}, which is implemented in function `svydesign`.
 
 ```{r}
-mysample$pi <- n*M_cl[mysample$cluster]/M
-design_clppswor <- svydesign(id=~cluster, data=mysample, pps="brewer", fpc=~pi)
-svymean(~z,design_clppswor)
+mysample$pi <- n * M_cl[mysample$cluster] / M
+design_clppswor <- svydesign(
+  id = ~ cluster, data = mysample, pps = "brewer", fpc = ~ pi)
+svymean(~ z, design_clppswor)
 ```
 
 Another variance estimator implemented in function `svydesign`  is the Hartley-Rao estimator\index{Hartley-Rao's variance estimator}. The two estimated standard errors are nearly equal.
 
 ```{r}
-p2sum<-sum((n*M_cl[mysample$cluster]/M)^2)/n
-design_hr <- svydesign(id=~cluster,  data=mysample, pps=HR(p2sum), fpc=~pi)
-svymean(~z, design_hr)
+p2sum <- sum((n * M_cl[mysample$cluster] / M)^2) / n
+design_hr <- svydesign(
+  id = ~ cluster,  data = mysample, pps = HR(p2sum), fpc = ~ pi)
+svymean(~ z, design_hr)
 ```
 
 ## Simple random sampling of clusters {#SIC}
@@ -352,7 +354,7 @@ This leads to the ratio estimator\index{Ratio estimator} of the population mean:
 The $\pi$ estimator and the ratio estimator are equal when the clusters are selected with probabilities proportional to size. This is because the estimated population size is equal to the true population size.
 
 ```{r}
-print(M_HT <- sum(1/mysample$pi))
+print(M_HT <- sum(1 / mysample$pi))
 ```
 
 However, when clusters of different size are selected with equal probabilities, the two estimators are different. This is shown below. Six clusters are selected by simple random sampling without replacement.
@@ -360,29 +362,29 @@ However, when clusters of different size are selected with equal probabilities, 
 ```{r}
 set.seed(314)
 clusters <- sort(unique(grdVoorst$cluster))
-units_cl <- sample(length(clusters), size=n, replace=FALSE) 
+units_cl <- sample(length(clusters), size = n, replace = FALSE)
 sampledclusters <- clusters[units_cl]
-mysample <- grdVoorst[grdVoorst$cluster %in% sampledclusters,]
+mysample <- grdVoorst[grdVoorst$cluster %in% sampledclusters, ]
 ```
 
 The $\pi$ estimate and the ratio estimate of the population mean are computed for the selected sample.
 
 ```{r}
 N <- length(clusters)
-mysample$pi <- n/N
-tz_HT <- sum(mysample$z/mysample$pi)
-mz_HT <- tz_HT/M
-M_HT <- sum(1/mysample$pi)
-mz_ratio <- tz_HT/M_HT
+mysample$pi <- n / N
+tz_HT <- sum(mysample$z / mysample$pi)
+mz_HT <- tz_HT / M
+M_HT <- sum(1 / mysample$pi)
+mz_ratio <- tz_HT / M_HT
 ```
 
 The $\pi$ estimate equals `r round(mz_HT,3)` g kg^-1^, and the ratio estimate equals `r round(mz_ratio,3)` g kg^-1^. The $\pi$ estimate of the population mean can also be computed by first computing totals of clusters, see Equations \@ref(eq:EstTotalClEqual) and \@ref(eq:EstMeanHTClEqual). 
 
 ```{r}
-tz_cluster <- tapply(mysample$z, INDEX=mysample$cluster, FUN=sum)
-pi_cluster <- n/N
-tz_HT <- sum(tz_cluster/pi_cluster)
-print(mz_HT <- tz_HT/M)
+tz_cluster <- tapply(mysample$z, INDEX = mysample$cluster, FUN = sum)
+pi_cluster <- n / N
+tz_HT <- sum(tz_cluster / pi_cluster)
+print(mz_HT <- tz_HT / M)
 ```
 
 The variance of the $\pi$ estimator of the population mean can be estimated by first estimating the variance of the estimator of the total:
@@ -401,9 +403,9 @@ and dividing this variance by the squared number of population units:
 \end{equation}
 
 ```{r}
-fpc <- 1-n/N
-v_tz <- N^2*fpc*var(tz_cluster)/n
-se_mz_HT <- sqrt(v_tz/M^2)
+fpc <- 1 - n / N
+v_tz <- N^2 * fpc * var(tz_cluster) / n
+se_mz_HT <- sqrt(v_tz / M^2)
 ```
 
 The estimated standard error equals `r round(se_mz_HT,1)` g kg^-1^.
@@ -434,17 +436,18 @@ with $\widehat{S^2}_e$ the estimated variance of the residuals.
 
 ```{r}
 m_M_cl <- mean(M_cl[unique(mysample$cluster)])
-b <- mean(tz_cluster)/m_M_cl
-e_cl <- tz_cluster - b*M_cl[sort(unique(mysample$cluster))]
+b <- mean(tz_cluster) / m_M_cl
+e_cl <- tz_cluster - b * M_cl[sort(unique(mysample$cluster))]
 S2e <- var(e_cl)
-print(se_mz_ratio <- sqrt(fpc*1/m_M_cl^2*S2e/n))
+print(se_mz_ratio <- sqrt(fpc * 1 / m_M_cl^2 * S2e / n))
 ```
 
 The ratio estimate can also be computed with function `svymean` of package **survey**, which also provides an estimate of the standard error of the estimated mean.
 
 ```{r}
-design_SIC <- svydesign(id=~cluster, probs=~pi, fpc=~pi, data=mysample)
-svymean(~z, design_SIC)
+design_SIC <- svydesign(
+  id = ~ cluster, probs = ~ pi, fpc = ~ pi, data = mysample)
+svymean(~ z, design_SIC)
 ```
 
 
@@ -461,61 +464,61 @@ with $M_h$ the total number of population units of stratum $h$.
 
 ```{r}
 grdVoorst$zonestratum <- as.factor(grdVoorst$zone)
-levels(grdVoorst$zonestratum) <- rep(c("a","b","c"), each=2)
-n_h <- c(2,2,2)
+levels(grdVoorst$zonestratum) <- rep(c("a", "b", "c"), each = 2)
+n_h <- c(2, 2, 2)
 set.seed(324)
 stratumlabels <- unique(grdVoorst$zonestratum)
 mysample <- NULL
 for (i in 1:3) {
-  grd_h <- grdVoorst[grdVoorst$zonestratum==stratumlabels[i],]
-  mysample_h <- cl_ppswr(sframe=grd_h, n=n_h[i])
+  grd_h <- grdVoorst[grdVoorst$zonestratum == stratumlabels[i], ]
+  mysample_h <- cl_ppswr(sframe = grd_h, n = n_h[i])
   mysample <- rbind(mysample, mysample_h)
 }
 ```
 
-```{r STCl, echo=FALSE, out.width='100%', fig.cap="Stratified cluster random sample from Voorst, with three strata. From each stratum two times a cluster is selected by ppswr."}
-ggplot(grdVoorst) +        
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill=zonestratum)) +
-  scale_fill_viridis_d(alpha=0.5) +
-  geom_point(data=mysample, mapping = aes(x = s1/1000, y = s2/1000), size = 1.5) +
-  geom_vline(xintercept=s1bnd/1000)+
+```{r STCl, echo = FALSE, out.width = '100%', fig.cap = "Stratified cluster random sample from Voorst, with three strata. From each stratum two times a cluster is selected by ppswr."}
+ggplot(grdVoorst) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = zonestratum)) +
+  scale_fill_viridis_d(alpha = 0.5) +
+  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1.5) +
+  geom_vline(xintercept = s1bnd / 1000) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()+
+  coord_fixed() +
   theme(legend.position = "none")
 ```
 
 The population mean is estimated by first estimating the stratum means using Equation \@ref(eq:EstMeanCl) at the level of the strata, followed by computing the weighted average of the estimated stratum means using Equation \@ref(eq:HTMeanSTSI2). The variance of the estimator of the  population mean is estimated in the same way, by first estimating the variance of the estimator of the  stratum means using Equations \@ref(eq:VarEstMeanCl) and \@ref(eq:S2EstMeanCl) at the level of the strata, followed by computing the weighted average of the estimated variances of the estimated stratum means (Equation \@ref(eq:EstVarMeanSTSI)).
 
 ```{r}
-mz_h <- v_mz_h <- numeric(length=3)
+mz_h <- v_mz_h <- numeric(length = 3)
 for (i in 1:3) {
-  units <- which(mysample$zonestratum==letters[i])
-  mysample_h <- mysample[units,]
-  mz_cl <- tapply(mysample_h$z, INDEX=mysample_h$cldraw, FUN=mean)
+  units <- which(mysample$zonestratum == letters[i])
+  mysample_h <- mysample[units, ]
+  mz_cl <- tapply(mysample_h$z, INDEX = mysample_h$cldraw, FUN = mean)
   mz_h[i] <- mean(mz_cl)
-  v_mz_h[i] <- var(mz_cl)/n_h[i]
+  v_mz_h[i] <- var(mz_cl) / n_h[i]
 }
-M_h <- tapply(grdVoorst$z, INDEX=grdVoorst$zonestratum, FUN=length)
-w_h <- M_h/M
-mz <- sum(w_h*mz_h)
-se_mz <- sqrt(sum(w_h^2*v_mz_h))
+M_h <- tapply(grdVoorst$z, INDEX = grdVoorst$zonestratum, FUN = length)
+w_h <- M_h / M
+mz <- sum(w_h * mz_h)
+se_mz <- sqrt(sum(w_h^2 * v_mz_h))
 ```
 
-The estimated mean equals `r round(mz,1)` g kg^-1^, and the estimated standard error equals `r round(se_mz,1)` g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
+The estimated mean equals `r round(mz,1)` g kg^-1^, and the estimated standard error equals `r round(se_mz,1)` g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest = TRUE`, which means that the clusters are nested within the strata.
 
 ```{r}
-mysample$weights <- M_h[mysample$zonestratum]/
-  (M_cl[mysample$cluster]*n_h[mysample$zonestratum])
-design_strcluster <- svydesign(id=~cldraw, strata=~zonestratum, 
-  weights=~weights, data=mysample, nest=TRUE)
-svymean(~z,design_strcluster)
+mysample$weights <- M_h[mysample$zonestratum] /
+  (M_cl[mysample$cluster] * n_h[mysample$zonestratum])
+design_strcluster <- svydesign(id = ~ cldraw, strata = ~ zonestratum,
+  weights = ~ weights, data = mysample, nest = TRUE)
+svymean(~ z, design_strcluster)
 ```
 
 #### Exercises {-}
 
 3. Why is it attractive in stratified random cluster sampling to select at least two clusters per stratum?  
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```

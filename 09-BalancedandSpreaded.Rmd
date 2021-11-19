@@ -12,34 +12,34 @@ Balanced sampling is a sampling method that exploits one or more quantitative co
 
 Let me illustrate balanced sampling with a small simulation study. The simulated population shown in Figure \@ref(fig:simpleexample) shows a linear trend from West to East and besides a trend from South to North. Due to the West-East trend the simulated study variable $z$ is correlated with the covariate Easting and, due to the South-North trend, also with the covariate Northing. To estimate the population mean of the simulated study variable, intuitively  it is attractive to select a sample with an average of the Easting coordinate that is equal to the population mean of Easting (which is 10). Figure \@ref(fig:simpleexample) (subfigure on the left) shows such a sample of size four; we say that the sample is `balanced' on the covariate Easting. The sample in the subfigure on the right is balanced on Easting as well as on Northing.  
 
-```{r simpleexample, echo=FALSE, out.width='100%', fig.cap = "Sample balanced on Easting (E) and on Easting and Northing (E and N)."}
+```{r simpleexample, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on Easting (E) and on Easting and Northing (E and N)."}
 library(sampling)
 library(gstat)
 #define residual variogram for simulation
-vgmodel <- vgm(model="Exp", psill=10, range=4, nugget=0)
+vgmodel <- vgm(model = "Exp", psill = 10, range = 4, nugget = 0)
 
 #define discretisation grid
 x <- 1:20 - 0.5
 y <- x
-grid <- expand.grid(x,y)
-names(grid) <- c("x1","x2")
-distx <- outer(grid$x1, grid$x1, FUN="-")
-disty <- outer(grid$x2, grid$x2, FUN="-")
-dist <- sqrt(distx^2+disty^2)
+grid <- expand.grid(x, y)
+names(grid) <- c("x1", "x2")
+distx <- outer(grid$x1, grid$x1, FUN = "-")
+disty <- outer(grid$x2, grid$x2, FUN = "-")
+dist <- sqrt(distx^2 + disty^2)
 
 #compute matrix with covariances
-C <- variogramLine(vgmodel, dist_vector=dist, covariance=TRUE)
+C <- variogramLine(vgmodel, dist_vector = dist, covariance = TRUE)
 
 #now simulate values for grid by Cholesky decomposition
 Upper <- chol(C)
 
 set.seed(31415)
-G <- rnorm(n=nrow(grid),0,1) #simulate random numbers from standard normal distribution
+G <- rnorm(n = nrow(grid), 0, 1) #simulate random numbers from standard normal distribution
 
 #trend coefficient in x-direction
 b1 <- 2
 b2 <- 1
-grid$z <- crossprod(Upper,G) + b1*grid$x1 + b2*grid$x2
+grid$z <- crossprod(Upper, G) + b1 * grid$x1 + b2 * grid$x2
 
 #compute population size
 N <- nrow(grid)
@@ -48,45 +48,49 @@ N <- nrow(grid)
 n <- 4
 
 #define matrix with covariate for balancing; first column of matrix must be filled with ones
-X <- cbind(rep(1,times=N), grid$x1)
+X <- cbind(rep(1, times = N), grid$x1)
 
 #compute inclusion probabilities; use equal probabilities
-pi <- rep(n/N,times=N)
+pi <- rep(n / N, times = N)
 
 nsam <- 100
 mx_pop <- mean(grid$x1)
 set.seed(31415)
 repeat {
-    sample_ind <- samplecube(X=X, pik=pi, comment=FALSE, method=1)
-    mysample <- grid[sample_ind==1,]
+    sample_ind <- samplecube(X = X, pik = pi, comment = FALSE, method = 1)
+    mysample <- grid[sample_ind == 1, ]
     mx_sample <- mean(mysample$x1)
-    if (mx_sample == mx_pop) {break}    
+    if (mx_sample == mx_pop) {
+      break
+      }
 }
 
 #now select a sample balanced on Easting and Northing
-X <- cbind(rep(1,times=N),grid$x1,grid$x2)
+X <- cbind(rep(1, times = N), grid$x1, grid$x2)
 
 mx1_pop <- mean(grid$x1)
 mx2_pop <- mean(grid$x2)
 set.seed(314)
 repeat {
-  sample_ind <- samplecube(X=X, pik=pi, comment=FALSE, method=1)
-  mysample2 <- grid[sample_ind==1,]
+  sample_ind <- samplecube(X = X, pik = pi, comment = FALSE, method = 1)
+  mysample2 <- grid[sample_ind == 1, ]
   mx1_sample <- mean(mysample2$x1)
   mx2_sample <- mean(mysample2$x2)
-  if (mx1_sample == mx1_pop & mx2_sample == mx2_pop) {break}    
+  if (mx1_sample == mx1_pop & mx2_sample == mx2_pop) {
+    break
+    }
 }
 
-mysamples <- rbind(mysample,mysample2)
-mysamples$samid <- rep(c("E","E and N"), each=4)
+mysamples <- rbind(mysample, mysample2)
+mysamples$samid <- rep(c("E", "E and N"), each = 4)
 
-ggplot(data=grid) +
-  geom_tile(mapping=aes(x=x1, y=x2, fill=z)) +
-  geom_tile(data=mysamples, mapping=aes(x=x1, y=x2), colour="white", size=0.8, width=1, height=1, fill=NA)+
-  scale_fill_continuous(name="z",type= "viridis") +
-  scale_x_continuous(name="Easting") +
-  scale_y_continuous(name="Northing") +
-  facet_wrap(~ samid, ncol=2, nrow=1) +
+ggplot(data = grid) +
+  geom_tile(mapping = aes(x = x1, y = x2, fill = z)) +
+  geom_tile(data = mysamples, mapping = aes(x = x1, y = x2), colour = "white", size = 0.8, width = 1, height = 1, fill = NA) +
+  scale_fill_continuous(name = "z", type = "viridis") +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
+  facet_wrap(~ samid, ncol = 2, nrow = 1) +
   coord_fixed()
 ```
 
@@ -94,7 +98,7 @@ ggplot(data=grid) +
 
 We must distinguish a balanced *sample* from a balanced sampling *design*. A sampling design is balanced on a covariate $x$ when *all possible* samples that can be generated by the design are balanced on $x$. 
 
-```{block2, type='rmdnote'}
+```{block2, type = 'rmdnote'}
 Simple random sampling is not a balanced sampling design, because for many simple random samples the sample mean of the balancing variable $x$ is not equal to the population mean of $x$. Only the *expectation* of the sample mean of $x$, i.e. the mean of the sample means obtained by selecting an infinite number of simple random samples, equals the population mean of $x$.
 ```
 
@@ -102,14 +106,14 @@ Figure \@ref(fig:scatterplotsqerror) shows for 1,000 simple random samples the s
 
 (ref:scatterplotsqerrorlabel) Squared error in the estimated population mean of $z$ against the difference between the sample mean and the population mean of Easting, for 1,000 simple random samples of size four selected from the population shown in Figure \@ref(fig:simpleexample).
 
-```{r scatterplotsqerror, echo=FALSE, fig.cap="(ref:scatterplotsqerrorlabel)"}
+```{r scatterplotsqerror, echo = FALSE, fig.cap = "(ref:scatterplotsqerrorlabel)"}
 nsam <- 1000
 n <- 4
-mz_sample <- mx_sample <- numeric(length=nsam)
+mz_sample <- mx_sample <- numeric(length = nsam)
 set.seed(31415)
 for (i in 1:nsam) {
   #select simple random sample from the data
-  sample_ind <- sample(nrow(grid), size=n)
+  sample_ind <- sample(nrow(grid), size = n)
   mz_sample[i] <- mean(grid$z[sample_ind])
   mx_sample[i] <- mean(grid$x1[sample_ind])
 }
@@ -117,20 +121,20 @@ for (i in 1:nsam) {
 sqerror <- (mz_sample - mean(grid$z))^2
 devx <- mx_sample - mean(grid$x1)
 df <- data.frame(sqerror, devx)
-ggplot(data=df) +
-  geom_point(mapping=aes(y=sqerror ,x=devx), size=2) +
-  scale_x_continuous(name="Sample mean Easting - population mean Easting", limits=c(-9,9)) +
-  scale_y_continuous(name="Squared error")
+ggplot(data = df) +
+  geom_point(mapping = aes(y = sqerror, x = devx), size = 2) +
+  scale_x_continuous(name = "Sample mean Easting - population mean Easting", limits = c(-9, 9)) +
+  scale_y_continuous(name = "Squared error")
 ```
 
 Using only Easting as a balancing variable reduces the sampling variance of the estimator of the mean substantially. Using Easting and Northing as balancing variables further reduces the sampling variance. See Table \@ref(tab:tablebalanced).  
 
-```{r tablebalanced, echo=FALSE}
-tbl <- data.frame(x=c("SI","Balanced","Balanced"),y=c("-","Easting","Easting and Northing"),z=c(39.7,14.4,9.77))
+```{r tablebalanced, echo = FALSE}
+tbl <- data.frame(x = c("SI", "Balanced", "Balanced"), y = c("-", "Easting", "Easting and Northing"), z = c(39.7, 14.4, 9.77))
 
 knitr::kable(
-  tbl, caption = 'Sampling variance of the $\\pi$ estimator of the mean for simple random sampling (SI) and balanced sampling of four units.',
-  col.names=c("Sampling design","Balancing variables","Sampling variance"),
+  tbl, caption = "Sampling variance of the $\\pi$ estimator of the mean for simple random sampling (SI) and balanced sampling of four units.",
+  col.names = c("Sampling design", "Balancing variables", "Sampling variance"),
   booktabs = TRUE
 ) %>%
   kable_classic()
@@ -198,12 +202,12 @@ gridAmazonia$lnSWIR2 <- log(gridAmazonia$SWIR2)
 library(sampling)
 N <- nrow(gridAmazonia)
 n <- 100
-X <- cbind(rep(1,times=N), gridAmazonia$lnSWIR2)
-pi <- rep(n/N,times=N)
-sample_ind <- samplecube(X=X, pik=pi, comment=FALSE, method=1)
+X <- cbind(rep(1, times = N), gridAmazonia$lnSWIR2)
+pi <- rep(n / N, times = N)
+sample_ind <- samplecube(X = X, pik = pi, comment = FALSE, method = 1)
 eps <- 1e-6
-units <- which(sample_ind>(1-eps))
-mysample <- gridAmazonia[units,]
+units <- which(sample_ind > (1 - eps))
+mysample <- gridAmazonia[units, ]
 ```
 
 The population mean can be estimated by the sample mean.
@@ -215,15 +219,15 @@ mz <- mean(mysample$AGB)
 To estimate the variance a function is defined for estimating the population regression coefficients. 
 
 ```{r}
-estimate_b <- function(z,X,c) {
-  cXX <- matrix(nrow=ncol(X), ncol=ncol(X), data=0)
-  cXz <- matrix(nrow=1, ncol=ncol(X), data=0)
-  for (i in 1:length(z)) {
-    x <- X[i,]
-    cXX_i <- c[i]*(x %*% t(x))
-    cXX <- cXX+cXX_i
-    cXz_i <- c[i]*t(x)*z[i]
-    cXz <- cXz+cXz_i
+estimate_b <- function(z, X, c) {
+  cXX <- matrix(nrow = ncol(X), ncol = ncol(X), data = 0)
+  cXz <- matrix(nrow = 1, ncol = ncol(X), data = 0)
+  for (i in seq_len(length(z))) {
+    x <- X[i, ]
+    cXX_i <- c[i] * (x %*% t(x))
+    cXX <- cXX + cXX_i
+    cXz_i <- c[i] * t(x) * z[i]
+    cXz <- cXz + cXz_i
   }
   b <- solve(cXX) %*% t(cXz)
   b
@@ -233,80 +237,80 @@ estimate_b <- function(z,X,c) {
 The next code chunk shows how the estimated variance of the $\pi$ estimator of the population mean can be computed.
 
 ```{r}
-pi <- rep(n/N,n)
-c <- (1-pi)
-b <- estimate_b(z=mysample$AGB/pi, X=X[units,]/pi, c=c)
-zpred <- X%*%b
-e <- mysample$AGB-zpred[units]
-v_tz <- n/(n-ncol(X))*sum(c*(e/pi)^2)
-v_mz <- v_tz/N^2
+pi <- rep(n / N, n)
+c <- (1 - pi)
+b <- estimate_b(z = mysample$AGB / pi, X = X[units, ] / pi, c = c)
+zpred <- X %*% b
+e <- mysample$AGB - zpred[units]
+v_tz <- n / (n - ncol(X)) * sum(c * (e / pi)^2)
+v_mz <- v_tz / N^2
 ```
 
 Figure \@ref(fig:BalancedSampleAmazonia) shows the selected balanced sample. Note the spatial clustering of some units. The estimated population mean (as estimated by the sample mean) of AGB equals `r as.character(round(mz,1))` 10^9^ kg ha^-1^. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))` 10^9^ kg ha^-1^. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))` 10^9^ kg ha^-1^.
 
-```{r BalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Sample balanced on lnSWIR2 from Eastern Amazonia."}
-ggplot(data=gridAmazonia) +
-  geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=2)+
-  scale_fill_continuous(name="lnSWIR2", type="viridis") +
-  scale_x_continuous(name="Easting (km)") +
-  scale_y_continuous(name="Northing (km)") +
+```{r BalancedSampleAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on lnSWIR2 from Eastern Amazonia."}
+ggplot(data = gridAmazonia) +
+  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
+  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  scale_fill_continuous(name = "lnSWIR2", type = "viridis") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
 Figure \@ref(fig:SamplingDistributionBalanced) shows the approximated sampling distribution of the $\pi$ estimator of the mean AGB with balanced sampling and simple random sampling, obtained by repeating the random sampling with both designs and estimation 1,000 times.
 
-```{r, echo=FALSE, eval=FALSE}
-mz <- v_mz <- mx_sample <- mz_SI <- numeric(length=1000)
+```{r, echo = FALSE, eval = FALSE}
+mz <- v_mz <- mx_sample <- mz_SI <- numeric(length = 1000)
 
-pi <- rep(n/N, n)
-c <- (1-pi)
+pi <- rep(n / N, n)
+c <- (1 - pi)
 
 set.seed(314)
 for (i in 1:1000) {
-  sample_ind <- samplecube(X=X, pik=rep(n/N,N), comment=FALSE, method=1)
-  units <- which(sample_ind>(1-eps))
-  mysample <- gridAmazonia[units,]
+  sample_ind <- samplecube(X = X, pik = rep(n / N, N), comment = FALSE, method = 1)
+  units <- which(sample_ind > (1 - eps))
+  mysample <- gridAmazonia[units, ]
 
   mz[i] <- mean(mysample$AGB)
-  
-  b <- estimate_b(z=mysample$AGB/pi, X=X[units,]/pi, c=c)
-  zpred <- X%*%b
-  e <- mysample$AGB-zpred[units]
-  v_tz <- n/(n-ncol(X))*sum(c*(e/pi)^2)
-  v_mz[i] <- v_tz/N^2
+
+  b <- estimate_b(z = mysample$AGB / pi, X = X[units, ] / pi, c = c)
+  zpred <- X %*% b
+  e <- mysample$AGB - zpred[units]
+  v_tz <- n / (n - ncol(X)) * sum(c * (e / pi)^2)
+  v_mz[i] <- v_tz / N^2
 
   mx_sample[i] <- mean(mysample$lnSWIR2)
-  
-  units <- sample(nrow(gridAmazonia), size=n, replace=FALSE)
+
+  units <- sample(nrow(gridAmazonia), size = n, replace = FALSE)
   mz_SI[i] <- mean(gridAmazonia$AGB[units])
 }
-save(mz, mz_SI, v_mz, mx_sample, file="results/Balanced_Amazonia.RData")
+save(mz, mz_SI, v_mz, mx_sample, file = "results/Balanced_Amazonia.RData")
 ```
 
 (ref:SamplingDistributionBalancedlabel) Approximated sampling distribution of the $\pi$ estimator of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia, with balanced sampling, balanced on lnSWIR2 and using equal inclusion probabilities, and simple random sampling without replacement (SI) of 100 units.
 
-```{r SamplingDistributionBalanced, echo=FALSE, fig.asp=.8, fig.cap="(ref:SamplingDistributionBalancedlabel)"}
-load(file="results/Balanced_Amazonia.RData")
+```{r SamplingDistributionBalanced, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionBalancedlabel)"}
+load(file = "results/Balanced_Amazonia.RData")
 estimates <- data.frame(mz, mz_SI, v_mz, mx_sample)
-names(estimates)[c(1,2)] <- c("Balanced","SI")
+names(estimates)[c(1, 2)] <- c("Balanced", "SI")
 
-df <- estimates %>% pivot_longer(.,cols=c("Balanced","SI"))
-ggplot(data=df) +
-    geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=mean(gridAmazonia$AGB), colour="red")+
-    scale_x_discrete(name="Sampling design") +
-    scale_y_continuous(name="Estimated mean AGB")
+df <- estimates %>% pivot_longer(., cols = c("Balanced", "SI"))
+ggplot(data = df) +
+    geom_boxplot(aes(y = value, x = name)) +
+    geom_hline(yintercept = mean(gridAmazonia$AGB), colour = "red") +
+    scale_x_discrete(name = "Sampling design") +
+    scale_y_continuous(name = "Estimated mean AGB")
 ```
 
 The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r as.character(round(var(estimates$Bal),1))` (10^9^ kg ha^-1^)^2^. The gain in precision compared to simple random sampling, equals `r as.character(round(var(estimates$SI)/var(estimates$Bal),3))`, so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r as.character(round(mean(estimates$v_mz),1))` (10^9^ kg ha^-1^)^2^, indicating that the approximated variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r round(mean(gridAmazonia$lnSWIR2),3)`. The sample mean of lnSWIR2 varies a bit among the samples. Figure \@ref(fig:histSampleMeanSWIR) shows the approximated sampling distribution of the sample mean of lnSWIR2. In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
 
-```{r histSampleMeanSWIR, echo=FALSE, fig.cap="Approximated sampling distribution of the sample mean of balancing variable lnSWIR2 in Eastern Amazonia with balanced sampling of size 100 and equal inclusion probabilities."}
-ggplot(data=estimates) +
-  geom_histogram(aes(x=mx_sample, y=..density..), binwidth=0.0025, fill="black", alpha=0.5, color="black") +
-  geom_density(aes(x=mx_sample, y=..density..),lwd=1, adjust=2) +
-  scale_x_continuous(name="Sample mean lnSWIR2") +
-  scale_y_continuous(name="Density")
+```{r histSampleMeanSWIR, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample mean of balancing variable lnSWIR2 in Eastern Amazonia with balanced sampling of size 100 and equal inclusion probabilities."}
+ggplot(data = estimates) +
+  geom_histogram(aes(x = mx_sample, y = ..density..), binwidth = 0.0025, fill = "black", alpha = 0.5, color = "black") +
+  geom_density(aes(x = mx_sample, y = ..density..), lwd = 1, adjust = 2) +
+  scale_x_continuous(name = "Sample mean lnSWIR2") +
+  scale_y_continuous(name = "Density")
 ```
 
 #### Exercises {-}
@@ -320,7 +324,7 @@ ggplot(data=estimates) +
 
 Much in the same way as we controlled in the previous subsection the sample size $n$ by balancing the sample on the known total number of population units $N$, we can balance a sample on the known total number of units in subpopulations.  A sample balanced on the sizes of subpopulations is a stratified random sample. Figure \@ref(fig:BalancedSampleCategorical) shows four subpopulations or strata. These four strata can be used in balanced sampling by constructing the following design matrix\index{Design matrix} $\mathbf{X}$ with as many columns as there are strata and as many rows as there are population units:
 
-\begin{equation*}
+\begin{equation}
 \mathbf{X}=
 \begin{bmatrix}
 1 &0 &0 &0 \\
@@ -333,66 +337,66 @@ Much in the same way as we controlled in the previous subsection the sample size
 \vdots &\vdots &\vdots &\vdots\\
 0 & 0 & 0 & 1 \\
 \end{bmatrix}  \;.
-\end{equation*}
+\end{equation}
 
 The first four rows refer to the four leftmost bottom row population units in Figure \@ref(fig:BalancedSampleCategorical). These units belong to class A, which explains that the first column for these units contain ones. The other three columns for these rows contain all zeroes. The fifth and sixth unit belong to stratum B, so that the second column for these rows contain ones, and so on. The final row is the upper-right sampling unit in stratum D, so the first three columns contain zeroes, and the fourth column is filled with a one. The sum of the indicators in the columns is the total number of population units in the strata.
 
-```{r BalancedSampleCategorical, echo=FALSE, fig.cap="Sample balanced on a categorical variable with four classes."}
+```{r BalancedSampleCategorical, echo = FALSE, fig.cap = "Sample balanced on a categorical variable with four classes."}
 s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
-mypop$stratum <- as.factor(findInterval(mypop$s1, c(4,6,14)))
+mypop$stratum <- as.factor(findInterval(mypop$s1, c(4, 6, 14)))
 levels(mypop$stratum) <- LETTERS[1:4]
 
-N_h <- tapply(mypop$s1, INDEX=mypop$stratum, FUN=length)
-n_h <- rep(5, times=4)
+N_h <- tapply(mypop$s1, INDEX = mypop$stratum, FUN = length)
+n_h <- rep(5, times = 4)
 labels <- sort(unique(mypop$stratum))
-lut <- data.frame(stratum=labels, pi=n_h/N_h)
-mypop <- merge(x=mypop, y=lut)
+lut <- data.frame(stratum = labels, pi = n_h / N_h)
+mypop <- merge(x = mypop, y = lut)
 
-X <- model.matrix(~ stratum-1, mypop)
+X <- model.matrix(~ stratum - 1, mypop)
 
 set.seed(314)
-sample_ind <- samplecube(X=X, pik=mypop$pi, comment=FALSE, method=1)
-mysample <- mypop[sample_ind==1,]
+sample_ind <- samplecube(X = X, pik = mypop$pi, comment = FALSE, method = 1)
+mysample <- mypop[sample_ind == 1, ]
 
-ggplot(data=mypop) +
-  geom_tile(mapping=aes(x=s1, y=s2, fill=factor(stratum)), width=1, height=1, size=0.5, colour="white") +
-  geom_tile(data=mysample, mapping=aes(x=s1, y=s2), fill=NA, width=1, height=1, size=0.7, colour="black") +
-  scale_fill_viridis_d(name="Stratum") +
-  scale_x_continuous(name="Easting") +
-  scale_y_continuous(name="Northing") +
+ggplot(data = mypop) +
+  geom_tile(mapping = aes(x = s1, y = s2, fill = factor(stratum)), width = 1, height = 1, size = 0.5, colour = "white") +
+  geom_tile(data = mysample, mapping = aes(x = s1, y = s2), fill = NA, width = 1, height = 1, size = 0.7, colour = "black") +
+  scale_fill_viridis_d(name = "Stratum") +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
   coord_fixed()
 ```
 
 In the next code chunk the inclusion probabilities are computed by $\pi_{hk}=n_h/N_h,\; k=1, \dots , N_h$, with $n_h=5$ for all four strata. The stratum sample sizes are equal, but the number of population units of a stratum differ among the strata, so the inclusion probabilities also differ among the strata.
 
 ```{r, echo=FALSE}
-mypop <- mypop[,-4]
+mypop <- mypop[, -4]
 ```
 
-```{r, eval=FALSE}
-N_h <- tapply(mypop$s1,INDEX=mypop$stratum,FUN=length)
-n_h <- rep(5, times=4)
+```{r, eval = FALSE}
+N_h <- tapply(mypop$s1, INDEX = mypop$stratum, FUN = length)
+n_h <- rep(5, times = 4)
 n <- sum(n_h)
-print(pi_h <- n_h/N_h)
+print(pi_h <- n_h / N_h)
 ```
 
 The inclusion probabilities are added to `data.frame` `mypop` with the 400 population units, using a lookup table `lut` and function `merge`. The seven leftmost units on the bottom row are shown below. Variables s1 and s2 are the spatial coordinates of the centres of the units. 
 
 ```{r}
 labels <- sort(unique(mypop$stratum))
-lut <- data.frame(stratum=labels, pi=n_h/N_h)
-mypop<- merge(x=mypop, y=lut, by="stratum")
-ord <- order(mypop$s2,mypop$s1)
-head(mypop[ord,],7)
+lut <- data.frame(stratum = labels, pi = n_h / N_h)
+mypop <- merge(x = mypop, y = lut, by = "stratum")
+ord <- order(mypop$s2, mypop$s1)
+head(mypop[ord, ], 7)
 ```
 
-Next, the design matrix $\mathbf{X}$ is computed with function `model.matrix`, expanding the factor `stratum` to a set of dummy variables, see code chunk below. By adding `-1` to the formula, we avoid that the first column in the design matrix has all ones. The design matrix has four columns with dummy variables (indicators), indicating to which stratum a unit belongs. 
+Next, the design matrix $\mathbf{X}$ is computed with function `model.matrix`, expanding the factor `stratum` to a set of dummy variables, see code chunk below. By adding `- 1` to the formula, we avoid that the first column in the design matrix has all ones. The design matrix has four columns with dummy variables (indicators), indicating to which stratum a unit belongs. 
 
 The columns in the design matrix with dummy variables are multiplied by the vector with inclusion probabilities, using function `sweep `, resulting in the following design matrix:
 
-\begin{equation*}
+\begin{equation}
 \mathbf{X}=
 \begin{bmatrix}
 0.0625 &0 &0 &0 \\
@@ -405,18 +409,18 @@ The columns in the design matrix with dummy variables are multiplied by the vect
 \vdots &\vdots &\vdots &\vdots\\
 0 & 0 & 0 &0.04167 \\
 \end{bmatrix}  \;.
-\end{equation*}
+\end{equation}
 
 The multiplication by the inclusion probabilities is not strictly needed. Using the design matrix with dummy variables implies that we balance the sample on the known total number of population units in the strata, $N_h$. For samples with stratum sample sizes equal to $n_h$, the sample sums of the dummy variables used in balancing, divided by the inclusion probability, are equal to $N_h$.
 
 Multiplication of the dummy variables by the vector with inclusion probabilities implies that we balance the sample on the population totals of the inclusion probabilities, which are equal to the targeted stratum sample sizes. For samples with stratum sample sizes $n_h$ equal to these targeted sample sizes, the sample sums of the balancing variables, divided by the inclusion probability (having value $\pi_{hk}/\pi_{hk}=1$ or 0), are equal to the targeted sample sizes.
 
 ```{r }
-X <- model.matrix(~ stratum-1, data=mypop)
-X <- sweep(X, MARGIN= 1, mypop$pi, `*`)
+X <- model.matrix(~ stratum - 1, data = mypop)
+X <- sweep(X, MARGIN = 1, mypop$pi, `*`)
 set.seed(314)
-sample_ind <- samplecube(X=X, pik=mypop$pi, comment=FALSE, method=1)
-mysample <- mypop[sample_ind>(1-eps),]
+sample_ind <- samplecube(X = X, pik = mypop$pi, comment = FALSE, method = 1)
+mysample <- mypop[sample_ind > (1 - eps), ]
 ```
 
 In the above example all units in a stratum have the same inclusion probability, yielding a stratified simple random sample. We may also use variable inclusion probabilities, for instance proportional to a size measure of the units, yielding a stratified ppswor random sample (Section \@ref(ppswor)).
@@ -431,35 +435,35 @@ The sample sizes of the marginal strata can be controlled using a design matrix 
 
 Two-way stratified random sampling is illustrated with a simulated population of 400 units (Figure \@ref(fig:TwowaystratifiedPopulation)). Figure \@ref(fig:Twowaystratifiedsample) shows two classifications of the population units. Classification A consists of four classes (map units), classification B of three classes. Instead of using $4 \times 3 = 12$ cross-classifications as strata in random sampling, only $4+3=7$ marginal strata are used in two-way stratified random sampling.
 
-```{r TwowaystratifiedPopulation, echo=FALSE, fig.cap="Simulated population, used for illustration of two-way stratified random sampling."}
+```{r TwowaystratifiedPopulation, echo = FALSE, fig.cap = "Simulated population, used for illustration of two-way stratified random sampling."}
 s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
 
 library(gstat)
-vgmodel <- vgm(model="Exp", psill=4, range=4, nugget=0)
+vgmodel <- vgm(model = "Exp", psill = 4, range = 4, nugget = 0)
 
-dists1 <- outer(mypop$s1, mypop$s1, FUN="-")
-dists2 <- outer(mypop$s2, mypop$s2, FUN="-")
-dist <- sqrt(dists1^2+dists2^2)
-C <- variogramLine(vgmodel, dist_vector=dist, covariance=TRUE)
+dists1 <- outer(mypop$s1, mypop$s1, FUN = "-")
+dists2 <- outer(mypop$s2, mypop$s2, FUN = "-")
+dist <- sqrt(dists1^2 + dists2^2)
+C <- variogramLine(vgmodel, dist_vector = dist, covariance = TRUE)
 
 Upper <- chol(C)
 set.seed(314)
 N <- nrow(mypop)
-G <- rnorm(N,0,1) #simulate random numbers from standard normal distribution
-mypop$z <- crossprod(Upper,G)+10
+G <- rnorm(N, 0, 1) #simulate random numbers from standard normal distribution
+mypop$z <- crossprod(Upper, G) + 10
 
-mypop$A <- as.factor(findInterval(mypop$s1, c(5,8,12)))
-mypop$B <- as.factor(findInterval(mypop$s2, c(8,15)))
-levels(mypop$A) <- c("A1","A2","A3","A4")
-levels(mypop$B) <- c("B1","B2","B3")
+mypop$A <- as.factor(findInterval(mypop$s1, c(5, 8, 12)))
+mypop$B <- as.factor(findInterval(mypop$s2, c(8, 15)))
+levels(mypop$A) <- c("A1", "A2", "A3", "A4")
+levels(mypop$B) <- c("B1", "B2", "B3")
 
-ggplot(data=mypop) +
-  geom_tile(mapping=aes(x=s1, y=s2, fill=z), width=1, height=1, size=0.5) +
-  scale_fill_continuous(type="viridis") +
-  scale_x_continuous(name="Easting") +
-  scale_y_continuous(name="Northing") +
+ggplot(data = mypop) +
+  geom_tile(mapping = aes(x = s1, y = s2, fill = z), width = 1, height = 1, size = 0.5) +
+  scale_fill_continuous(type = "viridis") +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
   coord_fixed()
 ```
 
@@ -468,26 +472,26 @@ As a first step the inclusion probabilities are added to `data.frame` `mypop` wi
 ```{r}
 mypop <- mypop %>%
     group_by(A, B) %>%
-    summarise(N_h=n(), .groups="drop") %>%
-    mutate(pih=rep(2,12)/N_h) %>%
-    right_join(mypop, by=c("A","B"))
+    summarise(N_h = n(), .groups = "drop") %>%
+    mutate(pih = rep(2, 12) / N_h) %>%
+    right_join(mypop, by = c("A", "B"))
 ```
 
 The next step is to create the design matrix. Two submatrices are computed, one per stratification. The two submatrices are joined column-wise, using function `cbind`.  The columns are multiplied by the vector with inclusion probabilities.
 
 ```{r}
-XA <- model.matrix(~A-1, mypop)
-XB <- model.matrix(~B-1, mypop)
-X <- cbind(XA,XB)
-X <- sweep(X, MARGIN= 1, mypop$pih, `*`)
+XA <- model.matrix(~ A - 1, mypop)
+XB <- model.matrix(~ B - 1, mypop)
+X <- cbind(XA, XB)
+X <- sweep(X, MARGIN = 1, mypop$pih, `*`)
 ```
 
 Matrix $\mathbf{X}$ can be reduced by one column if in the first column the inclusion probabilities of *all* population units are inserted. This first column contains no zeroes. Balancing on this variable implies that the total sample size is controlled. Now there is no need anymore to control the sample sizes of all marginal strata. It is sufficient to control the sample sizes of three marginal strata of map A (A2, A3, and A4) and two marginal strata of map B (B2 and B3). Given the total sample size, the sample sizes of map units A1 and B1 then cannot be chosen freely anymore.
 
 ```{r}
-X <- model.matrix(~A+B, mypop)
+X <- model.matrix(~A + B, mypop)
 colnames(X)
-X <- sweep(X, MARGIN= 1, mypop$pih, `*`)
+X <- sweep(X, MARGIN = 1, mypop$pih, `*`)
 ```
 
 This reduced design matrix is not strictly needed for selecting a multi-way stratified sample, but must be used in estimation. If in estimation as many balancing variables are used as we have marginal strata, the matrix with the sum of squares of the balancing variables (first sum in Equation \@ref(eq:betasbalanced)) cannot be inverted (the matrix is singular), and as a consequence the population regression coefficients cannot be estimated.
@@ -495,32 +499,32 @@ This reduced design matrix is not strictly needed for selecting a multi-way stra
 Finally, the two-way stratified random sample is selected with function `samplecube` of package **sampling**. 
 
 ```{r}
-sample_ind <- samplecube(X=X, pik=mypop$pih, method=1, comment=FALSE)
+sample_ind <- samplecube(X = X, pik = mypop$pih, method = 1, comment = FALSE)
 eps <- 1e-6
-units <- which(sample_ind>(1-eps))
-mysample <- mypop[units,]
+units <- which(sample_ind > (1 - eps))
+mysample <- mypop[units, ]
 ```
 
 Figure \@ref(fig:Twowaystratifiedsample) shows the selected sample.
 
-```{r, Twowaystratifiedsample, echo=FALSE, out.width='100%', fig.cap="Two-way stratified sample."}
-plt1 <- ggplot(data=mypop) +
-  geom_tile(mapping=aes(x=s1, y=s2, fill=factor(A)), width=1, height=1, size=0.5, colour="white") +
-  geom_tile(data=mysample, mapping=aes(x=s1, y=s2), fill=NA, width=1, height=1, size=0.7, colour="black") +
-  scale_fill_viridis_d(name="Stratum") +
-  scale_x_continuous(name="") +
-  scale_y_continuous(name="") +
+```{r, Twowaystratifiedsample, echo = FALSE, out.width = '100%', fig.cap = "Two-way stratified sample."}
+plt1 <- ggplot(data = mypop) +
+  geom_tile(mapping = aes(x = s1, y = s2, fill = factor(A)), width = 1, height = 1, size = 0.5, colour = "white") +
+  geom_tile(data = mysample, mapping = aes(x = s1, y = s2), fill = NA, width = 1, height = 1, size = 0.7, colour = "black") +
+  scale_fill_viridis_d(name = "Stratum") +
+  scale_x_continuous(name = "") +
+  scale_y_continuous(name = "") +
   coord_fixed()
 
-plt2 <- ggplot(data=mypop) +
-  geom_tile(mapping=aes(x=s1, y=s2, fill=factor(B)), width=1, height=1, size=0.5, colour="white") +
-  geom_tile(data=mysample, mapping=aes(x=s1, y=s2), fill=NA, width=1, height=1, size=0.7, colour="black") +
-  scale_fill_viridis_d(name="Stratum") +
-  scale_y_continuous(name="") +
-  scale_x_continuous(name="") +
+plt2 <- ggplot(data = mypop) +
+  geom_tile(mapping = aes(x = s1, y = s2, fill = factor(B)), width = 1, height = 1, size = 0.5, colour = "white") +
+  geom_tile(data = mysample, mapping = aes(x = s1, y = s2), fill = NA, width = 1, height = 1, size = 0.7, colour = "black") +
+  scale_fill_viridis_d(name = "Stratum") +
+  scale_y_continuous(name = "") +
+  scale_x_continuous(name = "") +
   coord_fixed()
 
-grid.arrange(plt1, plt2, nrow=1)
+grid.arrange(plt1, plt2, nrow = 1)
 ```
 
 All marginal stratum sample sizes of map A are six and all marginal stratum sample sizes of map B are eight, as expected. The sample sizes of the cross-classification strata vary from zero to four.
@@ -533,26 +537,27 @@ The population mean can be estimated by the $\pi$ estimator.
 
 ```{r}
 N <- nrow(mypop)
-print(mean <- sum(mysample$z/mysample$pih)/N)
+print(mean <- sum(mysample$z / mysample$pih) / N)
 ```
 
 The variance is estimated as before (Equation \@ref(eq:approxvarianceBalanced)).
 
 ```{r}
-c <- (1-mysample$pih)
-b <- estimate_b(z=mysample$z/mysample$pih, X=X[units,]/mysample$pih, c=c)
-zpred <- X%*%b
-e <- mysample$z-zpred[units]
+c <- (1 - mysample$pih)
+b <- estimate_b(
+  z = mysample$z / mysample$pih, X = X[units, ] / mysample$pih, c = c)
+zpred <- X %*% b
+e <- mysample$z - zpred[units]
 n <- nrow(mysample)
-v_tz <- n/(n-ncol(X))*sum(c*(e/mysample$pih)^2)
-print(v_mz <- v_tz/N^2)
+v_tz <- n / (n - ncol(X)) * sum(c * (e / mysample$pih)^2)
+print(v_mz <- v_tz / N^2)
 ```
 
 ## Well-spread sampling {#Spreaded}
 
 With balanced sampling the spreading of the sampling units in the space spanned by the balancing variables can be poor. For instance, in Figure \@ref(fig:simpleexample) the Easting coordinates of all units of a sample balanced on Easting can be equal or close to the population mean of 10. So, in this example balancing does not guarantee a good geographical spreading. Stated more generally, a balanced sample can be selected that shows strong clustering in the space spanned by the balancing variables. This clustering may inflate the standard error of the estimated population total and mean. The clustering in geographical or covariate space can be avoided by the local pivotal method [@Grafstrom2012] and the spatially correlated Poisson sampling method\index{Spatially correlated Poisson sampling} [@Grafstrom2012b]. 
 
-```{block2, type='rmdnote'}
+```{block2, type = 'rmdnote'}
 For spreading in *geographical* space various other designs are available. A simple design is stratified random sampling from compact geographical strata, see Section \@ref(geostrata). Alternative designs are generalised random-tessellation stratified sampling [@stevens2004], see Subsection \@ref(GRTS), and balanced acceptance sampling\index{Balanced acceptance sampling} [@Robertson2013].
 ```
 
@@ -575,16 +580,16 @@ pi <- inclusionprobabilities(grdKandahar$agri, n)
 X <- cbind(grdKandahar$x, grdKandahar$y)
 set.seed(314)
 units <- lpm1(pi, X)
-myLPMsample <- grdKandahar[units,]
+myLPMsample <- grdKandahar[units, ]
 ```
 
-```{r LPMKandahar, echo=FALSE, out.width='100%', fig.cap="Spatial ppswor sample of size 40 from Kandahar, selected by the local pivotal method, using agricultural area as a size variable."}
-ggplot(data=grdKandahar) +
-  geom_raster(mapping=aes(x=x, y=y, fill=agri)) +
-  geom_tile(data=myLPMsample, mapping=aes(x=x, y=y), colour="white", size=0.7, width=5, height=5, fill=NA) +
-  scale_fill_viridis_c(name="Agriarea") +
-  scale_x_continuous(name="Easting (km)") +
-  scale_y_continuous(name="Northing (km)") +
+```{r LPMKandahar, echo = FALSE, out.width = '100%', fig.cap = "Spatial ppswor sample of size 40 from Kandahar, selected by the local pivotal method, using agricultural area as a size variable."}
+ggplot(data = grdKandahar) +
+  geom_raster(mapping = aes(x = x, y = y, fill = agri)) +
+  geom_tile(data = myLPMsample, mapping = aes(x = x, y = y), colour = "white", size = 0.7, width = 5, height = 5, fill = NA) +
+  scale_fill_viridis_c(name = "Agriarea") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
@@ -592,7 +597,7 @@ The total poppy area can be estimated with the $\pi$ estimator (Equation \@ref(e
 
 ```{r}
 myLPMsample$pi <- pi[units]
-tz_HT <- sum(myLPMsample$poppy/myLPMsample$pi)
+tz_HT <- sum(myLPMsample$poppy / myLPMsample$pi)
 ```
 
 The estimated total poppy area equals 56,420 ha. The sampling variance of the estimator of the population total with the local pivotal method can be estimated by [@Grafstrom2014]
@@ -607,10 +612,10 @@ with ${k_j}$ the nearest neighbour of unit $k$ in the sample. This variance esti
 Function `vsb` of package **BalancedSampling** is an implementation of a more general variance estimator that accounts for more than one nearest neighbour (Equation (6) in @Grafstrom2014). We expect a somewhat smaller variance compared to pps sampling, so we may use the variance of the pwr estimator (Equation \@ref(eq:VarHHTotalppswr)) as a conservative variance estimator\index{Conservative variance estimator}.
 
 ```{r vartotLPM}
-Xsample <- X[units,]
+Xsample <- X[units, ]
 se_tz_HT <- sqrt(vsb(pi[units], myLPMsample$poppy, Xsample))
-pk <- myLPMsample$pi/n
-se_tz_pwr <- sqrt(var(myLPMsample$poppy/pk)/n)
+pk <- myLPMsample$pi / n
+se_tz_pwr <- sqrt(var(myLPMsample$poppy / pk) / n)
 ```
 
 The standard error obtained with function `vsb` equals 14,222 ha, the standard error of the Hansen-Hurwitz estimator equals 13,468 ha. So, for the selected sample the Hansen-Hurwitz variance estimator is smaller than the other variance estimator, but on average it will be larger.
@@ -625,7 +630,7 @@ As explained above, the LPM design can also be used to select a probability samp
 
 Generalised random-tessellation stratified (GRTS) sampling\index{Generalised random-tessellation stratified sampling}  is designed for sampling discrete objects scattered throughout space, think for instance of the lakes in Finland, segments of hedgerows in England, etc.  Each object is represented by a point in 2D-space. It is a complicated design, and for sampling points from a continuous universe, or raster cells from a finite population, I recommend more simple designs such as the local pivotal method (Subsection \@ref(LPM)), balanced sampling with geographical spreading (Section \@ref(BalancedandSpreaded)), or sampling from compact geographical strata (Section \@ref(geostrata)).  Let me try to explain the GRTS design with a simple example of a finite population of point objects in a circular study area (Figure  \@ref(fig:GRTSNumbering)). For a more detailed description of this design I refer to @Hankin2019. As a first step a square bounding box of the study area is constructed. This bounding box is recursively partitioned into square grid cells. First, 2 $\times$ 2 grid cells are constructed. These grid cells are numbered in a predefined order. In Figure  \@ref(fig:GRTSNumbering) this numbering is from lower left, lower right, upper left to upper right. Each grid cell is then subdivided into four subcells; the subcells are numbered using the same order. This is repeated until at most one population unit occurs in each subcell. For our population only two iterations were needed, leading to 4 $\times$ 4 subcells. Note that two subcells are empty. Each address of a subcell consists of two digits, the first digit refers to the grid cell, the second digit to the subcell. 
 
-```{r GRTSNumbering, echo=FALSE, out.width="100%", fig.cap = "Numbering of grid cells and subcells for GRTS sampling."}
+```{r GRTSNumbering, echo = FALSE, out.width = "100%", fig.cap = "Numbering of grid cells and subcells for GRTS sampling."}
 s1 <- s2 <- 1:100 - 0.5
 pxl <- expand.grid(s1, s2)
 names(pxl) <- c("s1", "s2")
@@ -634,131 +639,133 @@ names(pxl) <- c("s1", "s2")
 s1bnd <- 50
 s1f <- findInterval(pxl$s1, s1bnd)
 s2f <- findInterval(pxl$s2, s1bnd)
-pxl$partit1 <- factor(interaction(s1f, s2f), labels=c(1,2,3,4))
+pxl$partit1 <- factor(interaction(s1f, s2f), labels = c(1, 2, 3, 4))
 
 #construct strata level 2
-s1bnd <- seq(from=25, to=75, by=25)
+s1bnd <- seq(from = 25, to = 75, by = 25)
 s1f <- findInterval(pxl$s1, s1bnd)
 s2f <- findInterval(pxl$s2, s1bnd)
-lbl <- c("00","01","10","11","02","03","12","13","20","21","30","31","22","23","32","33")
-pxl$partit2 <- factor(interaction(s1f,s2f), labels=lbl)
+lbl <- c("00", "01", "10", "11", "02", "03", "12", "13", "20", "21", "30", "31", "22", "23", "32", "33")
+pxl$partit2 <- factor(interaction(s1f, s2f), labels = lbl)
 
-n_h <- rep(1,times=16)
+n_h <- rep(1, times = 16)
 set.seed(314)
-units <- sampling::strata(pxl,stratanames="partit2",
-                size=n_h,method="srswor")
-myfinpop <- getdata(pxl,units)
+units <- sampling::strata(pxl, stratanames = "partit2",
+                size = n_h, method = "srswor")
+myfinpop <- getdata(pxl, units)
 #remove some units, and shift fourth point into circle
 myfinpop$s1[4] <- 78
-units <- sample(nrow(myfinpop),2)
-myfinpop <- myfinpop[-units,]
+units <- sample(nrow(myfinpop), 2)
+myfinpop <- myfinpop[-units, ]
 N <- nrow(myfinpop)
 
-circle <- data.frame(s1=50, s2=50)
-plt1 <- ggplot(data=myfinpop) +
-  geom_raster(data=pxl, mapping=aes(x=s1,y=s2), fill="lightgrey")+
-  geom_circle(data=circle, aes(x0=s1, y0=s2, r=50), fill="grey")+
-  geom_point(mapping=aes(x=s1, y=s2), size=2) +
-  scale_fill_discrete(guide="none") +
+circle <- data.frame(s1 = 50, s2 = 50)
+plt1 <- ggplot(data = myfinpop) +
+  geom_raster(data = pxl, mapping = aes(x = s1, y = s2), fill = "lightgrey") +
+  geom_circle(data = circle, aes(x0 = s1, y0 = s2, r = 50), fill = "grey") +
+  geom_point(mapping = aes(x = s1, y = s2), size = 2) +
+  scale_fill_discrete(guide = "none") +
   coord_fixed()
 
-dat <- expand.grid(x=seq(from=12.5, to=87.5, by=25), y=seq(from=12.5,to=87.5,by=25))
+dat <- expand.grid(x = seq(from = 12.5, to = 87.5, by = 25), y = seq(from = 12.5, to = 87.5, by = 25))
 dat$labels <- lbl
 
-plt2 <- ggplot(data=myfinpop) +
-  geom_raster(data=pxl, mapping=aes(x=s1, y=s2, fill=as.factor(partit1)), alpha=0.5)+
-  geom_circle(data=circle, mapping=aes(x0=s1, y0=s2, r=50))+
-  geom_vline(xintercept=c(25,50,75))+
-  geom_hline(yintercept=c(25,50,75))+
-  geom_point(mapping=aes(x=s1, y=s2), size=2) +
-  geom_text(data=dat,mapping=aes(x=x, y=y, label=labels)) +
-  scale_fill_viridis_d(guide="none") +
+plt2 <- ggplot(data = myfinpop) +
+  geom_raster(data = pxl, mapping = aes(x = s1, y = s2, fill = as.factor(partit1)), alpha = 0.5) +
+  geom_circle(data = circle, mapping = aes(x0 = s1, y0 = s2, r = 50)) +
+  geom_vline(xintercept = c(25, 50, 75)) +
+  geom_hline(yintercept = c(25, 50, 75)) +
+  geom_point(mapping = aes(x = s1, y = s2), size = 2) +
+  geom_text(data = dat, mapping = aes(x = x, y = y, label = labels)) +
+  scale_fill_viridis_d(guide = "none") +
   coord_fixed()
 
-grid.arrange(plt1, plt2, nrow=1)
+grid.arrange(plt1, plt2, nrow = 1)
 ```
 
 The next step is to place the sixteen subcells on a line in a random order. The randomisation is done hierarchically. First, the four grid cells at the highest level are randomised. In our example the randomised order is 1, 2, 3, 0 (Figure \@ref(fig:GRTS)). Next, within each grid cell the order of the subcells is randomised. This is done independently for the grid cells. In our example for grid cell 1 the randomised order of the subcells is 2, 1, 3, 0 (Figure \@ref(fig:GRTS)). Note that the empty subcells, subcells (0,0) and (3,3), are removed from the line.
 
 ```{r}
 set.seed(314)
-ord <- sample(4,4)
+ord <- sample(4, 4)
 myfinpop_rand <- NULL
 for (i in ord) {
-  units <- which(myfinpop$partit1==i)
-  units_rand <- sample(units, size=length(units))
-  myfinpop_rand <- rbind(myfinpop_rand, myfinpop[units_rand,])
+  units <- which(myfinpop$partit1 == i)
+  units_rand <- sample(units, size = length(units))
+  myfinpop_rand <- rbind(myfinpop_rand, myfinpop[units_rand, ])
 }
 ```
 
 After the subcells have been placed on a line, a one-dimensional systematic random sample is selected (Figure \@ref(fig:GRTS)), see also Subsection \@ref(Systematicpps). This can be done either with equal or unequal inclusion probabilities. With equal inclusion probabilities the length of the intervals representing the population units is constant. With unequal inclusion probabilities the interval lengths are proportional to a size variable. For a sample size of $n$, the total line is divided into $n$ segments of equal length. A random point is selected in the first segment, and the other points of the systematic sample are determined. Finally, the population units corresponding to the selected systematic sample are identified. With equal probabilities the five selected units are the units in subcells 11, 23, 22, 32, and 03 (Figure \@ref(fig:GRTS)). 
 
 ```{r sys1D}
-size <- rep(1,N)
+size <- rep(1, N)
 n <- 5
-interval <- sum(size)/n
-start <- round(runif(1)*interval,2)
-mysys <- c(start,1:(n-1)*interval+start)
+interval <- sum(size) / n
+start <- round(runif(1) * interval, 2)
+mysys <- c(start, 1:(n - 1) * interval + start)
 ```
 
-```{r GRTS, echo=FALSE, fig.asp=.15, fig.cap = "Systematic random sample along a line with equal inclusion probabilities."}
+```{r GRTS, echo = FALSE, fig.asp = .15, fig.cap = "Systematic random sample along a line with equal inclusion probabilities."}
 cellbound <- c(0, cumsum(size))
 #compute width of cells
 w <- diff(cellbound)
 #compute x coordinates halfway the cell boundaries
-x <- cellbound[1:N]+w/2
+x <- cellbound[1:N] + w / 2
 
 n1 <- table(myfinpop_rand$partit1)
 address_1 <- rep(ord, n1[ord])
 address <- myfinpop_rand$partit2
 
-datfr <- data.frame(x, y=rep(1,N), address_1, address, w)
-ggplot(data=datfr) +
-  geom_tile(mapping=aes(x=x, y=y, fill=factor(address_1), width=w), alpha=0.5) +
-  geom_text(mapping=aes(x=x, y=y, label=address)) +
-  geom_vline(xintercept=cellbound, linetype=2)+
-  scale_y_continuous("", breaks=c())+
-  scale_x_continuous("", breaks=mysys)+
-  scale_fill_viridis_d(guide="none")
+datfr <- data.frame(x, y = rep(1, N), address_1, address, w)
+ggplot(data = datfr) +
+  geom_tile(mapping = aes(x = x, y = y, fill = factor(address_1), width = w), alpha = 0.5) +
+  geom_text(mapping = aes(x = x, y = y, label = address)) +
+  geom_vline(xintercept = cellbound, linetype = 2) +
+  scale_y_continuous("", breaks = c()) +
+  scale_x_continuous("", breaks = mysys) +
+  scale_fill_viridis_d(guide = "none")
 ```
 Figure \@ref(fig:GRTSpps) shows a systematic random sample along a line with unequal inclusion probabilities. The inclusion probabilities are proportional to a size variable, with values 1, 2, 3, or 4. The selected population units are the units in subcells 10, 20, 31, 01, and 02.
 
-```{r GRTSpps, echo=FALSE, fig.asp=.15, fig.cap = "Systematic random sample along a line with inclusion probabilities proportional to size."}
-size <- sample(4, size=N, replace=TRUE)
+```{r GRTSpps, echo = FALSE, fig.asp = .15, fig.cap = "Systematic random sample along a line with inclusion probabilities proportional to size."}
+size <- sample(4, size = N, replace = TRUE)
 n <- 5
-interval <- sum(size)/n
-start <- round(runif(1)*interval,2)
-mysyspps <- c(start,1:(n-1)*interval+start)
+interval <- sum(size) / n
+start <- round(runif(1) * interval, 2)
+mysyspps <- c(start, 1:(n - 1) * interval + start)
 
-cellbound <- c(0,cumsum(size))
+cellbound <- c(0, cumsum(size))
 w <- diff(cellbound)
-x <- cellbound[1:N]+w/2
-datfr <- data.frame(x, y=rep(1,N), address_1, address, w)
-ggplot(data=datfr) +
-  geom_tile(mapping=aes(x=x, y=y, fill=factor(address_1), width=w), alpha=0.5) +
-  geom_text(mapping=aes(x=x, y=y, label=address)) +
-  geom_vline(xintercept=cellbound, linetype=2)+
-  scale_y_continuous("", breaks=c())+
-  scale_x_continuous("", breaks=mysyspps)+
-  scale_fill_viridis_d(guide="none")
+x <- cellbound[1:N] + w / 2
+datfr <- data.frame(x, y = rep(1, N), address_1, address, w)
+ggplot(data = datfr) +
+  geom_tile(mapping = aes(x = x, y = y, fill = factor(address_1), width = w), alpha = 0.5) +
+  geom_text(mapping = aes(x = x, y = y, label = address)) +
+  geom_vline(xintercept = cellbound, linetype = 2) +
+  scale_y_continuous("", breaks = c()) +
+  scale_x_continuous("", breaks = mysyspps) +
+  scale_fill_viridis_d(guide = "none")
 ```
 
-GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. `data.frame` `grdKandahar` is first coerced to an `sf` object with function `st_as_sf` of package **sf** [@sf]. The dataset is using a UTM projection (zone 41N) with WGS84 datum. This projection is passed to argument `crs` (`crs=32641`). Argument `sframe` of function `grts` specifies the sampling frame. The sample size is passed to argument `n_base`. Argument `seltype` is set to `proportional` to select units with probabilities proportional to an ancillary variable passed to argument `aux_var`. 
+GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. `data.frame` `grdKandahar` is first coerced to an `sf` object with function `st_as_sf` of package **sf** [@sf]. The dataset is using a UTM projection (zone 41N) with WGS84 datum. This projection is passed to argument `crs` (`crs = 32641`). Argument `sframe` of function `grts` specifies the sampling frame. The sample size is passed to argument `n_base`. Argument `seltype` is set to `proportional` to select units with probabilities proportional to an ancillary variable passed to argument `aux_var`. 
 
 ```{r GRTSppsKandahar}
 library(spsurvey)
 library(sf)
-sframe_sf <- st_as_sf(grdKandahar, coords=c("x","y"), crs=32641)
+sframe_sf <- st_as_sf(grdKandahar, coords = c("x", "y"), crs = 32641)
 set.seed(314)
-res <- grts(sframe=sframe_sf, n_base=40, seltype="proportional", aux_var="agri")  
+res <- grts(
+  sframe = sframe_sf, n_base = 40, seltype = "proportional", aux_var = "agri")
 myGRTSsample <- res$sites_base
 ```
 
 Function `cont_analysis` computes the ratio estimator of the population mean and its standard error. The estimated mean is multiplied by the total number of population units to obtain a ratio estimate of the population total.
 
 ```{r}
-myGRTSsample$siteID <- paste0("siteID", 1:nrow(myGRTSsample))
-res <- cont_analysis(myGRTSsample, vars="poppy", siteID="siteID", weight="wgt", statistics="Mean")
+myGRTSsample$siteID <- paste0("siteID", seq_len(nrow(myGRTSsample)))
+res <- cont_analysis(myGRTSsample,
+       vars = "poppy", siteID = "siteID", weight = "wgt", statistics = "Mean")
 tz_ratio <- res$Mean$Estimate * nrow(grdKandahar)
 se_tz_ratio <- res$Mean$StdError * nrow(grdKandahar)
 ```
@@ -768,7 +775,7 @@ The estimated total poppy area is 109,809 ha, and the estimated standard error i
 The alternative is to estimate the total poppy area by the $\pi$ estimator. Function `vsb` of package **BalancedSampling** can be used to estimate the standard error of the $\pi$ estimator.
 
 ```{r}
-tz_HT <- sum(myGRTSsample$poppy/myGRTSsample$ip)
+tz_HT <- sum(myGRTSsample$poppy / myGRTSsample$ip)
 Xsample <- st_coordinates(myGRTSsample)
 se_tz_HT <- sqrt(vsb(myGRTSsample$ip, myGRTSsample$poppy, Xsample))
 ```
@@ -783,21 +790,21 @@ As mentioned in the introduction to this chapter a sample balanced on a covariat
 library(BalancedSampling)
 N <- nrow(gridAmazonia)
 n <- 100
-Xbal <- cbind(rep(1,times=N), gridAmazonia$lnSWIR2)
+Xbal <- cbind(rep(1, times = N), gridAmazonia$lnSWIR2)
 Xspread <- cbind(gridAmazonia$x1, gridAmazonia$x2)
-pi <- rep(n/N, times=N)
+pi <- rep(n / N, times = N)
 set.seed(314)
-units <- lcube(Xbal=Xbal, Xspread=Xspread, prob=pi)
-mysample <- gridAmazonia[units,]
+units <- lcube(Xbal = Xbal, Xspread = Xspread, prob = pi)
+mysample <- gridAmazonia[units, ]
 ```
 
-```{r DoublyBalancedSampleAmazonia, echo=FALSE, out.width='100%', fig.cap="Sample balanced on lnSWIR2 with geographical spreading from Eastern Amazonia."}
-ggplot(data=gridAmazonia) +
-  geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
-  geom_point(data=mysample, mapping=aes(x=x1/1000, y=x2/1000), size=2)+
-  scale_fill_continuous(name="lnSWIR2", type="viridis") +
-  scale_x_continuous(name="Easting (km)") +
-  scale_y_continuous(name="Northing (km)") +
+```{r DoublyBalancedSampleAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on lnSWIR2 with geographical spreading from Eastern Amazonia."}
+ggplot(data = gridAmazonia) +
+  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
+  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  scale_fill_continuous(name = "lnSWIR2", type = "viridis") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
@@ -820,33 +827,33 @@ with $p$ the number of balancing variables, $e_k$ the regression model residual 
 The variance estimator can be computed with functions `localmean_weight` and `localmean_var` of package **spsurvey** [@spsurvey].
 
 ```{r, echo=FALSE}
-source('Rscripts/localmean_weight.R')
-source('Rscripts/localmean_var.R')
+source("Rscripts/localmean_weight.R")
+source("Rscripts/localmean_var.R")
 ```
 
 
 ```{r}
 library(spsurvey)
 library(MASS)
-pi <- rep(n/N,n)
-c <- (1-pi)
-b <- estimate_b(z=mysample$AGB/pi, X=Xbal[units,]/pi, c=c)
-zpred <- Xbal%*%b
-e <- mysample$AGB-zpred[units]
-weights <- localmean_weight(x=mysample$x1, y=mysample$x2, prb=pi, nbh=3)
-v_mz <- localmean_var(z=e/pi, weight_1st=weights)/N^2
+pi <- rep(n / N, n)
+c <- (1 - pi)
+b <- estimate_b(z = mysample$AGB / pi, X = Xbal[units, ] / pi, c = c)
+zpred <- Xbal %*% b
+e <- mysample$AGB - zpred[units]
+weights <- localmean_weight(x = mysample$x1, y = mysample$x2, prb = pi, nbh = 3)
+v_mz <- localmean_var(z = e / pi, weight_1st = weights) / N^2
 ```
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 #Alternative for variance estimation, but nbh equals 4 and cannot be changed
-mysample$weight <- 1/pi
-mysample$siteID <- paste0("siteID", 1:nrow(mysample))
+mysample$weight <- 1 / pi
+mysample$siteID <- paste0("siteID", seq_len(mysample))
 res <- cont_analysis(mysample, vars = "e", siteID = "siteID", weight = "weight", xcoord = "x1", ycoord = "x2", statistics = "Mean")
 v_mz <- res$Mean$StdError
 ```
 
 The estimated standard error is `r as.character(round(sqrt(v_mz),1))` 10^9^ kg ha^-1^, which is considerably smaller than the estimated standard error of the balanced sample without geographical spreading.
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```

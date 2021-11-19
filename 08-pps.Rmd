@@ -2,7 +2,7 @@
 
 In simple random sampling the inclusion probabilities are equal for all population units. The advantage of this is simple and straightforward statistical inference. With equal inclusion probabilities the unweighted sample mean is an unbiased estimator of the spatial mean, i.e. the sampling design is *self-weighting*. However, in some situations equal probability sampling is not very efficient, i.e. given the sample size the precision of the estimated mean or total will be relatively low. An example is the following. In order to estimate the total area of a given crop in a country, a raster of square cells of, for instance, 1 km $\times$ 1 km is constructed and projected on the country. The square cells are the population units, and these units serve as the sampling units. Note that near the country border cells cross the border. Some of them may contain only a few hectares of the target population, the country under study. We do not want to select many of these squares with only a few hectares of the study area, as intuitively it is clear that this will result in a low precision of the estimated crop area. In such situation it can be more efficient to select units with probabilities proportional to the area of the target population within the squares, so that small units near the border have a smaller probability of being selected than interior units. Actually, the sampling units are not the square cells, but the pieces of land obtained by overlaying the cells and the GIS map of the country under study. As a consequence, the sampling units have unequal size. The sampling units of unequal size are selected by probabilities proportional to their size (pps).
 
-```{block2, type='rmdnote'}
+```{block2, type = 'rmdnote'}
 In Chapters \@ref(Cl) and \@ref(Twostage)  pps sampling was already used to select clusters (primary sampling units) of population units. In this chapter the *individual* population units (elementary sampling units) are selected with probabilities proportional to size. 
 ```
 
@@ -43,16 +43,16 @@ The sampling variance of the estimator of the mean can be estimated by the varia
 As a first step I check whether the size variable is strictly positive in our case study of Kandahar. The minimum equals `r round(min(grdKandahar$agri)*10000,3)` m^2^, so this is the case.  If there are values equal to or smaller than 0, these values must be replaced by a small number, so that all units have a positive probability of being selected. Then the draw-by-draw selection probabilities are computed, and the sample is selected using function `sample`.
 
 ```{r}
-grdKandahar$p <- grdKandahar$agri/sum(grdKandahar$agri)
+grdKandahar$p <- grdKandahar$agri /  sum(grdKandahar$agri)
 N <- nrow(grdKandahar)
 n <- 40
 set.seed(314)
-units <- sample(N, size=n, replace=TRUE, prob=grdKandahar$p)
-mysample <- grdKandahar[units,]
+units <- sample(N, size = n, replace = TRUE, prob = grdKandahar$p)
+mysample <- grdKandahar[units, ]
 ```
 
 
-```{block2, type='rmdnote'}
+```{block2, type = 'rmdnote'}
 To select the units, computing the selection probabilities is not strictly needed. Exactly the same units are selected when the agricultural area within the units (column `agri` in the data frame) is used in argument `prob` of `sample`.
 ```
 
@@ -60,36 +60,36 @@ Four units are selected twice.
 
 ```{r}
 table_frq <- table(units) %>% data.frame(.)
-print(table_frq[table_frq$Freq>1,])
+print(table_frq[table_frq$Freq > 1, ])
 ```
 
 Figure \@ref(fig:ppswrKandahar) shows the selected sampling units, plotted on a map of the agricultural area within the units which is used as a size variable.
 
-```{r ppswrKandahar, echo=FALSE, out.width='100%', fig.cap="Sample of size 40 from Kandahar, selected with probabilities proportional to agricultural area with replacement. Four units are selected twice, so that the number of distinct units is 36."}
-ggplot(data=grdKandahar) +
-  geom_raster(mapping=aes(x=x, y=y, fill=agri)) +
-  geom_tile(data=mysample,mapping=aes(x=x, y=y), colour="white", width=5, height=5, size=0.7, fill=NA) +
-  scale_fill_viridis_c(name="Agriarea") +
-  scale_y_continuous(name="Northing (km)") +
-  scale_x_continuous(name="Easting (km)") +
+```{r ppswrKandahar, echo = FALSE, out.width = '100%', fig.cap = "Sample of size 40 from Kandahar, selected with probabilities proportional to agricultural area with replacement. Four units are selected twice, so that the number of distinct units is 36."}
+ggplot(data = grdKandahar) +
+  geom_raster(mapping = aes(x = x, y = y, fill = agri)) +
+  geom_tile(data = mysample, mapping = aes(x = x, y = y), colour = "white", width = 5, height = 5, size = 0.7, fill = NA) +
+  scale_fill_viridis_c(name = "Agriarea") +
+  scale_y_continuous(name = "Northing (km)") +
+  scale_x_continuous(name = "Easting (km)") +
   coord_fixed()
 ```
 
 The next code chunk shows how the population total of the poppy area can be estimated, using Equation \@ref(eq:HHTotalppswr), as well as the standard error of the estimator of the population total (square root of estimator of Equation \@ref(eq:VarHHTotalppswr)). As a first step the observations are inflated (expanded) through division of the observations by the selection probabilities of the corresponding units. 
 
 ```{r}
-z_pexpanded <- mysample$poppy/mysample$p
+z_pexpanded <- mysample$poppy /  mysample$p
 tz <- mean(z_pexpanded)
-se_tz <- sqrt(var(z_pexpanded)/n)
+se_tz <- sqrt(var(z_pexpanded) /  n)
 ```
 
 The estimated total equals 65,735 ha, with a standard error of 12,944 ha. The same estimates are obtained with package **survey** [@Lumley2020].
 
 ```{r}
 library(survey)
-mysample$weight <- 1/(mysample$p*n)
-design_ppswr <- svydesign(id=~1, data=mysample, weights=~weight)
-svytotal(~poppy, design_ppswr)
+mysample$weight <- 1 /  (mysample$p *  n)
+design_ppswr <- svydesign(id = ~ 1, data = mysample, weights = ~ weight)
+svytotal(~ poppy, design_ppswr)
 ```
 
 In ppswr sampling a sampling unit can be selected more than once, especially with large sampling fractions $n/N$. This may decrease the sampling efficiency. With large sampling fractions the alternative is pps sampling without replacement (ppswor), see next section.
@@ -116,46 +116,46 @@ Many algorithms are available for ppswor sampling, see @Tille2006 for an overvie
 library(sampling)
 set.seed(314)
 N <- 10
-x <- rnorm(N, mean=20, sd=5)
+x <- rnorm(N, mean = 20, sd = 5)
 n <- 4
 pi <- inclusionprobabilities(x, n)
-print(df <- data.frame(id=seq(1:10), x, pi))
+print(df <- data.frame(id = seq(1:10), x, pi))
 ```
 
 ```{r }
 cumsumpi <- c(0, cumsum(pi))
-start <- runif(1, min=0, max=1)
-sys <- 0:(n-1)+start
+start <- runif(1, min = 0, max = 1)
+sys <- 0:(n - 1) +  start
 print(units <- findInterval(sys, cumsumpi))
 ```
 
-```{r sysppswor, echo=FALSE, fig.asp=.15, fig.cap = "Systematic random sample along a line with unequal inclusion probabilities."}
-x <- cumsumpi[1:N]+pi/2
-dat <- data.frame(x, y=rep(1,N), pi)
-ggplot(data=dat) +
-  geom_tile(mapping=aes(x=x, y=y, width=pi), fill="grey") +
-  geom_text(mapping=aes(x=x, y=y, label=round(pi,3))) +
-  geom_vline(xintercept=cumsumpi, linetype=2) +
-  scale_x_continuous("", breaks=sys) +
-  scale_y_continuous("", breaks=c()) +
-  scale_fill_discrete(guide="none")
+```{r sysppswor, echo = FALSE, fig.asp = .15, fig.cap = "Systematic random sample along a line with unequal inclusion probabilities."}
+x <- cumsumpi[1:N] +  pi /  2
+dat <- data.frame(x, y = rep(1, N), pi)
+ggplot(data = dat) +
+  geom_tile(mapping = aes(x = x, y = y, width = pi), fill = "grey") +
+  geom_text(mapping = aes(x = x, y = y, label = round(pi, 3))) +
+  geom_vline(xintercept = cumsumpi, linetype = 2) +
+  scale_x_continuous("", breaks = sys) +
+  scale_y_continuous("", breaks = c()) +
+  scale_fill_discrete(guide = "none")
 ``` 
 
 Sampling efficiency can be increased by ordering the units by the size variable (Figure \@ref(fig:sysppsworsort)). With this design the third, fourth, fifth, and second unit in the original frame are selected, with sizes 15.8, 16.5, 20.6, and 23.6, respectively. Ordering the units by size leads to a large within-sample and a small between-sample variance of the size variable $x$. If the study variable is proportional to the size variable, this results in a smaller sampling variance of the estimator of the mean of the study variable. A drawback of systematic ppswor sampling with fixed order is that no unbiased estimator of the sampling variance exists.
 
-```{r sysppsworsort, echo=FALSE, fig.asp=.15, fig.cap = "Systematic random sample along a line with unequal inclusion probabilities. Units are ordered by size."}
+```{r sysppsworsort, echo = FALSE, fig.asp = .15, fig.cap = "Systematic random sample along a line with unequal inclusion probabilities. Units are ordered by size."}
 pisorted <- pi[order(pi)]
 cumsumpi <- c(0, cumsum(pisorted))
 sys <- 0:3 + start
 units <- findInterval(sys, cumsumpi)
-x <- cumsumpi[1:N]+pisorted/2
-dat <- data.frame(x, y=rep(1, N), pisorted)
-ggplot(data=dat) +
-  geom_tile(mapping=aes(x=x, y=y, width=pisorted), fill="grey") +
-  geom_text(mapping=aes(x=x, y=y, label=round(pisorted,3))) +
-  geom_vline(xintercept=cumsumpi, linetype=2) +
-  scale_x_continuous("", breaks=sys) +
-  scale_y_continuous("",  breaks=c())
+x <- cumsumpi[1:N] +  pisorted /  2
+dat <- data.frame(x, y = rep(1, N), pisorted)
+ggplot(data = dat) +
+  geom_tile(mapping = aes(x = x, y = y, width = pisorted), fill = "grey") +
+  geom_text(mapping = aes(x = x, y = y, label = round(pisorted, 3))) +
+  geom_vline(xintercept = cumsumpi, linetype = 2) +
+  scale_x_continuous("", breaks = sys) +
+  scale_y_continuous("",  breaks = c())
 ```
 
 A small simulation study is done next to see how much gain in precision can be achieved by ordering the units by size. A size variable $x$ and a study variable $z$ are simulated  by drawing 1,000 values from a bivariate normal distribution with a correlation coefficient of 0.8. Function `mvrnorm` of package **MASS** [@VenablesRipley2002] is used for the simulation. 
@@ -166,34 +166,36 @@ rho <- 0.8
 mu1 <- 10; sd1 <- 2
 mu2 <- 15; sd2 <- 4
 mu <- c(mu1, mu2)
-sigma <- matrix(data=c(sd1^2, sd1*sd2*rho, sd1*sd2*rho, sd2^2), nrow=2, ncol=2)
+sigma <- matrix(
+  data = c(sd1^2, sd1 *  sd2 *  rho, sd1 *  sd2 *  rho, sd2^2),
+  nrow = 2, ncol = 2)
 N <- 1000
 set.seed(314)
-dat <- as.data.frame(mvrnorm(N, mu=mu, Sigma=sigma))
-names(dat) <- c("z","x")
+dat <- as.data.frame(mvrnorm(N, mu = mu, Sigma = sigma))
+names(dat) <- c("z", "x")
 head(dat)
 ```
 
 Twenty units are selected by systematic ppswor sampling with random order and ordered by size. This is repeated 10,000 times.
 
-```{r simululationsyspps, echo=FALSE}
+```{r simululationsyspps, echo = FALSE}
 n <- 20
 dat$pi <- inclusionprobabilities(dat$x, n)
-datsorted   <- dat[order(dat$x),]
+datsorted   <- dat[order(dat$x), ]
 
-mz_syspps <- mz_sysppssorted <- numeric(length=10000)
+mz_syspps <- mz_sysppssorted <- numeric(length = 10000)
 set.seed(314)
 for (i in 1:10000) {
   s <- UPsystematic(dat$pi)
-  mysample <- dat[s==1,]
-  mz_syspps[i] <- sum(mysample$z/mysample$pi)/N
+  mysample <- dat[s == 1, ]
+  mz_syspps[i] <- sum(mysample$z /  mysample$pi) /  N
   s <- UPsystematic(datsorted$pi)
-  mysample <- datsorted[s==1,]
-  mz_sysppssorted[i] <- sum(mysample$z/mysample$pi)/N
+  mysample <- datsorted[s == 1, ]
+  mz_sysppssorted[i] <- sum(mysample$z /  mysample$pi) /  N
 }
 se_syspps <- sqrt(var(mz_syspps))
 se_syspps_sorted <- sqrt(var(mz_sysppssorted))
-se_SI <- sqrt((1-n/N)*var(dat$z)/n)
+se_SI <- sqrt((1 - n /  N) *  var(dat$z) /  n)
 ```
 
 The standard deviation of the 10,000 estimated means with systematic ppswor sampling with random order is `r round(se_syspps,3)`, and when ordered by size `r round(se_syspps_sorted,3)`. So, a small gain in precision is achieved through ordering the units by size. For comparison I also computed the standard error for simple random sampling without replacement (SI) of the same size. The standard error with this basic sampling design is `r round(se_SI,3)`.
@@ -253,27 +255,28 @@ Various functions in package **sampling** [@Tille2016] can be used to select a p
 ```{r}
 library(sampling)
 n <- 40
-size <- ifelse(grdKandahar$agri<1E-12, 0.1, grdKandahar$agri)
+size <- ifelse(grdKandahar$agri < 1E-12, 0.1, grdKandahar$agri)
 pi <- inclusionprobabilities(size, n)
 set.seed(314)
-sampleind <- UPrandompivotal(pik=pi)
-mysample <- data.frame(grdKandahar[sampleind==1,], pi=pi[sampleind==1])
+sampleind <- UPrandompivotal(pik = pi)
+mysample <- data.frame(grdKandahar[sampleind == 1, ], pi = pi[sampleind == 1])
 nrow(mysample)
 ```
 
-As can be seen not 40 but only 39 units are selected. The reason is that function `UPrandompivotal` uses a very small number that can be set with argument `eps`. If the updated inclusion probability of a unit is larger than the complement of this small number `eps`, the unit is treated as being selected. The default value of `eps` is $10^{-6}$. If we replace `sampleind==1` by `sampleind>1-eps`, 40 units are selected. 
+As can be seen not 40 but only 39 units are selected. The reason is that function `UPrandompivotal` uses a very small number that can be set with argument `eps`. If the updated inclusion probability of a unit is larger than the complement of this small number `eps`, the unit is treated as being selected. The default value of `eps` is $10^{-6}$. If we replace `sampleind == 1` by `sampleind > 1-eps`, 40 units are selected. 
 
 ```{r}
 eps <- 1e-6
-mysample <- data.frame(grdKandahar[sampleind>1-eps,], pi=pi[sampleind>1-eps])
+mysample <- data.frame(
+  grdKandahar[sampleind > 1 - eps, ], pi = pi[sampleind > 1 - eps])
 nrow(mysample)
 ```
 
 The total poppy area can be estimated from the ppswor sample by
 
 ```{r}
-tz_HT <- sum(mysample$poppy/mysample$pi)
-tz_Hajek <- N*sum(mysample$poppy/mysample$pi)/sum(1/mysample$pi)
+tz_HT <- sum(mysample$poppy /  mysample$pi)
+tz_Hajek <- N *  sum(mysample$poppy /  mysample$pi) /  sum(1 /  mysample$pi)
 ```
 
 The total poppy area as estimated with the $\pi$ estimator equals 88,501 ha. The H&aacute;jek estimator results in a much smaller estimated total: 62,169 ha.
@@ -282,14 +285,16 @@ The $\pi$ estimate can also be computed with function `svytotal` of package **su
 
 ```{r}
 library(survey)
-design_ppsworbrewer <- svydesign(id=~1, data=mysample, pps="brewer", fpc=~pi)
-svytotal(~poppy, design_ppsworbrewer)
+design_ppsworbrewer <- svydesign(
+  id = ~ 1, data = mysample, pps = "brewer", fpc = ~ pi)
+svytotal(~ poppy, design_ppsworbrewer)
 ```
 
 ```{r}
-p2sum<-sum(mysample$pi^2)/n 
-design_ppsworhr <- svydesign(id=~1, data=mysample, pps=HR(p2sum), fpc=~pi)
-svytotal(~poppy, design_ppsworhr)
+p2sum <- sum(mysample$pi^2) / n
+design_ppsworhr <- svydesign(
+  id = ~ 1, data = mysample, pps = HR(p2sum), fpc = ~ pi)
+svytotal(~ poppy, design_ppsworhr)
 ```
 
 In package **samplingVarEst** [@samplingVarEst] also various functions are available for approximating the variance: `VE.Hajek.Total.NHT`, `VE.HT.Total.NHT`, and `VE.SYG.Total.NHT`. The first variance approximation is the H&aacute;jek-Ros&eacute;n variance estimator\index{H$\text{{\'a}}$jek-Ros$\text{{\'e}}$n variance estimator}, see Equation (4.3) in @Rosen1997b. The latter two functions require the pairwise inclusion probabilities\index{Pairwise inclusion probability}, which can be estimated by function `Pkl.Hajek.s`.
@@ -306,17 +311,17 @@ The three approximated standard errors are 14,045, 14,068, and 14,017 ha. The di
 
 Figure \@ref(fig:SamplingDistributionPps) shows the approximated sampling distribution of estimators of the total poppy area with ppswor sampling and simple random sampling without replacement of size 40, obtained by repeating the random sampling with each design and estimation 10,000 times. With the ppswor samples the total poppy area is estimated by the $\pi$ estimator and the H&aacute;jek estimator. For each ppswor sample the variance of the $\pi$ estimator is approximated by the H&aacute;jek-Ros&eacute;n variance estimator (using function `VE.Hajek.Total.NHT` of package **samplingVarEst**).
 
-```{r repeatedpps, eval=FALSE, echo=FALSE}
+```{r repeatedpps, eval = FALSE, echo = FALSE}
 ppswor <- function(sframe, size, n) {
     pi <- inclusionprobabilities(size, n)
-    sampleind <- UPpivotal(pik=pi, eps=eps)
-    mysample <- data.frame(sframe[sampleind>1-eps,], pi=pi[sampleind>1-eps])
+    sampleind <- UPpivotal(pik = pi, eps = eps)
+    mysample <- data.frame(sframe[sampleind > 1 - eps, ], pi = pi[sampleind > 1 - eps])
     mysample
 }
 
 SI <- function(sframe, n) {
-    units <- sample(nrow(sframe), size=n, replace=FALSE)
-    mysample <- sframe[units,]
+    units <- sample(nrow(sframe), size = n, replace = FALSE)
+    mysample <- sframe[units, ]
     mysample
 }
 
@@ -324,35 +329,35 @@ SI <- function(sframe, n) {
 number_of_samples <- 10000
 N <- nrow(grdKandahar)
 
-tz_HT <- v_tz_HR <- tz_Hajek <- tz_SI <- numeric(length=number_of_samples)
+tz_HT <- v_tz_HR <- tz_Hajek <- tz_SI <- numeric(length = number_of_samples)
 set.seed(314)
-for (i in 1:number_of_samples){
-  mysample <- ppswor(sframe=grdKandahar, size=ifelse(grdKandahar$agri<1E-12,0.1,grdKandahar$agri), n=n)
-  tz_HT[i] <- sum(mysample$poppy/mysample$pi)
-  tz_Hajek[i] <- N*sum(mysample$poppy/mysample$pi)/sum(1/mysample$pi)
+for (i in 1:number_of_samples) {
+  mysample <- ppswor(sframe = grdKandahar, size = ifelse(grdKandahar$agri < 1E-12, 0.1, grdKandahar$agri), n = n)
+  tz_HT[i] <- sum(mysample$poppy /  mysample$pi)
+  tz_Hajek[i] <- N *  sum(mysample$poppy /  mysample$pi) /  sum(1 /  mysample$pi)
   #approximate the variance by variance of Hansen-Rosen estimator (for pps-with replacement)
   v_tz_HR[i] <- VE.Hajek.Total.NHT(mysample$poppy, mysample$pi)
-  mySIsample <- SI(sframe=grdKandahar, n=n)
-  tz_SI[i] <- mean(mySIsample$poppy)*N
+  mySIsample <- SI(sframe = grdKandahar, n = n)
+  tz_SI[i] <- mean(mySIsample$poppy) *  N
 }
-save(tz_HT, tz_Hajek, v_tz_HR, tz_SI,file="results/pps_Kandahar.RData")
+save(tz_HT, tz_Hajek, v_tz_HR, tz_SI, file = "results/pps_Kandahar.RData")
 ```
 
 (ref:SamplingDistributionPpslabel) Approximated sampling distribution of the $\pi$ estimator (ppswor.HT) and the H&aacute;jek estimator (ppswor.Hajek) of the total poppy area (ha) in Kandahar with ppswor sampling of size 40, and of the $\pi$ estimator with simple random sampling without replacement (SI) of size 40.
 
-```{r SamplingDistributionPps, echo=FALSE, fig.asp=.8, echo=FALSE, fig.cap="(ref:SamplingDistributionPpslabel)"}
-load(file="results/pps_Kandahar.RData")
+```{r SamplingDistributionPps, echo = FALSE, fig.asp = .8, echo = FALSE, fig.cap = "(ref:SamplingDistributionPpslabel)"}
+load(file = "results/pps_Kandahar.RData")
 estimates <- data.frame(tz_HT, tz_Hajek, v_tz_HR, tz_SI)
-names(estimates)[c(1,2,4)] <- c("ppswor.HT","ppswor.Hajek","SI")
+names(estimates)[c(1, 2, 4)] <- c("ppswor.HT", "ppswor.Hajek", "SI")
 
-df <- estimates %>% pivot_longer(., cols=c("ppswor.HT","ppswor.Hajek","SI"))
-df$name <- factor(df$name, levels=c("ppswor.Hajek","ppswor.HT","SI"), ordered=TRUE)
+df <- estimates %>% pivot_longer(., cols = c("ppswor.HT", "ppswor.Hajek", "SI"))
+df$name <- factor(df$name, levels = c("ppswor.Hajek", "ppswor.HT", "SI"), ordered = TRUE)
 
-ggplot(data=df) +
-    geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=mean(grdKandahar$poppy)*N, colour="red")+
-    scale_x_discrete(name="Sampling strategy") +
-    scale_y_continuous(name="Estimated total poppy area")
+ggplot(data = df) +
+    geom_boxplot(aes(y = value, x = name)) +
+    geom_hline(yintercept = mean(grdKandahar$poppy) *  N, colour = "red") +
+    scale_x_discrete(name = "Sampling strategy") +
+    scale_y_continuous(name = "Estimated total poppy area")
 
 #standard deviation of estimated totals with ppswor and $\pi$ estimator
 sd_tz_ppsworHT_sim <- sqrt(var(estimates$ppswor.HT))
@@ -373,6 +378,6 @@ Interestingly, with ppswor sampling the variance of the 10,000 H&aacute;jek esti
 2. A field with poppy was found outside Kandahar in a selected sampling unit crossing the boundary. Should this field be included in the sum of the poppy area of that sampling unit?  
 3. In another sampling unit a poppy field was encountered in Kandahar but in the area represented as non-agriculture in the GIS map. Should this field be included in the sum of that sampling unit?
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```
