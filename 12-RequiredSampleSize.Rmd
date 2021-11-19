@@ -44,7 +44,7 @@ n = \left(\frac{cv^*}{rse_{\mathrm{max}}}\right)^2 \;,
 (\#eq:nreqrse)
 \end{equation}
 
-with$cv^*$ a prior estimate of the population coefficient of variation\index{Prior estimate!of population coefficient of variation} $S(z)/\bar{z}$. For a constraint on the relative standard error of the population proportion estimator we obtain
+with $cv^*$ a prior estimate of the population coefficient of variation\index{Prior estimate!of population coefficient of variation} $S(z)/\bar{z}$. For a constraint on the relative standard error of the population proportion estimator we obtain
 
 \begin{equation}
 n = \left(\frac{p^*(1-p^*)}{rse_{\mathrm{max}}\;p^*}\right)^2+1=\left(\frac{1-p^*}{rse_{\mathrm{max}}}\right)^2+1 \;.
@@ -83,7 +83,7 @@ P\left(\frac{\lvert\hat{\bar{z}}-\bar{z}\rvert}{\bar{z}} \leq r_{\mathrm{max}}\r
 (\#eq:nreqPrRelError)
 \end{equation}
 
-Noting that the absolute error equals $r_{\mathrm{max}} \cdot \bar{z}$ and inserting this in Equation \@ref(eq:nreqwidthCI) gives
+Noting that the absolute error equals $r_{\mathrm{max}} \bar{z}$ and inserting this in Equation \@ref(eq:nreqwidthCI) gives
 
 \begin{equation}
 n = \left(u_{\alpha/2}\frac{cv^*}{r_{\mathrm{max}}}\right)^2 \;.
@@ -175,7 +175,7 @@ for (i in 1:length(n)) {
 }
 ```
 
-As can be seen in the **R** code, as a first step for each total sample size the smallest number of successes $k_{\mathrm{min}}$ is computed at which the null hypothesis is rejected. Then the binomial probability is computed of $k_{\mathrm{min}}+1$ or more successes for a probability of success equal to $p_{\mathrm{test}}+\Delta$. Note that there is no need to add 1 to `k_min` as with argument `lower.tail=FALSE` the value specified with argument `q` is not included.
+As can be seen in the **R** code, as a first step for each total sample size the smallest number of successes $k_{\mathrm{min}}$ is computed at which the null hypothesis is rejected. Then the binomial probability is computed of $k_{\mathrm{min}}+1$ or more successes for a probability of success equal to $p_{\mathrm{test}}+\Delta$. Note that there is no need to add 1 to `k_min` as with argument `lower.tail=FALSE` the value passed to argument `q` is not included.
 
 ```{r powerbinomialtest, echo=FALSE, fig.asp=0.7, fig.cap="Power of right-tail binomial test (test proportion: 0.2; significance level: 0.10)."}
 beta <- 0.20 
@@ -204,7 +204,7 @@ n2 <- n[length(n)-i+1]
 
 The smallest sample size at which the desired level of 0.8 is reached is `r n1`. However, as can be seen in Figure \@ref(fig:powerbinomialtest) for sample sizes 89, 90, 93, 94, and 97, the power drops below the desired level of  0.80. The smallest sample size at which the power stays above the level of 0.8 is `r n2`.
 
-Alternatively, we may use function `pwr.p.test` of package **pwr**. This is an approximation, using an arcsine transformation of proportions. The first step is to compute Cohen's $h$\index{Cohen's $h$}, which is a measure of the distance between two proportions: $h = 2\;arcsin(\sqrt{p_1})-2\;arcsin(\sqrt{p_2})$. This can be done with function `ES.h`. The value of $h$ must be positive, which is achieved when the proportion assigned to argument `p1` is larger than the proportion assigned to argument `p2`.
+Alternatively, we may use function `pwr.p.test` of package **pwr**. This is an approximation, using an arcsine transformation of proportions. The first step is to compute Cohen's $h$\index{Cohen's $h$}, which is a measure of the distance between two proportions: $h = 2\;arcsin(\sqrt{p_1})-2\;arcsin(\sqrt{p_2})$. This can be done with function `ES.h`. The value of $h$ must be positive, which is achieved when the proportion passed to argument `p1` is larger than the proportion assigned to argument `p2`.
 
 ```{r}
 h <- ES.h(p1=0.30,p2=0.20)
@@ -216,8 +216,8 @@ The approximated sample size equals `r ceiling(n_approx$n)`, which is somewhat s
 
 #### Exercises {-}
 
-1. Write an **R** script to compute the required sample size, given a requirement in terms of the half-length of the confidence interval of a population proportion. Use a normal approximation for computing the confidence interval. Use a range of values for half the length of the interval: $d = (0.01, 0.02, \cdots , 0.49)$. Use a prior (anticipated) proportion of 0.1 and a significance level\index{Significance level} of 0.95. Plot the required sample size against $d$. Explain what you see. Why is it needed to provide a prior proportion?   
-2. Do the same for a single value for the half-length of the confidence interval of 0.2 and a range of values for the prior proportion $p^* = (0.01,0.02, \cdots ,0.49)$. Explain what you see. Why is it not needed to compute the required sample size for prior proportions $> 0.5$?  
+1. Write an **R** script to compute the required sample size, given a requirement in terms of the half-length of the confidence interval of a population proportion. Use a normal approximation for computing the confidence interval. Use a range of values for half the length of the interval: $d = (0.01, 0.02, \dots , 0.49)$. Use a prior (anticipated) proportion of 0.1 and a significance level\index{Significance level} of 0.95. Plot the required sample size against $d$. Explain what you see. Why is it needed to provide a prior proportion?   
+2. Do the same for a single value for the half-length of the confidence interval of 0.2 and a range of values for the prior proportion $p^* = (0.01,0.02, \dots ,0.49)$. Explain what you see. Why is it not needed to compute the required sample size for prior proportions $> 0.5$?  
     
 ## Accounting for design effect {#DesignEffect}
 
@@ -273,7 +273,7 @@ f(\mathbf{z}|n) = \int_{\Theta} f(\mathbf{z}|\theta,n)f(\theta)\mathrm{d}\theta\
 
 with $\Theta$ the parameter space for $\theta$ containing all possible values of $\theta$. This predictive distribution\index{Predictive distribution} is also named the *preposterior* distribution\index{Preposterior distribution}, stressing that the data are not yet accounted for in the distribution.
 
-Even if $\theta$ would be fixed, we do not have only one vector $\mathbf{z}$ with $n$ data values but a probability distribution, from which we can simulate possible data vectors, referred to as the data space $\mathcal{Z}$. In case of a binomial probability and sample size $n$, the data space $\mathcal{Z}$ (in the form of the number of observed successes given sample size $n$) can be written as the set $\{0,1,\cdots,n\}$, i.e. one vector of length $n$ with all "failures", $n$ vectors of length $n$ with one success, ${n \choose 2}$  vectors with two successes, etc. Each data vector is associated with a probability density (for continuous data) or probability mass (for discrete data). As a consequence, we do not have only one posterior distribution function $f(\theta|\mathbf{z})$, but as many as we have data vectors in the data space. For each posterior distribution function the coverage of the HPD interval of a given length can be computed, or reversely, the length of the HPD interval for a given coverage. This leads to various criteria for computing the required sample size, among which are the average length criterion (ALC)\index{Average length criterion}, the average coverage criterion (ACC)\index{Average coverage criterion}, and the worst outcome criterion (WOC)\index{Worst outcome criterion} (@Joseph1995, @Joseph1997).
+Even if $\theta$ would be fixed, we do not have only one vector $\mathbf{z}$ with $n$ data values but a probability distribution, from which we can simulate possible data vectors, referred to as the data space $\mathcal{Z}$. In case of a binomial probability and sample size $n$, the data space $\mathcal{Z}$ (in the form of the number of observed successes given sample size $n$) can be written as the set $\{0,1,\dots,n\}$, i.e. one vector of length $n$ with all "failures", $n$ vectors of length $n$ with one success, ${n \choose 2}$  vectors with two successes, etc. Each data vector is associated with a probability density (for continuous data) or probability mass (for discrete data). As a consequence, we do not have only one posterior distribution function $f(\theta|\mathbf{z})$, but as many as we have data vectors in the data space. For each posterior distribution function the coverage of the HPD interval of a given length can be computed, or reversely, the length of the HPD interval for a given coverage. This leads to various criteria for computing the required sample size, among which are the average length criterion (ALC)\index{Average length criterion}, the average coverage criterion (ACC)\index{Average coverage criterion}, and the worst outcome criterion (WOC)\index{Worst outcome criterion} (@Joseph1995, @Joseph1997).
 
 #### Average length criterion
 
@@ -319,7 +319,7 @@ The smallest sample size satisfying this condition is used as the sample size. F
 
 Besides the fully Bayesian approach, @Joseph1997 describe a mixed Bayesian-likelihood approach\index{Mixed Bayesian-likelihood approach} for determining the sample size. In the mixed Bayesian-likelihood approach of sample size determination the prior distribution of the parameter(s) is only used to derive the predictive distribution of the data (Equation \@ref(eq:predictivedistribution)), not for deriving the posterior distributions of the parameter of interest for each data vector. For analysis of the posterior distribution, an uninformative prior\index{Uninformative prior} is therefore used. This mixed approach is of interest when, after the data have been collected, we prefer to estimate the population mean from these data only, using the frequentist approach described in previous sections.
 
-An example of a situation where the mixed Bayesian-likelihood approach can be attractive is the following. Suppose some data of the study variable from the population of interest are already available, but we would like to collect more data so that we will be more confident about the (current) population mean once these new data are collected. The legacy data are used to construct a prior distribution. We have doubts about the quality of the legacy data because they were collected a long time ago and the study variable might have been changed in the meantime. In that case the mixed Bayesian-likelihood approach can be a good option -- we are willing to use the legacy data to plan the sampling, but not to make statements about the current population. 
+An example of a situation where the mixed Bayesian-likelihood approach can be attractive is the following. Suppose some data of the study variable from the population of interest are already available, but we would like to collect more data so that we will be more confident about the (current) population mean once these new data are collected. The legacy data are used to construct a prior distribution. We have doubts about the quality of the legacy data because they were collected a long time ago and the study variable might have changed in the meantime. In that case the mixed Bayesian-likelihood approach can be a good option -- we are willing to use the legacy data to plan the sampling, but not to make statements about the current population. 
 
 No closed formula for computing the required sample size exists for this approach because the posterior density function $f(\theta|z,n)$ is not a well-defined distribution as before. However, the required sample size still can be approximated by simulation.
 
@@ -388,7 +388,7 @@ The required sample sizes with this criterion are `r n_woc80` and `r n_wocmbl80`
 
 ### Estimation of a population proportion
 
-The same criteria can be used to estimate the proportion of a population, or in case of an infinite population the areal fraction, satisfying some condition [@Joseph1995]. With simple random sampling this boils down to estimating the probability-of-success parameter $p$ of a binomial distribution. In this case the space of possible outcomes $\mathcal{Z}$ is the number of successes, which is discrete: $\mathcal{Z} = \{0,1,\cdots ,n\}$ with $n$ the sample size.
+The same criteria can be used to estimate the proportion of a population, or in case of an infinite population the areal fraction, satisfying some condition [@Joseph1995]. With simple random sampling this boils down to estimating the probability-of-success parameter $p$ of a binomial distribution. In this case the space of possible outcomes $\mathcal{Z}$ is the number of successes, which is discrete: $\mathcal{Z} = \{0,1,\dots ,n\}$ with $n$ the sample size.
 
 The conjugate prior\index{Conjugate prior} for the binomial likelihood is the beta distribution\index{Beta distribution}:
 
@@ -455,7 +455,7 @@ with $f(p)$ the prior density of the binomial parameter.
 
 For more details about ACC and ALC, and about how the required sample size can be computed with WOC in case of the binomial parameter $p$, I refer to @Joseph1995.
 
-The required sample sizes for ALC, ACC, and WOC described in the previous subsection, using the fully Bayesian approach or the mixed Bayesian-likelihood approach, can be computed with package [**SampleSizeBinomial**](http://www.medicine.mcgill.ca/epidemiology/Joseph/software/Bayesian-Sample-Size.html)[@SampleSizeBinomial]. This package is used to compute the required sample sizes using the beta distribution shown in Figure \@ref(fig:betaprior) as a prior for the population proportion. Note that argument `len` of the various functions of package **SampleSizeBinomial** specifies the total length of the confidence interval, not *half* the length as specified by argument `d` of function `ciss.wald`. 
+The required sample sizes for ALC, ACC, and WOC described in the previous subsection, using the fully Bayesian approach or the mixed Bayesian-likelihood approach, can be computed with package [**SampleSizeBinomial**](http://www.medicine.mcgill.ca/epidemiology/Joseph/software/Bayesian-Sample-Size.html)[@SampleSizeBinomial]. This package is used to compute the required sample sizes using the beta distribution shown in Figure \@ref(fig:betaprior) as a prior for the population proportion. Note that argument `len` of the various functions of package **SampleSizeBinomial** specifies the total length of the confidence interval, not *half* the length as passed to argument `d` of function `ciss.wald`. 
 
 ```{r}
 library(SampleSizeBinomial)

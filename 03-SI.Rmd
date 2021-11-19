@@ -7,35 +7,35 @@ Simple random sampling\index{Simple random sampling} is the most basic form of p
 
 This distinction is irrelevant for infinite populations. In with replacement sampling a population unit may be selected more than once. 
 
-In **R** a simple random sample can be selected with or without replacement by function `sample` from the **base** package. For instance, a simple random sample without replacement of 10 units from a population of 100 units labelled as $1,2, \cdots ,100$, can be selected by
+In **R** a simple random sample can be selected with or without replacement by function `sample` from the **base** package. For instance, a simple random sample without replacement of 10 units from a population of 100 units labelled as $1,2, \dots ,100$, can be selected by
 
 ```{r}
-sample(100, size=10, replace=FALSE)
+sample(100, size = 10, replace = FALSE)
 ```
 
 The number of units in the sample is referred to as the sample size ($n=10$ in the code chunk above). Use argument `replace=TRUE` to select a simple random sample with replacement.
 
-When the spatial population is continuous and  infinite, as in sampling points from an area, the infinite population is discretised by a very fine grid. Discretisation is not strictly needed (we could also select points directly), but it is used in this book for reasons explained in Chapter \@ref(GeneralIntro). The centres of the grid cells are then listed in a data frame, which serves as the sampling frame (Chapter \@ref(GeneralIntro)). In the next code chunk a simple random sample without replacement of size 40 is selected from Voorst. The infinite population is represented by the centres of square grid cells with a side length of 25 m. These centres are listed in the `data.frame` `grdVoorst`.
+When the spatial population is continuous and  infinite, as in sampling points from an area, the infinite population is discretised by a very fine grid. Discretisation is not strictly needed (we could also select points directly), but it is used in this book for reasons explained in Chapter \@ref(GeneralIntro). The centres of the grid cells are then listed in a data frame, which serves as the sampling frame (Chapter \@ref(GeneralIntro)). In the next code chunk a simple random sample without replacement of size 40 is selected from Voorst. The infinite population is represented by the centres of square grid cells with a side length of 25 m. These centres are listed in `data.frame` `grdVoorst`.
 
 ```{r}
 load("data/Voorst.RData")
 n <- 40
 N <- nrow(grdVoorst)
 set.seed(314)
-units <- sample(N, size=n, replace=FALSE)
+units <- sample(N, size = n, replace = FALSE)
 mysample <- grdVoorst[units,]
 head(mysample)
 ```
 
-The result of function `sample` is a vector with the centres of the selected cells of the discretisation grid (discretisation points). The order of the elements of the vector is the order in which these are selected. Restricting the sampling points to the discretisation points  can be avoided as follows. A simple random sample of points is selected in two stages. First, *n* times a grid-cell is selected by simple random sampling *with replacement*. Second, every time a grid-cell is selected, one point is selected fully randomly from that grid cell. This selection procedure accounts for the infinite number of points in the population. In the code chunk below the second step of this selection procedure is implemented with function `jitter`. It adds random noise to the spatial coordinates of the centres of the selected grid cells, by drawing from a continuous uniform distribution $\text{unif}(-c,c)$, with $c$ half the side length of the square grid cells. With this selection procedure we respect that the population actually is infinite.  
+The result of function `sample` is a vector with the centres of the selected cells of the discretisation grid (discretisation points). The order of the elements of the vector is the order in which these are selected. Restricting the sampling points to the discretisation points  can be avoided as follows. A simple random sample of points is selected in two stages. First, *n* times a grid cell is selected by simple random sampling *with replacement*. Second, every time a grid cell is selected, one point is selected fully randomly from that grid cell. This selection procedure accounts for the infinite number of points in the population. In the code chunk below the second step of this selection procedure is implemented with function `jitter`. It adds random noise to the spatial coordinates of the centres of the selected grid cells, by drawing from a continuous uniform distribution $\text{unif}(-c,c)$, with $c$ half the side length of the square grid cells. With this selection procedure we respect that the population actually is infinite.  
 
 ```{r}
 set.seed(314)
-units <- sample(N, size=n, replace=TRUE)
+units <- sample(N, size = n, replace = TRUE)
 mysample <- grdVoorst[units,]
 cellsize <- 25
-mysample$s1 <- jitter(mysample$s1, amount=cellsize/2)
-mysample$s2 <- jitter(mysample$s2, amount=cellsize/2)
+mysample$s1 <- jitter(mysample$s1, amount = cellsize / 2)
+mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
 head(mysample)
 ```
 
@@ -84,7 +84,7 @@ In simple random sampling with replacement of finite populations a unit may occu
 (\#eq:HHTotal)
 \end{equation}
 
-where $n$ is the number of draws (sample size) and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \cdots , N$. Inserting this in the pwr estimator yields
+where $n$ is the number of draws (sample size) and $p_{k}$ is the draw-by-draw selection probability of unit $k$. With simple random sampling $p_{k}=1/N, k=1, \dots , N$. Inserting this in the pwr estimator yields
 
 \begin{equation}
 \hat{t}(z)= \frac{N}{n} \sum_{k \in \mathcal{S}} z_{k} \;,
@@ -108,15 +108,15 @@ The simple random sample of size 40 selected above is used to estimate the total
 mz <- mean(mysample$z)
 ```
 
-The estimated mean SOM concentration is `r round(mz,2)` g kg^-1^. Simply multiplying the estimated mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is in g kg^-1^ m^2^. To estimate the total mass of SOM in the soil layer $0-30$ cm, first the soil volume in m^3^ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil (1,500 kg m^-3^), and the estimated population mean (g kg^-1^). This is multiplied by 10^-6^ to obtain the total mass of SOM in Mg (1 Mg is 1,000 kg).
+The estimated mean SOM concentration is `r round(mz,1)` g kg^-1^. Simply multiplying the estimated mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is in g kg^-1^ m^2^. To estimate the total mass of SOM in the soil layer $0-30$ cm, first the soil volume in m^3^ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil (1,500 kg m^-3^), and the estimated population mean (g kg^-1^). This is multiplied by 10^-6^ to obtain the total mass of SOM in Mg (1 Mg is 1,000 kg).
 
 ```{r}
-vol_soil <- N*25^2*0.3
+vol_soil <- N * 25^2 * 0.3
 bd <- 1500
-tz <- vol_soil*bd*mz*10^-6
+tz <- vol_soil * bd * mz * 10^-6
 ```
 
-The estimated total is  17,904 Mg (36.3 Mg ha^-1^).
+The estimated total is  197,545 Mg (420 Mg ha^-1^).
 
 ```{block2, type='rmdnote'}
 Note that a constant bulk density is used. Ideally, this bulk density is also measured at the sampling points, by collecting soil aliquots of a constant volume. The measured SOM concentration and bulk density can then be used to compute the volumetric SOM concentration in kg m$^{-3}$ at the sampling points. The estimated population mean of this volumetric SOM concentration can then be multiplied by the total volume of soil in the study area, to get an estimate of the total mass of SOM in the study area.   
@@ -142,7 +142,7 @@ for (i in 1:number_of_samples) {
 }
 mz_df <- data.frame(mz=mz)
 ggplot(mz_df) +
-  geom_histogram(aes(x=mz, y=..density..), binwidth=0.2, fill="black", alpha=0.5, colour="black") +
+  geom_histogram(aes(x=mz, y=..density..), binwidth=2, fill="black", alpha=0.5, colour="black") +
   geom_density(aes(x=mz, y=..density..), lwd=1) +
   scale_x_continuous(name="Estimated mean SOM") +
   scale_y_continuous(name="Density")
@@ -154,7 +154,7 @@ When the expectation\index{Expectation of estimator} equals the population mean,
 
 The variance, referred to as the sampling variance\index{Sampling variance}, is a measure of the random error\index{Random error}. Ideally, this variance is as small as possible, so that there is a large probability that for an individual estimate the estimation error is small. The variance is a measure of the *precision*\index{Precision} of an estimator. An estimator with a small variance but a strong bias is not a good estimator. To assess the quality of an estimator we should look at both. The variance and the bias are often combined in the *mean squared error*\index{Mean squared error} (MSE), which is the sum of the variance and the *squared* bias. An estimator with a small MSE is an *accurate* estimator. So, contrary to precision, accuracy\index{Accuracy} also accounts for the bias\index{Bias}.
 
-Do not confuse the *population* variance and the *sampling* variance. The population variance\index{Population variance} (spatial variance) is a *population characteristic*, whereas the sampling variance is a *characteristic of a sampling strategy*,\index{Sampling strategy} i.e. a combination of a sampling design and an estimator. The sampling variance quantifies our *uncertainty* about the population mean. The sampling variance can be manipulated by changing the sample size $n$, the type of sampling design, and the estimator. This has no effect on the population variance. The average of the 10,000 estimated population means equals `r round(mean(mz),3)`, so the difference with the true population mean equals `r round(mean(mz)-mean(grdVoorst$z),3)`. The variance of the 10,000 estimated population means equals `r round(var(mz),3)`. The square root of this variance, referred to as the *standard error*\index{Standard error},  equals `r round(sqrt(var(mz)),2)`. Note that the standard error has the same units as the study variable, g kg^-1^, whereas the units of the variance are the squared units of the study variable. 
+Do not confuse the *population* variance and the *sampling* variance. The population variance\index{Population variance} (spatial variance) is a *population characteristic*, whereas the sampling variance is a *characteristic of a sampling strategy*,\index{Sampling strategy} i.e. a combination of a sampling design and an estimator. The sampling variance quantifies our *uncertainty* about the population mean. The sampling variance can be manipulated by changing the sample size $n$, the type of sampling design, and the estimator. This has no effect on the population variance. The average of the 10,000 estimated population means equals `r round(mean(mz),1)` g kg^-1^, so the difference with the true population mean equals `r round(mean(mz)-mean(grdVoorst$z),1)` g kg^-1^. The variance of the 10,000 estimated population means equals `r round(var(mz),1)` (g kg^-1^)^2^. The square root of this variance, referred to as the *standard error*\index{Standard error},  equals `r round(sqrt(var(mz)),1)` g kg^-1^. Note that the standard error has the same units as the study variable, g kg^-1^, whereas the units of the variance are the squared units of the study variable. 
 
 ### Population proportion {#PopProportion}
 
@@ -174,11 +174,10 @@ Figure \@ref(fig:CDFSIVoorst) shows the estimated CDF, estimated from the simple
 (ref:CDFSIVoorstlabel) Estimated cumulative distribution function of the SOM concentration (g kg^-1^) in Voorst, estimated from the simple random sample of 40 units.
 
 ```{r CDFSIVoorst, fig.asp=0.7, fig.cap="(ref:CDFSIVoorstlabel)"}
-ggplot(mysample, mapping=aes(z)) +
-  stat_ecdf(geom="step") + 
-  scale_x_continuous(name="SOM") +
-  scale_y_continuous(name="F")
-  
+ggplot(mysample, mapping = aes(z)) +
+  stat_ecdf(geom = "step") + 
+  scale_x_continuous(name = "SOM") +
+  scale_y_continuous(name = "F")
 ```
 
 The estimated population proportions can be used to estimate a population quantile\index{Population quantile} for any population proportion  (cumulative frequency, probability), for instance the median, first quartile\index{Quartile}, and third quartile, corresponding to a population proportion of 0.5, 0.25, and 0.75, respectively. A simple estimator is the smallest $k$th order statistic\index{\emph{k}th order statistic} with an estimated proportion larger than or equal to the desired cumulative frequency [@Hyndman1996].
@@ -191,7 +190,7 @@ Function `quantile` actually computes sample quantiles\index{Sample quantile}, i
 
 ```{r}
 quantile(mysample$z, probs=c(0.25,0.5,0.75), type=4) %>% 
-  round(.,3)
+  round(.,1)
 ```
 
 Package **QuantileNPCI** [@QuantileNPCI] can be used to compute a non-parametric confidence interval estimate of a quantile, using fractional order statistics [@Hutson1999]. Parameter `q` specifies the proportion.
@@ -201,7 +200,7 @@ library(QuantileNPCI)
 res <- quantCI(mysample$z, q=0.5, alpha=0.05, method="exact")
 ```
 
-The estimated median equals `r round(res$qx,3)`, the lower bound of the 95% confidence interval equals `r round(res$lower.ci,3)`, and the upper bound equals `r round(res$upper.ci,3)`.
+The estimated median equals `r round(res$qx,1)` g kg^-1^, the lower bound of the 95% confidence interval equals `r round(res$lower.ci,1)` g kg^-1^, and the upper bound equals `r round(res$upper.ci,1)` g kg^-1^.
 
 #### Exercises {-}
 
@@ -248,7 +247,7 @@ with $\widehat{S^2}(z)$ the *estimated* population variance. With simple random 
 
 The term $1-\frac{n}{N}$ is referred to as the finite population correction\index{Finite population correction} (fpc).
 
-In the sampling experiment\index{Sampling experiment} described above, the average of the 10,000 *estimated* sampling variances equals `r round(mean(v_mz),3)`. The true sampling variance equals `r round( (1-n/N) * var(grdVoorst$z)/n,3)`. So, the difference is very small, indicating that the estimator of the sampling variance, Equation \@ref(eq:EstVarMeanSI), is design-unbiased.
+In the sampling experiment\index{Sampling experiment} described above, the average of the 10,000 *estimated* sampling variances equals `r round(mean(v_mz),1)` (g kg^-1^)^2^. The true sampling variance equals `r round( (1-n/N) * var(grdVoorst$z)/n,1)` (g kg^-1^)^2^. So, the difference is very small, indicating that the estimator of the sampling variance, Equation \@ref(eq:EstVarMeanSI), is design-unbiased.
 
 The sampling variance of the estimator of the total of a finite population can be estimated by multiplying the estimated variance of the estimator of the population mean by $N^2$. For simple random sampling without replacement this estimator thus equals
 
@@ -280,11 +279,11 @@ se_mz <- sqrt(var(mysample$z)/n)
 se_tz <- se_mz*vol_soil*bd*10^-6
 ```
 
-The estimated standard error of the estimated total equals 1,400 Mg. This standard error does not account for spatial variation of bulk density.
+The estimated standard error of the estimated total equals 20,334 Mg. This standard error does not account for spatial variation of bulk density.
 
 Although there is no advantage in using package **survey** [@Lumley2020] to compute the $\pi$ estimator and its standard error for this simple sampling design, I illustrate how this works. For more complex designs and alternative estimators, estimation of the population mean and its standard error with functions defined in this package is very convenient, as will be shown in the following chapters.
 
-First, the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula `id=~1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. Argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. Variable `pi` is a column in the data frame `mysample`, which is indicated with the tilde in `probs=~pi`.
+First, the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula `id=~1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. Argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. Variable `pi` is a column in `data.frame` `mysample`, which is indicated with the tilde in `probs=~pi`.
 
 The population mean is then estimated with function `svymean`. The first argument is a formula specifying the study variable. Argument `design` specifies the sampling design. 
 
@@ -378,7 +377,7 @@ ggplot(data=df) +
         geom_vline(xintercept=mz_pop, colour="red")
 ```
 
-Out of the 10,000 samples, 1,153 samples do not cover the population mean, i.e. close to the specified 10\%. So, a 90\% confidence interval is a random interval that contains in the long run the population mean 90\% of the time.
+Out of the 10,000 samples, 1,132 samples do not cover the population mean, i.e. close to the specified 10\%. So, a 90\% confidence interval is a random interval that contains in the long run the population mean 90\% of the time.
 
 ### Confidence interval for proportion {#ConfidenceIntervalProportion}
 

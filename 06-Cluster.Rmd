@@ -191,7 +191,7 @@ mz <- mean(mz_cl)
 se_mz <- sqrt(var(mz_cl)/n)
 ```
 
-The estimated mean equals `r round(mz,3)` g kg^-1^, and the estimated standard error equals `r round(se_mz,3)` g kg^-1^. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
+The estimated mean equals `r round(mz,1)` g kg^-1^, and the estimated standard error equals `r round(se_mz,1)` g kg^-1^. Note that the size of the clusters (number of units) does not appear in these formulas. This simplicity is due to the fact that the clusters are selected with probabilities proportional to size. The effect of the cluster size on the variance is implicitly accounted for. To understand this, consider that larger clusters result in smaller variance among their means.
 
 The same estimates are obtained with functions `svydesign` and `svymean` of package **survey** [@Lumley2020]. Argument `weights` specifies the  weights of the sampled clusters equal to $M/(M_j\; n)$ (Equation \@ref(eq:EstTotalCl)).
 
@@ -203,7 +203,7 @@ design_cluster <- svydesign(id=~cldraw, weights=~weights, data=mysample)
 svymean(~z, design_cluster, deff="replace")
 ```
 
-The design effect\index{Design effect} `DEff` as estimated from the selected cluster sample is considerably larger than 1. About 3.8 times more sampling points are needed with cluster random sampling compared to simple random sampling to estimate the population mean with the same precision.
+The design effect\index{Design effect} `DEff` as estimated from the selected cluster sample is considerably larger than 1. About 4 times more sampling points are needed with cluster random sampling compared to simple random sampling to estimate the population mean with the same precision.
 
 A confidence interval estimate of the population mean can be computed with method `confint`. The number of degrees of freedom equals the number of cluster draws minus 1.
 
@@ -258,7 +258,7 @@ ggplot(data = df) +
     scale_y_continuous(name = "Estimated mean SOM")
 ```
 
-The variance of the 10,000 estimated population means with cluster random sampling equals `r as.character(round(var(estimates$Cl),3))`.  This is considerably larger than with simple random sampling: `r as.character(round(var(estimates$SI),3))`. The large variance is caused by the strong spatial clustering of points. This may save travel time in large study areas, but in Voorst the saved travel time will be very limited, and therefore cluster random sampling in Voorst is not a good idea. The average of the estimated variances with cluster random sampling equals `r as.character(round(mean(v_mz),3))`. The difference with the variance of the 10,000 estimated means is small because the estimator of the variance, Equation \@ref(eq:VarEstMeanCl), is unbiased. Figure \@ref(fig:histsamplesizeCl) shows the approximated sampling distribution of the sample size. The expected sample size can be computed as follows:
+The variance of the 10,000 estimated population means with cluster random sampling equals `r as.character(round(var(estimates$Cl),1))` (g kg^-1^)^2^.  This is considerably larger than with simple random sampling: `r as.character(round(var(estimates$SI),1))` (g kg^-1^)^2^. The large variance is caused by the strong spatial clustering of points. This may save travel time in large study areas, but in Voorst the saved travel time will be very limited, and therefore cluster random sampling in Voorst is not a good idea. The average of the estimated variances with cluster random sampling equals `r as.character(round(mean(v_mz),1))` (g kg^-1^)^2^. The difference with the variance of the 10,000 estimated means is small because the estimator of the variance, Equation \@ref(eq:VarEstMeanCl), is unbiased. Figure \@ref(fig:histsamplesizeCl) shows the approximated sampling distribution of the sample size. The expected sample size can be computed as follows:
 
 ```{r}
 p <- M_cl/sum(M_cl)
@@ -279,7 +279,7 @@ ggplot(n_df) +
 #### Exercises {-}
 
 1. Write an **R** script to compute the true sampling variance of the estimator of the mean SOM concentration in Voorst for cluster random sampling and clusters selected with ppswr, $n = 6$, see Equation \@ref(eq:TrueVarEstMeanCl). Compare the sampling variance for cluster random sampling with the sampling variance for simple random sampling with a sample size equal to the expected sample size of cluster random sampling.  
-2. As an alternative we may select three times a transect, using three 2 km $\times$ 1 km zones obtained by joining two neighbouring 1 km $\times$ 1 km zones of Figure \@ref(fig:ClVoorst). Do you expect that the sampling variance of the estimator of the population mean is equal to, larger, or smaller than that of the sampling design with six transects of half the length?   
+2. As an alternative we may select three times a transect, using three 2 km $\times$ 1 km zones obtained by joining two neighbouring 1 km $\times$ 1 km zones of Figure \@ref(fig:ClVoorst). Do you expect that the sampling variance of the estimator of the population mean is equal to, larger or smaller than that of the sampling design with six transects of half the length?   
 
 ## Clusters selected with probabilities proportional to size, without replacement
 
@@ -406,7 +406,7 @@ v_tz <- N^2*fpc*var(tz_cluster)/n
 se_mz_HT <- sqrt(v_tz/M^2)
 ```
 
-The estimated standard error equals `r round(se_mz_HT,3)` g kg^-1^.
+The estimated standard error equals `r round(se_mz_HT,1)` g kg^-1^.
 
 To compute the variance of the ratio estimator of the population mean we first compute residuals of cluster totals:
 
@@ -451,7 +451,7 @@ svymean(~z, design_SIC)
 
 ## Stratified cluster random sampling {#StratifiedCl}
 
-The basic sampling designs stratified random sampling (Chapter \@ref(STSI)) and cluster random sampling can be combined into stratified cluster random sampling\index{Stratified random sampling!stratified cluster random sampling}. So instead of selecting simple random samples from the strata, within each stratum clusters are randomly selected. Figure \@ref(fig:STCl) shows a stratified cluster random sample from Voorst. The strata consist of three 2 km $\times$ 1 km zones, obtained by joining two neighbouring 1 km $\times$ 1 km zones (Figure \@ref(fig:ClVoorst)). The clusters are the same as before, i.e. E-W oriented transects within 1 km $\times$ 1 km zones, with an inter-unit spacing of 100 m.  Within each stratum two times a cluster is selected by ppswr.  The stratification avoids the clustering of the selected transects in one part of the study area. Compared to (unstratified) cluster random sampling, the geographical spreading of the clusters is improved, which may lead to an increase of the precision of the estimated population mean. In Figure \@ref(fig:STCl) in the most western stratum the two selected transects are in the same  1 km $\times$ 1 km zone. The alternative would be to use the six zones as strata, leading to an improved spreading of the clusters, but there is also a downside with this design, see Exercise 3. Note that the selection probabilities are now equal to
+The basic sampling designs stratified random sampling (Chapter \@ref(STSI)) and cluster random sampling can be combined into stratified cluster random sampling\index{Stratified random sampling!stratified cluster random sampling}. So, instead of selecting simple random samples from the strata, within each stratum clusters are randomly selected. Figure \@ref(fig:STCl) shows a stratified cluster random sample from Voorst. The strata consist of three 2 km $\times$ 1 km zones, obtained by joining two neighbouring 1 km $\times$ 1 km zones (Figure \@ref(fig:ClVoorst)). The clusters are the same as before, i.e. E-W oriented transects within 1 km $\times$ 1 km zones, with an inter-unit spacing of 100 m.  Within each stratum two times a cluster is selected by ppswr.  The stratification avoids the clustering of the selected transects in one part of the study area. Compared to (unstratified) cluster random sampling, the geographical spreading of the clusters is improved, which may lead to an increase of the precision of the estimated population mean. In Figure \@ref(fig:STCl) in the most western stratum the two selected transects are in the same  1 km $\times$ 1 km zone. The alternative would be to use the six zones as strata, leading to an improved spreading of the clusters, but there is also a downside with this design, see Exercise 3. Note that the selection probabilities are now equal to
 
 \begin{equation}
 p_{jh}= M_j/M_h \;,
@@ -502,7 +502,7 @@ mz <- sum(w_h*mz_h)
 se_mz <- sqrt(sum(w_h^2*v_mz_h))
 ```
 
-The estimated mean equals `r round(mz,3)` g kg^-1^, and the estimated standard error equals 0.660 g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
+The estimated mean equals `r round(mz,1)` g kg^-1^, and the estimated standard error equals `r round(se_mz,1)` g kg^-1^. The same estimates are obtained with function `svymean`. Weights for the clusters are computed as before, but now at the level of the strata. Note argument `nest=TRUE`, which means that the clusters are nested within the strata.
 
 ```{r}
 mysample$weights <- M_h[mysample$zonestratum]/

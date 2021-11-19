@@ -4,11 +4,11 @@ This chapter describes and illustrates two sampling designs by which the samplin
 
 ## Regular grid sampling {#Regulargrid}
 
-Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid points are not used for design-based estimation of the population mean or total. For this reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configurations are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation, triangular grids outperform square grids.
+Sampling on a regular grid\index{Regular grid} is an attractive option for mapping because of its simplicity. The data collected on the grid nodes are not used for design-based estimation of the population mean or total. For this reason the grid need not be placed randomly on the study area as in systematic random sampling (Chapter \@ref(SY)). The grid can be located such that the grid nodes optimally cover the study area in the sense of the average distance of the nodes of a fine discretisation grid to the nearest node of the sampling grid. Commonly used grid configurations are square and triangular. If the grid data are used in kriging (Chapter \@ref(Introkriging)), the optimal configuration depends, among others, on the semivariogram model. If the study variable shows moderate to strong spatial autocorrelation (see Section \@ref(OrdinaryKriging)), triangular grids outperform square grids.
 
-Besides the shape of the sampling grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per point, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m^2^ and $n$ is the number of sampling units (sample size).
+Besides the shape of the sampling grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation, and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per sampling unit, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m^2^ and $n$ is the number of sampling units (sample size).
 
-Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. Argument `offset` is used to select non-randomly a grid. Either a sample size can be specified, using argument `n`, or a grid spacing using argument `cellsize`. In the next code chunk a square grid is selected with a spacing of 200 m.
+Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. Argument `offset` is used to select a grid non-randomly. Either a sample size can be specified, using argument `n`, or a grid spacing using argument `cellsize`. In the next code chunk a square grid is selected with a spacing of 200 m.
 
 ```{r grid}
 library(sp)
@@ -36,10 +36,10 @@ The number of grid points in this example equals `r n`. Nodes of the square grid
 
 #### Exercises {-}
 
-1. Write an **R** script to select a square grid of size 100 from the three woredas in Ethiopia. Use the data.frame `grdEthiopia`, stored in `data/CovariatesThreeWoredasEthiopia.RData`, as a sampling frame. Use a fixed starting point of the grid, i.e. do not select the grid randomly.   
+1. Write an **R** script to select a square grid of size 100 from West-Amhara in Ethiopia. Use `data.frame` `grdEthiopia`, stored in `data/CovariatesAmharaEthiopia.RData`, as a sampling frame. Use a fixed starting point of the grid, i.e. do not select the grid randomly.   
     +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?
     +  Select a square grid with a spacing of 10.2 km, and compute the sample size.
-    +  Write a for-loop to select 200 times a square grid of, on average 100 points with random starting point. Set a seed so that the result can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size, and plot a histogram.
+    +  Write a for-loop to select 200 times a square grid of, on average, 100 points with random starting point. Set a seed so that the result can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size, and plot a histogram.
     +  Select a square grid of exactly 100 points.  
   
 ```{r, echo=FALSE}
@@ -121,12 +121,12 @@ The same algorithm was used in Chapter \@ref(STSI) to construct compact geograph
 In probability sampling we may want to have strata of equal area (clusters of equal size) so that the sampling design becomes self-weighting. For mapping equally sized clusters are not recommended as it may lead to samples with suboptimal spatial coverage.
 
 ```{block2, type = 'rmdnote'}
-In Figure \@ref(fig:spatialcoveragesamplefromsquare) the clusters are of equal size but this is an artefact. Equally sized clusters are not guaranteed by the illustrated k-means algorithm. Clustering the raster cells of a square into for clusters is a very special case. In other cases the clusters computed with the k-means algorithm described above,  might well have unequal size. In package **spcosa** also a different k-means algorithm is implemented, using swops, enforcing compact clusters  of equal size. 
+In Figure \@ref(fig:spatialcoveragesamplefromsquare) the clusters are of equal size but this is an artefact. Equally sized clusters are not guaranteed by the illustrated k-means algorithm. Clustering the raster cells of a square into four clusters is a very special case. In other cases the clusters computed with the k-means algorithm described above  might well have unequal size. In package **spcosa** also a different k-means algorithm is implemented, using swops, enforcing compact clusters  of equal size. 
 ```
 
 Spatial coverage samples can be computed with package **spcosa** [@walvoort2010], using functions `stratify` and `spsample`, see code chunk below. Argument `nTry` of function ` stratify` specifies the number of initial stratifications in k-means clustering. Note that function `spsample` of package **spcosa** without optional argument `n` selects non-randomly one point in each cluster, being the centre. Figure \@ref(fig:spatcovVoorst) shows a spatial coverage sample of the same size as the regular grid in study area Voorst (Figure \@ref(fig:gridVoorst)). Note that the undersampled area in the centre of the study area is now covered by a sampling point.
 
-```{r spatcovVoorst, out.width='100%', fig.cap="Spatial coverage sample from Voorst."}
+```{r}
 load("data/Voorst.RData")
 library(spcosa)
 n <- 115
@@ -134,8 +134,19 @@ set.seed(314)
 gridded(grdVoorst) <- ~s1+s2
 mystrata <- spcosa::stratify(grdVoorst, nStrata=n, equalArea=FALSE, nTry=10)
 mysample <- spsample(mystrata)
-plot(mystrata, mysample)
 mysample <- as(mysample, "data.frame")
+```
+
+```{r spatcovVoorst, echo=FALSE, out.width='100%', fig.cap="Spatial coverage sample from Voorst."}
+mystrata <- as(mystrata,  "data.frame")
+ggplot(mystrata) +
+    geom_raster(mapping=aes(x=s1/1000, y=s2/1000, fill=factor(stratumId))) +
+    scale_fill_viridis_d(name="geostratum") +
+    geom_point(data=mysample, mapping=aes(x=s1/1000, y=s2/1000), size=1) +
+    coord_fixed() +
+    scale_x_continuous(name="Easting (km)")+
+    scale_y_continuous(name="Northing (km)")+
+    theme(legend.position="none")
 ```
 
 If the clusters need not be of equal size, we may also use function `kmeans` of the **stats** package, using the spatial coordinates as clustering variables. This requires less computing time, especially with large data sets.
@@ -149,7 +160,9 @@ mysample_kmeans <- mystrata_kmeans$centers %>% data.frame(.)
 
 When function `kmeans` is used to compute the spatial coverage sample, there is no guarantee that the computed centres of the clusters, used as sampling points, are inside the study area. In Figure \@ref(fig:kmeanscenters) there are eight such centres.
 
-```{r kmeanscenters, echo=FALSE, out.width='100%', fig.cap="Centres of spatial clusters computed with function kmeans."}
+(ref:kmeanscenters) Centres of spatial clusters computed with function `kmeans`.
+
+```{r kmeanscenters, echo=FALSE, out.width='100%', fig.cap="(ref:kmeanscenters)"}
 gridded(grdVoorst) <- ~s1+s2
 coordinates(mysample_kmeans) <- ~s1+s2
 res <- over(mysample_kmeans, grdVoorst)
@@ -189,11 +202,13 @@ mysample_kmeans[units_out,] <- grdVoorst[units_close,c("s1","s2")]
 
 If georeferenced data are available that can be used for mapping the study variable, but we need more data for mapping, it is attractive to account for these existing sampling units when selecting the additional units. The aim now is to fill in the empty spaces, i.e. the parts of the study area not covered by the existing sampling units. This is referred to as *spatial infill sampling*. Existing sampling units can easily be accommodated in the k-means algorithm, using them as fixed cluster centres\index{Fixed cluster centre}.
 
-Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for the three woredas (districts) in Ethiopia. A large set of legacy data on soil organic matter (SOM) in wt\% is available, but these data come from strongly spatially clustered units along roads (the prior points in Figure \@ref(fig:spatialinfillEthiopia)). This is a nice example of a convenience sample. The legacy data are not ideal for mapping the SOM concentration throughout the three woredas. Clearly, it is desirable to collect additional data in the off-road parts of the woredas, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are specified as a `SpatialPoints` object to the `priorPoints` argument of **spcosa**. This optional argument fixes these points as cluster centres. A spatial infill sample of 100 points is selected, taking into account these fixed points.
+Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for West-Amhara. A large set of legacy data on soil organic matter (SOM) in mass percentage (dag kg^-1^) is available, but these data come from strongly spatially clustered units along roads (the prior points in Figure \@ref(fig:spatialinfillEthiopia)). This is a nice example of a convenience sample. The legacy data are not ideal for mapping the SOM concentration throughout the West-Amhara. Clearly, it is desirable to collect additional data in the off-road parts of the woredas, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are passed as a `SpatialPoints` object to the `priorPoints` argument of **spcosa**. This optional argument fixes these points as cluster centres. A spatial infill sample of 100 points is selected, taking into account these fixed points.
 
-```{r spatialinfillEthiopia, fig.cap="Spatial infill sample of 100 points from the three woredas in Ethiopia."}
-load("data/CovariatesThreeWoredasEthiopia.RData")
-load("data/ThreeWoredasEthiopia.RData")
+<!--Projection attributes of the file with legacy sample: crs <- st_crs("+proj=laea +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")-->
+
+```{r spatialinfillEthiopia, fig.cap="Spatial infill sample of 100 points from West-Amhara."}
+load("data/CovariatesAmharaEthiopia.RData")
+load("data/AmharaEthiopia.RData")
 gridded(grdEthiopia) <- ~s1+s2
 n <- 100
 ntot <- n+length(priordataEthiopia)
@@ -215,7 +230,7 @@ mysample_new <- mysample[units,]
 ```
 
 #### Exercises {-}
-6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on SOM in the topsoil at 60 sampling points are in the data.frame `data/Xuancheng_iPSMsample.csv`. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif` as a discretisation of the study area. This file can be read with function `rast` of package **terra**. 
+6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Existing data on SOM in the topsoil at 60 sampling points are in `data.frame` `data/Xuancheng_iPSMsample.csv`. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. Use the raster file `data/Xuancheng_elevation.tif` as a discretisation of the study area. This file can be read with function `rast` of package **terra**. 
     +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type="regular"`.
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
   

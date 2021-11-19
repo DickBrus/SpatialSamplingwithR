@@ -119,8 +119,6 @@ EM_CRF$PC1 <- pc$x[,1]*1/pc$sdev[1]
 EM_CRF$PC2 <- pc$x[,2]*1/pc$sdev[2]
 ```
 
-Figure \@ref(fig:candidatelocations) shows a scatter plot of the two standardised principal component scores of all 1,552 grid cells.
-
 Function `ccd` of package **rsm** [@Lenth2009] is now used to generate a central composite design\index{Central composite design} (CCRSD). Argument `basis` specifies the number of factors, which is two in our case. Argument `n0` is the number of centre points and argument `alpha` determines the position of the star points (explained hereafter).
 
 ```{r}
@@ -129,7 +127,7 @@ set.seed(314)
 print(ccdesign <- ccd(basis=2, n0=1, alpha="rotatable"))
 ```
 
-The experiment consists of two blocks, each of five experimental units. Block 1, the so-called cube block, consists of one centre point and four cube points\index{Cube point}. In the experimental unit represented by the centre point both factors have levels in the centre of the experimental range. In the experimental units represented by the cube points the levels of both factors is either -1 or +1 unit in the design space. Block 2, referred to as the star block, consists of one centre point and four star points\index{Star point}. With `alpha = rotatable` the  start points are on the circle circumscribing the square (Figure \@ref(fig:ccdesign)).
+The experiment consists of two blocks, each of five experimental units. Block 1, the so-called cube block, consists of one centre point and four cube points\index{Cube point}. In the experimental unit represented by the centre point both factors have levels in the centre of the experimental range. In the experimental units represented by the cube points the levels of both factors is either -1 or +1 unit in the design space. Block 2, referred to as the star block, consists of one centre point and four star points\index{Star point}. With `alpha = "rotatable"` the  start points are on the circle circumscribing the square (Figure \@ref(fig:ccdesign)).
 
 ```{r ccdesign, echo=FALSE, fig.cap="Rotatable central composite design for two factors."}
 cube <- data.frame(x1=c(-1,1,-1,1,0),x2=c(-1,-1,1,1,0))
@@ -160,16 +158,15 @@ print(fct)
 ccd_df <- transform(ccd_df, x1=x1*fct, x2=x2*fct)
 ```
 
-The next step is to select for each design point several candidate sampling units. For each of the nine design points\index{Design point} 0.5% of the grid cells are selected that are closest to that design point. This results in $9 \times 8$ candidate sampling points.
+The next step is to select for each design point several candidate sampling units. For each of the nine design points\index{Design point} eight points are selected that are closest to that design point. This results in $9 \times 8$ candidate sampling points.
 
 ```{r}
 EM_CRF$unit <- 1:nrow(EM_CRF)
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
     d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
-    q <- quantile(d2dpnt, p=0.005)
-    units_close <- which(d2dpnt < q)
-    candi <- EM_CRF[units_close,c("unit","x1","x2","PC1","PC2")]
+    EM_CRF <- EM_CRF[order(d2dpnt),]
+    candi <- EM_CRF[c(1:8), c("unit","x1","x2","PC1","PC2")]
     candi$dpnt <- i
     candi_all <- rbind(candi_all,candi)
 }
@@ -211,7 +208,7 @@ mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ```
 
-The locations of the nine sampling points are now optimised by minimising a criterion. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion. 
+The locations of the nine sampling points are now optimised by minimising a criterion that is a function of the distance between the nine sampling points. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion. 
 
 In the geometric criterion (as proposed by @lesch2005) for each sampling point the log of the shortest distance to the other points is computed. The minimisation criterion is the negative of the sample mean of these distances. 
 
@@ -225,15 +222,16 @@ In the next code chunk a function is defined for computing the minimisation crit
 getCriterion <- function(mysample, dpnt, weight=0, phi=NULL){
   D2dpnt <- sqrt((mysample$PC1-dpnt$x1)^2+(mysample$PC2-dpnt$x2)^2)
   D <- as.matrix(dist(mysample[,c("x1","x2")]))
-  if (!is.null(phi)) {
+  if (is.null(phi)) {
+    diag(D) <- NA
+    logdmin <- apply(D, MARGIN=1, FUN=min, na.rm=TRUE) %>% log
+    criterion_cur <- mean(-logdmin)+mean(D2dpnt)*weight
+  } else {
     vgmodel <- vgm(model="Exp", psill=1, range=phi)
     C <- variogramLine(vgmodel, dist_vector=D, covariance=TRUE)
     criterion_cur <- mean(C)+mean(D2dpnt)*weight
-  } else {
-    diag(D) <- NA
-    logdmin <- apply(D, MARGIN=1, FUN=min, na.rm=TRUE) %>% log(.)
-    criterion_cur <- mean(-logdmin)+mean(D2dpnt)*weight
   }
+  return(criterion_cur)
 }
 ```
 
@@ -311,15 +309,14 @@ ggplot(mysamples) +
 
 ## Increasing the sample size {#IncreaseSampleSize}
 
-Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on how strong the candidate sampling units are spatially clustered. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster, so in this case this solution may work properly. I increased the number of candidate sampling units per design point (argument `p` in function `quantile` is now 0.01), so that there is a larger choice in the optimisation of the sampling pattern. 
+Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on how strong the candidate sampling units are spatially clustered. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster, so in this case this solution may work properly. I increased the number of candidate sampling units per design point to sixteen, so that there is a larger choice in the optimisation of the sampling pattern. 
 
 ```{r}
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
     d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
-    q <- quantile(d2dpnt, p=0.01)
-    units_close <- which(d2dpnt < q)
-    candi <- EM_CRF[units_close,c("unit","x1","x2","PC1","PC2")]
+    EM_CRF <- EM_CRF[order(d2dpnt),]
+    candi <- EM_CRF[c(1:16), c("unit","x1","x2","PC1","PC2")]
     candi$dpnt <- i
     candi_all <- rbind(candi_all,candi)
 }
@@ -334,7 +331,7 @@ mysample0 <- getdata(candi_all, units_stsi)
 mysample0 <- mysample0[,c("unit","x1","x2","PC1","PC2","dpnt")]
 ```
 
-The `data.frame` with the design points must be doubled. Note that the order of the design points must be equal to the order in the stratified subsample.
+The data frame with the design points must be doubled. Note that the order of the design points must be equal to the order in the stratified subsample.
 
 ```{r}
 tmp <- data.frame(ccd_df,dpnt=1:9)
@@ -403,11 +400,10 @@ ggplot(EM_CRF) +
   coord_fixed()
 ```
 
-The candidate sampling units are selected in a double for-loop. The outer loop is over the strata, the inner loop over the design points. Note that variable `dpnt` continues to increase by 1 after the inner-loop over the nine design points in subarea 1 is completed, so that variable `dpnt` (used as a stratum in subsampling the sample of candidate sampling points) now has values $1,2, \cdots , 18$.  Stratum 2 is somewhat larger than stratum 1. To select an equal number of candidate sampling points per design point in both strata (eight points), different values for argument `p` of function `quantile' are used for the two strata. 
+The candidate sampling units are selected in a double for-loop. The outer loop is over the strata, the inner loop over the design points. Note that variable `dpnt` continues to increase by 1 after the inner-loop over the nine design points in subarea 1 is completed, so that variable `dpnt` (used as a stratum in subsampling the sample of candidate sampling points) now has values $1,2, \dots , 18$.  An equal number of candidate sampling points per design point in both strata (eight points) is selected by sorting the points of a stratum by the distance to a design point using function `order`. Figure \@ref(fig:candidatesSTResponse) shows the candidate sampling points for stratified CCRSD sampling.
 
 ```{r}
 candi_all <- NULL
-p <- c(0.0105,0.009)
 for (h in c(1,2)) {
   units <- which(EM_CRF$subarea==h)
   data_stratum <- EM_CRF[units,]
@@ -415,9 +411,8 @@ for (h in c(1,2)) {
   for (i in 1:nrow(ccd_df)) {
       d2dpnt <- sqrt((data_stratum$PC1-ccd_df$x1[i])^2+
                      (data_stratum$PC2-ccd_df$x2[i])^2)
-      q <- quantile(d2dpnt,p=p[h])
-      units_close <- which(d2dpnt < q)
-      candi <- data_stratum[units_close, c("unit","x1","x2","PC1","PC2")]
+      data_stratum <- data_stratum[order(d2dpnt),]
+      candi <- data_stratum[c(1:8), c("unit","x1","x2","PC1","PC2")]
       candi$dpnt <- i + (h-1)*nrow(ccd_df)
       candi_stratum <- rbind(candi_stratum, candi)
   }
@@ -425,7 +420,7 @@ for (h in c(1,2)) {
 }
 ```
 
-```{r, echo=FALSE, fig.cap="Candidate sampling points for stratified CCRSD sampling, plotted on a map of the first principal component (PC1)."}
+```{r candidatesSTResponse, echo=FALSE, fig.cap="Candidate sampling points for stratified CCRSD sampling, plotted on a map of the first principal component (PC1)."}
 subarea <- as.factor(c(rep(1,nrow(candi_all)/2),rep(2,nrow(candi_all)/2)))
 dpnt9 <- c(rep(1:9, each=8), rep(1:9, each=8))
 ggplot(EM_CRF) +
@@ -438,7 +433,7 @@ ggplot(EM_CRF) +
   coord_fixed()
 ```
 
-As before, `dpnt` is used as a stratum identifier to subsample the candidate sampling units. Finally, the number of rows in the `data.frame` `ccd_df` with the design points is doubled.
+As before, `dpnt` is used as a stratum identifier to subsample the candidate sampling units. Finally, the number of rows in `data.frame` `ccd_df` with the design points is doubled.
 
 ```{r}
 set.seed(314)

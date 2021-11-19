@@ -5,7 +5,7 @@
 
 ## When is probability sampling not required?
 
-This second part of the book deals with sampling for mapping, i.e. for predicting the study variable at the nodes of a fine discretisation grid. For mapping a model-based sampling approach is the most natural option. When a statistical model, i.e. a model containing an error term modelled by a probability distribution, is used to map the study variable from the sample data, selection of the sampling units by probability sampling is not strictly needed anymore in order to make statistical statements about the population, i.e. statements with quantified uncertainty, see Section \@ref(DBvsMB). In a model-based approach we assume the model is correct, possibly after we have managed to verify the model assumptions. As a consequence there is room for optimising the sampling units, i.e. searching for those units that lead to the most accurate map in some operational sense related to map quality, for instance, the smallest squared prediction error averaged over all locations in the mapped study area, see Chapter \@ref(Validation). 
+This second part of the book deals with sampling for mapping, i.e. for predicting the study variable at the nodes of a fine discretisation grid. For mapping a model-based sampling approach is the most natural option. When a statistical model, i.e. a model containing an error term modelled by a probability distribution, is used to map the study variable from the sample data, selection of the sampling units by probability sampling is not strictly needed anymore in order to make statistical statements about the population, i.e. statements with quantified uncertainty, see Section \@ref(DBvsMB). As a consequence, there is room for optimising the sampling units by searching for those units that lead to the most accurate map, for instance, the map with the smallest squared prediction error averaged over all locations in the mapped study area, see Chapter \@ref(Validation). 
 
 As an illustration, consider the following statistical model to be used for mapping: a simple linear regression model for the study variable to be mapped:
 
@@ -86,7 +86,7 @@ ggplot(data = grid) +
   coord_fixed()
 ```
 
-The optimal sample for mapping with a simple linear regression model contains the units with the smallest or the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, this spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the regression coefficients estimators is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option.
+The optimal sample for mapping with a simple linear regression model contains the units with the smallest and the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the regression coefficients estimators is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option.
 
 ```{r sebetas, echo=FALSE}
 tbl <- data.frame(x=c("SI","Optimal"), y=c(1.70,1.08),z=c(0.118,0.051), d=c(0.00388,0.000999))
@@ -99,7 +99,7 @@ knitr::kable(
 kable_classic()
 ```
 
-Of course, this simple example would only be applicable if we have evidence of a linear relation between study variable $z$ and covariate $x$, and besides if we are willing to rely on the assumption that the residuals are not spatially correlated.  
+Of course, this simple example would only be applicable if we have evidence of a linear relation between study variable $z$ and covariate $x$, and in addition if we are willing to rely on the assumption that the residuals are not spatially correlated.  
 
 ## Sampling for simultaneously mapping and estimating means
 
@@ -107,16 +107,16 @@ Although probability sampling is not strictly needed for mapping with a statisti
 
 The question then is: what is a suitable probability sampling design for both aims? First, I would recommend a sampling design with equal inclusion probabilities. This is because in standard model-based inference unequal inclusion probabilities are not accounted for, which may lead to systematic prediction errors when small or large values are overrepresented in the sample (Section \@ref(BiasandVariance)).
 
-Second, In case we have subareas of which we would like to estimate the mean or total (domains of interest), using these subareas as strata in stratified random sampling makes sense, unless there are too many. This requires that of all population units (nodes of discretisation grid) we must know to which subarea it belongs, so that this information can be added to the sampling frame.
+Second, in case we have subareas of which we would like to estimate the mean or total (domains of interest), using these subareas as strata in stratified random sampling makes sense, unless there are too many. This requires that of all population units (nodes of discretisation grid) we must know to which subarea it belongs, so that this information can be added to the sampling frame.
 
-Third, a sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)), or sampling with the local pivotal method (Subsection \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. Spreading in covariate space can also be explicitly accounted for using the covariates as spreading variables in the local pivotal method.
+Third, a sampling design spreading out the sampling units in geographical space is attractive as well, for instance through compact geographical stratification (Section \@ref(geostrata)) or sampling with the local pivotal method (Subsection \@ref(LPM)). We may profit from this geographical spreading if some version of kriging is used for mapping (Chapter \@ref(Introkriging)). In addition, the geographical spreading may enhance the coverage of the space spanned by covariates related to the study variable. Spreading in covariate space can also be explicitly accounted for using the covariates as spreading variables in the local pivotal method.
 
-As an illustration I selected a single sample of 500 units from Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First, the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
+As an illustration I selected a single sample of 500 units from Eastern Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First, the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
 
 ```{r}
 load("data/Amazonia_5km.RData")
 gridAmazonia$Biome <- as.factor(gridAmazonia$Biome)
-biomes <- c("Mangrove", "Forest.dry","Grassland","Forest.moist")
+biomes <- c("Mangrove","Forest.dry","Grassland","Forest.moist")
 levels(gridAmazonia$Biome) <- biomes
 N_h <-  table(gridAmazonia$Biome)
 n <- 500
@@ -145,7 +145,7 @@ mysample <- gridAmazonia[units,]
 
 Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
 
-```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced sample of size 500 from Eastern Amazonia balanced on biome and lnSWIR2, with geographical spreading. Equal inclusion probabilities are used."}
+```{r Sample4MappingandEstimationAmazonia, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Balanced sample of size 500 from Eastern Amazonia, balanced on biome and lnSWIR2, with geographical spreading. Equal inclusion probabilities are used."}
 ggplot(data=gridAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=lnSWIR2)) +
   scale_fill_viridis_c(name="lnSWIR2") +
@@ -156,9 +156,9 @@ ggplot(data=gridAmazonia) +
   coord_fixed()
 ```
 
-I think this is a suitable sample, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest.moist this population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
+I think this is a suitable sample, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest.moist the population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
 
-In this example I used one quantitative covariate, lnSWIR2, for balancing the sample. If we have a legacy sample that can be used to fit a linear or non-linear model, for instance a random forest using multiple covariates and factors as predictors (Chapter \@ref(Modelassisted)), then this model can be used to predict the study variable for all population units, so that we can use this variable with predictions of the study variable as a balancing variable, see Section \@ref(RandomForest).
+In this example I used one quantitative covariate, lnSWIR2, for balancing the sample. If we have a legacy sample that can be used to fit a linear or non-linear model, for instance a random forest using multiple covariates and factors as predictors (Chapter \@ref(Modelassisted)), then this model can be used to predict the study variable for all population units, so that we can use the predictions of the study variable to balance the sample, see Section \@ref(RandomForest).
 
 ## Broad overview of sampling designs for mapping
 
@@ -166,13 +166,13 @@ The non-probability sampling designs for mapping described in the following chap
 
 1. geometric sampling designs\index{Geometric sampling design} (Chapters \@ref(RegularGridSpatialCoverage) and \@ref(kmeans));
 2. adapted experimental designs\index{Adapted experimental design} (Chapters \@ref(cLHS) and \@ref(SpatialResponseSurface)); and
-3. model-based sampling designs (Chapters \@ref(MBgridspacing), \@ref(MBSamplePattern)).
+3. model-based sampling designs (Chapters \@ref(MBgridspacing) and \@ref(MBSamplePattern)).
 
 Square and triangular grids are examples of geometric sampling designs; the sampling units show a regular, geometric spatial pattern. In other geometric sampling designs the spatial pattern is not perfectly regular. Yet these are classified as geometric sampling designs when the samples are obtained by minimising some geometric criterion, i.e. a criterion defined in terms of distances between the sampling units and the nodes of a fine prediction grid discretising the study area (Section \@ref(SpatialCoverage) and Chapter \@ref(kmeans)).
 
 In model-based sampling designs\index{Model-based sampling} the samples are obtained by minimising a criterion that is defined in terms of variances of prediction errors. An example is the mean kriging variance criterion, i.e. the average of the kriging variances over all nodes of the prediction grid. Model-based sampling therefore requires prior knowledge of the model of spatial variation. Such a model must be specified and justified. Once this model is given the sample can be optimised. In Chapter \@ref(MBgridspacing) I will show how a spatial model can be used to optimise the spacing of a square grid given a requirement on the accuracy of the map. The grid spacing determines the number of sampling units, so this optimisation boils down to determining the required sample size. In Chapter \@ref(MBSamplePattern) I will show how a sample of a given size can be further optimised through optimisation of the spatial coordinates of the sampling units.
 
-In Chapter \@ref(GeneralIntro) the design-based and model-based approaches for sampling and statistical inference were introduced. Note that a model-based approach does not necessarily imply model-based sampling. The adjective model-based refers to the model-based inference, not to the selection of the units. In a model-based approach sampling units can be, but need not be, selected by model-based sampling. If they are, then both in selecting the units and in mapping a statistical model is used. In most cases the two models differ: once the  sample data are collected, these are used to update the postulated model used for sampling design. This updated model is then used for mapping.
+In Chapter \@ref(GeneralIntro) the design-based and model-based approaches for sampling and statistical inference were introduced. Note that a model-based approach does not necessarily imply model-based sampling. The adjective model-based refers to the model-based inference, not to the selection of the units. In a model-based approach sampling units can be, but need not be, selected by model-based sampling. If they are, then both in selecting the units and in mapping a statistical model is used. In most cases the two models differ: once the  sample data are collected, these are used to update the postulated model used for designing the sample. The updated model is then used in mapping.
 
 Besides geometric and model-based sampling designs for spatial survey a third category can be distinguished: sampling designs that are adaptations of experimental designs. An adaptation is necessary because in contrast to experiments, in observational studies one is not free to choose combinations of levels of different factors. For instance, when two covariates are strongly positively correlated, it may happen that there are no units with a relatively large value for one covariate and a relatively small value for the other covariate.
 

@@ -1,13 +1,13 @@
 getCriterion <- function(mysample,dpnt,weight,phi){
   D2dpnt <- sqrt((mysample$PC1-dpnt$x1)^2+(mysample$PC2-dpnt$x2)^2)
   D <- as.matrix(dist(mysample[,c("x1","x2")]))
-  if (!is.null(phi)) {
+  if (is.null(phi)) {
+    diag(D) <- NA
+    logdmin <- apply(D,MARGIN=1,FUN=min,na.rm=TRUE) %>% log
+    criterion_cur <- mean(-logdmin)+mean(D2dpnt)*weight
+  } else {
     C <- variogramLine(vgm(model="Exp",psill=1,range=phi),dist_vector=D,covariance=TRUE)
     criterion_cur <- mean(C)+mean(D2dpnt)*weight
-  } else {
-    diag(D) <- NA
-    logdmin <- apply(D,MARGIN=1,FUN=min,na.rm=TRUE) %>% log(.)
-    criterion_cur <- mean(-logdmin)+mean(D2dpnt)*weight
   }
 }
 

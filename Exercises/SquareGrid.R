@@ -1,5 +1,5 @@
-load("../data/CovariatesThreeWoredasEthiopia.RData")
-load("data/CovariatesThreeWoredasEthiopia.RData")
+load("../data/CovariatesAmharaEthiopia.RData")
+load("data/CovariatesAmharaEthiopia.RData")
 
 library(sp)
 
@@ -46,6 +46,6 @@ for (i in 1:50) {
 plot(mysample)
 length(mysample)
 
-#Change the class of the selected grid (SpatialPoints) into a data.frame and print the coordinates.
+#Change the class of the selected grid (SpatialPoints) into a data frame and print the coordinates.
 
 (mysample <- as(mysample,"data.frame"))

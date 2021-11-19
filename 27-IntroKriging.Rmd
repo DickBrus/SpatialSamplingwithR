@@ -1,27 +1,38 @@
 # Introduction to kriging {#Introkriging}
 
-In the following chapters a geostatistical model\index{Geostatistical model}, i.e. a statistical model of the spatial variation of the study variable, is used to optimise the sample size and/or spatial pattern of the sampling units. This chapter is a short introduction to geostatistical modelling.
+In the following chapters a geostatistical model\index{Geostatistical model}, i.e. a statistical model of the spatial variation of the study variable, is used to optimise the sample size and/or spatial pattern of the sampling locations. This chapter is a short introduction to geostatistical modelling.
 
 In Chapter \@ref(MBpredictionofDesignVariance) we have already seen how a geostatistical model can be used to optimise probability sampling designs for estimating the population mean or total. In the following chapters the focus is on mapping. A map of the study variable is obtained by predicting the study variable at the nodes of a fine discretisation grid. Spatial prediction using a geostatistical model is referred to as kriging [@webster2007].
 
-With this prediction method besides a map of the kriging predictions, a map of the variance of the prediction error is obtained. I will show hereafter that this prediction error variance is not influenced by the values of the study variable at the sampling units. For this reason it is possible to search, before the start of the survey, for the sampling locations that lead to the minimum prediction error variance averaged over all nodes of a fine prediction grid, provided that the geostatistical model is known up to some extent.
+With this prediction method, besides a map of the kriging predictions a map of the variance of the prediction error is obtained. I will show hereafter that this prediction error variance is not influenced by the values of the study variable at the sampling locations. For this reason it is possible to search, before the start of the survey, for the sampling locations that lead to the minimum prediction error variance averaged over all nodes of a fine prediction grid, provided that the geostatistical model is known up to some extent.
 
-## Ordinary kriging
+## Ordinary kriging {#OrdinaryKriging}
 
-The kriging predictions and prediction error variances are derived from a statistical model of the spatial variation of the study variable. There are several versions of kriging, building on different models of the spatial variation.  In *ordinary kriging*\index{Kriging!ordinary kriging} (OK) it is assumed that the mean of the study variable is constant, i.e. the same everywhere [@webster2007]:
+The kriging predictions and prediction error variances are derived from a statistical model of the spatial variation of the study variable. There are several versions of kriging, but most of them are are special cases of the following generic model:
 
 \begin{equation}
 \begin{split}
-Z(\mathbf{s}) &= \mu + \epsilon(\mathbf{s}) \\
+Z(\mathbf{s}) &= \mu(\mathbf{s}) + \epsilon(\mathbf{s}) \\
 \epsilon(\mathbf{s}) &\sim \mathcal{N}(0,\sigma^2) \\
 \mathrm{Cov}(\epsilon(\mathbf{s}),\epsilon(\mathbf{s}^{\prime})) &= C(\mathbf{h})\;,
 \end{split}
+(\#eq:GeneralKrigingModel)
+\end{equation}
+
+with $Z(\mathbf{s})$ the study variable  at location $\mathbf{s}$, $\mu(\mathbf{s})$ the mean at location $\mathbf{s}$, $\epsilon(\mathbf{s})$ the error or residual (difference between study variable $z$ and mean $\mu(\mathbf{s})$) at location $\mathbf{s}$, and $C(\mathbf{h})$ the covariance of $\epsilon$ at two points separated by vector $\mathbf{h} = \mathbf{s} - \mathbf{s}^{\prime}$.
+
+In *ordinary kriging*\index{Kriging!ordinary kriging} (OK) it is assumed that the mean of the study variable is constant, i.e. the same everywhere [@webster2007]:
+
+\begin{equation}
+Z(\mathbf{s}) = \mu + \epsilon(\mathbf{s}) \;,
 (\#eq:OKmodel)
 \end{equation}
 
-with $Z(\mathbf{s})$ the study variable  at location $\mathbf{s}$, $\mu$ the constant mean, independent of the location $\mathbf{s}$, $\epsilon(\mathbf{s})$ the error or residual (difference between study variable $z$ and mean $\mu$) at location $\mathbf{s}$ and $C(\mathbf{h})$ the covariance of $\epsilon$ at two points separated by vector $\mathbf{h} = \mathbf{s} - \mathbf{s}^{\prime}$. $C(\cdot)$ is the covariance function\index{Covariance function}, also referred to as the covariogram\index{Covariogram}, and a scaled version of it obtained by dividing $C(\cdot)$ by the variance $C(0)$, is the correlation function\index{Correlation function} or correlogram\index{Correlogram}. Stated otherwise, in OK we assume *stationarity in the mean*\index{Stationarity in the mean} over the area to be mapped. The residuals are not independent, but spatially correlated. If we have, for instance, a large positive residual at some location $\mathbf{s}$, then in many cases we also have a positive residual at a nearby location $\mathbf{s}^{\prime}$.
+with $\mu$ the constant mean, independent of the location $\mathbf{s}$.
 
-If the data set is of substantial size, it is possible to define a neighbourhood: not all sample data are used to predict the study variable at a prediction location, but only the sample data in this neighbourhood. This implies that the stationarity assumption is relaxed to the often more realistic assumption of a constant mean within neighbourhoods.
+$C(\cdot)$ is the covariance function\index{Covariance function}, also referred to as the covariogram\index{Covariogram}, and a scaled version of it obtained by dividing $C(\cdot)$ by the variance $C(0)$, is the correlation function\index{Correlation function} or correlogram\index{Correlogram}. Stated otherwise, in OK we assume *stationarity in the mean*\index{Stationarity in the mean} over the area to be mapped. The residuals are not independent but spatially correlated. If we have, for instance, a large positive residual at some location $\mathbf{s}$, then in many cases we also have a positive residual at a nearby location $\mathbf{s}^{\prime}$.
+
+If the data set is of substantial size, it is possible to define a neighbourhood: not all sample data are used to predict the study variable at a prediction location but only the sample data in this neighbourhood. This implies that the stationarity assumption is relaxed to the often more realistic assumption of a constant mean within neighbourhoods.
 
 In OK, the study variable at a prediction location $\mathbf{s}_0$, $\widehat{Z}(\mathbf{s}_0)$, is predicted as a weighted average of the observations at the sampling locations (within the neighbourhood):
 
@@ -30,7 +41,7 @@ In OK, the study variable at a prediction location $\mathbf{s}_0$, $\widehat{Z}(
 (\#eq:weightedsumkriging)
 \end{equation}
 
-where $Z(\mathbf{s}_i)$ is the study variable at the $i^{\mathrm{th}}$ sampling location and $\lambda _{i}$ is the weight attached to this location. The weights should be related to the correlation of the study variable at the sampling location and the prediction location. Note that as the mean is assumed constant (Equation \@ref(eq:OKmodel)), the correlation of the study variable $Z$ is equal to the correlation of the residual $\epsilon$. Roughly speaking, the stronger this correlation, the larger the weight must be. If we have a model for this correlation, then we can use this model to find the optimal weights. Further, if two sampling locations are very close, the weight attached to these two locations should not be twice the weight attached to a single, isolated sampling location at the same distance of the prediction location. This explains that in computing the kriging weights, besides the covariances of the $n$ pairs of prediction location and sampling location, also the covariances of the $n\cdot(n-1)/2$ pairs that can be formed with the $n$ sampling units are used. For OK, the optimal weights, i.e. the weights that lead to the model-unbiased\index{Unbiasedness!model-unbiasedness}^[Model-unbiasedness is explained in Chapter \@ref(Approaches).] predictor with minimum error variance (best linear unbiased predictor\index{Best linear unbiased predictor}) can be found by solving the following $n+1$ equations:
+where $Z(\mathbf{s}_i)$ is the study variable at the $i^{\mathrm{th}}$ sampling location and $\lambda _{i}$ is the weight attached to this location. The weights should be related to the correlation of the study variable at the sampling location and the prediction location. Note that as the mean is assumed constant (Equation \@ref(eq:OKmodel)), the correlation of the study variable $Z$ is equal to the correlation of the residual $\epsilon$. Roughly speaking, the stronger this correlation, the larger the weight must be. If we have a model for this correlation, then we can use this model to find the optimal weights. Further, if two sampling locations are very close, the weight attached to these two locations should not be twice the weight attached to a single, isolated sampling location at the same distance of the prediction location. This explains that in computing the kriging weights, besides the covariances of the $n$ pairs of prediction location and sampling location, also the covariances of the $n(n-1)/2$ pairs that can be formed with the $n$ sampling units are used, see @isa89 for a nice intuitive explanation. For OK, the optimal weights, i.e. the weights that lead to the model-unbiased\index{Unbiasedness!model-unbiasedness}^[Model-unbiasedness is explained in Chapter \@ref(Approaches).] predictor with minimum error variance (best linear unbiased predictor\index{Best linear unbiased predictor}) can be found by solving the following $n+1$ equations:
 
 \begin{equation}
 \begin{array}{ccccc}
@@ -43,7 +54,7 @@ where $Z(\mathbf{s}_i)$ is the study variable at the $i^{\mathrm{th}}$ sampling 
 (\#eq:krigingequations)
 \end{equation}
 
-where $C(\mathbf{s}_i,\mathbf{s}_j)$ is the covariance of the $i$th and $j$th sampling location, $C(\mathbf{s}_i,\mathbf{s}_0)$ is the covariance of the $i$th sampling location and the prediction location $s_0$ and $\nu$ is an extra parameter to be estimated, referred to as the Lagrange multiplier\index{Lagrange multiplier}. This Lagrange multiplier must be included in the set of equations because the error variance is minimised under the constraint that the kriging weights sum to 1, see the final line in Equation \@ref(eq:krigingequations). This constraint ensures that the OK-predictor is model-unbiased. It is convenient to write this system of equations in matrix form:
+where $C(\mathbf{s}_i,\mathbf{s}_j)$ is the covariance of the $i$th and $j$th sampling location, $C(\mathbf{s}_i,\mathbf{s}_0)$ is the covariance of the $i$th sampling location and the prediction location $s_0$, and $\nu$ is an extra parameter to be estimated, referred to as the Lagrange multiplier\index{Lagrange multiplier}. This Lagrange multiplier must be included in the set of equations because the error variance is minimised under the constraint that the kriging weights sum to 1, see the final line in Equation \@ref(eq:krigingequations). This constraint ensures that the OK-predictor is model-unbiased. It is convenient to write this system of equations in matrix form:
 
 \begin{eqnarray}
 \left[
@@ -134,9 +145,9 @@ V_{\mathrm{OK}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \lambda^{\mathrm{T}}\math
 (\#eq:OKvariance)
 \end{equation}
 
-with $\sigma^2$ the a priori variance\index{A priori variance}, see Equation \@ref(eq:OKmodel). This equation shows that the OK variance is not a function of the data at the sampling locations. Given a covariance function it is fully determined by the coordinates of the sampling locations and of the prediction location. It is this property of kriging that makes it possible to optimise the grid-spacing (Chapter \@ref(MBgridspacing)) and, as we will see in Chapter \@ref(MBSamplePattern), to optimise the spatial pattern of the sampling units, given a requirement on the kriging variance. If the kriging variance were a function of the data at the sampling locations, optimisation would be much more complicated.
+with $\sigma^2$ the a priori variance\index{A priori variance}, see Equation \@ref(eq:OKmodel). This equation shows that the OK variance is not a function of the data at the sampling locations. Given a covariance function it is fully determined by the spatial pattern of the sampling locations and the prediction location. It is this property of kriging that makes it possible to optimise the grid-spacing (Chapter \@ref(MBgridspacing)) and, as we will see in Chapter \@ref(MBSamplePattern), to optimise the spatial pattern of the sampling locations, given a requirement on the kriging variance. If the kriging variance were a function of the data at the sampling locations, optimisation would be much more complicated.
 
-In general practice, the covariance function is not used in kriging, rather, a semivariogram\index{Semivariogram}. A semivariogram $\gamma(\mathbf{h})$ is a model of the *dissimilarity* of the study variable at two locations, as a function of the vector $\mathbf{h}$ separating the two locations. The dissimilarity is quantified by half the variance of the difference of the study variable $Z$ at two locations. Under the assumption that the expectation of $Z$ is constant throughout the study area (stationarity in the mean), half the variance of the difference is equal to half the expectation of the squared difference:
+In general practice, the covariance function is not used in kriging, rather a semivariogram\index{Semivariogram}. A semivariogram $\gamma(\mathbf{h})$ is a model of the *dissimilarity* of the study variable at two locations, as a function of the vector $\mathbf{h}$ separating the two locations. The dissimilarity is quantified by half the variance of the difference of the study variable $Z$ at two locations. Under the assumption that the expectation of $Z$ is constant throughout the study area (stationarity in the mean), half the variance of the difference is equal to half the expectation of the squared difference:
 
 \begin{equation}
 \gamma(\mathbf{h}) = 0.5V[Z(\mathbf{s})-Z(\mathbf{s}+\mathbf{h})]=0.5E[\{Z(\mathbf{s})-Z(\mathbf{s}+\mathbf{h})\}^2]\;.
@@ -176,21 +187,20 @@ ggplot() +
   scale_y_continuous(name="Covariance, Semivariance\n")
 ```
 
-Expressed in terms of the *semivariances*\index{Semivariance} between the sampling points and a prediction point, the OK variance is
+Expressed in terms of the *semivariances*\index{Semivariance} between the sampling locations and a prediction location, the OK variance is
 
 \begin{equation}
 V_{\mathrm{OK}}(\widehat{Z}(\mathbf{s}_0))= \lambda^{\mathrm{T}}\pmb{\gamma}_0 + \nu \;,
 (\#eq:OKvariancesemivariances)
 \end{equation}
 
-with $\pmb{\gamma}_0$ the vector with semivariances between the sampling points and a prediction point.
+with $\pmb{\gamma}_0$ the vector with semivariances between the sampling locations and a prediction location.
 
-Computing the kriging predictor requires a model for the covariance (or semivariance) as a function of the vector separating two locations. Often the covariance is modelled as a function of the length of the separation vector only, so as a function of the Euclidian distance between two locations. We then assume isotropy\index{Isotropy}. 
-Only authorised functions are allowed for modelling the semivariance, ensuring that the variance of any linear combination of random variables, like the kriging predictor, is positive. Commonly used functions are an exponential, spherical and Mat$\acute{\text{e}}$rn model. 
+Computing the kriging predictor requires a model for the covariance (or semivariance) as a function of the vector separating two locations. Often the covariance is modelled as a function of the length of the separation vector only, so as a function of the Euclidian distance between two locations. We then assume isotropy\index{Isotropy}: given a separation distance between two locations, the covariance is the same in all directions. Only authorised functions are allowed for modelling the semivariance, ensuring that the variance of any linear combination of random variables, like the kriging predictor, is positive. Commonly used functions are an exponential and a spherical model. 
 
 The spherical semivariogram model\index{Semivariogram model!spherical} has three parameters:  
 
-1. nugget\index{Nugget} ($c_0$): this is where the semivariogram crosses the y-axis (in Figure \@ref(fig:CovFunctionVariogram): 25);
+1. nugget\index{Nugget} ($c_0$): this is where the semivariogram touches the y-axis (in Figure \@ref(fig:CovFunctionVariogram): 25);
 2. partial sill\index{Partial sill} ($c_1$): the difference between the maximum semivariance and the nugget (in Figure \@ref(fig:CovFunctionVariogram): 75); and
 3. Range\index{Range} ($\phi$): this is the distance at which the semivariance reaches its maximum (in Figure \@ref(fig:CovFunctionVariogram): 250 m).
 
@@ -207,7 +217,9 @@ c_0+c_1     & \,\,\,\mathrm{if}\,\,\, h>\phi
 (\#eq:spherical)
 \end{equation}
 
-The sum of the nugget and the partial sill is referred to as the sill\index{Sill} (or sill variance, or a priori variance\index{A priori variance}). An exponential semivariogram model\index{Semivariogram model!exponential} also has three parameters. Its formula is
+The sum of the nugget and the partial sill is referred to as the sill\index{Sill} (or sill variance or a priori variance\index{A priori variance}).
+
+An exponential semivariogram model\index{Semivariogram model!exponential} also has three parameters. Its formula is
 
 \begin{equation}
 \gamma(h)=\left \{
@@ -228,7 +240,7 @@ In following chapters I also use a correlogram\index{Correlogram}, which is a sc
 (\#eq:correlogram)
 \end{equation}
 
-To illustrate that the OK variance\index{Ordinary kriging variance} is independent of the values of the study variable at the sampling locations, I simulated a spatial population of 50 $\times$ 50 units. At each unit a value of the study variable is simulated, using the semivariogram of Figure \@ref(fig:CovFunctionVariogram). This is repeated ten times, resulting in ten simulated populations of 2,500 units. Figure \@ref(fig:Twokrigingsimulations) shows two of the ten simulated populations. Note that the two simulations clearly show spatial structure (patches of similar values).
+To illustrate that the OK variance\index{Ordinary kriging variance} is independent of the values of the study variable at the sampling locations, I simulated a spatial population of 50 $\times$ 50 units. For each unit a value of the study variable is simulated, using the semivariogram of Figure \@ref(fig:CovFunctionVariogram). This is repeated ten times, resulting in ten maps of 2,500 units. Figure \@ref(fig:Twokrigingsimulations) shows two of the ten simulated maps. Note that the two maps clearly show spatial structure, i.e. there are patches of similar values).
 
 ```{r, echo=FALSE}
 s1 <- s2 <- seq(from=20, to=1000, by=20) - 10
@@ -277,7 +289,7 @@ ggplot(data=df_lf) +
   coord_fixed()
 ```
 
-The simulated fields are sampled on a centred square grid with a spacing of 100 distance units, resulting in a sample of 100 units. Each sample is used one-by-one to predict the study variable at one prediction location (see Figure \@ref(fig:Twokrigingsimulations)), using again the semivariogram of Figure \@ref(fig:CovFunctionVariogram). The semivariogram is specified by function `vgm` of package **gstat** [@peb04]. Usually this semivariogram is estimated from a sample, see Chapter \@ref(SamplingVariogram), but here we assume that it is known. Function `krige` of package **gstat** is used for kriging. The formula argument specifies the dependent (study variable) and independent variables (covariates). The formula `z ~ 1` means that we do not have covariates and that predictions are done by OK (or simple kriging, see Section \@ref(IntroKED)). Argument `locations` is a file of class `SpatialPointsDataFrame` with the spatial coordinates and observations. Argument `newdata` is a file of class `SpatialPoints` with the locations where we want to predict. Argument `nmax` can be used to specify the neighbourhood in terms of the number of nearest observations to be used in kriging.  
+The simulated maps are sampled on a centred square grid with a spacing of 100 distance units, resulting in a sample of 100 units. Each sample is used one-by-one to predict the study variable at one prediction location (see Figure \@ref(fig:Twokrigingsimulations)), using again the semivariogram of Figure \@ref(fig:CovFunctionVariogram). The semivariogram is passed to function `vgm` of package **gstat** [@peb04]. Usually this semivariogram is estimated from a sample, see Chapter \@ref(SamplingVariogram), but here we assume that it is known. Function `krige` of package **gstat** is used for kriging. Argument `formula` specifies the dependent (study variable) and independent variables (covariates). The formula `z~1` means that we do not have covariates (we assume that the model-mean is a constant) and that predictions are done by OK (or simple kriging, see Section \@ref(IntroKED)). Argument `locations` is a file of class `SpatialPointsDataFrame` with the spatial coordinates and observations. Argument `newdata` is a file of class `SpatialPoints` with the locations where we want to predict. Argument `nmax` can be used to specify the neighbourhood in terms of the number of nearest observations to be used in kriging (not used in the code chunk below, so that all 100 observations are used).  
 
 ```{r}
 library(sp)
@@ -343,7 +355,7 @@ Z(\mathbf{s}) & = \sum_{k=0}^p \beta_k x_k(\mathbf{s}) + \epsilon(\mathbf{s}) \\
 (\#eq:KEDmodel2)
 \end{equation}
 
-with $x_k(\mathbf{s})$ the value of the $k$th covariate at location $\mathbf{s}$ ($x_0$ = 1 for all locations), $p$ the number of covariates and $C(\mathbf{h})$ the covariance of the residuals at two points separated by vector $\mathbf{h} = \mathbf{s}-\mathbf{s}^{\prime}$. The constant mean $\mu$ in Equation \@ref(eq:OKmodel) is replaced by a linear combination of covariates and, as a consequence, the mean is not constant anymore but varies in space.
+with $x_k(\mathbf{s})$ the value of the $k$th covariate at location $\mathbf{s}$ ($x_0$ = 1 for all locations), $p$ the number of covariates, and $C(\mathbf{h})$ the covariance of the residuals at two locations separated by vector $\mathbf{h} = \mathbf{s}-\mathbf{s}^{\prime}$. The constant mean $\mu$ in Equation \@ref(eq:OKmodel) is replaced by a linear combination of covariates and, as a consequence, the mean is not constant anymore but varies in space.
 
 With KED the study variable at a prediction location $\mathbf{s}_0$ is predicted by
 
@@ -352,9 +364,9 @@ With KED the study variable at a prediction location $\mathbf{s}_0$ is predicted
 (\#eq:KEDpredictor)
 \end{equation}
 
-with $\hat{\beta}_k$ the estimated regression coefficient associated with covariate $x_k$. The first component of this predictor is the estimated expectation at the new location using the covariate values at this location and the estimated regression coefficients, and the second component is a weighted sum of the residuals at the sampling locations.
+with $\hat{\beta}_k$ the estimated regression coefficient associated with covariate $x_k$. The first component of this predictor is the estimated model-mean at the new location based on the covariate values at this location and the estimated regression coefficients. The second component is a weighted sum of the residuals at the sampling locations.
 
-The optimal kriging weights $\lambda_i,\; i = 1, \cdots ,n$ are obtained in a similar way as in OK. The difference is that additional constraints on the weights are needed, to ensure unbiased predictions. Not only the weights must sum to 1, but also for all $p$ covariates the weighted sum of the covariate values at the sampling locations must equal the covariate value at the target location: $\sum_{i=1}^n \lambda_i x_k(\mathbf{s}_i) = x_k(\mathbf{s}_0)$ for all $k=1, \cdots , p$. This leads to a system of $n+p+1$ simultaneous equations that must be solved. In matrix notation this system is
+The optimal kriging weights $\lambda_i,\; i = 1, \dots ,n$ are obtained in a similar way as in OK. The difference is that additional constraints on the weights are needed, to ensure unbiased predictions. Not only the weights must sum to 1, but also for all $p$ covariates the weighted sum of the covariate values at the sampling locations must equal the covariate value at the prediction location: $\sum_{i=1}^n \lambda_i x_k(\mathbf{s}_i) = x_k(\mathbf{s}_0)$ for all $k=1, \dots , p$. This leads to a system of $n+p+1$ simultaneous equations that must be solved. In matrix notation this system is
 
 \begin{eqnarray}
 \left[
@@ -394,7 +406,7 @@ with
 (\#eq:MatrixXinKEDsystem)
 \end{eqnarray}
 
-The submatrix $\mathbf{O}$ is a $((p+1) \times (p+1))$ matrix with zeroes, $\nu$ a ($p+1$) vector with Lagrange multipliers and $\mathbf{x}_0$ a $(p+1)$ vector with covariate values at the prediction location (including a 1 as the first entry).
+The submatrix $\mathbf{0}$ is a $((p+1) \times (p+1))$ matrix with zeroes, $\nu$ a ($p+1$) vector with Lagrange multipliers, and $\mathbf{x}_0$ a $(p+1)$ vector with covariate values at the prediction location (including a 1 as the first entry).
 
 The kriging variance with KED equals
 
@@ -407,7 +419,7 @@ The prediction error variance with KED can also be written as the sum of the var
 
 \begin{equation}
 \begin{split}
-V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \mathbf{c}_0^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{c}_0 +\\
+V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0)) &= \sigma^2 - \mathbf{c}_0^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{c}_0 +\\
 &(\mathbf{x}_0-\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{c}_0)^{\mathrm{T}}(\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X})^{-1}(\mathbf{x}_0-\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{c}_0)\;.
 \end{split}
 (\#eq:KEDvariance2)
@@ -416,7 +428,7 @@ V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \mathbf{c}_0^{\mathrm{T}
 The first two terms constitute the interpolation error variance, the third term the variance of the predictor of the mean. 
 <!--Note that the computation is as Equation \@ref(eq:KEDvariance), with the $\lambda$ and $\nu$ from the solution of the KED system; Equation \@ref(eq:KEDvariance2) shows this in terms of linear modelling theory. -->
 
-To illustrate that the kriging variance with KED depends on the values of the covariate at the sampling locations and prediction location, values of a covariate $x$ and of a correlated study variable $z$ are simulated for the $50 \times 50$ units of a spatial population (Figure \@ref(fig:SimulatedXandZ)). First, a field with covariate values is simulated with a model-mean of 10. Next, a field with residuals is simulated. The field of the study variable is then obtained by multiplying the simulated field with covariate values by two ($\beta_1=2$), adding a constant of 10 ($\beta_0=10$) and, finally, adding the simulated field with residuals.
+To illustrate that the kriging variance with KED depends on the values of the covariate at the sampling locations and prediction location, values of a covariate $x$ and of a correlated study variable $z$ are simulated for the $50 \times 50$ units of a spatial population (Figure \@ref(fig:SimulatedXandZ)). First, a field with covariate values is simulated with a model-mean of 10. Next, a field with residuals is simulated. The field of the study variable is then obtained by multiplying the simulated field with covariate values by two ($\beta_1=2$), adding a constant of 10 ($\beta_0=10$), and finally adding the simulated field with residuals.
 
 ```{r, echo=FALSE}
 mypop <- as(mypop,"data.frame")
@@ -445,7 +457,7 @@ mu <- betas[1] + betas[2]*mypop$x
 mypop$z <- mu  + e
 ```
 
-As before, a centred square grid with a spacing of 100 distance units is selected. The simulated values of the study variable $z$ and covariate $x$ are used to predict $z$ at a prediction location $\mathbf{s}_0$ by kriging with an external drift (red cell in Figure \@ref(fig:SimulatedXandZ)). Although at the prediction location we have only one simulated value of covariate $x$, a series of covariate values is used to predict $z$ at that location: $x_0 = 0, 2, 4, \cdots, 20$. In practice we have of course only one value of the covariate at a fixed location, but this is for illustration purposes only. Note that we have only one data set with `observations' of $x$ and $z$ at the sampling locations (square grid).
+As before, a centred square grid with a spacing of 100 distance units is selected. The simulated values of the study variable $z$ and covariate $x$ are used to predict $z$ at a prediction location $\mathbf{s}_0$ by kriging with an external drift (red cell in Figure \@ref(fig:SimulatedXandZ)). Although at the prediction location we have only one simulated value of covariate $x$, a series of covariate values is used to predict $z$ at that location: $x_0 = 0, 2, 4, \dots, 20$. In practice we have of course only one value of the covariate at a fixed location, but this is for illustration purposes only. Note that we have only one data set with `observations' of $x$ and $z$ at the sampling locations (square grid).
 
 ```{r SimulatedXandZ, echo=FALSE, out.width='100%', fig.cap="Maps with simulated values of covariate $x$ and study variable $z$, the centred square grid of sampling units and the prediction unit (red cell with coordinates (590,670))."}
 s_0 <- as(s_0,"data.frame")
@@ -492,9 +504,9 @@ for (i in 1:length(x0)) {
 }
 ```
 
-Note the formula `z~x` in the code chunk above, indicating that there is now an independent variable (covariate). The covariate values are attached to the file with the prediction location one-by-one in a for-loop. Also note that for KED we need the semivariogram of the residuals, not of the study variable itself. The residual semivariogram used in prediction is the same as the one used in simulating the fields: a spherical model without nugget, a sill of 5 and a range of 100 distance units.
+Note the formula `z~x` in the code chunk above, indicating that there is now an independent variable (covariate). The covariate values are attached to the file with the prediction location one-by-one in a for-loop. Also note that for KED we need the semivariogram of the residuals, not of the study variable itself. The residual semivariogram used in prediction is the same as the one used in simulating the fields: a spherical model without nugget, a sill of 5, and a range of 100 distance units.
 
-To assess the contribution of the uncertainty about the mean, I also predict the values assuming that the mean is known. In other words we assume that the two regression coefficients $\beta_0$ (intercept) and $\beta_1$ (slope) are known. This type of kriging is referred to as simple kriging\index{Kriging!simple kriging} (SK). With SK the constraints explained above are removed, so that there are no Lagrange multipliers involved. Argument `beta` is used to specify the known regression coefficients. I used the same values as in simulation. 
+To assess the contribution of the uncertainty about the model-mean $\mu(\mathbf{s})$, I also predict the values assuming that the model-mean is known. In other words, I assume that the two regression coefficients $\beta_0$ (intercept) and $\beta_1$ (slope) are known. This type of kriging is referred to as simple kriging\index{Kriging!simple kriging} (SK). With SK the constraints explained above are removed, so that there are no Lagrange multipliers involved. Argument `beta` is used to specify the known regression coefficients. I use the same values as in simulation. 
 
 ```{r}
 v_zpred_SK <- NULL
@@ -511,9 +523,9 @@ for (i in 1:length(x0)) {
 }
 ```
 
-Figure \@ref(fig:KEDVarSKVar) shows that, contrary to the SK variance, the kriging variance with KED is not constant, but depends on the covariate value at the prediction location. It is the smallest near the mean of the covariate values at the sampling units, which is 10.0. The more extreme the covariate value at the prediction location, the larger the kriging variance with KED. This is analogous to the variance of predictions with a linear regression model.
+Figure \@ref(fig:KEDVarSKVar) shows that, contrary to the SK variance, the kriging variance with KED is not constant but depends on the covariate value at the prediction location. It is the smallest near the mean of the covariate values at the sampling locations, which is 10.0. The more extreme the covariate value at the prediction location, the larger the kriging variance with KED. This is analogous to the variance of predictions with a linear regression model.
 
-The variance with simple kriging (SK) is constant. This is because with SK we assume that the regression coefficients are known, so that we know the model-mean at a prediction location. What remains is the error in the interpolation of the residuals (first two terms in Equation \@ref(eq:KEDvariance2). This interpolation error is independent of the value of $x$ at the prediction location. In Figure \@ref(fig:KEDVarSKVar) the difference between the variance with KED and with SK is the variance of the predictor of the model-mean, due to uncertainty about the regression coefficients. In real-world applications these regression coefficients are unknown and must be *estimated* from the sample data. This variance is smallest for a covariate value about equal to the sample mean of the covariate, and increases with the absolute difference of the covariate value and this sample mean.
+The variance with simple kriging (SK) is constant. This is because with SK we assume that the regression coefficients are known, so that we know the model-mean at a prediction location. What remains is the error in the interpolation of the residuals (first two terms in Equation \@ref(eq:KEDvariance2). This interpolation error is independent of the value of $x$ at the prediction location. In Figure \@ref(fig:KEDVarSKVar) the difference between the variances with KED and SK is the variance of the predictor of the model-mean, due to uncertainty about the regression coefficients. In real-world applications these regression coefficients are unknown and must be *estimated* from the sample data. This variance is smallest for a covariate value about equal to the sample mean of the covariate, and increases with the absolute difference of the covariate value and this sample mean.
 
 ```{r KEDVarSKVar, echo=FALSE, fig.asp=0.7, fig.cap="Variance of the prediction error as a function of the covariate value at a fixed prediction location, obtained with kriging with an external drift (KED) and simple kriging (SK) ."}
 df<-data.frame(x0, KED=v_zpred_KED, SK=v_zpred_SK)
@@ -527,15 +539,15 @@ ggplot(df_lf) +
 
 ## Estimating the semivariogram {#VariogramEstimation}
 
-Kriging requires a semivariogram or covariance function as input for computing the covariance matrix of the study variable at the sampling locations and the vector of covariance of the study variable at the sampling locations and the prediction location. In most cases the semivariogram model is unknown and must be estimated from sample data; however for designing a sample it may be justified to use a semivariogram model developed in a similar study. Once the parameters of the semivariogram model are estimated, these are plugged in the kriging equations. There are two fundamentally different approaches for estimating the semivariogram parameters from sample data: the *method-of-moments*\index{Method-of-moments} and *maximum likelihood estimation*\index{Maximum likelihood estimation} [@lar00b].
+Kriging requires a semivariogram or covariance function as input for computing the covariance matrix of the study variable at the sampling locations and the vector of covariance of the study variable at the sampling locations and the prediction location. In most cases the semivariogram model is unknown and must be estimated from sample data. The estimated parameters of the semivariogram model are plugged into the kriging equations. There are two fundamentally different approaches for estimating the semivariogram parameters from sample data: the *method-of-moments*\index{Method-of-moments} and *maximum likelihood estimation*\index{Maximum likelihood estimation} [@lar00b].
 
 ### Method-of-moments {#MoM}
 
-With the method-of-moments approach the semivariogram is estimated in two steps. In the first step a sample semivariogram\index{Sample semivariogram}, also referred to as an experimental semivariogram\index{Experimental semivariogram|see{Sample semivariogram}}, is estimated. This is done by choosing a series of distance intervals (bins). If a semivariogram in different directions is required, we must also choose direction intervals.
+With the method-of-moments (MoM) approach the semivariogram is estimated in two steps. In the first step a sample semivariogram\index{Sample semivariogram}, also referred to as an experimental semivariogram\index{Experimental semivariogram|see{Sample semivariogram}}, is estimated. This is done by choosing a series of distance intervals (bins). If a semivariogram in different directions is required, we must also choose direction intervals.
 
-For each distance interval all pairs of points with a separation distance\index{Separation distance} in that interval are identified. For each pair half the squared difference of the study variable is computed, and these squared differences are averaged over all point-pairs of that interval. This average is the estimated semivariance of that distance interval. The estimated semivariances for all distance intervals are plotted against the average separation distances per distance interval. In the second step a permissible model is fitted to the sample semivariogram, using some form of weighted least squares. For details, see @webster2007.
+For each distance interval all pairs of points with a separation distance\index{Separation distance} in that interval are identified. For each pair half the squared difference of the study variable is computed, and these differences are averaged over all point-pairs of that interval. This average is the estimated semivariance of that distance interval. The estimated semivariances for all distance intervals are plotted against the average separation distances per distance interval. In the second step a permissible model is fitted to the sample semivariogram, using some form of weighted least squares. For details, see @webster2007.
 
-The next code chunk shows how this can be done in **R**.  A simple random sample of 150 points is selected from the first simulated field shown in Figure \@ref(fig:Twokrigingsimulations). Function `variogram` of package **gstat** is then used to compute the sample semivariogram. Note that no distance intervals need be specified to function `variogram`. This can be done with argument `width` or argument `boundaries`. In their absence, the default value for argument `width` is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with argument `cutoff`. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point-pairs, average separation distance and estimated semivariance in the first three columns.
+The next code chunk shows how this can be done in **R**.  A simple random sample of 150 points is selected from the first simulated field shown in Figure \@ref(fig:Twokrigingsimulations). Function `variogram` of package **gstat** is then used to compute the sample semivariogram. Note that distance intervals need be passed to function `variogram`. This can be done with argument `width` or argument `boundaries`. In their absence, the default value for argument `width` is equal to the maximum separation distance divided by fifteen, so that there are fifteen points in the sample semivariogram. The maximum separation distance can be set with argument `cutoff`. The default value for this argument is equal to one-third of the longest diagonal of the bounding box of the point set. The output is a data frame, with the number of point-pairs, average separation distance, and estimated semivariance in the first three columns.
 
 ```{r, echo=FALSE}
 #Copy mypop to mypop_spdf, which is needed later
@@ -554,7 +566,7 @@ vg <- variogram(z~1, data=mysample)
 head(vg[,c(1,2,3)])
 ```
 
-The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range and 75 for the partial sill. These are passed to the `vgm` function, and used as the `model` argument of function `fit.variogram`. The sample semivariogram and the fitted model can simply be plotted with function `plot`.
+The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range, and 75 for the partial sill. These are passed to the `vgm` function and used as the `model` argument of function `fit.variogram`. The sample semivariogram and the fitted model can simply be plotted with function `plot`.
 
 ```{r semivariogramSimulatedField1, fig.asp=0.7}
 vgm_MoM <- fit.variogram(vg, model=vgm(model="Sph",
@@ -563,13 +575,13 @@ plot(vg, vgm_MoM, plot.numbers=TRUE)
 print(vgm_MoM)
 ```
 
-Note that `fit.variogram` has several options for weighted least squares optimisation, see `?fit.variogram` for details. Also, note that this non-linear fit may not converge to a solution, especially if the starting values specified to `vgm` are not near their optimal values.
+Note that `fit.variogram` has several options for weighted least squares optimisation, see `?fit.variogram` for details. Also note that this non-linear fit may not converge to a solution, especially if the starting values passed to `vgm` are not near their optimal values.
 
-Further, this method depends on the choice of cutoff and distance intervals. We hope that changing these does not change the fitted model too much, but this is not always the case, especially with smaller data sets.
+Further, this method depends on the choice of cutoff and distance intervals. We hope that changing these does not change the fitted model too much, but this is not always the case especially with smaller data sets.
 
 ### Maximum likelihood {#MLestimationVariogram}
 
-In contrast to the method-of-moments, with the maximum likelihood method the data are not paired into couples and binned into a sample semivariogram. Instead the semivariogram model is estimated in one step. To apply this method one typically assumes that (possibly after transformation) the $n$ sample data come from a multivariate normal distribution\index{Multivariate normal distribution}. If we have one observation from a normal distribution, the probability density of that observation is given by
+In contrast to the MoM method, with the maximum likelihood (ML) method the data are not paired into couples and binned into a sample semivariogram. Instead the semivariogram model is estimated in one step. To apply this method one typically assumes that (possibly after transformation) the $n$ sample data come from a multivariate normal distribution\index{Multivariate normal distribution}. If we have one observation from a normal distribution, the probability density of that observation is given by
 
 \begin{equation}
 f(z|\mu,\sigma ^{2})=
@@ -586,9 +598,9 @@ f(\mathbf{z}|\pmb{\mu} ,\pmb{\theta})=
 (\#eq:densitymvnormal)
 \end{equation}
 
-where $\mathbf{z}$ is the vector with the $n$ sample data, $\pmb{\mu}$ is the vector with means, $\pmb{\theta}$ is the vector with parameters of the covariance function and $\mathbf{C}$ is the $n \times n$ matrix with variances and covariances of the sample data. If the probability density of Equation \@ref(eq:densitymvnormal) is regarded as a function of $\pmb{\mu}$ and $\pmb{\theta}$ with the data $\mathbf{z}$ fixed, this equation defines the likelihood\index{Likelihood}. 
+where $\mathbf{z}$ is the vector with the $n$ sample data, $\pmb{\mu}$ is the vector with means, $\pmb{\theta}$ is the vector with parameters of the covariance function, and $\mathbf{C}$ is the $n \times n$ matrix with variances and covariances of the sample data. If the probability density of Equation \@ref(eq:densitymvnormal) is regarded as a function of $\pmb{\mu}$ and $\pmb{\theta}$ with the data $\mathbf{z}$ fixed, this equation defines the likelihood\index{Likelihood}. 
 
-Maximum likelihood estimates of the semivariogram can be obtained with function `likfit` of package **geoR** [@geoR]. First, a geoR object must be made, specifying which columns of the data frame contain the spatial coordinates and the study variable.
+Maximum likelihood estimates of the semivariogram can be obtained with function `likfit` of package **geoR** [@geoR]. First, a geoR object must be made specifying which columns of the data frame contain the spatial coordinates and the study variable.
 
 ```{r}
 library(geoR)
@@ -604,7 +616,7 @@ vgm_ML <- likfit(geodata=dGeoR, trend="cte",
   nugget=20, lik.method="ML", messages=FALSE)
 ```
 
-Table \@ref(tab:VariogramEstimates) shows the maximum likelihood estimates together with the method-of-moments estimates.
+Table \@ref(tab:VariogramEstimates) shows the ML estimates together with the MoM estimates. As can be seen, the estimates are substantially different, especially the division of the a priori variance (sill) into partial sill and nugget. In general I prefer the ML estimates because the arbitrary choice of distance intervals to compute a sample semivariogram is avoided. Also ML estimates of the parameters are more precise, given a sample size. On the other hand, in ML estimation we need to assume that the data are normally distributed.
 
 ```{r VariogramEstimates, echo=FALSE}
 tbl <- data.frame(
@@ -618,17 +630,16 @@ knitr::kable(
   kable_classic()
 ```
 
-As can be seen, the estimates are substantially different, especially the division of the a priori variance (sill) into partial sill and nugget.
 
 ## Estimating the residual semivariogram {#ResidualVariogram}
 
-For KED estimates of the regression coefficients and of the parameters of the residual semivariogram are needed. Estimation of these model parameters is not a trivial problem, as the estimated regression coefficients and estimated residual semivariogram parameters are not independent. The residuals depend on the estimated regression coefficients and, as a consequence, also the parameters of the residual semivariogram depend on the estimated coefficients. Vice versa, the estimated regression coefficients depend on the spatial correlation of the residuals, and so on the estimated residual semivariogram parameters. This a classic "which came first, the chicken or the egg?" recursive problem.
+For KED estimates of the regression coefficients and of the parameters of the residual semivariogram are needed. Estimation of these model parameters is not a trivial problem, as the estimated regression coefficients and estimated residual semivariogram parameters are not independent. The residuals depend on the estimated regression coefficients and, as a consequence, also the parameters of the residual semivariogram depend on the estimated coefficients. Vice versa, the estimated regression coefficients depend on the spatial correlation of the residuals, and so on the estimated residual semivariogram parameters. This is a classic "which came first, the chicken or the egg?" problem.
 
 Estimation of the model parameters is illustrated with the simulated field of Figure \@ref(fig:SimulatedXandZ). A simple random sample of size 150 is selected to estimate the model parameters.
 
 ### Iterative method-of-moments {#IterativeMoM}
 
-A simple option is iterative estimation of the regression coefficients followed by method-of-moments estimation of the sample semivariogram and fitting of a semivariogram model. In the first iteration the regression coefficients are estimated by ordinary least squares (OLS). This implies that the data are assumed independent, i.e. we assume a pure nugget residual semivariogram. The sample semivariogram of the OLS residuals is then computed by the method-of-moments, followed by fitting a model to this sample semivariogram. With package **gstat** this can be done with one line of **R** code, using in function `variogram` as an argument a formula specifying the study variable and the predictors.
+A simple option is iterative estimation of the regression coefficients followed by MoM estimation of the sample semivariogram and fitting of a semivariogram model. In the first iteration the regression coefficients are estimated by ordinary least squares (OLS). This implies that the data are assumed independent, i.e. we assume a pure nugget residual semivariogram. The sample semivariogram of the OLS residuals is then computed by the MoM, followed by fitting a model to this sample semivariogram. With package **gstat** this can be done with one line of **R** code, using a formula specifying the study variable and the predictors as the first argument of function `variogram`.
 
 ```{r, echo=FALSE}
 mypop <- mypop_spdf
@@ -637,13 +648,13 @@ mypop <- mypop_spdf
 ```{r}
 set.seed(314)
 units <- sample(nrow(mypop), size=150)
-mysample <- cbind(mypop[units,])
+mysample <- mypop[units,]
 vg_resi <- variogram(z~x, data=mysample)
 vgmdl <- vgm(model="Sph", psill=10, range=150, nugget=0)
 vgmresi_MoM <- fit.variogram(vg_resi, model=vgmdl)
 ```
 
-Given these estimates of the semivariogram parameters, the regression coefficients are re-estimated by accounting for spatial dependency of the residuals. This can be done by generalised least squares\index{Generalised least squares} (GLS). Function `spDists` of package **sp** is used to compute the matrix with distances between the sampling locations, `variogramLine` of package **gstat** to transform the distance matrix into a covariance matrix.
+Given these estimates of the semivariogram parameters, the regression coefficients are re-estimated by accounting for spatial dependency of the residuals. This can be done by generalised least squares\index{Generalised least squares} (GLS). Function `spDists` of package **sp** is used to compute the matrix with distances between the sampling locations, and function `variogramLine` of package **gstat** is used to transform the distance matrix into a covariance matrix.
 
 ```{r}
 X <- matrix(data=1, nrow=nrow(as(mysample, "data.frame")), ncol=2)
@@ -681,7 +692,7 @@ Table \@ref(tab:ResidualVariogramEstimates) shows the estimates of the residual 
 
 ### Restricted maximum likelihood {#REML}
 
-The estimates of the residual semivariogram parameters obtained by the iterative method-of-moments\index{Method-of-moments!iterative method-of-moments} procedure are not unbiased. When the mean is not constant but a linear combination of one or more covariates, also ML estimation results in biased estimates of the residual semivariogram parameters. Unbiased estimates of the regression coefficients and residual semivariogram parameters can be obtained by restricted maximum likelihood\index{Restricted maximum likelihood estimation} (also referred to as residual maximum likelihood), REML. In REML the vector with the data are premultiplied by a so-called projection matrix $\mathbf{P}$ [@Kitanidis1983]. This projection matrix has the property that a vector with zeroes is obtained when the matrix $\mathbf{X}$ with the covariate values at the sampling locations (and ones in first column) is pre-multiplied with $\mathbf{P}$:
+The estimates of the residual semivariogram parameters obtained by the iterative method-of-moments\index{Method-of-moments!iterative method-of-moments} procedure are not unbiased. When the mean is not constant but a linear combination of one or more covariates, also ML estimation results in biased estimates of the residual semivariogram parameters. Unbiased estimates of the regression coefficients and residual semivariogram parameters can be obtained by restricted maximum likelihood\index{Restricted maximum likelihood estimation} (REML), also referred to as residual maximum likelihood. In REML the vector with the data are premultiplied by a so-called projection matrix $\mathbf{P}$ [@Kitanidis1983]. This projection matrix has the property that a vector with zeroes is obtained when the matrix $\mathbf{X}$ with the covariate values at the sampling locations (and ones in first column) is pre-multiplied with $\mathbf{P}$:
 
 \begin{equation}
 \mathbf{P}\mathbf{X}=\mathbf{0} \;.
@@ -692,17 +703,17 @@ Pre-multiplying both sides of the KED model (Equation \@ref(eq:KEDmodel2)) with 
 
 \begin{equation}
 \mathbf{P}\mathbf{z}(\mathbf{s})=\mathbf{y}(\mathbf{s})=\mathbf{P}\mathbf{X}\pmb{\beta} + \mathbf{P}\pmb{\epsilon}(\mathbf{s})=\mathbf{P}\pmb{\epsilon}(\mathbf{s}) \;.
-(\#eq:)
+(\#eq:Pz)
 \end{equation}
 
 In words, by pre-multiplying variable $\mathbf{z}$ with matrix $\mathbf{P}$ a new variable $\mathbf{y}$ is obtained that has a constant mean. So, the trend is filtered out, whatever the regression coefficients are. The semivariogram parameters of this new variable can be estimated by ML. The projection matrix $\mathbf{P}$ can be computed by
 
 \begin{equation}
 \mathbf{P}=\mathbf{I}-\mathbf{X}(\mathbf{X}^{\mathrm{T}}\mathbf{X})^{-1}\mathbf{X}^{\mathrm{T}} \;,
-(\#eq:Pz(s))
+(\#eq:P)
 \end{equation}
 
-with  $\mathbf{I}$ the $n \times n$ identity matrix (matrix with ones on the diagonal, zeroes in all off-diagonal elements). The natural log of the residual likelihood can be computed by [@lar06]
+with  $\mathbf{I}$ the $n \times n$ identity matrix (matrix with ones on the diagonal and zeroes in all off-diagonal elements). The natural log of the residual likelihood can be computed by [@lar06]
 
 \begin{equation}
 \ell(\pmb{\theta}|\mathbf{z})=\mathrm{constant}-0.5(\mathrm{ln}|\mathbf{C}|+|\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X}|+\mathbf{y}^{\mathbf{T}}\mathbf{C}^{-1}(\mathbf{I-\mathbf{Q}})\mathbf{z})) \;,
@@ -711,7 +722,7 @@ with  $\mathbf{I}$ the $n \times n$ identity matrix (matrix with ones on the dia
 
 with $\mathbf{Q} = \mathbf{X}(\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X})^{-1}\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}$
 
-Restricted maximum likelihood estimates of the semivariogram can be obtained with function `likfit` of package **geoR**, used above in maximum likelihood estimation of the variogram [@geoR].
+REML estimates of the semivariogram can be obtained with function `likfit` of package **geoR**, used above in ML estimation of the variogram [@geoR].
 
 ```{r, echo=FALSE}
 library(geoR)
@@ -719,9 +730,9 @@ mysample <- as(mysample,"data.frame")
 dGeoR <- as.geodata(
    obj=mysample, 
    header=TRUE, 
-   coords.col=4:5, 
-   covar.col=1,
-   data.col=2
+   coords.col=1:2, 
+   covar.col=3,
+   data.col=4
  )
 ```
 
@@ -744,9 +755,9 @@ knitr::kable(
   kable_classic()
 ```
 
-Table \@ref(tab:ResidualVariogramEstimates) shows that REML results in a smaller estimated (partial) sill and larger estimated range than iterative method-of-moments. Of the two regression coefficients especially the estimated intercept differs considerably among the two estimation methods. 
+Table \@ref(tab:ResidualVariogramEstimates) shows that REML yields a smaller estimated (partial) sill and a larger estimated range than iterative method-of-moments. Of the two regression coefficients especially the estimated intercept differs considerably among the two estimation methods. 
 
-I realise that this is a rather short introduction to kriging. I refer to @isa89 for an introduction to geostatistics, to @goo97 for an expos$\acute{\text{e}}$ of the many versions of kriging and to @webster2007 for an elaborate explanation of kriging. An nice educational tool for getting a feeling for ordinary kriging is [E{Z}-Kriging](https://wiki.52north.org/AI_GEOSTATS/SWEZKriging).
+I realise that this is a rather short introduction to kriging. I refer to @isa89 for an introduction to geostatistics, to @goo97 for an expos$\acute{\text{e}}$ of the many versions of kriging, and to @webster2007 for an elaborate explanation of kriging. A nice educational tool for getting a feeling for ordinary kriging is [E{Z}-Kriging](https://wiki.52north.org/AI_GEOSTATS/SWEZKriging).
 
 ```{r, echo=FALSE}
 rm(list=ls())

@@ -3,7 +3,7 @@ library(spcosa)
 library(ggplot2)
 library(terra)
 
-#load data.frame with coordinates (and other attributes) of fine grid (discretisation of study area)
+#load data frame with coordinates (and other attributes) of fine grid (discretisation of study area)
 rmap <- rast("../data/Xuancheng_elevation.tif")
 rmap
 rmap <- as.data.frame(rmap, xy=TRUE, na.rm=TRUE)
@@ -25,7 +25,7 @@ ggplot(subgrid) +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed(ratio = 1)
 
-#change class of subgrid from data.frame to SpatialPixelsDataFrame
+#change class of subgrid from data frame to SpatialPixelsDataFrame
 gridded(subgrid) <- ~x1+x2
 
 #set number of new sampling points to be selected
