@@ -400,16 +400,18 @@ Sampling locations are selected by simple random sampling. The sample size is 10
 Selecting an SS space-time sample, using simple random sampling as a spatial design, is straightforward. We can simply select a single simple random sample of size $n=100$. The locations of this sample are observed at all times (Figure \@ref(fig:sampleSpainPortugalSS)).
 
 ```{r}
-load(file = "data/SpainPortugal_TAS.RData")
-df$x <- df$x / 1000; df$y <- df$y / 1000
+grdSpainPortugal <- readRDS(file = "data/grdSpainPortugal.rds")
+grd <- grdSpainPortugal %>%
+  mutate(x = x / 1000,
+         y = y / 1000)
 set.seed(314)
 n <- 100
-units <- sample(nrow(df), size = n, replace = TRUE)
-mysample_SS <- df[units, ]
+units <- sample(nrow(grd), size = n, replace = TRUE)
+mysample_SS <- grd[units, ]
 ```
 
 ```{r sampleSpainPortugalSS, echo = FALSE, out.width = '100%', fig.cap = "Static-synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
-df_lf <- df %>% pivot_longer(cols = c("TAS2004", "TAS2009", "TAS2014", "TAS2019"))
+df_lf <- grd %>% pivot_longer(cols = c("TAS2004", "TAS2009", "TAS2014", "TAS2019"))
 ggplot(df_lf) +
   geom_raster(mapping = aes(x = x, y = y, fill = value)) +
   geom_point(mysample_SS, mapping = aes(x = x, y = y)) +
@@ -479,13 +481,13 @@ se_mz_st_SS <- sqrt(t(w) %*% C %*% w)
 To select an IS space-time sample with four sampling times, we simply select $4n=400$ sampling locations. Figure \@ref(fig:sampleSpainPortugalIS) shows the selected IS space-time sample. A variable identifying the panel of the selected sampling units is added to the data frame.
 
 ```{r}
-units <- sample(nrow(df), size = 4 * n, replace = TRUE)
-mysample_IS <- df[units, ]
+units <- sample(nrow(grd), size = 4 * n, replace = TRUE)
+mysample_IS <- grd[units, ]
 mysample_IS$panel <- rep(c("a", "b", "c", "d"), each = n)
 ```
 
 ```{r sampleSpainPortugalIS, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "Independent synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
-plt1 <- ggplot(df) +
+plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_IS[mysample_IS$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
@@ -493,7 +495,7 @@ plt1 <- ggplot(df) +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 
-plt2 <- ggplot(df) +
+plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_IS[mysample_IS$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
@@ -501,7 +503,7 @@ plt2 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt3 <- ggplot(df) +
+plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_IS[mysample_IS$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
@@ -509,7 +511,7 @@ plt3 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt4 <- ggplot(df) +
+plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_IS[mysample_IS$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
@@ -553,14 +555,14 @@ se_mz_st_IS <- sqrt(t(w) %*% C %*% w)
 To select an SA space-time sample with a period of two, $2n=200$ sampling locations are selected. A variable is added to `data.frame` `mysample_SA` indicating the panel of the sampling locations. Figure \@ref(fig:sampleSpainPortugalSA) shows the selected SA space-time sample.
 
 ```{r}
-units <- sample(nrow(df), size = 2 * n, replace = TRUE)
-mysample_SA <- df[units, ]
+units <- sample(nrow(grd), size = 2 * n, replace = TRUE)
+mysample_SA <- grd[units, ]
 mysample_SA$panel <- rep(c("a", "b"), each = n)
 ```
 
 ```{r sampleSpainPortugalSA, echo = FALSE, fig.asp = 0.6, out.width = '100%', fig.cap = "Serially alternating space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
 
-plt1 <- ggplot(df) +
+plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_SA[mysample_SA$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
@@ -568,7 +570,7 @@ plt1 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt2 <- ggplot(df) +
+plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_SA[mysample_SA$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
@@ -576,7 +578,7 @@ plt2 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt3 <- ggplot(df) +
+plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_SA[mysample_SA$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
@@ -584,7 +586,7 @@ plt3 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt4 <- ggplot(df) +
+plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_SA[mysample_SA$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
@@ -634,13 +636,13 @@ se_mz_st_SA <- sqrt(t(w) %*% C %*% w)
 With SP sampling and four sampling times we have five panels, one panel with fixed sampling locations and four panels with swarming locations (Figure \@ref(fig:SpaceTimeDesigns)). Each panel consists of $n/2$ sampling locations, so in total $5n/2=250$ locations are selected. A variable indicating the panel is added to the data frame with the selected sampling locations. Figure \@ref(fig:sampleSpainPortugalSP) shows the selected SP sample. 
 
 ```{r}
-units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
-mysample_SP <- df[units, ]
+units <- sample(nrow(grd), size = 5 * n / 2, replace = TRUE)
+mysample_SP <- grd[units, ]
 mysample_SP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
 ```{r sampleSpainPortugalSP, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "Supplemented panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
-plt1 <- ggplot(df) +
+plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
@@ -649,7 +651,7 @@ plt1 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt2 <- ggplot(df) +
+plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
@@ -658,7 +660,7 @@ plt2 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt3 <- ggplot(df) +
+plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
@@ -667,7 +669,7 @@ plt3 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt4 <- ggplot(df) +
+plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "e", ], mapping = aes(x = x, y = y), shape = 5) +
@@ -749,14 +751,14 @@ se_mz_st_SP <- sqrt(t(w) %*% XCXinv %*% w)
 Similar to the SP design, with an in-for-two RP design and four sampling times we have five panels, each consisting of $n/2$ sampling locations, so that in total $5n/2=250$ locations are selected. Figure \@ref(fig:sampleSpainPortugalRP) shows the selected space-time sample.
 
 ```{r}
-units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
-mysample_RP <- df[units, ]
+units <- sample(nrow(grd), size = 5 * n / 2, replace = TRUE)
+mysample_RP <- grd[units, ]
 mysample_RP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
 ```{r sampleSpainPortugalRP, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "In-for-two rotating panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
 
-plt1 <- ggplot(df) +
+plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_RP[mysample_RP$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
   geom_point(mysample_RP[mysample_RP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
@@ -765,7 +767,7 @@ plt1 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt2 <- ggplot(df) +
+plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_RP[mysample_RP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
   geom_point(mysample_RP[mysample_RP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
@@ -774,7 +776,7 @@ plt2 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt3 <- ggplot(df) +
+plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_RP[mysample_RP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
   geom_point(mysample_RP[mysample_RP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
@@ -783,7 +785,7 @@ plt3 <- ggplot(df) +
   scale_y_continuous(name = "Northing") +
   coord_fixed()
 
-plt4 <- ggplot(df) +
+plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_RP[mysample_RP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
   geom_point(mysample_RP[mysample_RP$panel == "e", ], mapping = aes(x = x, y = y), shape = 5) +
@@ -855,7 +857,7 @@ se_mz_st_RP <- sqrt(t(w) %*% XCXinv %*% w)
 ```
 
 ```{r, echo = FALSE}
-mz <- apply(df[, -c(1, 2)], MARGIN = 2, FUN = mean)
+mz <- apply(grd[, -c(1, 2)], MARGIN = 2, FUN = mean)
 mz_2019_pop <- mz[4]
 d_mz_pop <- mz[4] - mz[1]
 t <- 1:4
@@ -880,8 +882,8 @@ set.seed(314)
 n <- 100
 for (i in 1:R) {
   #Design SS
-  units <- sample(nrow(df), size = n, replace = TRUE)
-  mysample_SS <- df[units, ]
+  units <- sample(nrow(grd), size = n, replace = TRUE)
+  mysample_SS <- grd[units, ]
   mz <- apply(mysample_SS[, -c(1, 2)], MARGIN = 2, FUN = mean)
   C <- var(mysample_SS[, -c(1, 2)]) / n
 #current mean
@@ -897,8 +899,8 @@ for (i in 1:R) {
   mz_st_SS[i] <- mean(mz)
 
 #Design IS
-  units <- sample(nrow(df), size = 4 * n, replace = TRUE)
-  mysample_IS <- df[units, ]
+  units <- sample(nrow(grd), size = 4 * n, replace = TRUE)
+  mysample_IS <- grd[units, ]
   mysample_IS$panel <- rep(c("a", "b", "c", "d"), each = n)
   panel_a <- filter(mysample_IS, panel == "a")[, c("TAS2004")]
   panel_b <- filter(mysample_IS, panel == "b")[, c("TAS2009")]
@@ -920,8 +922,8 @@ for (i in 1:R) {
   mz_st_IS[i] <- mean(mz)
 
 #Design SA
-  units <- sample(nrow(df), size = 2 * n, replace = TRUE)
-  mysample_SA <- df[units, ]
+  units <- sample(nrow(grd), size = 2 * n, replace = TRUE)
+  mysample_SA <- grd[units, ]
   mysample_SA$panel <- rep(c("a", "b"), each = n)
   panel_a <- filter(mysample_SA, panel == "a")[, c("TAS2004", "TAS2014")]
   panel_b <- filter(mysample_SA, panel == "b")[, c("TAS2009", "TAS2019")]
@@ -944,8 +946,8 @@ for (i in 1:R) {
   mz_st_SA[i] <- mean(mz)
 
   #Design SP
-  units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
-  mysample_SP <- df[units, ]
+  units <- sample(nrow(grd), size = 5 * n / 2, replace = TRUE)
+  mysample_SP <- grd[units, ]
   mysample_SP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 #compute eight elementary estimates
   mz_1 <- tapply(mysample_SP$TAS2004, INDEX = mysample_SP$panel,
@@ -991,8 +993,8 @@ for (i in 1:R) {
   mz_st_SP[i] <- mean(mz_GLS)
 
 #Design RP
-  units <- sample(nrow(df), size = 5 * n / 2, replace = TRUE)
-  mysample_RP <- df[units, ]
+  units <- sample(nrow(grd), size = 5 * n / 2, replace = TRUE)
+  mysample_RP <- grd[units, ]
   mysample_RP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
   mz_1 <- tapply(mysample_RP$TAS2004, INDEX = mysample_RP$panel,
                FUN = mean)[c(1, 2)]
@@ -1058,7 +1060,7 @@ knitr::kable(
 Estimates of the current mean with the SP and RP designs are much more precise than with the SS, IS, and SA designs. This is because with designs SP and RP there is partial overlap with the samples of the other years. If the study variable at different years is correlated, we can profit from the data of previous years. In our case this correlation is very strong:
 
 ```{r}
-cor(df[, -c(1, 2)])
+cor(grd[, -c(1, 2)])
 ```
 
 The small differences in standard deviations of the estimated current means among the SS, IS, and SA designs are due to random variation: the true standard errors of the current mean estimator are equal for these three space-time designs.

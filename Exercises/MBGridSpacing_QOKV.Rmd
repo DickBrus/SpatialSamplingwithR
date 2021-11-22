@@ -21,12 +21,15 @@ library(tidyverse)
 
 ## Load data
 
-Load the data on soil organic matter concentration in west-Amhara (Ethiopia). Also load the discretisation grid of the study area.
+Load the data on soil organic matter concentration in west-Amhara (Ethiopia). Also load the discretisation grid of the study area. Change the projected coordinates from m into km.
 
 ```{r}
-#load data on soil organic matter
-load(file="../data/AmharaEthiopia.RData")
-load(file="../data/CovariatesAmharaEthiopia.RData")
+sampleAmhara <- readRDS(file = "../data/Sample_Amhara.rds")
+grdAmhara <- readRDS(file = "../data/grdAmhara.rds")
+sampleAmhara <- sampleAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+grdAmhara <- grdAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
 ```
 
 ## Estimation of the semivariogram
@@ -35,7 +38,8 @@ Use the data to compute a sample semivariogram and to fit a spherical model with
 
 ```{r}
 #compute sample semivariogram
-vg <- variogram(SOM~1, data = priordataEthiopia)
+coordinates(sampleAmhara) <- ~ s1 + s2
+vg <- variogram(SOM~1, data = sampleAmhara)
 plot(vg)
 #fit semivariogram model
 vgm_MoM <- fit.variogram(vg, model = vgm(psill = 0.6, model = "Sph", range = 40, nugget = 0.6))
@@ -51,8 +55,8 @@ Select a simple random sample with replacement of size 1,000 for evaluating the 
 
 ```{r}
 set.seed(314)
-units <- sample(nrow(grdEthiopia), size=1000, replace=TRUE)
-mysample <- grdEthiopia[units,]
+units <- sample(nrow(grdAmhara), size=1000, replace=TRUE)
+mysample <- grdAmhara[units,]
 
 #Shift the randomly selected points to random points within the cells
 mysample$s1 <- jitter(mysample$s1, amount=0.5)
@@ -67,7 +71,7 @@ Select a square grid with the first spacing, add a dummy variable and predict th
 
 ```{r}
 coordinates(mysample) <- ~s1+s2
-gridded(grdEthiopia) <- ~s1+s2
+gridded(grdAmhara) <- ~s1+s2
 
 #define grid spacings
 spacing <- 5:12
@@ -77,7 +81,7 @@ cprob <- c(0.5, 0.8, 0.95)
 
 QKV <- matrix(nrow=length(spacing), ncol=length(cprob))
 for (i in 1:length(spacing)) {
-    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i], type="regular", offset=c(0.5,0.5))
+    mygridxy <- spsample(x=grdAmhara, cellsize=spacing[i], type="regular", offset=c(0.5,0.5))
     #add a dummy variable for interpolation
     mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
     coordinates(mygrid) <- ~s1+s2
@@ -93,7 +97,7 @@ for (i in 1:length(spacing)) {
 }
 
 result <- data.table(spacing, QKV)
-#save(result, file="../results/MBGridSpacing_Ethiopia_QOKV.RData")
+#save(result, file = "../results/MBGridSpacing_Amhara_QOKV.RData")
 
 df <- result %>% pivot_longer(.,cols=c("V1","V2","V3"))
 ggplot(data=df)+

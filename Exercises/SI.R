@@ -1,5 +1,4 @@
-load(file="../data/Voorst.RData")
-load(file="data/Voorst.RData")
+grdVoorst <- readRDS("../data/grdVoorst.rds")
 
 n <- 40
 N <- nrow(grdVoorst)

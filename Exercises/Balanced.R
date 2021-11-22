@@ -1,13 +1,13 @@
 library(sampling)
 
-load("../data/Amazonia_5km.RData")
+grdAmazonia <- readRDS(file = "../results/grdAmazonia_5km.rds")
 
 #compute natural logs of SWIR2
-gridAmazonia$lnSWIR2 <- log(gridAmazonia$SWIR2)
+grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 
 #compute matrix with balancing variables (design matrix)
-N <- nrow(gridAmazonia)
-X <- cbind(rep(1,times=N), gridAmazonia$lnSWIR2, gridAmazonia$Terra_PP)
+N <- nrow(grdAmazonia)
+X <- cbind(rep(1,times=N), grdAmazonia$lnSWIR2, grdAmazonia$Terra_PP)
 
 #compute equal inclusion probabilities for all N units
 n <- 100
@@ -18,7 +18,7 @@ set.seed(314)
 sample_ind <- samplecube(X=X, pik=pi, method=1)
 eps <- 1e-6
 units <- which(sample_ind>(1-eps))
-mysample <- gridAmazonia[units,]
+mysample <- grdAmazonia[units,]
 
 #estimate the population mean of AGB by pi estimator
 mz <- mean(mysample$AGB)

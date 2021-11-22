@@ -36,7 +36,7 @@ SIpairs <- function(h,n,area){
 
 #Read simulated field
 
-load(file="../data/HunterValley.RData")
+grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 
 grd <- grdHunterValley
 names(grd)[c(1,2)] <- c("s1","s2")

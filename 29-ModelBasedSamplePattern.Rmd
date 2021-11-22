@@ -74,7 +74,7 @@ The semivariogram parameters as estimated by `nls` are then used to define a sem
 ```{r variogramlnECe, echo=FALSE, fig.asp=0.7, fig.cap="Sample semivariogram and fitted exponential model of lnECe at the Cotton Research Farm."}
 library(gstat)
 #read calibration data
-clbdat <- read.csv(file="data/ECEM_CRF.csv", header=TRUE)
+clbdat <- read.csv(file = "data/Sample_ECEM_CRF_Uzbekistan.csv", header=TRUE)
 
 #estimate semivariogram of ln(ECe)
 clbdat$lnECe <- log(clbdat$ECe150)
@@ -138,8 +138,8 @@ During the optimisation a sample is perturbed by replacing one randomly selected
 
 ```{r}
 library(spsann)
-load(file="data/CottonResearchFarm.RData")
-candi <- EM_CRF[,c(1,2)]
+load(file = "results/CottonResearchFarm_Uzbekistan.RData")
+candi <- grdCRF[,c("x1","x2")]
 names(candi) <- c("x","y")
 schedule <- scheduleSPSANN(
   initial.acceptance=0.8,
@@ -161,16 +161,16 @@ trace <- res$objective$energy
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(mysample, trace, file="results/MBSample_OK_Uzbekistan.RData")
+save(mysample, trace, file = "results/MBSample_OK_Uzbekistan.RData")
 ```
 
 The spatial pattern of the sample in Figure \@ref(fig:ModelBasedSampleOK) and the trace of the MKV in Figure \@ref(fig:TraceMOKV) suggest that we are close to the global optimum.
 
 ```{r ModelBasedSampleOK, echo=FALSE, out.width='100%', fig.cap="Sampling pattern optimised for the mean variance of ordinary kriging predictions of lnECe (Model-based sample) and spatial coverage sample of the Cotton Research Farm."}
 library(spcosa)
-load(file="results/MBSample_OK_Uzbekistan.RData")
+load(file = "results/MBSample_OK_Uzbekistan.RData")
 
-s0 <- EM_CRF #this grid is constructed in SpatialResponseSurface.Rmd
+s0 <- grdCRF #this grid is constructed in SpatialResponseSurface.Rmd
 gridded(s0) <- ~x1+x2
 set.seed(314)
 myStrata <- stratify(s0, nStrata=50, equalArea=FALSE, nTry=10)
@@ -179,9 +179,9 @@ myspcsample <- spsample(myStrata) %>% as(.,"data.frame")
 names(mysample) <- names(myspcsample)
 mysamples <- rbind(mysample,myspcsample)
 mysamples$design <- rep(c("Model-based sample","Spatial coverage sample"),each=50)
-#pdf(file="Samples_CRFUzbekistan.pdf", width = 7, height = 4)
+#pdf(file = "Samples_CRFUzbekistan.pdf", width = 7, height = 4)
 ggplot(data=mysamples) +
-  geom_raster(data=EM_CRF, mapping=aes(x=x1/1000, y=x2/1000), fill="grey") +
+  geom_raster(data=grdCRF, mapping=aes(x=x1/1000, y=x2/1000), fill="grey") +
   geom_point(data=mysamples, mapping=aes(x=x1/1000, y=x2/1000), size=1, colour="black") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
@@ -264,7 +264,7 @@ Optimisation of the sampling pattern for KED is illustrated with the Cotton Rese
 
 At several points multiple pairs of observations of the study variable ECe and the covariate EM have been made. These calibration data have exactly the same spatial coordinates. This leads to problems with REML estimation. The covariance matrix is not positive definite, so that it cannot be inverted. To solve this problem I jittered the coordinates of the sampling points by a small amount.
 
-<!-- Note that in the next chunk I use EM as measured at the calibration sites (ECEM_CRF.csv) to fit the regression model and to compute the residuals. Ideally the interpolated EM values in data/CottonResearchFarm.RData (obtained by ordinary kriging of EM data in TransectsData_EM_CRF.csv) at the calibration sites are used as a covariate. However, the EM measurements in  the transects are at one time only, whereas the calibration data consist of simultaneous EM and EC measurements at multiple times. Therefore, to keep it simple, I used the EM data at the calibration sites -->
+<!-- Note that in the next chunk I use EM as measured at the calibration sites (Sample_ECEM_CRF_Uzbekistan.csv) to fit the regression model and to compute the residuals. Ideally the interpolated EM values in results/CottonResearchFarm_Uzbekistan.RData (obtained by ordinary kriging of EM data in TransectsData_EM_CRF_Uzbekistan.csv) at the calibration sites are used as a covariate. However, the EM measurements in  the transects are at one time only, whereas the calibration data consist of simultaneous EM and EC measurements at multiple times. Therefore, to keep it simple, I used the EM data at the calibration sites -->
 
 ```{r}
 library(geoR)
@@ -272,9 +272,9 @@ clbdat$lnEM100 <- log(clbdat$EMv1m)
 clbdat$x <- jitter(clbdat$x, amount=0.001)
 clbdat$y <- jitter(clbdat$y, amount=0.001)
 dGeoR <- as.geodata(obj=clbdat, header=TRUE,
-  coords.col=17:18, data.col=16, covar.col=19)
-vgm_REML <- likfit(geodata=dGeoR, trend=~lnEM100,
-  cov.model="exponential", ini.cov.pars=c(0.1,200),
+  coords.col = c("x", "y"), data.col = "lnECe", covar.col = "lnEM100")
+vgm_REML <- likfit(geodata=dGeoR, trend= ~ lnEM100,
+  cov.model = "exponential", ini.cov.pars=c(0.1, 200),
   nugget=0.1, lik.method="REML", messages=FALSE)
 ```
 
@@ -320,7 +320,7 @@ To optimise the sampling pattern for KED, using the mean KED variance as a minim
 ```{r, eval=FALSE}
 set.seed(314)
 res <- optimMKV(
-  points=50, candi=candi, covars=EM_CRF,
+  points=50, candi=candi, covars=grdCRF,
   vgm=vgm_REML_gstat, eqn=z~lnEM100cm,
   schedule=schedule,
   plotit=FALSE, track=FALSE)
@@ -331,16 +331,16 @@ mysample <- candi[res$points$id,]
 ids <- as.integer(rownames(mysample))
 mysample$lnEM100cm <- covars[ids,3]
 trace <- res$objective$energy
-save(mysample,trace,file="results/MBSample_KED_Uzbekistan.RData")
+save(mysample,trace,file = "results/MBSample_KED_Uzbekistan.RData")
 ```
 
 Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample of 50 points. This clearly shows the irregular spatial pattern of the sampling points induced by the covariate lnEM100cm. 
 
 ```{r ModelBasedSampleKED, echo=FALSE, fig.cap="Optimised sampling pattern for kriging with an external drift of lnECe at the Cotton Research Farm, using lnEM100cm as a covariate."}
-load(file="results/MBSample_KED_Uzbekistan.RData")
+load(file = "results/MBSample_KED_Uzbekistan.RData")
 
-covars <- EM_CRF
-#pdf(file="Sample_KED_CRFUzbekistan.pdf", width = 7, height = 4)
+covars <- grdCRF
+#pdf(file = "Sample_KED_CRFUzbekistan.pdf", width = 7, height = 4)
 ggplot(data=covars) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000,fill=lnEM100cm)) +
   geom_point(data=mysample, mapping=aes(x=x/1000, y=y/1000), size=2,colour="black") +
@@ -359,7 +359,7 @@ plt1 <- ggplot(data=mysample) +
   ggtitle("Sample")+
   theme(plot.title=element_text(size=10, hjust=0.5))
 
-plt2 <- ggplot(data=EM_CRF) +
+plt2 <- ggplot(data=grdCRF) +
   geom_histogram(mapping=aes(x=lnEM100cm), breaks=seq(from=2.75,to=5, by=0.25), fill="black", alpha=0.5, color="black") +
   ggtitle("Population") +
   theme(plot.title=element_text(size=10, hjust=0.5))
@@ -389,10 +389,13 @@ In Section \@ref(GridspacingOK) the legacy data of West-Amhara were used to esti
 
 ```{r, echo=FALSE}
 library(geoR)
-load(file="data/CovariatesAmharaEthiopia.RData")
-load(file="data/AmharaEthiopia.RData")
-priordata <- as(priordataEthiopia, "data.frame")
-dGeoR <- as.geodata(obj=priordata, header=TRUE,  coords.col=13:14, data.col=1)
+grdAmhara <- readRDS(file = "data/grdAmhara.rds")
+sampleAmhara <- readRDS(file = "data/Sample_Amhara.rds")
+grdAmhara <- grdAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+sampleAmhara <- sampleAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+dGeoR <- as.geodata(obj=sampleAmhara, header=TRUE,  coords.col=c("s1", "s2"), data.col="SOM")
 vgm_ML <- likfit(geodata=dGeoR, trend="cte", cov.model="spherical",
   ini.cov.pars=c(0.4,40), nugget=0.6, lik.method="ML", messages=FALSE)
 ```
@@ -401,9 +404,10 @@ In the next code chunk a list is created, containing a data frame with the coord
 
 ```{r}
 library(sp)
-legacy <- remove.duplicates(priordataEthiopia, zero=1, remove.second=TRUE)
+coordinates(sampleAmhara) <- ~ s1 + s2
+legacy <- remove.duplicates(sampleAmhara, zero=1, remove.second=TRUE)
 pnts <- list(fixed=coordinates(legacy), free=100)
-candi <- grdEthiopia[,c(1,2)]
+candi <- grdAmhara[,c("s1","s2")]
 names(candi) <- c("x","y")
 ```
 
@@ -430,19 +434,20 @@ infillSample <- res$points[ids,]
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(res, file="results/MBInfillSample_OK_Ethiopia.RData")
+save(res, file = "results/MBInfillSample_OK_Amhara.RData")
 ```
 
 Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the soil organic matter (SOM) concentration (dag kg^-1^) throughout West-Amhara. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range, `r round(vgm_ML$phi,1)` km, of the semivariogram.
 
 ```{r ModelBasedInfill, echo=FALSE, fig.cap="Model-based infill sample for ordinary kriging of the SOM concentration throughout West-Amhara. Legacy units have free-value 0, infill units have free-value 1."}
-load("results/MBInfillSample_OK_Ethiopia.RData")
-load(file="data/CovariatesAmharaEthiopia.RData")
+load("results/MBInfillSample_OK_Amhara.RData")
 df <- data.frame(x=res$points$x, y=res$points$y, free=res$points$free)
 df$free <- as.factor(df$free)
 ggplot() +
-  geom_raster(grdEthiopia, mapping=aes(x=s1,y=s2), fill="grey") +
+  geom_raster(grdAmhara, mapping=aes(x=s1,y=s2), fill="grey") +
   geom_point(data=df, mapping=aes(x=x, y=y, shape=free)) +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
@@ -451,9 +456,10 @@ ggplot() +
 For West-Amhara maps of covariates are available that can be used in kriging with an external drift (KED), see Section \@ref(MBgridspacingKED). The prediction error variance with KED is partly determined by the covariate values (see Section \@ref(SamplePatternKED)), and therefore, when filling in the undersampled areas, locations with extreme values for the covariates are preferably selected. In Section \@ref(MBgridspacingKED) the legacy data were used to estimate the residual semivariogram by restricted maximum likelihood (REML), see Table \@ref(tab:VariogramREMLEthiopia). In the next code chunk the estimated parameters of the residual semivariogram are used to optimise the spatial pattern of an infill sample of 100 points for mapping SOM throughout West-Amhara by KED, using elevation (dem), NIR-reflectance (rfl_NIR), red-reflectance (rfl_red), and land surface temperature (lst) as predictors for the model-mean.
 
 ```{r, echo=FALSE}
+sampleAmhara <- as(sampleAmhara,"data.frame")
 library(geoR)
-dGeoR <- as.geodata(obj=priordata, header=TRUE, 
-   coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
+dGeoR <- as.geodata(obj=sampleAmhara, header=TRUE, 
+   coords.col=c("s1", "s2"), data.col="SOM", covar.col=c("dem", "rfl_NIR", "rfl_red", "lst"))
 vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
   cov.model="spherical", ini.cov.pars=c(1,5), nugget=0.2,
   lik.method="REML", messages=FALSE)
@@ -471,7 +477,7 @@ schedule <- scheduleSPSANN(
 ```
 
 ```{r, eval=FALSE}
-covars <- grdEthiopia[,c("dem","rfl_NIR","rfl_red","lst")]
+covars <- grdAmhara[,c("dem","rfl_NIR","rfl_red","lst")]
 vgm_REML_gstat <- vgm(model="Sph", psill=vgm_REML$sigmasq, 
   range=vgm_REML$phi, nugget=vgm_REML$nugget)
 set.seed(314)
@@ -483,25 +489,27 @@ res <- optimMKV(
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(res, file="results/MBInfillSample_KED_Ethiopia.RData")
+save(res, file = "results/MBInfillSample_KED_Amhara.RData")
 ```
 
 Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with OK because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with OK, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated model-mean.
 
 ```{r ModelBasedInfillKED, echo=FALSE, fig.cap="Model-based infill sample for kriging with an external drift of the SOM concentration throughout West-Amhara, plotted on a map of one of the covariates. Legacy units have free-value 0, infill units have free-value 1."}
-load("results/MBInfillSample_KED_Ethiopia.RData")
+load("results/MBInfillSample_KED_Amhara.RData")
 df <- data.frame(x=res$points$x, y=res$points$y, free=res$points$free)
 df$free <- as.factor(df$free)
 
 ggplot() +
-  geom_raster(grdEthiopia, mapping=aes(x=s1, y=s2, fill=rfl_NIR)) +
+  geom_raster(grdAmhara, mapping=aes(x=s1, y=s2, fill=rfl_NIR)) +
   geom_point(data=df, mapping=aes(x=x, y=y, shape=free)) +
   scale_fill_continuous(name="NIR", type="viridis") + 
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
 ```{r, echo=FALSE}
-load("results/MBInfillSample_KED_Ethiopia.RData")
+load("results/MBInfillSample_KED_Amhara.RData")
 MKV_KED_opt <- as.numeric(tail(res$objective$energy,1))
 ```
 

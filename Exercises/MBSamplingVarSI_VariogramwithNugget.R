@@ -4,7 +4,7 @@ psill <- 966 - nugget #966 is the sill of the variogram without nugget
 vgm_SphNug <- vgm(model="Sph", nugget=nugget, psill=psill, range=44.6)
 
 library(rgdal)
-shpField <- readOGR(dsn="../data",layer="Leest5")
+shpField <- readOGR(dsn="../data",layer="Leest")
 proj4string(shpField) <- NA_character_
 mygrid <- spsample(shpField,type="regular", n=2000, offset=c(0.5,0.5)) %>% as(.,"data.frame")
 H <- as.matrix(dist(mygrid))

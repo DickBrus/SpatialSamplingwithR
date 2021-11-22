@@ -2,7 +2,7 @@ library(fields)
 library(ggplot2)
 
 # read data
-load(file="../data/HunterValley.RData")
+grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 
 n <- 20
 set.seed(314)

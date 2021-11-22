@@ -19,7 +19,7 @@ mySample <- spcosa::spsample(myStrata)
 #plot geostrata and sampling points (centres of geostrata)
 plot(myStrata, mySample)
 
-save(myStrata,mySample,file="../results/SpatialCoverageCircularPlot_6pnts.RData")
+save(myStrata,mySample,file = "../results/SpatialCoverageCircularPlot_6pnts.RData")
 
 #check size of strata
 myStrata <- as(myStrata,"data.frame")

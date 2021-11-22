@@ -58,17 +58,17 @@ I refer to Section (8.2.2) in @gru06 for the ratio estimator and its standard er
 The ratio estimator and its standard error can be computed with function `svyby` of package **survey** [@Lumley2020]. This is illustrated with Eastern Amazonia. We wish to estimate the mean aboveground biomass (AGB) of the sixteen ecoregions from a simple random sample of 200 units.
 
 ```{r, echo = FALSE}
-load(file = "data/Amazonia_1km.RData")
-mz_pop <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Ecoregion, FUN = mean)
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+mz_pop <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 ```
 
 ```{r}
 library(survey)
 n <- 200
 set.seed(314)
-units <- sample(nrow(gridAmazonia), size = n, replace = FALSE)
-mysample <- gridAmazonia[units, c("AGB", "Ecoregion")]
-mysample$N <- nrow(gridAmazonia)
+units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
+mysample <- grdAmazonia[units, c("AGB", "Ecoregion")]
+mysample$N <- nrow(grdAmazonia)
 design_si <- svydesign(id = ~ 1, data = mysample, fpc = ~ N)
 res <- svyby(~ AGB, by = ~ Ecoregion, design = design_si, FUN = svymean)
 ```
@@ -90,20 +90,20 @@ knitr::kable(
 The simple random sampling is repeated 1,000 times, and every sample is used to estimate the mean AGB of the ecoregions both with the $\pi$ estimator and the ratio estimator. As can be seen in Table \@ref(tab:TableRatiovsHTEstimatesEcoregions) the standard deviation of the ratio estimates is much smaller than that of the $\pi$ estimates. The reason is that the number of sampling units in an ecoregion varies among samples, i.e. the sample size of an ecoregion is random. When many units are selected from an ecoregion, the estimated total of that ecoregion is large. The estimated mean as obtained with the $\pi$ estimator then is large too, because the estimated total is divided by the fixed size (total number of population units, $N_d$) of the ecoregion. However, in the ratio estimator the size of an ecoregion is estimated from the same sample, although we know its size, see Equation \@ref(eq:generalratiodomain). With many units selected from an ecoregion, the estimated size of that ecoregion, $\widehat{N}_d$, is also large. By dividing the large estimated total by the large estimated size, a more stable estimate of the mean of the domain is obtained. For quite a few ecoregions the standard deviations are very large, especially of the $\pi$ estimator. These are the ecoregions with very small average sample sizes. With simple random sampling the expected sample size can simply be computed by $E[n] = n \; N_d/N$. In the following section alternative estimators are described for these ecoregions with small expected sample sizes. To speed up the computations I used a 5 km $\times$ 5 km subgrid in this sampling experiment.
 
 ```{r, echo = FALSE, eval = FALSE}
-load(file = "data/Amazonia_5km.RData")
-mz_pop <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Ecoregion, FUN = mean)
-ecoregions <- sort(unique(gridAmazonia$Ecoregion))
-N <- nrow(gridAmazonia)
-N_eco <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Ecoregion, FUN = length)
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+mz_pop <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = mean)
+ecoregions <- sort(unique(grdAmazonia$Ecoregion))
+N <- nrow(grdAmazonia)
+N_eco <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = length)
 number_of_samples <- 1000
-mx_eco_pop <- tapply(gridAmazonia$lnSWIR2, INDEX = gridAmazonia$Ecoregion, FUN = mean)
+mx_eco_pop <- tapply(grdAmazonia$lnSWIR2, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 mX_eco_pop <- data.frame(Intercept = rep(1, length(mx_eco_pop)), lnSWIR2 = mx_eco_pop)
 
 set.seed(314)
 mz_eco_HT <- mz_eco_ratio <- mz_eco_regr <- mz_eco_synt <- mz_eco_extsynt <- matrix(nrow = length(ecoregions), ncol = number_of_samples, dimnames = list(ecoregions, seq(1:number_of_samples)))
 for (i in 1:number_of_samples) {
   print(i)
-  mypop <- gridAmazonia
+  mypop <- grdAmazonia
   units <- sample(nrow(mypop), size = n, replace = FALSE)
   mysample <- mypop[units, c("AGB", "Ecoregion")]
 
@@ -153,8 +153,8 @@ sd_mz_HT <- apply(mz_eco_HT, MARGIN = 1, FUN = var, na.rm = TRUE) %>% sqrt(.) %>
 sd_mz_ratio <- apply(mz_eco_ratio, MARGIN = 1, FUN = var, na.rm = TRUE) %>% sqrt(.) %>% round(., 1)
 notNA <- apply(mz_eco_HT, MARGIN = 1, FUN = function(x) {
   sum(!is.na(x))})
-N_eco <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Ecoregion, FUN = length)
-N <- nrow(gridAmazonia)
+N_eco <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = length)
+N <- nrow(grdAmazonia)
 En <- round(n * N_eco / N, 2)
 nms <- names(sd_mz_HT)
 names(sd_mz_HT) <- NULL
@@ -241,24 +241,25 @@ The function name 'twophase' is somewhat confusing. It suggests that we have a l
 By assigning the domain means of the covariates to argument `exhaustive` of function `twophase` the sampling error of the first phase is ignored.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package **survey** also a function `twophase` is defined, for this reason the  name of the package is made explicit by `forestinventory::twophase`. With arguments `psmall=TRUE` and element `unbiased=TRUE` in the list `small_area` the regression estimate is computed.
 
 ```{r, echo = FALSE}
-load(file = "data/Amazonia_1km.RData")
-mz_pop <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Ecoregion, FUN = mean)
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+mz_pop <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 ```
 
 ```{r}
 library(forestinventory)
 n <- 200
 set.seed(314)
-units <- sample(nrow(gridAmazonia), size = n, replace = FALSE)
-gridAmazonia$ind <- rep(0, nrow(gridAmazonia))
-gridAmazonia$ind[units] <- 1
-gridAmazonia$AGB[gridAmazonia$ind == 0] <- NA
+units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
+grdAmazonia$ind <- rep(0, nrow(grdAmazonia))
+grdAmazonia$ind[units] <- 1
+grdAmazonia$AGB[grdAmazonia$ind == 0] <- NA
+grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 mx_eco_pop <- tapply(
-  gridAmazonia$lnSWIR2, INDEX = gridAmazonia$Ecoregion, FUN = mean)
+  grdAmazonia$lnSWIR2, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 mX_eco_pop <- data.frame(
   Intercept = rep(1, length(mx_eco_pop)), lnSWIR2 = mx_eco_pop)
 ecos_in_sam <- unique(mysample$Ecoregion)
-res <- forestinventory::twophase(AGB ~ lnSWIR2, data = gridAmazonia,
+res <- forestinventory::twophase(AGB ~ lnSWIR2, data = grdAmazonia,
   phase_id = list(phase.col = "ind", terrgrid.id = 1),
   small_area = list(sa.col = "Ecoregion", areas = sort(ecos_in_sam), unbiased = TRUE),
   psmall = TRUE, exhaustive = mX_eco_pop)
@@ -287,7 +288,7 @@ Figure \@ref(fig:RatioversusRegrEcoregions) shows the regression estimates plott
 (ref:RatioversusRegrEcoregionslabel) Scatter plot of the ratio and the regression estimates of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia for simple random sample without replacement of size 200. In the regression estimate lnSWIR2 is used as a predictor. The line is fitted by ordinary least squares.
 
 ```{r RatioversusRegrEcoregions, echo = FALSE, fig.cap = "(ref:RatioversusRegrEcoregionslabel)"}
-mysample$N <- nrow(gridAmazonia)
+mysample$N <- nrow(grdAmazonia)
 design_si <- svydesign(id = ~ 1, data = mysample, fpc = ~ N)
 res <- svyby(~ AGB, by = ~ Ecoregion, design = design_si, FUN = svymean)
 
@@ -308,7 +309,7 @@ I quantified the gain in precision of the estimated mean AGB due to the use of t
 
 ```{r TableGainRegressionestimator, echo = FALSE}
 load(file = "results/MeanAGB_ecoregions.RData")
-ecoregions <- sort(unique(gridAmazonia$Ecoregion))
+ecoregions <- sort(unique(grdAmazonia$Ecoregion))
 v_ratio <- apply(mz_eco_ratio, MARGIN = 1, FUN = var, na.rm = TRUE)
 v_regr <- apply(mz_eco_regr, MARGIN = 1, FUN = var, na.rm = TRUE)
 gain <- round(v_ratio / v_regr, 2)
@@ -343,7 +344,7 @@ This is equal to the first variance component of Equation \@ref(eq:Varregression
 The synthetic estimate can be computed with function `twophase`, with arguments `psmall=FALSE` and element `unbiased=FALSE` in the list `small_area`.
 
 ```{r}
-res <- forestinventory::twophase(AGB ~ lnSWIR2, data = gridAmazonia,
+res <- forestinventory::twophase(AGB ~ lnSWIR2, data = grdAmazonia,
   phase_id = list(phase.col = "ind", terrgrid.id = 1),
   small_area = list(sa.col = "Ecoregion", areas = ecoregions, unbiased = FALSE),
   psmall = FALSE, exhaustive = mX_eco_pop)
@@ -443,12 +444,13 @@ This equation shows that the larger the estimated residual variance $\hat{\sigma
 The means of the small domains can be computed with function `eblup.mse.f.wrap` of package **JoSAE** [@JoSAE]. It requires as input a linear mixed model generated with function `lme` of package **nlme** [@nlme]. The simple random sample of size 200 selected before is used to fit the linear mixed model, with lnSWIR2 as a fixed effect, i.e. the effect of lnSWIR2 on the mean AGB. The random effect is added by assigning another formula to argument `random`. The formula `~ 1 | Ecoregion` means that the intercept is treated as a random variable and that it varies among the ecoregions. This linear mixed model is referred to as a random intercept model: the intercepts are allowed to differ among the small domains, whereas the effects of the covariates, lnSWIR2 in our case, is equal for all domains.
 
 ```{r, echo=FALSE}
-load("data/Amazonia_1km.RData")
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 set.seed(314)
-gridAmazonia$x1 <- gridAmazonia$x1 / 1000
-gridAmazonia$x2 <- gridAmazonia$x2 / 1000
-units <- sample(nrow(gridAmazonia), size = n, replace = FALSE)
-mysample <- gridAmazonia[units, c("x1", "x2", "AGB", "lnSWIR2", "Ecoregion")]
+grdAmazonia$x1 <- grdAmazonia$x1 / 1000
+grdAmazonia$x2 <- grdAmazonia$x2 / 1000
+units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
+mysample <- grdAmazonia[units, c("x1", "x2", "AGB", "lnSWIR2", "Ecoregion")]
 ```
 
 ```{r}
@@ -486,7 +488,7 @@ coef(lmm_AGB)
 The fitted model can now be used to predict the means of the ecoregions as follows. As a first step a data frame must be defined, with the size and the population mean of the covariate lnSWIR2 per domain. This data frame is passed to argument `domain.data` of function `eblup.mse.f.wrap`. This function computes the model-based prediction, as well as the regression estimator (Equation \@ref(eq:regressionestimatorsmalldomain)) and the synthetic estimator (Equation \@ref(eq:syntheticestimatorsmalldomain)) and their variances. The model-based predictor is the variable `EBLUP` in the output data frame. For the model-based predictor two standard errors are computed, see @Breidenbach2012 for details.
 
 ```{r}
-N_eco <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Ecoregion, FUN = length)
+N_eco <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = length)
 df_eco <- data.frame(Ecoregion = ecoregions, N = N_eco, lnSWIR2 = mx_eco_pop)
 res <- eblup.mse.f.wrap(domain.data = df_eco, lme.obj = lmm_AGB)
 df <- data.frame(Ecoregion = res$domain.ID, mb = res$EBLUP,
@@ -519,7 +521,7 @@ The simple random sample of size 200 selected before is used to estimate the reg
 ```{r}
 library(geoR)
 dGeoR <- as.geodata(mysample, header = TRUE,
-  coords.col = 1:2, data.col = 3, covar.col = 4)
+  coords.col = c("x1", "x2"), data.col = "AGB", covar.col = "lnSWIR2")
 vgm_REML <- likfit(geodata = dGeoR, trend = ~ lnSWIR2, cov.model = "spherical",
   ini.cov.pars = c(1000, 300), nugget = 1500, lik.method = "REML", messages = FALSE)
 ```
@@ -532,11 +534,11 @@ mysample$x2 <- jitter(mysample$x2, amount = 0.5)
 coordinates(mysample) <- ~ x1 + x2
 vgm_REML_gstat <- vgm(model = "Sph",
   nugget = vgm_REML$nugget, psill = vgm_REML$sigmasq, range = vgm_REML$phi)
-coordinates(gridAmazonia) <- ~ x1 + x2
+coordinates(grdAmazonia) <- ~ x1 + x2
 predictions  <- krige(
   formula = AGB ~ lnSWIR2,
   locations = mysample,
-  newdata = gridAmazonia,
+  newdata = grdAmazonia,
   model = vgm_REML_gstat,
   debug.level = 0) %>% as(., "data.frame")
 ```
@@ -556,29 +558,29 @@ Besides a prediction (column `var1.pred`), for every population unit the varianc
 
 ```{r}
 AGBpred_unit <- predictions$var1.pred
-gridAmazonia <- as(gridAmazonia, "data.frame")
-mz_eco_mb <- tapply(AGBpred_unit, INDEX = gridAmazonia$Ecoregion,
+grdAmazonia <- as(grdAmazonia, "data.frame")
+mz_eco_mb <- tapply(AGBpred_unit, INDEX = grdAmazonia$Ecoregion,
                     FUN = mean) %>% round(., 1)
 ```
 
 A difficulty is the computation of the standard error of these model-based predictions of the ecoregion mean. We cannot simply sum the unit-wise variances and divide the sum by the squared number of units, because the prediction errors of units with a mutual distance smaller than the estimated range of the spherical semivariogram are correlated. A straightforward approach to obtain the standard error of the predicted mean is geostatistical simulation\index{Geostatistical simulation}. A large number of maps are simulated, conditional on the selected sample. For an infinite number of maps, the "average map", i.e. the map obtained by averaging for each unit all simulated values of that unit, is equal to the map with predicted AGB. For each simulated map, the average of the simulated values across all units of an ecoregion is computed. This results in as many averages as we have simulated maps. The variance of the averages of an ecoregion is an estimate of the variance of the predicted mean of that ecoregion. To reduce computing time the 5 km $\times$ 5 km subgrid is used in the geostatistical simulation.  
 
 ```{r, eval = FALSE}
-load(file = "data/Amazonia_5km.RData")
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
 nsim <- 1000
-coordinates(gridAmazonia) <- ~ x1 + x2
+coordinates(grdAmazonia) <- ~ x1 + x2
 simulations  <- krige(
   formula = AGB ~ lnSWIR2,
   locations = mysample,
-  newdata = gridAmazonia,
+  newdata = grdAmazonia,
   model = vgm_REML_gstat,
   nmax = 100, nsim = nsim,
   debug.level = 0) %>% as(., "data.frame")
-gridAmazonia <- as(gridAmazonia, "data.frame")
+grdAmazonia <- as(grdAmazonia, "data.frame")
 AGBsim_eco <- matrix(nrow = length(ecoregions), ncol = nsim)
 for (i in 1:nsim) {
   AGBsim_eco[, i] <- tapply(simulations[, i + 2],
-  INDEX = gridAmazonia$Ecoregion, FUN = mean)
+  INDEX = grdAmazonia$Ecoregion, FUN = mean)
 }
 ```
 
@@ -668,21 +670,21 @@ Suppose that the original sample is a simple random sample from the entire study
 This sampling strategy is illustrated with Eastern Amazonia. A simple random sample without replacement of 400 units is selected.
 
 ```{r}
-load("data/Amazonia_1km.RData")
-gridAmazonia$Biome <- as.factor(gridAmazonia$Biome)
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+grdAmazonia$Biome <- as.factor(grdAmazonia$Biome)
 biomes <- c("Mangrove", "Forest.dry", "Grassland", "Forest.moist")
-levels(gridAmazonia$Biome) <- biomes
+levels(grdAmazonia$Biome) <- biomes
 n1 <- 400
 set.seed(123)
-units_1 <- sample(nrow(gridAmazonia), size = n1, replace = FALSE)
-mysample_1 <- gridAmazonia[units_1, c("AGB", "Biome")]
+units_1 <- sample(nrow(grdAmazonia), size = n1, replace = FALSE)
+mysample_1 <- grdAmazonia[units_1, c("AGB", "Biome")]
 print(n1_biome <- table(mysample_1$Biome))
 ```
 
 The selected units are removed from the sampling frame. For each of the three small biomes, Mangrove, Forest.dry, and Grassland, the size of the supplemental sample is computed so that the total sample size becomes 40. The supplemental sample is selected by stratified simple random sampling without replacement, using the small biomes as strata (Chapter \@ref(STSI)).
 
 ```{r}
-units_notselected <- gridAmazonia[-units_1, ]
+units_notselected <- grdAmazonia[-units_1, ]
 Biomes_NFM <- units_notselected[units_notselected$Biome != "Forest.moist", ]
 n_biome <- 40
 n2_biome <- rep(n_biome, 3) - n1_biome[-4]
@@ -703,7 +705,7 @@ print(mz_biome <- tapply(mysample$AGB, INDEX = mysample$Biome, FUN = mean))
 Finally, the standard error is estimated, accounting for sampling without replacement from a finite population (Equation \@ref(eq:EstVarMeanSI)).
 
 ```{r}
-N_biome <- table(gridAmazonia$Biome)
+N_biome <- table(grdAmazonia$Biome)
 fpc <- (1 - n_biome / N_biome)
 S2z_biome <- tapply(mysample$AGB, INDEX = mysample$Biome, FUN = var)
 print(se_mz_biome <- sqrt(fpc * (S2z_biome / n_biome)))
@@ -714,11 +716,11 @@ print(se_mz_biome <- sqrt(fpc * (S2z_biome / n_biome)))
 mz_biome <- v_mz_biome <- matrix(nrow = 10000, ncol = 4)
 set.seed(314)
 for (i in 1:10000) {
-  units_1 <- sample(nrow(gridAmazonia), size = n1, replace = FALSE)
-  mysample_1 <- gridAmazonia[units_1, c("AGB", "Biome")]
+  units_1 <- sample(nrow(grdAmazonia), size = n1, replace = FALSE)
+  mysample_1 <- grdAmazonia[units_1, c("AGB", "Biome")]
   n1_biome <- table(mysample_1$Biome)
 
-  units_notselected <- gridAmazonia[-units_1, ]
+  units_notselected <- grdAmazonia[-units_1, ]
   Biomes.NFM <- units_notselected[units_notselected$Biome != "Forest.moist", ]
   n_biome <- 40
   n2_biome <- rep(n_biome, 3) - n1_biome[-4]
@@ -733,7 +735,7 @@ for (i in 1:10000) {
   mysample <- rbin_biome(mysample_1, mysample_2)
   mz_biome[i, ] <- tapply(mysample$AGB, INDEX = mysample$Biome, FUN = mean)
 
-  N_biome <- table(gridAmazonia$Biome)
+  N_biome <- table(grdAmazonia$Biome)
   fpc <- (1 - n_biome / N_biome)
   S2z_biome <- tapply(mysample$AGB, INDEX = mysample$Biome, FUN = var)
   v_mz_biome[i, ] <- fpc * (S2z_biome / n_biome)
@@ -750,7 +752,7 @@ Ep_mz_biome <- apply(mz_biome, MARGIN = 2, FUN = mean, na.rm = TRUE)
 Vp_mz_biome <- apply(mz_biome, MARGIN = 2, FUN = var, na.rm = TRUE)
 se_mz_biome <- sqrt(v_mz_biome)
 Ep_se_mz_biome <- apply(se_mz_biome, MARGIN = 2, FUN = mean, na.rm = TRUE)
-mz_biome_pop <- tapply(gridAmazonia$AGB, INDEX = gridAmazonia$Biome, FUN = mean)
+mz_biome_pop <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Biome, FUN = mean)
 
 alpha <- 0.05
 margin <- qt(1 - alpha / 2, 39, lower.tail = TRUE) * sqrt(v_mz_biome[, 1:3])

@@ -1,4 +1,4 @@
-load(file="data/SpainPortugal_TAS.RData")
+load(file = "data/SpainPortugal_TAS.RData")
 
 
 n <- 100 #size of simple random samples per time

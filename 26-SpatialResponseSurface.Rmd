@@ -16,7 +16,7 @@ This design has been applied, among others, for mapping soil salinity (ECe), usi
 Spatial response surface sampling  is illustrated with the electromagnetic induction (EM) measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan (Section \@ref(Datasets)). The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
 ```{r EMdataUzbekistan, echo=FALSE, out.width='100%', fig.cap="Natural log of EM38 measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
-dat <- read.csv(file="data/TransectsData_EM_CRF.csv")
+dat <- read.csv(file = "data/TransectsData_EM_CRF_Uzbekistan.csv")
 dat$lnEM100cm <- log(dat$EMv1mt)
 dat$lnEM50cm <- log(dat$EMv05mt)
 dat <- na.omit(dat)
@@ -37,7 +37,7 @@ ggplot(data = df) +
 
 ```{r, echo=FALSE, eval=FALSE}
 #read shape file with polygon of study area
-shpCRF <- readOGR(dsn = "data", layer = "CottonResearchFarm", verbose=FALSE)
+shpCRF <- readOGR(dsn = "data", layer = "CottonResearchFarm_Uzbekistan", verbose=FALSE)
 prj <- proj4string(shpCRF)
 shpCRF <- spTransform(shpCRF, CRS = CRS("+proj=tmerc +lat_0=0.000000000 +lon_0=63.000000000 +k=1.000000 +x_0=500000.000 +y_0=0.000 +ellps=krass +units=m"))
 
@@ -71,9 +71,9 @@ EMpred <- krige(
   nmax = 20,
   debug.level=0
 )
-EM_CRF <- as(EMpred,"data.frame")
-EM_CRF <- EM_CRF[,-4]
-names(EM_CRF)[3] <- "lnEM100cm"
+grdCRF <- as(EMpred,"data.frame")
+grdCRF <- grdCRF[,-4]
+names(grdCRF)[3] <- "lnEM100cm"
 
 EMpred  <- krige(
   lnEM50cm~1,
@@ -84,17 +84,17 @@ EMpred  <- krige(
   debug.level=0
 )
 df <- as(EMpred,"data.frame")
-EM_CRF$lnEM50cm<-df[,3]
-EM_CRF$subarea <- mygrid$subarea
+grdCRF$lnEM50cm<-df[,3]
+grdCRF$subarea <- mygrid$subarea
 
-#save(EM_CRF, file="results/OKpred_EM_CRF.RData")
-save(EM_CRF, file="data/CottonResearchFarm.RData")
+#save(grdCRF, file = "results/OKpred_grdCRF.RData")
+save(grdCRF, file = "results/CottonResearchFarm_Uzbekistan.RData")
 ```
 
 
 ```{r EMdataUzbekistan2, echo=FALSE, out.width='100%', fig.cap="Interpolated surfaces of natural log of EM38 measurements on the Cotton Research Farm , used as covariates in spatial response surface sampling."}
-load(file="data/CottonResearchFarm.RData")
-df <- EM_CRF %>% pivot_longer(cols=c("lnEM100cm","lnEM50cm"))
+load(file = "results/CottonResearchFarm_Uzbekistan.RData")
+df <- grdCRF %>% pivot_longer(cols=c("lnEM100cm","lnEM50cm"))
 
 ggplot(data = df) +
   geom_raster(mapping = aes(x = x1/1000, y = x2/1000, fill = value)) +
@@ -108,15 +108,15 @@ ggplot(data = df) +
 Function `prcomp` of the **stats** package [@R2020] is used to compute the principal component scores\index{Principal component score} for all units in the population (grid cells). The two covariates are centred and scaled, i.e. standardised principal components are computed. 
 
 ```{r}
-grdsub <- subset(EM_CRF, select=c(lnEM100cm,lnEM50cm))
+grdsub <- subset(grdCRF, select=c(lnEM100cm,lnEM50cm))
 pc <- prcomp(grdsub, center=TRUE, scale=TRUE)
 ```
 
 The means of the two principal component scores are 0, their standard deviations are `r round(pc$sdev[1],3)` and `r round(pc$sdev[2],3)`. The principal component scores are then scaled so that their standard deviations become 1. They then will have the same weight in the following steps. 
 
 ```{r}
-EM_CRF$PC1 <- pc$x[,1]*1/pc$sdev[1]
-EM_CRF$PC2 <- pc$x[,2]*1/pc$sdev[2]
+grdCRF$PC1 <- pc$x[,1]*1/pc$sdev[1]
+grdCRF$PC2 <- pc$x[,2]*1/pc$sdev[2]
 ```
 
 Function `ccd` of package **rsm** [@Lenth2009] is now used to generate a central composite design\index{Central composite design} (CCRSD). Argument `basis` specifies the number of factors, which is two in our case. Argument `n0` is the number of centre points and argument `alpha` determines the position of the star points (explained hereafter).
@@ -152,7 +152,7 @@ ccd_df <- ccd_df[-6,]
 The coordinates of the CCRSD design points are multiplied by a factor so that a large proportion $p$ of the bivariate standardised principal component scores of the population units is covered by the circle that passes through the design points (Figure \@ref(fig:ccdesign)). The factor is computed as a sample quantile of the empirical distribution of the distances of the points in the scatter to the centre. For $p$ I chose 0.7.
 
 ```{r}
-d <- sqrt(EM_CRF$PC1^2+EM_CRF$PC2^2)
+d <- sqrt(grdCRF$PC1^2+grdCRF$PC2^2)
 fct <- quantile(d, p=0.7)
 print(fct)
 ccd_df <- transform(ccd_df, x1=x1*fct, x2=x2*fct)
@@ -161,12 +161,12 @@ ccd_df <- transform(ccd_df, x1=x1*fct, x2=x2*fct)
 The next step is to select for each design point several candidate sampling units. For each of the nine design points\index{Design point} eight points are selected that are closest to that design point. This results in $9 \times 8$ candidate sampling points.
 
 ```{r}
-EM_CRF$unit <- 1:nrow(EM_CRF)
+grdCRF$unit <- 1:nrow(grdCRF)
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
-    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
-    EM_CRF <- EM_CRF[order(d2dpnt),]
-    candi <- EM_CRF[c(1:8), c("unit","x1","x2","PC1","PC2")]
+    d2dpnt <- sqrt((grdCRF$PC1-ccd_df$x1[i])^2+(grdCRF$PC2-ccd_df$x2[i])^2)
+    grdCRF <- grdCRF[order(d2dpnt),]
+    candi <- grdCRF[c(1:8), c("unit","x1","x2","PC1","PC2")]
     candi$dpnt <- i
     candi_all <- rbind(candi_all,candi)
 }
@@ -175,7 +175,7 @@ for (i in 1:nrow(ccd_df)) {
 Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate points associated with the design points with coordinates  (-1.51,-1.51), (0, -2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample the value of one of the principal component scores will be less extreme than the ideal values according to the CCRSD design.   
 
 ```{r candidatelocations, echo=FALSE, fig.cap="Clusters of units (red points) around the design points (triangles) of a CCRSD (two covariates), serving as candidate sampling points."}
-notcandidates <- EM_CRF[-candi_all$unit,]
+notcandidates <- grdCRF[-candi_all$unit,]
 ggplot(notcandidates) +
   geom_point(mapping=aes(x=PC1,y=PC2),alpha=0.5) +
   geom_point(data=candi_all,mapping=aes(x=PC1,y=PC2),colour="red") +
@@ -188,7 +188,7 @@ Figure \@ref(fig:candidatesingeospace) shows that in geographical space for most
 
 ```{r candidatesingeospace, echo=FALSE, fig.cap="Candidate sampling points plotted on a map of the first standardised principal component (PC1)."}
 library(ggpubr)
-ggplot(EM_CRF) +
+ggplot(grdCRF) +
   geom_raster(aes(x=x1/1000,y=x2/1000,fill=PC1)) +
   geom_point(data=candi_all,mapping=aes(x=x1/1000,y=x2/1000,shape=as.factor(dpnt)),size=2) +
   scale_shape_manual(values=c(0,1,2,3,4,5,6,7,8),name="design point") +
@@ -266,18 +266,18 @@ mySRSsample <- anneal(mysample=mysample0, candidates=candi_all, dpnt=ccd_df,
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(mySRSsample, file="results/SpatialResponseSurfaceSample_CRF_geo.RData")
-#save(mySRSsample, file="results/SpatialResponseSurfaceSample_CRF_mb.RData")
+save(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_geo.RData")
+#save(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_mb.RData")
 ```
 
 Figure \@ref(fig:CCRSDinPCspace) shows the optimised CCRSD samples plotted in the space spanned by the two principal components, obtained with the geometric and the model-based criterion, plotted together with the design points. The two optimised samples are very similar.
 
 ```{r CCRSDinPCspace, echo=FALSE, out.width='100%', fig.cap="Principal component scores of the spatial CCRSD sample (triangles), optimised with the geometric and the model-based criterion. Dots: design points of CCRSD."}
-load(file="results/SpatialResponseSurfaceSample_CRF_geo.RData")
+load(file = "results/SpatialResponseSurfaceSample_CRF_geo.RData")
 mysample_geo<-mySRSsample$mysample
 critmin_geo <- tail(mySRSsample$trace,1)
 
-load(file="results/SpatialResponseSurfaceSample_CRF_mb.RData")
+load(file = "results/SpatialResponseSurfaceSample_CRF_mb.RData")
 mysample_mb <- mySRSsample$mysample
 critmin_mb <- tail(mySRSsample$trace,1)
 
@@ -298,7 +298,7 @@ Figure \@ref(fig:CCRSDSample) shows the two optimised CCRSD samples plotted in g
 ```{r CCRSDSample, echo=FALSE, fig.cap="CCRSD sample from the Cotton Research Farm, optimised with the geometric and the model-based criterion, plotted on a map of the first standardised principal component (PC1)."}
 
 ggplot(mysamples) +
-  geom_raster(data=EM_CRF, mapping=aes(x=x1/1000,y=x2/1000,fill=PC1)) +
+  geom_raster(data=grdCRF, mapping=aes(x=x1/1000,y=x2/1000,fill=PC1)) +
   geom_point(data=mysamples, mapping=aes(x=x1/1000, y=x2/1000), size=2) +
   scale_fill_viridis_c(name="PC1") + 
   scale_x_continuous(name="Easting (km)") +
@@ -314,9 +314,9 @@ Nine points are rather few for fitting a polynomial regression model, especially
 ```{r}
 candi_all <- NULL
 for (i in 1:nrow(ccd_df)) {
-    d2dpnt <- sqrt((EM_CRF$PC1-ccd_df$x1[i])^2+(EM_CRF$PC2-ccd_df$x2[i])^2)
-    EM_CRF <- EM_CRF[order(d2dpnt),]
-    candi <- EM_CRF[c(1:16), c("unit","x1","x2","PC1","PC2")]
+    d2dpnt <- sqrt((grdCRF$PC1-ccd_df$x1[i])^2+(grdCRF$PC2-ccd_df$x2[i])^2)
+    grdCRF <- grdCRF[order(d2dpnt),]
+    candi <- grdCRF[c(1:16), c("unit","x1","x2","PC1","PC2")]
     candi$dpnt <- i
     candi_all <- rbind(candi_all,candi)
 }
@@ -352,15 +352,15 @@ mySRSsample <- anneal(
   maxNoChange=20,
   verbose=TRUE
 )
-save(mySRSsample, file="results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
+save(mySRSsample, file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
 ```
 
 Figures \@ref(fig:CCRSDUzbekistan2n) and \@ref(fig:CCRSDinPCSpace2n) show the optimised CCRSD sample of eighteen points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 150 m, and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.
 
 ```{r CCRSDUzbekistan2n, echo=FALSE, fig.cap="CCRSD sample with two points per design point, from the Cotton Research Farm, plotted on a map of the first standardised principal component (PC1)."}
-load(file="results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
+load(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
 mysample<-mySRSsample$mysample
-ggplot(EM_CRF) +
+ggplot(grdCRF) +
   geom_raster(aes(x=x1/1000,y=x2/1000,fill=PC1)) +
   geom_point(data=mysample,mapping=aes(x=x1/1000,y=x2/1000),size=2) +
   scale_fill_continuous(name="PC1",type = "viridis") + 
@@ -370,7 +370,7 @@ ggplot(EM_CRF) +
 ```
 
 ```{r CCRSDinPCSpace2n, echo=FALSE, out.width='50%', fig.cap="CCRSD sample (triangles) with two points per design point (dots), optimised with model-based criterion, plotted in the space spanned by the two standardised principal components."}
-load(file="results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
+load(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
 mysample<-mySRSsample$mysample
 ggplot(mysample) +
  geom_point(data=ccd_df,aes(x=x1,y=x2),size=3) +
@@ -391,8 +391,8 @@ The spatial strata are not used for fitting separate regression models. All data
 Figure \@ref(fig:StrataCRF4CCRSD) shows two subareas used as strata in stratified response surface sampling of the Cotton Research Farm.
 
 ```{r StrataCRF4CCRSD, echo=FALSE, fig.cap="Two subareas of the Cotton Research Farm in Uzbekistan used as strata in stratified CCRSD sampling."}
-load(file="results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
-ggplot(EM_CRF) +
+load(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.RData")
+ggplot(grdCRF) +
   geom_raster(aes(x=x1/1000,y=x2/1000, fill=as.factor(subarea))) +
   scale_fill_grey(name="Strata") +
   scale_x_continuous(name="Easting (km)") +
@@ -405,8 +405,8 @@ The candidate sampling units are selected in a double for-loop. The outer loop i
 ```{r}
 candi_all <- NULL
 for (h in c(1,2)) {
-  units <- which(EM_CRF$subarea==h)
-  data_stratum <- EM_CRF[units,]
+  units <- which(grdCRF$subarea==h)
+  data_stratum <- grdCRF[units,]
   candi_stratum <- NULL
   for (i in 1:nrow(ccd_df)) {
       d2dpnt <- sqrt((data_stratum$PC1-ccd_df$x1[i])^2+
@@ -423,7 +423,7 @@ for (h in c(1,2)) {
 ```{r candidatesSTResponse, echo=FALSE, fig.cap="Candidate sampling points for stratified CCRSD sampling, plotted on a map of the first principal component (PC1)."}
 subarea <- as.factor(c(rep(1,nrow(candi_all)/2),rep(2,nrow(candi_all)/2)))
 dpnt9 <- c(rep(1:9, each=8), rep(1:9, each=8))
-ggplot(EM_CRF) +
+ggplot(grdCRF) +
   geom_raster(aes(x=x1/1000,y=x2/1000,fill=PC1)) +
   geom_point(data=candi_all,mapping=aes(x=x1/1000,y=x2/1000,shape=as.factor(dpnt9)),size=1.5)+
   scale_shape_manual(values=c(0,1,2,3,4,5,6,7,8),name="design point") +
@@ -457,23 +457,23 @@ mySRSsample <- anneal(
   maxNoChange=20,
   verbose=TRUE
 )
-save(mySRSsample, file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
-#save(mySRSsample, file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.RData")
+save(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
+#save(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.RData")
 ```
 
 Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left cube point is very large. In this stratum no population units are present that are close to these two design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance. However, the optimised sample obtained with `weight=5` shows much stronger spatial clustering. In addition, there are some pairs of points with a separation distance smaller than the effective range used in optimisation, so that violation of the independence assumption becomes more likely. 
 
 ```{r StratifiedCCRSD, echo=FALSE, fig.cap="Stratified CCRSD samples from the Cotton Research Farm in Uzbekistan, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
-load(file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
+load(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
 mysample_w0 <- mySRSsample$mysample
 
-load(file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.RData")
+load(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.RData")
 mysample_w5 <- mySRSsample$mysample
 mysamples <- rbind(mysample_w0,mysample_w5)
 mysamples$weight <- rep(c("weight: 0","weight: 5"), each=18)
 
 ggplot(mysamples) +
-  geom_raster(data=EM_CRF, mapping=aes(x=x1/1000,y=x2/1000, fill=PC1)) +
+  geom_raster(data=grdCRF, mapping=aes(x=x1/1000,y=x2/1000, fill=PC1)) +
   geom_point(data=mysample,mapping=aes(x=x1/1000,y=x2/1000), size=2) +
   scale_fill_continuous(name="PC1",type = "viridis") + 
   scale_x_continuous(name="Easting (km)") +
@@ -483,11 +483,11 @@ ggplot(mysamples) +
 ```
 
 ```{r StratifiedCCRSDinPCSpace, echo=FALSE, out.width='100%', fig.cap="Principal component scores of the stratified CCRSD sample, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)."}
-load(file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
+load(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.RData")
 mysample_w0<-mySRSsample$mysample
 mysample_w0$subarea <- as.factor(rep(c(1,2),each=9))
 
-load(file="results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.RData")
+load(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.RData")
 mysample_w5<-mySRSsample$mysample
 mysample_w5$subarea <- as.factor(rep(c(1,2),each=9))
 

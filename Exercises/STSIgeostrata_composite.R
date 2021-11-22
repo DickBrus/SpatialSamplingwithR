@@ -2,7 +2,7 @@
 library(sp)
 library(spcosa)
 # read data
-load(file="../data/Voorst.RData")
+grdVoorst <- readRDS("../data/grdVoorst.rds")
 
 # compute compact geographical strata
 # set random seed (for reproduction of results)

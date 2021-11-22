@@ -10,13 +10,18 @@ Suppose that we require the  population mean of the kriging variance not to exce
 
 There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean ordinary kriging variance for a range of grid spacings, plot the mean ordinary kriging variances against the grid spacing, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean ordinary kriging variance.
 
-In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of SOM (dag kg^-1^), used before to design a spatial infill sample (Chapter \@ref(SpatialCoverage)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget passed to argument `model` of function `fit.variogram` are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates.
+In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of SOM (dag kg^-1^), used before to design a spatial infill sample (Chapter \@ref(SpatialCoverage)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments, and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget passed to argument `model` of function `fit.variogram` are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates. First, the projected coordinates of the sampling points are changed from m into km using function `mutate`.
 
 ```{r}
 library(gstat)
-load(file="data/CovariatesAmharaEthiopia.RData")
-load(file="data/AmharaEthiopia.RData")
-vg <- variogram(SOM~1, data=priordataEthiopia)
+grdAmhara <- readRDS(file = "data/grdAmhara.rds")
+sampleAmhara <- readRDS(file = "data/Sample_Amhara.rds")
+grdAmhara <- grdAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+sampleAmhara <- sampleAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+coordinates(sampleAmhara) <- ~ s1 + s2
+vg <- variogram(SOM~1, data=sampleAmhara)
 vgmdl <- vgm(model="Sph", psill=0.6, range=40, nugget=0.6)
 vgm_MoM <- fit.variogram(vg, model=vgmdl)
 ```
@@ -34,8 +39,8 @@ The semivariogram of SOM can also be estimated by maximum likelihood using funct
 
 ```{r}
 library(geoR)
-priordata <- as(priordataEthiopia,"data.frame")
-dGeoR <- as.geodata(obj=priordata, header=TRUE, coords.col=13:14, data.col=1)
+sampleAmhara <- as(sampleAmhara, "data.frame")
+dGeoR <- as.geodata(obj=sampleAmhara, header=TRUE, coords.col=c("s1","s2"), data.col="SOM")
 vgm_ML <- likfit(geodata=dGeoR, trend="cte",
   cov.model="spherical", ini.cov.pars=c(0.4,40),
   nugget=0.6, lik.method="ML", messages=FALSE)
@@ -70,10 +75,12 @@ To check whether the size of the simple random sample of evaluation points is su
 ```
 
 ```{r}
-load(file="data/CovariatesAmharaEthiopia.RData")
+grdAmhara <- readRDS(file = "data/grdAmhara.rds")
+grdAmhara <- grdAmhara %>%
+  mutate(s1 = s1 / 1000, s2 = s2 /1000)
 set.seed(314)
-units <- sample(nrow(grdEthiopia), size=5000, replace=TRUE)
-mysample <- grdEthiopia[units,]
+units <- sample(nrow(grdAmhara), size=5000, replace=TRUE)
+mysample <- grdAmhara[units,]
 mysample$s1 <- jitter(mysample$s1, amount=0.5)
 mysample$s2 <- jitter(mysample$s2, amount=0.5)
 ```
@@ -82,12 +89,12 @@ The **R** code below shows the next steps. Given a spacing, a square grid with a
 
 ```{r}
 coordinates(mysample) <- ~s1+s2
-gridded(grdEthiopia) <- ~s1+s2
+gridded(grdAmhara) <- ~s1+s2
 MKV_OK <- P50KV_OK <- P90KV_OK <- samplesize <- numeric(length=length(spacing))
 vgm_ML_gstat <- vgm(model="Sph", nugget=vgm_ML$nugget,
   psill=vgm_ML$sigmasq, range=vgm_ML$phi)
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
+  mygridxy <- spsample(x=grdAmhara, cellsize=spacing[i],
     type="regular", offset=c(0.5,0.5))
   mygrid<-data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
   samplesize[i] <- nrow(mygrid)
@@ -146,7 +153,7 @@ In the previous section the tolerable grid spacing is derived from a constraint 
 ```{r}
 MKV_OBK <- P50KV_OBK <- P90KV_OBK <- numeric(length=length(spacing))
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i],
+  mygridxy <- spsample(x=grdAmhara, cellsize=spacing[i],
     type="regular", offset=c(0.5,0.5))
   mygrid<-data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
   samplesize[i] <- nrow(mygrid)
@@ -189,8 +196,8 @@ The SOM concentration data of West-Amhara are used to estimate the parameters (r
 
 ```{r}
 library(geoR)
-dGeoR <- as.geodata(obj = priordata, header=TRUE,
-  coords.col=13:14, data.col=1, covar.col=c(3,9,10,11))
+dGeoR <- as.geodata(obj = sampleAmhara, header=TRUE,
+  coords.col=c("s1","s2"), data.col="SOM", covar.col=c("dem","rfl_NIR","rfl_red","lst"))
 vgm_REML <- likfit(geodata=dGeoR, trend=~dem+rfl_NIR+rfl_red+lst,
   cov.model="spherical", ini.cov.pars=c(1,5),
   nugget=0.2, lik.method="REML", messages=FALSE)
@@ -218,10 +225,10 @@ vgm_REML_gstat <- vgm(model="Sph", nugget=vgm_REML$nugget,
 set.seed(314)
 for (i in 1:length(spacing)) {
   for (j in 1:R) {
-    mygridxy <- spsample(x=grdEthiopia, cellsize=spacing[i], type="regular")
+    mygridxy <- spsample(x=grdAmhara, cellsize=spacing[i], type="regular")
     mygrid <- data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
     coordinates(mygrid) <- ~s1+s2
-    mygrd <- data.frame(over(mygrid, grdEthiopia), mygrid)
+    mygrd <- data.frame(over(mygrid, grdAmhara), mygrid)
     coordinates(mygrd) <- ~s1+s2
     predictions <- krige(
       formula=dummy~dem+rfl_NIR+rfl_red+lst,
@@ -237,11 +244,11 @@ dfKV_KED <- data.frame(spacing,MKV_KED)
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(dfKV_KED,file="results/MKEDVarvsGridspacing_Ethiopia.RData")
+save(dfKV_KED,file = "results/MKEDVarvsGridspacing_Amhara.RData")
 ```
 
 ```{r MKEDVvsSpacingEthiopia, echo=FALSE, fig.asp=0.7, fig.cap="Mean kriging variance of OK and KED predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown obtained by selecting ten randomly placed grids of that spacing."}
-load(file="results/MKEDVarvsGridspacing_Ethiopia.RData")
+load(file = "results/MKEDVarvsGridspacing_Amhara.RData")
 dfKV_KED$OK <- dfKV_OK$Mean
 df <- dfKV_KED %>% pivot_longer(.,cols=names(dfKV_KED)[-1])
 df$name <- as.factor(df$name)
@@ -267,7 +274,7 @@ The tolerable grid spacing for a mean kriging variance of 0.8 (dag kg^-1^)^2^, u
 #### Exercises {-}
 
 3. Given a grid spacing the mean kriging variance varies among randomly selected grids, especially for large spacings. Explain why.   
-4. Write an **R** script to compute the tolerable grid spacing for KED of natural logs of the electrical conductivity of the soil across the Cotton Research Farm of Uzbekistan, using natural logs of the electromagnetic induction (EM) measurements (lnEM100cm) as a covariate (these covariate data are in `data/CottonResearchFarm.RData`). Use a nugget of 0.126, a partial sill of 0.083, and a range of 230 m for an exponential semivariogram of the residuals (Table \@ref(tab:TableVariogramsCRF4)). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEM100cm values to compute the mean kriging variance. Do this by selecting 1,000 grid cells by simple random sampling with replacement and jittering the centres of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings $70, 75, \dots, 100$ m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
+4. Write an **R** script to compute the tolerable grid spacing for KED of natural logs of the electrical conductivity of the soil across the Cotton Research Farm of Uzbekistan, using natural logs of the electromagnetic induction (EM) measurements (lnEM100cm) as a covariate (these covariate data are in `results`/CottonResearchFarm_Uzbekistan.RData`). Use a nugget of 0.126, a partial sill of 0.083, and a range of 230 m for an exponential semivariogram of the residuals (Table \@ref(tab:TableVariogramsCRF4)). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEM100cm values to compute the mean kriging variance. Do this by selecting 1,000 grid cells by simple random sampling with replacement and jittering the centres of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings $70, 75, \dots, 100$ m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
 
 ## Bayesian approach {#BayesianGridSpacing}
 
@@ -305,7 +312,7 @@ ll <-function(thetas) {
 ```
 
 ```{r}
-D <- spDists(priordataEthiopia)
+D <- spDists(sampleAmhara)
 ```
 
 Besides the likelihood function, in a Bayesian approach we must define prior distributions for the semivariogram parameters. Here we combine the partial sill and nugget into the *ratio of spatial dependence*\index{Ratio of spatial dependence}, i.e. the proportion of the sill attributable to the partial sill. For the ratio of spatial dependence $\xi$ and the distance parameter $\phi$ I chose uniform distributions as priors, with a lower bound of 0 and an upper bound of 1 for the ratio of spatial dependence, and a lower bound of $10^{-6}$ km and an upper bound of 100 km for the range. A uniform distribution for the sill is not recommended [@Gelman2013]. Instead, I assume a uniform distribution for the *inverse* of the sill, with a lower bound of $10^{-6}$ and an upper bound of 2.
@@ -333,13 +340,13 @@ mcmcsample <- getSample(res, start=1000, numSamples=1000) %>%
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-save(mcmcsample, file="results/MCMC_Ethiopia.RData")
+save(mcmcsample, file = "results/MCMC_Amhara.RData")
 ```
 
 Table \@ref(tab:MCMCSampleVariogram) shows the first ten units of the MCMC sample from the posterior distribution of the semivariogram parameters.
 
 ```{r MCMCSampleVariogram, echo=FALSE}
-load(file="results/MCMC_Ethiopia.RData")
+load(file = "results/MCMC_Amhara.RData")
 tbl <- mcmcsample[1:10,]
 tbl$lambda <- round(tbl$lambda,3)
 tbl$xi <- round(tbl$xi,3)
@@ -359,7 +366,7 @@ The units of the MCMC sample (vectors with semivariogram parameters) are used on
 spacing <- 1:12
 MKV <- matrix(nrow=length(spacing),ncol=nrow(mcmcsample))
 for (i in 1:length(spacing)) {
-  mygridxy <- spsample(x=grdEthiopia,cellsize=spacing[i],type="regular",offset=c(0.5,0.5))
+  mygridxy <- spsample(x=grdAmhara,cellsize=spacing[i],type="regular",offset=c(0.5,0.5))
   mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
   coordinates(mygrid) <- ~s1+s2
   for (j in 1:nrow(mcmcsample)) {
@@ -377,15 +384,15 @@ for (i in 1:length(spacing)) {
     MKV[i,j] <- mean(predictions$var1.var)
   }
 }
-save(MKV,file="results/MOKV_Bayesian_Ethiopia.RData")
+save(MKV,file = "results/MOKV_Bayesian_Amhara.RData")
 ```
 
 ```{r, echo=FALSE}
-grdEthiopia <- as(grdEthiopia,"data.frame")
+grdAmhara <- as(grdAmhara,"data.frame")
 ```
 
 ```{r, echo=FALSE}
-load(file="results/MOKV_Bayesian_Ethiopia.RData")
+load(file = "results/MOKV_Bayesian_Amhara.RData")
 spacing <- 1:12
 MKV_target <- 0.8
 spacing_tol <- numeric(length=ncol(MKV))

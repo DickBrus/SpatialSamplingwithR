@@ -1,4 +1,4 @@
-load("../data/Kandahar.RData")
+grdKandahar <- readRDS(file = "../data/grdKandahar.rds")
 
 tz <- sum(grdKandahar$poppy)
 tx <- sum(grdKandahar$agri)

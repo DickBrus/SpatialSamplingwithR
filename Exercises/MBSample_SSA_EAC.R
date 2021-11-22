@@ -7,7 +7,7 @@ source("../Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 
 #Read data with coordinates and other attributes of fine grid (discretisation of study area)
 
-load(file="../data/HunterValley.RData")
+grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 grd <- grdHunterValley
 gridded(grd) <- ~Easting+Northing
 candi <- spsample(grd, type="regular", cellsize=c(50,50))
@@ -65,7 +65,7 @@ res <- optimUSER(
   track=TRUE)
 
 mysample <- res$points
-#save(res, file="../results/MBSample_EAC_80_20.RData")
+#save(res, file = "../results/MBSample_EAC_80_20.RData")
 MEACopt <- tail(res$objective$energy$obj,1)
 
 units <- which(mysample$free==1)

@@ -6,7 +6,7 @@ library(ggplot2)
 
 source ("../Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 
-load(file="../data/HunterValley.RData")
+grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 
 grd <- grdHunterValley
 gridded(grd) <- ~Easting+Northing
@@ -55,7 +55,7 @@ rslt <- optimUSER(
 
 
 mysample <- candi[rslt$points$id,]
-#save(mysample, file="results/MBSample_varkrigvar_phi200nug05.RData")
+#save(mysample, file = "results/MBSample_varkrigvar_phi200nug05.RData")
 
 ggplot(data=grdHunterValley) +
   geom_raster(mapping = aes(x=Easting/1000, y=Northing/1000),fill="grey")+

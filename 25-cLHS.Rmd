@@ -34,19 +34,19 @@ cLH sampling is illustrated with the five covariates of Eastern Amazonia that we
 
 ```{r}
 library(clhs)
-load("data/Amazonia_5km.RData")
-covs <- names(gridAmazonia)[c(4,5,6,7,8)]
+grdAmazonia <- readRDS(file = "../results/grdAmazonia_5km.rds")
+covs <- names(grdAmazonia)[c(4,5,6,7,8)]
 set.seed(314)
-res <- clhs(gridAmazonia[,covs], size=20, iter=50000, temp=1, tdecrease=0.95,
+res <- clhs(grdAmazonia[,covs], size=20, iter=50000, temp=1, tdecrease=0.95,
   length.cycle=10, progress=FALSE, simple=FALSE)
 index <- res$index_samples
-myCLHsample <- gridAmazonia[index, ]
+myCLHsample <- grdAmazonia[index, ]
 ```
 
 Figure \@ref(fig:cLHS) shows the selected sample in a map of SWIR2. In Figure \@ref(fig:cLHSscat) the sample is plotted in a biplot of Prec_dm against SWIR2. Each black dot in the scatter plot represents one grid cell in the population. The vertical and horizontal lines in this scatter plot are at the bounds of the marginal strata of SWIR2 and Prec_dm, respectively. The number of grid cells (the black dots in the scatter plot) between two consecutive vertical lines is constant, as well as the number of grid cells between two consecutive horizontal lines, i.e. the marginal strata have equal sizes. The intervals are the narrowest where the density of grid cells in the plot is highest. Ideally, in each column and row there is exactly one sampling unit.
 
 ```{r cLHS, echo=FALSE, out.width="100%", fig.cap="Conditioned Latin hypercube sample from Eastern Amazonia in a map of SWIR2."}
-ggplot(data=gridAmazonia) +
+ggplot(data=grdAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=SWIR2)) +  
   geom_point(data=myCLHsample, mapping=aes(x=x1/1000, y=x2/1000), colour="red", size=2) +
   scale_x_continuous(name="Easting (km)") +
@@ -57,8 +57,8 @@ ggplot(data=gridAmazonia) +
 
 ```{r cLHSscat, echo=FALSE, fig.cap="Conditioned Latin hypercube sample plotted in a biplot of precipitation in the dryest month against SWIR2. The vertical and horizontal lines are at the bounds of the marginal strata of the covariates SWIR2 and precipitation dryest month, respectively."}
 probs <- seq(from=0, to=1, length.out=nrow(myCLHsample)+1)
-bounds <- apply(gridAmazonia[,covs], MARGIN=2, FUN=function(x) quantile(x, probs=probs, type=3))
-ggplot(data=gridAmazonia) +
+bounds <- apply(grdAmazonia[,covs], MARGIN=2, FUN=function(x) quantile(x, probs=probs, type=3))
+ggplot(data=grdAmazonia) +
   geom_point(mapping=aes(x=SWIR2, y=Prec_dm), colour="black", size=1, alpha=0.5) +
   geom_vline(xintercept=bounds[c(-1,-length(bounds)),1], colour="grey") +
   geom_hline(yintercept=bounds[c(-1,-length(bounds)),3], colour="grey") +
@@ -71,7 +71,7 @@ Figure \@ref(fig:StratumSampleSizes) shows the sample sizes for all 100 marginal
 
 ```{r}
 probs <- seq(from=0, to=1, length.out=nrow(myCLHsample)+1)
-bounds <- apply(gridAmazonia[,covs], MARGIN=2, 
+bounds <- apply(grdAmazonia[,covs], MARGIN=2, 
   FUN=function(x) quantile(x, probs=probs))
 counts <- lapply(1:5, function (i) 
   hist(myCLHsample[, i+3], bounds[,i], plot=FALSE)$counts)
@@ -79,7 +79,7 @@ counts <- lapply(1:5, function (i)
 
 ```{r StratumSampleSizes, out.width='100%', echo=FALSE, fig.asp=0.4, fig.cap="Sample sizes of marginal strata for the conditioned Latin hypercube sample of size twenty from Eastern Amazonia."}
 countslf <- data.frame(counts=unlist(counts))
-countslf$covariate <- rep(names(gridAmazonia)[c(4,5,6,7,8)], each=20)
+countslf$covariate <- rep(names(grdAmazonia)[c(4,5,6,7,8)], each=20)
 countslf$stratum <- rep(1:20, times=5)
 ggplot(countslf) +
   geom_point(mapping=aes(x=stratum,y=counts), colour="black", size=1) +
@@ -109,7 +109,7 @@ In the next code chunk the minimised value of the criterion is computed "by hand
 
 ```{r}
 O1 <- sum(abs(countslf$counts-1))
-rho <- cor(gridAmazonia[,c(4,5,6,7,8)])
+rho <- cor(grdAmazonia[,c(4,5,6,7,8)])
 r <- cor(myCLHsample[,c(4,5,6,7,8)])
 O3 <- sum(abs(rho-r))
 print(O1+O3)
@@ -119,8 +119,8 @@ cLH samples can also be selected with function `optimCLHS` of package **spsann**
 
 #### Exercises {-}
 
-1. Load the data of Hunter Valley (`data/HunterValley.RData`) to select a cLH sample of size 50, using elevation_m, slope_deg, cos_aspect, cti, and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a 2D-scatter plot of cti against elevation_m. In which part of the scatter plot are most units selected, and which part is undersampled?   
-2. Load the simulated data of Figure \@ref(fig:twosamples) (`data/SimulatedSquare.RData`), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
+1. Read the data of Hunter Valley (`data/grdHunterValley.rds`) to select a cLH sample of size 50, using elevation_m, slope_deg, cos_aspect, cti, and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a 2D-scatter plot of cti against elevation_m. In which part of the scatter plot are most units selected, and which part is undersampled?   
+2. Load the simulated data of Figure \@ref(fig:twosamples) (`results/SimulatedSquare.RData`), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
     +  What do you think of the geographical spreading of the sampling units? Is it optimal?
     +  Compute the number of sampling units in the marginal strata of $s1$, $s2$, and the covariate $x$. First compute the bounds of these marginal strata.  Are all marginal strata of $s1$ and $s2$ sampled?  Suppose that all marginal strata of $s1$ and $s2$ are sampled (contain one sampling point), does this guarantee good spatial coverage?
     +  Plot the trace of the minimisation criterion, and retrieve the minimised value. Is this minimised value in agreement with the marginal stratum sample sizes?
@@ -133,18 +133,18 @@ To illustrate conditioned Latin hypercube *infill* sampling (cLHIS), in the next
 
 ```{r}
 set.seed(314)
-units <- sample(nrow(gridAmazonia), 10, replace=FALSE)
-res <- clhs(gridAmazonia[,covs], size=30, must.include=units,
+units <- sample(nrow(grdAmazonia), 10, replace=FALSE)
+res <- clhs(grdAmazonia[,covs], size=30, must.include=units,
   tdecrease=0.95, iter=50000, progress=FALSE, simple=FALSE)
 index <- res$index_samples
-myCLHIsample <- gridAmazonia[index, ]
+myCLHIsample <- grdAmazonia[index, ]
 myCLHIsample$free <- as.factor(rep(c(1,0), c(20,10)))
 ```
 
 Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a map of SWIR2. In Figure \@ref(fig:cLHISscat) the sample is plotted in a scatter plot of SWIR2 against Prec_dm. The marginal strata already covered by the legacy sample are mostly avoided by the additional sample.
 
 ```{r cLHIS, echo=FALSE, out.width="100%", fig.cap="Conditioned Latin hypercube infill sample from Eastern Amazonia in a map of SWIR2. Legacy units have free-value 0, infill units have free-value 1."}
-ggplot(data=gridAmazonia) +
+ggplot(data=grdAmazonia) +
   geom_raster(mapping=aes(x=x1/1000, y=x2/1000, fill=SWIR2)) +  
   geom_point(data=myCLHIsample, mapping=aes(x=x1/1000, y=x2/1000, shape=free), colour="red", size=2) +
   scale_x_continuous(name="Easting (km)") +
@@ -156,9 +156,9 @@ ggplot(data=gridAmazonia) +
 ```{r cLHISscat, echo=FALSE, fig.asp=0.7, fig.cap="Conditioned Latin hypercube infill sample plotted in scatter plot of SWIR2 against precipitation in the dryest month. Legacy units have free-value 0, infill units have free-value 1."}
 #recompute stratum bounds as we have now 10+20 units
 probs <- seq(from=0, to=1, length.out=31)
-bounds <- apply(gridAmazonia[,covs], MARGIN=2, FUN=function(x) quantile(x, probs=probs, type=3))
+bounds <- apply(grdAmazonia[,covs], MARGIN=2, FUN=function(x) quantile(x, probs=probs, type=3))
 
-ggplot(data=gridAmazonia) +
+ggplot(data=grdAmazonia) +
   geom_point(mapping=aes(x=SWIR2, y=Prec_dm), colour="black", size=1, alpha=0.5) +
   geom_vline(xintercept=bounds[c(-1,-length(bounds)),1], colour="grey") +
   geom_hline(yintercept=bounds[c(-1,-length(bounds)),3], colour="grey") +
@@ -175,26 +175,26 @@ The performance of cLH sampling is studied in the same experiment as covariate s
 ```{r repeatedCSCandcLHS, echo=FALSE, eval=FALSE}
 library(LICORS)
 library(ranger)
-load("data/Amazonia_1km.RData")
-covs <- names(gridAmazonia)[c(2,3,4,5,6)]
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+covs <- names(grdAmazonia)[c(2,3,4,5,6)]
 #select subgrid to be used as master sample for selecting calibration samples
-gridAmazonia$id <- 1:nrow(gridAmazonia)
-gridded(gridAmazonia) <- ~x1+x2
-subgrid <- spsample(gridAmazonia, type="regular", cellsize=10000, offset=c(0.5,0.5))
-res <- over(subgrid,gridAmazonia)
+grdAmazonia$id <- 1:nrow(grdAmazonia)
+gridded(grdAmazonia) <- ~x1+x2
+subgrid <- spsample(grdAmazonia, type="regular", cellsize=10000, offset=c(0.5,0.5))
+res <- over(subgrid,grdAmazonia)
 subgrid <- data.frame(coordinates(subgrid), res)
 
 #Use all nodes of 1 km $\times$ 1 km grid not selected in 10 km $\times$ 10 km grid for selecting a large validation by simple random sampling
-gridAmazonia <- as(gridAmazonia,"data.frame")
-grdmincalibration <- gridAmazonia[-subgrid$id,]
+grdAmazonia <- as(grdAmazonia,"data.frame")
+grdmincalibration <- grdAmazonia[-subgrid$id,]
 nval<-25000
 set.seed(314)
 units <- sample(nrow(grdmincalibration), size=nval, replace=FALSE)
 myvalidationsample <- grdmincalibration[units,]
 
-populationmeans <- apply(gridAmazonia[,covs], MARGIN=2, FUN=mean)
-populationsds <- apply(gridAmazonia[,covs], MARGIN=2, FUN=sd)
-r.population <- cor(gridAmazonia[,covs])
+populationmeans <- apply(grdAmazonia[,covs], MARGIN=2, FUN=mean)
+populationsds <- apply(grdAmazonia[,covs], MARGIN=2, FUN=sd)
+r.population <- cor(grdAmazonia[,covs])
 
 n <- 100
 probs <- seq(from=0,to=1,length.out=n+1)
@@ -208,10 +208,10 @@ for (i in 1:S) {
 
 #select CSC sample
   
-#  time <- system.time(myClusters <- kmeans(scale(gridAmazonia[,covs]),centers=n,iter.max=10000,nstart=500)) #n=25
-#  time <- system.time(myClusters <- kmeans(scale(gridAmazonia[,covs]),centers=n,iter.max=10000,nstart=350)) #n=50
+#  time <- system.time(myClusters <- kmeans(scale(grdAmazonia[,covs]),centers=n,iter.max=10000,nstart=500)) #n=25
+#  time <- system.time(myClusters <- kmeans(scale(grdAmazonia[,covs]),centers=n,iter.max=10000,nstart=350)) #n=50
   time <- system.time(myClusters <- kmeans(scale(subgrid[,covs]),centers=n,iter.max=10000,nstart=200)) #n=100
-#  time <- system.time(myClusters <- kmeanspp(scale(gridAmazonia[,covs]),k=n,iter.max=10000,nstart=40))
+#  time <- system.time(myClusters <- kmeanspp(scale(grdAmazonia[,covs]),k=n,iter.max=10000,nstart=40))
   time.CSC[i] <- time[1]
   subgrid$cluster <- myClusters$cluster
   res <- rdist(x1=myClusters$centers,
@@ -305,24 +305,24 @@ for (i in 1:S) {
   ME.SI[i] <- mean(error)
   RMSE.SI[i] <- sqrt(mean(error^2))
 }
-save(ME.CSC, ME.CLH, ME.SI, RMSE.CSC, RMSE.CLH, RMSE.SI, MSSSD.CSC, MSSSD.CLH, MSSSD.SI, O1O3.CSC, O1O3.CLH, O1O3.SI, time.CSC, time.CLH, file="results/CSCversusCLH_Amazonia_n100_new.RData")
-#save(error.CSC, MSSSD.CSC, O1O3.CSC, time.CSC, file="results/kmeanspp_Amazonia_n25.RData")
+save(ME.CSC, ME.CLH, ME.SI, RMSE.CSC, RMSE.CLH, RMSE.SI, MSSSD.CSC, MSSSD.CLH, MSSSD.SI, O1O3.CSC, O1O3.CLH, O1O3.SI, time.CSC, time.CLH, file = "results/CSCversusCLH_Amazonia_n100_new.RData")
+#save(error.CSC, MSSSD.CSC, O1O3.CSC, time.CSC, file = "results/kmeanspp_Amazonia_n25.RData")
 ```
 
 Figure \@ref(fig:boxplotsval) shows the results as boxplots, each based on 500 estimates. For $n=25$ and $100$ cLH sampling performs best in terms of RMSE and MEC, whereas for $n=50$ CSC sampling performs best. For $n=25$ and $50$ the boxplots of cLH and SI show quite a few outliers with large values of RMSE, resulting in small values of MEC. For CSC these map quality indices are more stable. Remarkably, for $n=100$ SI sampling performs about equal to CSC and cLH sampling.
 
 ```{r boxplotsval, echo=FALSE, out.width="100%", fig.asp=0.7, fig.cap ="Boxplots of ME, RMSE, and MEC of predictions with RF models calibrated on conditioned Latin hypercube (cLH), covariate space coverage (CSC), and simple random (SI) samples from Eastern Amazonia, for sample sizes of 25, 50, and 100 units."}
-load("data/Amazonia_1km.RData")
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 #select subgrid to be used as master sample for selecting calibration samples
-gridAmazonia$id <- 1:nrow(gridAmazonia)
-gridded(gridAmazonia) <- ~x1+x2
-subgrid <- spsample(gridAmazonia,type="regular",cellsize=10000,offset=c(0.5,0.5))
-res <- over(subgrid,gridAmazonia)
+grdAmazonia$id <- 1:nrow(grdAmazonia)
+gridded(grdAmazonia) <- ~x1+x2
+subgrid <- spsample(grdAmazonia,type="regular",cellsize=10000,offset=c(0.5,0.5))
+res <- over(subgrid,grdAmazonia)
 subgrid <- data.frame(coordinates(subgrid),res)
 
 #Use all nodes of 1 km $\times$ 1 km grid not selected in master sample for selecting calibration samples (10 km $\times$ 10 km grid) for selecting a large validation by simple random sampling
-gridAmazonia <- as(gridAmazonia,"data.frame")
-grdmincalibration <- gridAmazonia[-subgrid$id,]
+grdAmazonia <- as(grdAmazonia,"data.frame")
+grdmincalibration <- grdAmazonia[-subgrid$id,]
 nval <- 25000
 set.seed(314)
 units <- sample(nrow(grdmincalibration),size=nval,replace=FALSE)

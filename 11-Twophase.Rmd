@@ -48,7 +48,7 @@ This sampling design is applied, for instance, to monitor land use and land cove
 Two-phase sampling for stratification is now illustrated with study area Voorst. A map with five combinations of soil type and land use is available of this study area. These combinations were used as strata in Chapter \@ref(STSI), and the stratum sizes were used in the poststratified estimator of Subsection \@ref(PoststratifiedEstimator). Here we consider the situation that we do not have this map and that we do not know the sizes of these strata either. In the first phase a simple random sample of size 100 is selected. In the field the soil-land use combination is determined for the selected points, see Figure \@ref(fig:DoubleSampleVoorst). This time we assume that the field determinations are equal to the classes as shown on the map.
 
 ```{r}
-load("data/Voorst.RData")
+grdVoorst <- readRDS("data/grdVoorst.rds")
 n1 <- 100
 set.seed(123)
 N <- nrow(grdVoorst)
@@ -157,11 +157,11 @@ Two-phase sampling for regression is now illustrated with Eastern Amazonia (Subs
 In the next code chunk a first-phase sample of 250 units (the dots in the plot) is selected by simple random sampling without replacement. In the second phase a subsample of 100 units (the triangles in the plot) is selected from the 250 units by simple random sampling without replacement. At all 250 units of the first-phase sample the covariate lnSWIR2 is measured, whereas AGB is measured at the 100 subsample units only. 
 
 ```{r twophasesample}
-load("data/Amazonia_1km.RData")
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 n1 <- 250; n2 <- 100
 set.seed(314)
-units_1 <- sample(nrow(gridAmazonia), size = n1, replace = FALSE)
-mysample <- gridAmazonia[units_1, ]
+units_1 <- sample(nrow(grdAmazonia), size = n1, replace = FALSE)
+mysample <- grdAmazonia[units_1, ]
 units_2 <- sample(n1, size = n2, replace = FALSE)
 mysubsample <- mysample[units_2, ]
 ```
@@ -169,7 +169,7 @@ mysubsample <- mysample[units_2, ]
 Figure \@ref(fig:twophaseAmazonia) shows the selected two-phase sample. 
 
 ```{r twophaseAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Two-phase sample for the regression estimator of the mean AGB in Eastern Amazonia. Coloured dots: simple random sample without replacement of 250 units with measurements of covariate lnSWIR2 (first-phase sample). Triangles: simple random subsample without replacement of 100 units with measurements of AGB (second-phase sample)."}
-ggplot(data = gridAmazonia) +
+ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000), fill = "grey") +
   geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = lnSWIR2), size = 1) +
   scale_colour_continuous(name = "lnSWIR2", type = "viridis") +
@@ -219,7 +219,7 @@ The estimated population mean equals `r round(mz_reg2ph,1)` 10^9^ kg ha^-1^. The
 e <- residuals(lm_subsample)
 S2e <- sum(e^2) / (n2 - 1)
 S2z <- var(mysubsample$AGB)
-N <- nrow(gridAmazonia)
+N <- nrow(grdAmazonia)
 se_mz_reg2ph <- sqrt((1 - n1 / N) * S2z / n1 + (1 - n2 / n1) * S2e / n2)
 ```
 
@@ -240,7 +240,7 @@ svymean(~ AGB, mysample_cal)
 
 #### Exercises {-}
 
-1. Write an **R** script to select a simple random sample without replacement of 250 units from Eastern Amazonia (`data/Amazonia_1km.RData`) and a subsample of 100 units by simple random sampling without replacement. Repeat this 1,000 times in a for-loop. 
+1. Write an **R** script to select a simple random sample without replacement of 250 units from Eastern Amazonia (`data/grdAmazonia.rds`) and a subsample of 100 units by simple random sampling without replacement. Repeat this 1,000 times in a for-loop. 
     +  Use each sample selected in the first phase (sample of 250 units) to estimate the population mean of AGB by the regression estimator (Equation \@ref(eq:SimpleRegressionEstimatorSI) in Chapter \@ref(Modelassisted)). Assume that the AGB data are known for all units selected in the first phase. Use lnSWIR2 as a covariate.
     +  Compute the variance of the 10,000 regression estimates of the population mean of AGB.
     +  Use each two-phase sample to compute the regression estimator of AGB for two-phase sampling (Equation \@ref(eq:RegressionEstimatorTwoPhase)). Now only use the AGB data of the subsample. Estimate the population mean of lnSWIR2 from the first-phase sample of 250 units. Approximate the variance of the regression estimator for two-phase sampling (Equation \@ref(eq:VarianceRegressionEstimatorTwoPhase)).

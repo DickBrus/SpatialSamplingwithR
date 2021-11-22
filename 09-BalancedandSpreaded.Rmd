@@ -197,17 +197,17 @@ Recall that a sample is balanced on a covariate $x$ if the $\pi$ estimate of the
 Equal inclusion probabilities are used, i.e. for all population units the inclusion probability equals $n/N$.
  
 ```{r}
-load("data/Amazonia_5km.RData")
-gridAmazonia$lnSWIR2 <- log(gridAmazonia$SWIR2)
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 library(sampling)
-N <- nrow(gridAmazonia)
+N <- nrow(grdAmazonia)
 n <- 100
-X <- cbind(rep(1, times = N), gridAmazonia$lnSWIR2)
+X <- cbind(rep(1, times = N), grdAmazonia$lnSWIR2)
 pi <- rep(n / N, times = N)
 sample_ind <- samplecube(X = X, pik = pi, comment = FALSE, method = 1)
 eps <- 1e-6
 units <- which(sample_ind > (1 - eps))
-mysample <- gridAmazonia[units, ]
+mysample <- grdAmazonia[units, ]
 ```
 
 The population mean can be estimated by the sample mean.
@@ -246,10 +246,10 @@ v_tz <- n / (n - ncol(X)) * sum(c * (e / pi)^2)
 v_mz <- v_tz / N^2
 ```
 
-Figure \@ref(fig:BalancedSampleAmazonia) shows the selected balanced sample. Note the spatial clustering of some units. The estimated population mean (as estimated by the sample mean) of AGB equals `r as.character(round(mz,1))` 10^9^ kg ha^-1^. The population mean of AGB equals `r as.character(round(mean(gridAmazonia$AGB),1))` 10^9^ kg ha^-1^. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))` 10^9^ kg ha^-1^.
+Figure \@ref(fig:BalancedSampleAmazonia) shows the selected balanced sample. Note the spatial clustering of some units. The estimated population mean (as estimated by the sample mean) of AGB equals `r as.character(round(mz,1))` 10^9^ kg ha^-1^. The population mean of AGB equals `r as.character(round(mean(grdAmazonia$AGB),1))` 10^9^ kg ha^-1^. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))` 10^9^ kg ha^-1^.
 
 ```{r BalancedSampleAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on lnSWIR2 from Eastern Amazonia."}
-ggplot(data = gridAmazonia) +
+ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
   geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
   scale_fill_continuous(name = "lnSWIR2", type = "viridis") +
@@ -270,7 +270,7 @@ set.seed(314)
 for (i in 1:1000) {
   sample_ind <- samplecube(X = X, pik = rep(n / N, N), comment = FALSE, method = 1)
   units <- which(sample_ind > (1 - eps))
-  mysample <- gridAmazonia[units, ]
+  mysample <- grdAmazonia[units, ]
 
   mz[i] <- mean(mysample$AGB)
 
@@ -282,8 +282,8 @@ for (i in 1:1000) {
 
   mx_sample[i] <- mean(mysample$lnSWIR2)
 
-  units <- sample(nrow(gridAmazonia), size = n, replace = FALSE)
-  mz_SI[i] <- mean(gridAmazonia$AGB[units])
+  units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
+  mz_SI[i] <- mean(grdAmazonia$AGB[units])
 }
 save(mz, mz_SI, v_mz, mx_sample, file = "results/Balanced_Amazonia.RData")
 ```
@@ -298,12 +298,12 @@ names(estimates)[c(1, 2)] <- c("Balanced", "SI")
 df <- estimates %>% pivot_longer(., cols = c("Balanced", "SI"))
 ggplot(data = df) +
     geom_boxplot(aes(y = value, x = name)) +
-    geom_hline(yintercept = mean(gridAmazonia$AGB), colour = "red") +
+    geom_hline(yintercept = mean(grdAmazonia$AGB), colour = "red") +
     scale_x_discrete(name = "Sampling design") +
     scale_y_continuous(name = "Estimated mean AGB")
 ```
 
-The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r as.character(round(var(estimates$Bal),1))` (10^9^ kg ha^-1^)^2^. The gain in precision compared to simple random sampling, equals `r as.character(round(var(estimates$SI)/var(estimates$Bal),3))`, so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r as.character(round(mean(estimates$v_mz),1))` (10^9^ kg ha^-1^)^2^, indicating that the approximated variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r round(mean(gridAmazonia$lnSWIR2),3)`. The sample mean of lnSWIR2 varies a bit among the samples. Figure \@ref(fig:histSampleMeanSWIR) shows the approximated sampling distribution of the sample mean of lnSWIR2. In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
+The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r as.character(round(var(estimates$Bal),1))` (10^9^ kg ha^-1^)^2^. The gain in precision compared to simple random sampling, equals `r as.character(round(var(estimates$SI)/var(estimates$Bal),3))`, so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r as.character(round(mean(estimates$v_mz),1))` (10^9^ kg ha^-1^)^2^, indicating that the approximated variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r round(mean(grdAmazonia$lnSWIR2),3)`. The sample mean of lnSWIR2 varies a bit among the samples. Figure \@ref(fig:histSampleMeanSWIR) shows the approximated sampling distribution of the sample mean of lnSWIR2. In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
 
 ```{r histSampleMeanSWIR, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample mean of balancing variable lnSWIR2 in Eastern Amazonia with balanced sampling of size 100 and equal inclusion probabilities."}
 ggplot(data = estimates) +
@@ -315,7 +315,7 @@ ggplot(data = estimates) +
 
 #### Exercises {-}
 
-1. Load the data of Eastern Amazonia (`data/Amazonia_5km.RData`) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
+1. Read the data of Eastern Amazonia (`results`/grdAmazonia_5km.rds`) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
     + Estimate the population mean.
     + Estimate the standard error of the $\pi$ estimator. First, estimate the regression coefficients, using function `estimate_b` defined above, then compute the residuals, and finally compute the variance.    
 2. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
@@ -574,10 +574,10 @@ Inclusion probabilities are computed with function `inclusionprobabilities` of p
 ```{r}
 library(BalancedSampling)
 library(sampling)
-load("data/Kandahar.RData")
+grdKandahar <- readRDS(file = "data/grdKandahar.rds")
 n <- 40
 pi <- inclusionprobabilities(grdKandahar$agri, n)
-X <- cbind(grdKandahar$x, grdKandahar$y)
+X <- cbind(grdKandahar$s1, grdKandahar$s2)
 set.seed(314)
 units <- lpm1(pi, X)
 myLPMsample <- grdKandahar[units, ]
@@ -585,8 +585,8 @@ myLPMsample <- grdKandahar[units, ]
 
 ```{r LPMKandahar, echo = FALSE, out.width = '100%', fig.cap = "Spatial ppswor sample of size 40 from Kandahar, selected by the local pivotal method, using agricultural area as a size variable."}
 ggplot(data = grdKandahar) +
-  geom_raster(mapping = aes(x = x, y = y, fill = agri)) +
-  geom_tile(data = myLPMsample, mapping = aes(x = x, y = y), colour = "white", size = 0.7, width = 5, height = 5, fill = NA) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = agri)) +
+  geom_tile(data = myLPMsample, mapping = aes(x = s1 / 1000, y = s2 / 1000), colour = "white", size = 0.7, width = 5, height = 5, fill = NA) +
   scale_fill_viridis_c(name = "Agriarea") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -788,18 +788,18 @@ As mentioned in the introduction to this chapter a sample balanced on a covariat
 
 ```{r lcube}
 library(BalancedSampling)
-N <- nrow(gridAmazonia)
+N <- nrow(grdAmazonia)
 n <- 100
-Xbal <- cbind(rep(1, times = N), gridAmazonia$lnSWIR2)
-Xspread <- cbind(gridAmazonia$x1, gridAmazonia$x2)
+Xbal <- cbind(rep(1, times = N), grdAmazonia$lnSWIR2)
+Xspread <- cbind(grdAmazonia$x1, grdAmazonia$x2)
 pi <- rep(n / N, times = N)
 set.seed(314)
 units <- lcube(Xbal = Xbal, Xspread = Xspread, prob = pi)
-mysample <- gridAmazonia[units, ]
+mysample <- grdAmazonia[units, ]
 ```
 
 ```{r DoublyBalancedSampleAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on lnSWIR2 with geographical spreading from Eastern Amazonia."}
-ggplot(data = gridAmazonia) +
+ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
   geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
   scale_fill_continuous(name = "lnSWIR2", type = "viridis") +

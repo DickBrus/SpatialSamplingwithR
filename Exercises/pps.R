@@ -1,7 +1,7 @@
 #load  data
-load(file="../data/Amazonia_5km.RData")
+grdAmazonia <- readRDS(file = "../results/grdAmazonia_5km.rds")
 
-lnSWIR_neg <- gridAmazonia$lnSWIR2*-1
+lnSWIR_neg <- grdAmazonia$lnSWIR2*-1
 min_lnSWIR_neg <- min(lnSWIR_neg)
 size <- lnSWIR_neg - min_lnSWIR_neg + 1
 
@@ -14,12 +14,12 @@ p <- size/sum(size)
 
 #Repeat pps sampling 10000 times
 mz <- v_mz <- numeric(length=10000)
-N <- nrow(gridAmazonia)
+N <- nrow(grdAmazonia)
 set.seed(314)
 
 for (i in 1:10000) {
   mysample <- sample(N, size=n, replace=TRUE, prob=p)
-  zexpand <- gridAmazonia$AGB[mysample]/p[mysample]
+  zexpand <- grdAmazonia$AGB[mysample]/p[mysample]
   tz <- mean(zexpand)
   mz[i] <- tz/N
   v_tz <- var(zexpand)/n
@@ -31,6 +31,6 @@ print(Vp_mz <- var(mz))
 print(Ep_v_mz <- mean(v_mz))
 
 #Compute true sampling variance of estimated mean with simple random sampling with replacement
-print(v_mz_SI_true <-var(gridAmazonia$AGB)/d)
+print(v_mz_SI_true <-var(grdAmazonia$AGB)/d)
 
 print(gain <- v_mz_SI_true/Vp_mz)

@@ -3,8 +3,7 @@ library(sp)
 
 #Read data with coordinates and other attributes of fine grid (discretisation of study area)
 
-load(file="../data/HunterValley.RData")
-grd <- grdHunterValley
+grd <- readRDS(file = "../data/grdHunterValley.rds")
 
 head(grd)
 N <- nrow(grd)

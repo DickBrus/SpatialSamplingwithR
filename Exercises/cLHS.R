@@ -2,7 +2,7 @@ library(clhs)
 library(ggplot2)
 
 #load grid with covariates
-load(file="../data/HunterValley.RData")
+grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 names(grdHunterValley)
 
 n <- 50
@@ -13,13 +13,13 @@ str(res)
 plot(res$obj)
 
 mysample <- res$sampled_data
-mysample$x <- grdHunterValley$Easting[res$index_samples]
-mysample$y <- grdHunterValley$Northing[res$index_samples]
+mysample$s1 <- grdHunterValley$s1[res$index_samples]
+mysample$s2 <- grdHunterValley$s2[res$index_samples]
 
 #Plot the selected points on top of one of the covariates
 ggplot(data=grdHunterValley) +
-  geom_tile(mapping = aes(x = Easting, y = Northing, fill = cti))+  
-  geom_point(data = mysample, mapping = aes(x = x, y = y), colour = "red") +
+  geom_tile(mapping = aes(x = s1, y = s2, fill = cti))+  
+  geom_point(data = mysample, mapping = aes(x = s1, y = s2), colour = "red") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +    
   scale_fill_viridis_c(name="cti")+

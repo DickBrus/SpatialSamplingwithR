@@ -1,5 +1,4 @@
-load("../data/CovariatesAmharaEthiopia.RData")
-load("data/CovariatesAmharaEthiopia.RData")
+grdAmhara <- readRDS(file = "../data/grdAmhara.rds")
 
 library(sp)
 

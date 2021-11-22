@@ -20,16 +20,16 @@ with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression co
 library(gstat)
 #define discretisation grid
 s1 <- s2 <- 1:20 - 0.5
-grid <- expand.grid(s1, s2)
-names(grid) <- c("s1", "s2")
-N <- nrow(grid)
+grdSquare <- expand.grid(s1, s2)
+names(grdSquare) <- c("s1", "s2")
+N <- nrow(grdSquare)
 
 #define residual  semivariogram for simulation
 vgmodel <- vgm(model = "Exp", psill = 25, range = 2, nugget = 0)
 
 #compute matrix with covariances between discretisation points
-dists1 <- outer(grid$s1, grid$s1, FUN = "-")
-dists2 <- outer(grid$s2, grid$s2, FUN = "-")
+dists1 <- outer(grdSquare$s1, grdSquare$s1, FUN = "-")
+dists2 <- outer(grdSquare$s2, grdSquare$s2, FUN = "-")
 dist <- sqrt(dists1^2 + dists2^2)
 
 #compute matrix with covariances
@@ -40,34 +40,34 @@ Upper <- chol(C)
 
 #simulate random numbers from standard normal distribution
 set.seed(31415)
-G <- rnorm(n = nrow(grid), 0, 1)
+G <- rnorm(n = nrow(grdSquare), 0, 1)
 e <- crossprod(Upper, G)
 
 mu <- 15
-grid$x <- e + mu
+grdSquare$x <- e + mu
 
-ord <- order(grid$x)
-grid <- grid[ord, ]
-grid$x[1] <- 4
-grid$x[400] <- 32
+ord <- order(grdSquare$x)
+grdSquare <- grdSquare[ord, ]
+grdSquare$x[1] <- 4
+grdSquare$x[400] <- 32
 
 #compute values of study variable as linear combination of covariate + white noise
 sigma_resid <- 2
 set.seed(31415)
-grid$z <- 2 + 0.5 * grid$x + rnorm(n = nrow(grid), mean = 0, sd = sigma_resid)
+grdSquare$z <- 2 + 0.5 * grdSquare$x + rnorm(n = nrow(grdSquare), mean = 0, sd = sigma_resid)
 
-#save(grid,file = "data/SimulatedSquare.RData")
+#save(grdSquare,file = "results/SimulatedSquare.RData")
 
 #select simple random sample without replacement
 n <- 16
 idsrandom <- sample(400, n)
-randomsample <- grid[idsrandom, ]
+randomsample <- grdSquare[idsrandom, ]
 
 model.random <- lm(z ~ x, data = randomsample)
 det.random <- det(vcov(model.random))
 
 #select optimal sample for simple linear regression model; grid cells are ordered on x
-optsample <- grid[c(1, 2, 3, 4, 5, 6, 7, 8, 393, 394, 395, 396, 397, 398, 399, 400), ]
+optsample <- grdSquare[c(1, 2, 3, 4, 5, 6, 7, 8, 393, 394, 395, 396, 397, 398, 399, 400), ]
 model.opt <- lm(z ~ x, data = optsample)
 det.opt <- det(vcov(model.opt))
 ```
@@ -76,7 +76,7 @@ det.opt <- det(vcov(model.opt))
 mysamples <- rbind(randomsample, optsample)
 mysamples$design <- factor(rep(c("Random", "Optimal"), each = 16), levels = c("Random", "Optimal"), ordered = TRUE)
 
-ggplot(data = grid) +
+ggplot(data = grdSquare) +
   geom_raster(mapping = aes(x = s1, y = s2, fill = x)) +
   geom_tile(data = mysamples, mapping = aes(x = s1, y = s2), colour = "white", size = 0.8, width = 1, height = 1, fill = NA) +
   scale_fill_viridis_c(name = "x") +
@@ -114,11 +114,11 @@ Third, a sampling design spreading out the sampling units in geographical space 
 As an illustration I selected a single sample of 500 units from Eastern Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First, the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
 
 ```{r}
-load("data/Amazonia_5km.RData")
-gridAmazonia$Biome <- as.factor(gridAmazonia$Biome)
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia$Biome <- as.factor(grdAmazonia$Biome)
 biomes <- c("Mangrove", "Forest.dry", "Grassland", "Forest.moist")
-levels(gridAmazonia$Biome) <- biomes
-N_h <-  table(gridAmazonia$Biome)
+levels(grdAmazonia$Biome) <- biomes
+N_h <-  table(grdAmazonia$Biome)
 n <- 500
 n_h <- round(n * N_h / sum(N_h))
 n_h[3] <- n_h[3] + 1
@@ -132,21 +132,21 @@ In the next code chunk a balanced sample is selected with equal inclusion probab
 ```{r BalancedStratified}
 library(BalancedSampling)
 pi <- n_h / N_h
-stratalabels <- levels(gridAmazonia$Biome)
+stratalabels <- levels(grdAmazonia$Biome)
 lut <- data.frame(Biome = stratalabels, pi = as.numeric(pi))
-gridAmazonia <- merge(x = gridAmazonia, y = lut)
-Xbal <- model.matrix(~ Biome - 1, data = gridAmazonia)
-Xbal <- cbind(Xbal, gridAmazonia$lnSWIR2)
-Xspread <- cbind(gridAmazonia$x1, gridAmazonia$x2)
+grdAmazonia <- merge(x = grdAmazonia, y = lut)
+Xbal <- model.matrix(~ Biome - 1, data = grdAmazonia)
+Xbal <- cbind(Xbal, grdAmazonia$lnSWIR2)
+Xspread <- cbind(grdAmazonia$x1, grdAmazonia$x2)
 set.seed(314)
-units <- lcube(Xbal = Xbal, Xspread = Xspread, prob = gridAmazonia$pi)
-mysample <- gridAmazonia[units, ]
+units <- lcube(Xbal = Xbal, Xspread = Xspread, prob = grdAmazonia$pi)
+mysample <- grdAmazonia[units, ]
 ```
 
 Figure \@ref(fig:Sample4MappingandEstimationAmazonia) shows the selected sample.
 
 ```{r Sample4MappingandEstimationAmazonia, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "Balanced sample of size 500 from Eastern Amazonia, balanced on biome and lnSWIR2, with geographical spreading. Equal inclusion probabilities are used."}
-ggplot(data = gridAmazonia) +
+ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
   scale_fill_viridis_c(name = "lnSWIR2") +
   geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = Biome), size = 1.5) +

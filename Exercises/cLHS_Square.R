@@ -2,7 +2,7 @@ library(clhs)
 library(ggplot2)
 
 #Load simulated square
-load(file="../data/SimulatedSquare.RData")
+load(file = "../results/SimulatedSquare.RData")
 
 #Use covariate $x$ together with the spatial coordinates s1 and s2 to select a conditioned Latin hypercube sample of 16 points
 

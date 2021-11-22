@@ -7,23 +7,23 @@ The simplest option for covariate space coverage (CSC) sampling\index{Covariate 
 In the next code chunk a CSC sample of twenty units is selected from Eastern Amazonia. To speed up the computations a subgrid with a spacing of 5,000 m is selected, using function `spsample` of package **sp**. All five quantitative covariates, SWIR2, Terra_PP, Prec_dm, Elevation, and Clay, are used as covariates. To select twenty units, twenty clusters are constructed using function `kmeans` of the **stats** package [@R2020]. The number of clusters is passed to argument `centers`. Note that the number of clusters is not based, as would be usual in cluster analysis, on the assumed number of subregions with a high density of units in the multivariate distribution, but rather on the number of sampling units. The k-means clustering algorithm is a deterministic algorithm, i.e. the final optimised clustering is fully determined by the initial clustering. This final clustering can be suboptimal, i.e. the minimised MSSSD value is somewhat larger than the global minimum. Therefore the clustering should be repeated many times, every time starting with a different random initial clustering. The number of repeats is passed to argument `nstart`. The best solution is automatically kept.
 
 ```{r}
-load("data/Amazonia_5km.RData")
-covs <- names(gridAmazonia)[c(4, 5, 6, 7, 8)]
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+covs <- names(grdAmazonia)[c(4, 5, 6, 7, 8)]
 n <- 20
 set.seed(314)
 myclusters <- kmeans(
-  scale(gridAmazonia[, covs]), centers = n, iter.max = 10000, nstart = 100)
-gridAmazonia$cluster <- myclusters$cluster
+  scale(grdAmazonia[, covs]), centers = n, iter.max = 10000, nstart = 100)
+grdAmazonia$cluster <- myclusters$cluster
 ```
 
 Raster cells with the shortest scaled Euclidean distance in covariate-space to the centres of the clusters are selected as the sampling units. To this end first a matrix with the distances of all the raster cells to the cluster centres is computed with function `rdist` of package **fields** [@fields]. The raster cells closest to the centres are computed with function `apply`, using argument `FUN = which.min`. 
 
 ```{r}
 library(fields)
-covs_s <- scale(gridAmazonia[, covs])
+covs_s <- scale(grdAmazonia[, covs])
 D <- rdist(x1 = myclusters$centers, x2 = covs_s)
 units <- apply(D, MARGIN = 1, FUN = which.min)
-myCSCsample <- gridAmazonia[units, ]
+myCSCsample <- grdAmazonia[units, ]
 ```
 
 Figure \@ref(fig:CSCsample) shows the clustering of the raster cells and the raster cells closest in covariate space to the centres, used as the selected sample. In Figure \@ref(fig:CSCsampleinscatter) the selected sample is plotted in biplots of some pairs of covariates. In the biplots some sampling units are clearly clustered. However, this is misleading, as actually we must look in five-dimensional space to see whether the units are clustered. Two units with a large separation distance in a five-dimensional space can look quite close when projected on a two-dimensional plane.
@@ -43,7 +43,7 @@ Note that to centre and scale the covariate values in the CSC sample, the popula
 (ref:CSCsamplelabel) Covariate space coverage sample of twenty units from Eastern Amazonia, obtained with k-means clustering using five covariates, plotted on a map of the clusters.
 
 ```{r CSCsample, echo = FALSE, out.width = "100%", fig.cap = "(ref:CSCsamplelabel)"}
-ggplot(gridAmazonia) +
+ggplot(grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = as.character(cluster))) +
   geom_point(data = myCSCsample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2, colour = "red") +
   scale_fill_viridis_d(name = "Cluster") +
@@ -55,8 +55,8 @@ ggplot(gridAmazonia) +
 (ref:CSCsampleinscatterlabel) Covariate space coverage sample of Figure \@ref(fig:CSCsample) plotted in biplots of covariates, coloured by cluster.
 
 ```{r CSCsampleinscatter, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "(ref:CSCsampleinscatterlabel)"}
-units <- sample(nrow(gridAmazonia), size = 10000, replace = FALSE)
-grd <- gridAmazonia[units, ]
+units <- sample(nrow(grdAmazonia), size = 10000, replace = FALSE)
+grd <- grdAmazonia[units, ]
 plt1 <- ggplot(grd) +
   geom_point(mapping = aes(x = SWIR2, y = Prec_dm, colour = as.character(cluster)), alpha = 0.5) +
   scale_colour_viridis_d() +
@@ -90,7 +90,7 @@ Instead of function `kmeans` we may use function `kmeanspp` of package **LICORS*
 ```{r, eval = FALSE}
 library(LICORS)
 myclusters <- kmeanspp(
-  scale(gridAmazonia[, covs]), k = n, iter.max = 10000, nstart = 30)
+  scale(grdAmazonia[, covs]), k = n, iter.max = 10000, nstart = 30)
 ```
 
 Due to the improved initial centres, the risk of ending in a local minimum is reduced. The k-means++ algorithm\index{\emph{k}-means++ algorithm} is of most interest for small sample sizes. For large sample sizes the extra time needed for computing the initial centres can become substantial and may not outweigh the larger number of starts that can be afforded with the usual k-means algorithm for the same computing time.
@@ -142,9 +142,9 @@ The function is used to select an infill sample of fifteen units from Eastern Am
 
 ```{r, eval = FALSE}
 set.seed(314)
-units <- sample(nrow(gridAmazonia), 5)
-fixed <- data.frame(units, scale(gridAmazonia[, covs])[units, ])
-mygrd <- data.frame(scale(gridAmazonia[, covs]))
+units <- sample(nrow(grdAmazonia), 5)
+fixed <- data.frame(units, scale(grdAmazonia[, covs])[units, ])
+mygrd <- data.frame(scale(grdAmazonia[, covs]))
 res <- CSIS(fixed = fixed, nsup = 15, nstarts = 10, mygrd = mygrd)
 ```
 
@@ -161,13 +161,13 @@ Figures \@ref(fig:CSCISlabel) and \@ref(fig:CSInfillsampleinscatterlabel) show t
 (ref:CSCISlabel) Covariate space infill sample of fifteen units from Eastern Amazonia, obtained with k-means clustering and five fixed cluster centres, plotted on a map of the clusters. The dots represent the fixed centres (legacy sample), the triangles the infill sample.
 
 ```{r CSCIS, echo = FALSE, out.width = "100%", fig.cap = "(ref:CSCISlabel)"}
-gridAmazonia$cluster <- res$clusters
-D <- rdist(x1 = res$centers, x2 = scale(gridAmazonia[, covs]))
+grdAmazonia$cluster <- res$clusters
+D <- rdist(x1 = res$centers, x2 = scale(grdAmazonia[, covs]))
 units <- apply(D, MARGIN = 1, FUN = which.min)
-myCSIsample <- gridAmazonia[units, c("x1", "x2", covs)]
+myCSIsample <- grdAmazonia[units, c("x1", "x2", covs)]
 myCSIsample$free <- c(rep("FALSE", 5), rep("TRUE", 15))
 
-ggplot(data = gridAmazonia) +
+ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = as.character(cluster))) +
   geom_point(data = myCSIsample, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = free), colour = "red", size = 2) +
   scale_x_continuous(name = "Easting (km)") +
@@ -180,8 +180,8 @@ ggplot(data = gridAmazonia) +
 (ref:CSInfillsampleinscatterlabel) Covariate space infill sample of Figure \@ref(fig:CSCISlabel) plotted in biplots of covariates, coloured by cluster. The dots represent the fixed centres (legacy sample), the triangles the infill sample.
 
 ```{r CSInfillsampleinscatter, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "(ref:CSInfillsampleinscatterlabel)"}
-units <- sample(nrow(gridAmazonia), size = 10000, replace = FALSE)
-grd <- gridAmazonia[units, ]
+units <- sample(nrow(grdAmazonia), size = 10000, replace = FALSE)
+grd <- grdAmazonia[units, ]
 
 plt1 <- ggplot(grd) +
   geom_point(mapping = aes(x = SWIR2, y = Prec_dm, colour = as.character(cluster)), alpha = 0.5) +
@@ -251,7 +251,7 @@ knitr::kable(
 
 #### Exercises {-}
 
-1. Write an **R** script to select a covariate space coverage sample of size 20 from Hunter Valley. The data are in `data/HunterValley.RData`. Use the covariates cti (compound topographic index, which is the same as topographic wetness index), ndvi (normalised difference vegetation index), and elevation_m in k-means clustering of the raster cells. Plot the clusters and the sample on a map of cti and in a biplot of cti against ndvi.  
+1. Write an **R** script to select a covariate space coverage sample of size 20 from Hunter Valley. The data are in `data/grdHunterValley.rds`. Use the covariates cti (compound topographic index, which is the same as topographic wetness index), ndvi (normalised difference vegetation index), and elevation_m in k-means clustering of the raster cells. Plot the clusters and the sample on a map of cti and in a biplot of cti against ndvi.  
 
 ```{r, echo = FALSE}
 rm(list = ls())

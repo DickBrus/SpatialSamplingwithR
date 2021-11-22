@@ -6,7 +6,7 @@ Stratified simple random sampling is illustrated with Voorst (Figure \@ref(fig:S
 
 ```{r stsi}
 library(sampling)
-load("data/Voorst.RData")
+grdVoorst <- readRDS("data/grdVoorst.rds")
 N_h <- tapply(grdVoorst$stratum, INDEX = grdVoorst$stratum, FUN = length)
 w_h <- N_h / sum(N_h)
 n <- 40
@@ -129,7 +129,7 @@ names(v_mz_h) <- NULL
 df <- data.frame(nms, Nh = N_h, nh = n_h_copy, Mean = round(mz_h, 1), Var = round(S2z_h, 1), se = round(sqrt(v_mz_h), 1))
 
 knitr::kable(
-  df, caption = "Size (Nh), sample size (nh), estimated mean (Mean), estimated variance (Variance), and estimated standard error of estimated mean (se) of the five strata in Voorst.",
+  df, caption = "Size (Nh), sample size (nh), estimated mean (Mean), estimated variance (Variance), and estimated standard error of estimator of mean (se) of the five strata in Voorst.",
   col.names = c("Stratum", "Nh", "nh", "Mean", "Variance", "se"),
   booktabs = TRUE
 ) %>%
@@ -516,9 +516,9 @@ In *cum-root-f* stratification\index{\emph{Cum-root-f} stratification} it is ass
 (ref:DEMXuanchenglabel) Elevation used as a stratification variable in *cum-root-f* stratification of Xuancheng.
 
 ```{r DEMXuancheng, echo = FALSE, fig.cap = "(ref:DEMXuanchenglabel)"}
-load("data/Xuancheng.RData")
-ggplot(data = grd) +
-  geom_raster(mapping = aes(x = x1, y = x2, fill = dem)) +
+grdXuancheng <- readRDS(file = "data/grdXuancheng.rds")
+ggplot(data = grdXuancheng) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = dem)) +
   scale_fill_viridis_c(name = "Elevation") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -529,11 +529,11 @@ The strata can be constructed with the package **stratification** [@Baillargeon2
 
 ```{r}
 library(stratification)
-grd <- grd[order(grd$dem), ]
-dem_new <- grd$dem + abs(min(grd$dem))
+grdXuancheng <- grdXuancheng[order(grdXuancheng$dem), ]
+dem_new <- grdXuancheng$dem + abs(min(grdXuancheng$dem))
 crfstrata <- strata.cumrootf(x = dem_new, n = 100, Ls = 5, nclass = 500)
 bh <- crfstrata$bh
-grd$crfstrata <- crfstrata$stratumID
+grdXuancheng$crfstrata <- crfstrata$stratumID
 ```
 
 Stratum bounds are threshold values of the stratification variable elevation; these stratum bounds\index{Stratum bound} are equal to `r round(bh,1)`. Note that the number of stratum bounds is one less than the number of strata. The resulting stratification is shown in Figure \@ref(fig:optstrata). Note that most strata are not single polygons, but are made up of many smaller polygons. This may be even more so if the stratification variable shows a noisy spatial pattern. This is not a problem at all, a stratum is just a collection of population units (raster cells) and need not be spatially contiguous.
@@ -549,8 +549,8 @@ fourth <- paste(labels[3], "-", labels[4])
 fifth <- paste(">", labels[4])
 labs <- c(first, second, third, fourth, fifth)
 
-ggplot(data = grd) +
-  geom_raster(mapping = aes(x = x1, y = x2, fill = factor(crfstrata))) +
+ggplot(data = grdXuancheng) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = factor(crfstrata))) +
   scale_fill_viridis_d(name = "Elevation", labels = labs) +
   scale_y_continuous(name = "Northing (km)") +
   scale_x_continuous(name = "Easting (km)") +
@@ -559,7 +559,7 @@ ggplot(data = grd) +
 
 #### Exercises {-}
 
-5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `data/Amazonia_5km.RData`.  
+5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as stratification variable. To speed up the computations use the 5 km $\times$ 5 km subgrid subsampled from the original 1 km $\times$ 1 km grid. This subgrid is in file  `results`/grdAmazonia_5km.rds`.  
     +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?
     + Select a stratified simple random sample of 100 units. First compute the stratum sample sizes for proportional allocation.
     + Estimate the population mean of AGB and its sampling variance.
@@ -576,13 +576,13 @@ This is illustrated again with the Xuancheng case study. Five quantitative covar
 
 ```{r}
 library(sp)
-gridded(grd) <- c("x1", "x2")
-subgrd <- spsample(grd, type = "regular", cellsize = 0.4, offset = c(0.5, 0.5))
-subgrd <- data.frame(coordinates(subgrd), over(subgrd, grd))
+gridded(grdXuancheng) <- ~ s1 + s2
+subgrd <- spsample(grdXuancheng, type = "regular", cellsize = 400, offset = c(0.5, 0.5))
+subgrd <- data.frame(coordinates(subgrd), over(subgrd, grdXuancheng))
 ```
 
 ```{r, echo = FALSE}
-grd <- as.data.frame(grd)
+grdXuancheng <- as.data.frame(grdXuancheng)
 ```
 
 Five clusters are computed with k-means using as clustering variables the five covariates mentioned above. The scale of these covariates is largely different, and for this reason they must be scaled before being used in clustering. The k-means algorithm is a deterministic algorithm, i.e. the same initial clustering will end in the same final, optimised clustering. This final clustering can be suboptimal, and therefore it is recommended to repeat the clustering as many times as feasible, with different initial clusterings. Argument `nstart` is the number of initial clusterings. The best clustering, i.e. the one with the smallest within-cluster sum-of-squares, is kept.
@@ -601,7 +601,7 @@ Figure \@ref(fig:kmeansstrataXuancheng) shows the five clusters obtained by k-me
 
 ```{r kmeansstrataXuancheng, echo = FALSE, fig.cap = "(ref:kmeansstrataXuanchenglabel)"}
 ggplot(subgrd) +
-  geom_raster(mapping = aes(x = x1, y = x2, fill = as.character(cluster))) +
+  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = as.character(cluster))) +
   scale_fill_viridis_d(name = "Stratum") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -635,13 +635,13 @@ When no covariate is available, we may still decide to apply a  *geographical st
 
 A simple method for constructing geographical strata is k-means clustering [@bru99]. See Chapter \@ref(SpatialCoverage) for a simple illustrative example of how geographical strata are computed with k-means clustering. In this approach the study area is discretised by a large number of grid cells. These grid cells are the objects that are clustered. The clustering variables are simply the spatial coordinates of the centres of the grid cells. This method leads to compact geographical strata\index{Compact geographical stratum}, shortly referred to as geostrata\index{Geostratum|see{Compact geographical stratum}}. Geostrata can be computed with function `kmeans`, as shown in Section \@ref(kmeansstratification). The two clustering variables have the same scale, so they should not be scaled because this would lead to an arbitrary distortion of geographical distances.  The geostrata generally will not have the same size (number of grid cells). Geostrata of equal size can be attractive, as then the sample becomes selfweighting, i.e. the sample mean is an unbiased estimator of the population mean. 
 
-Geostrata of the same size can be computed with function `stratify` of the package **spcosa** (@spcosa, @walvoort2010), with argument `equalArea = TRUE`. If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. @walvoort2010 describe the k-means algorithms implemented in this package in detail. Argument `object` of function `stratify` specifies a spatial object of the population units. In the **R** code below `data.frame` `grdVoorst` is changed into a `SpatialPixelsDataFrame` with function `gridded` of the package **sp**. The spatial object can also be of class `SpatialPolygons`. In that case either argument `nGridCells` or argument `cellSize` must be set, so that the vector map in `object` can be discretised by a finite number of grid cells. Argument `nTry` specifies the number of initial stratifications in k-means clustering, and therefore is comparable with argument `nstart` of function `kmeans`. For more details on spatial stratification using k-means clustering, see Chapter \@ref(SpatialCoverage). The k-means algorithm used with `equalArea = TRUE` takes much more computing time than the one used with `equalArea = FALSE`. 
+Geostrata of the same size can be computed with function `stratify` of the package **spcosa** (@spcosa, @walvoort2010), with argument `equalArea = TRUE`. If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. @walvoort2010 describe the k-means algorithms implemented in this package in detail. Argument `object` of function `stratify` specifies a spatial object of the population units. In the **R** code below `data.frame` `grd` is changed into a `SpatialPixelsDataFrame` with function `gridded` of the package **sp**. The spatial object can also be of class `SpatialPolygons`. In that case either argument `nGridCells` or argument `cellSize` must be set, so that the vector map in `object` can be discretised by a finite number of grid cells. Argument `nTry` specifies the number of initial stratifications in k-means clustering, and therefore is comparable with argument `nstart` of function `kmeans`. For more details on spatial stratification using k-means clustering, see Chapter \@ref(SpatialCoverage). The k-means algorithm used with `equalArea = TRUE` takes much more computing time than the one used with `equalArea = FALSE`. 
 
 ```{r spcosa, eval = FALSE}
 library(spcosa)
 library(sp)
 set.seed(314)
-gridded(subgrd) <- ~x1 + x2
+gridded(subgrd) <- ~ x1 + x2
 mygeostrata <- stratify(
   object = subgrd, nStrata = 50, nTry = 1, equalArea = TRUE)
 ```
@@ -675,12 +675,12 @@ Figure \@ref(fig:GeoStrata) shows fifty compact geostrata of equal size for Xuan
 
 ```{r GeoStrata, echo = FALSE, fig.cap = "Compact geostrata of equal size for Xuancheng and stratified simple random sample of two points per stratum."}
 ggplot(mygeostrata) +
-    geom_raster(mapping = aes(x = x1, y = x2, fill = factor(stratumId))) +
+    geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = factor(stratumId))) +
     scale_fill_viridis_d(name = "geostratum") +
-    geom_point(data = mysample, mapping = aes(x = x1, y = x2), size = 2) +
+    geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
     coord_fixed() +
-    scale_x_continuous(name = "Easting") +
-    scale_y_continuous(name = "Northing") +
+    scale_x_continuous(name = "Easting (km)") +
+    scale_y_continuous(name = "Northing (km)") +
     theme(legend.position = "none")
 ```
 
@@ -703,11 +703,11 @@ The estimated population mean equals `r round(mean,1)` with an estimated standar
 6. Why is it attractive to select at least two points per geostratum?  
 7. The alternative to 50 geostrata and two points per geostratum is 100 geostrata and one point per geostratum. Which sampling strategy will be more precise?  
 8. The geostrata in Figure \@ref(fig:GeoStrata) have equal size (area), which can be enforced by argument `equalArea = TRUE`. Why are equal sizes attractive? Work out the estimator of the population mean for strata of equal size.  
-9. Write an **R** script to construct 20 compact geographical strata of equal size for agricultural field Leest. Read the shapefile `Leest5` using function `readOGR` of the package **rgdal**. Remove the projection attributes with `proj4string(shpField) <- NA_character_`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal size, and randomly select one point per stratum.  
+9. Write an **R** script to construct 20 compact geographical strata of equal size for agricultural field Leest. Read the shapefile `Leest` using function `readOGR` of the package **rgdal**. Remove the projection attributes with `proj4string(shpField) <- NA_character_`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal size, and randomly select one point per stratum.  
     + If only one point per stratum is selected, the sampling variance can be approximated by the collapsed strata\index{Collapsed strata} estimator. In this method pairs of strata are formed, and the two strata of a pair are joined. In each new stratum we now have two points. With an odd number of strata there will be one group of three strata and three points. The sample is then analysed as if it were a random sample from the new collapsed strata. Suppose we group the strata on the basis of the measurements of the study variable. Do you think this is a proper way of grouping?
     + In case you think this is not a proper way of grouping the strata, how would you group the strata?
     + Is the sampling variance estimator unbiased? If not, is the sampling variance overestimated or underestimated?  
-10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use argument `equalArea = TRUE`. Select four points per stratum using argument `type = "composite"`, and change the class of the resulting object in `SpatialPoints`. Extract the $z$-values in data frame `grdVoorst` at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Finally, estimate the population mean and its standard error.  
+10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use argument `equalArea = TRUE`. Select four points per stratum using argument `type = "composite"`, and change the class of the resulting object in `SpatialPoints`. Extract the $z$-values in data frame `grd` at the selected sampling points using  function `over`. Add a column to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Finally, estimate the population mean and its standard error.  
     + Can the sampling variance of the estimator of the mean be estimated for bulking within the strata?
     + The alternative to analysing the concentration of four composite samples obtained by bulking across strata  is to analyse all $20 \times 4$ aliquots separately. The strata have equal size, so the inclusion probabilities are equal. As a consequence, the sample mean is an unbiased estimator of the population mean. Is the precision of this estimated population mean equal to that of the estimated population mean with composite sampling? If not, is it smaller or larger, and why?
     + If you use argument `equalArea = FALSE` in combination with argument `type = "composite"`, you get an error message. Why does this combination of arguments not work?

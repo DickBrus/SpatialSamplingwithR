@@ -4,7 +4,7 @@ library(ggplot2)
 library(terra)
 
 #load data frame with coordinates (and other attributes) of fine grid (discretisation of study area)
-rmap <- rast("../data/Xuancheng_elevation.tif")
+rmap <- rast("../data/Elevation_Xuancheng.tif")
 rmap
 rmap <- as.data.frame(rmap, xy=TRUE, na.rm=TRUE)
 gridded(rmap) <- ~x+y
@@ -15,12 +15,13 @@ length(subgrid)
 subgrid <- as(subgrid, "data.frame")
 
 #load existing sampling points
-legacy <- read.csv(file="../data/Xuancheng_iPSMsample.csv")
+sample_all <- read.csv(file = "../data/Sample_Xuancheng.csv")
+legacy <- sample_all[sample_all$sample=="iPSM",]
 
 #plot prior points
 ggplot(subgrid) +
   geom_raster(mapping = aes(x = x1/1000, y = x2/1000), fill="grey") +
-  geom_point(data=legacy, mapping = aes(x = X/1000,y = Y/1000), size = 2) +
+  geom_point(data=legacy, mapping = aes(x = s1/1000,y = s2/1000), size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed(ratio = 1)
@@ -35,7 +36,7 @@ n <- 100
 ntot <- n+nrow(legacy)
 
 #change class of legacy (existing points) to SpatialPoints
-legacy <- SpatialPoints(coords=cbind(legacy$X,legacy$Y))
+legacy <- SpatialPoints(coords=cbind(legacy$s1,legacy$s2))
 
 #compute geostrata with argument priorPoints
 set.seed(314)

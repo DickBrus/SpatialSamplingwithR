@@ -1,4 +1,4 @@
-load(file="../data/Voorst.RData")
+grdVoorst <- readRDS("../data/grdVoorst.rds")
 
 #construct zones
 cellsize <- 25 #size of pixels

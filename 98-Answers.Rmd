@@ -97,7 +97,7 @@
     The difference between the experimental variance (variance of regression estimator with sample fit of coefficients) and the variance obtained with the population fit, as a proportion of the experimental variance, decreases with the sample size. The same holds for the difference between the approximated variance and the experimental variance as a proportion of the experimental variance. Both findings can be explained by the smaller contribution of the variance of the estimated regression coefficients to the variance of the regression estimator with the large sample size. The approximated variance does not account for the uncertainty about the regression coefficients, so that for all three sample sizes this approximated variance is about equal to the variance of the regression estimator as computed with the population fit of the regression coefficients.
 
 ```{r RegressionEstimatorsAmazonia, echo=FALSE, fig.asp=0.7, fig.cap="Variance of the regression estimator of the mean AGB in Eastern Amazonia with population fit of regression coefficients (Exhaust), with sample fit of regression coefficients (Sample), and approximated variance of regression estimator (Approx)."}
-load(file="results/VarRegressionEstimator.RData")
+load(file = "results/VarRegressionEstimator.RData")
 names(df) <- c("n", "Exhaust", "Sample", "Approx")
 
 library(tidyverse)
@@ -115,7 +115,7 @@ ggplot(df_lf) +
 ## Two-phase random sampling {-}
 
 ```{r, echo=FALSE}
-load(file="results/RegressionEstimator_Twophase.RData")
+load(file = "results/RegressionEstimator_Twophase.RData")
 ```
 
 1. See [`RegressionEstimator_Twophase.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator_Twophase.R). Figure \@ref(fig:RegressionEstimatorsAmazoniaTwoPhase) shows the approximated sampling distribution of the simple regression estimator of the mean AGB in Eastern Amazonia when lnSWIR2 is observed for all sampling units (One-phase) and when AGB is observed for the subsample only (Two-phase). The variance of the regression estimator with two-phase sampling is considerably larger. Without subsampling the regression estimator exploits our knowledge of the population mean of the covariate lnSWIR2, whereas in two-phase sampling this population mean must be estimated from the first-phase sample, introducing additional uncertainty.
@@ -125,7 +125,7 @@ load(file="results/RegressionEstimator_Twophase.RData")
 (ref:RegressionEstimatorsAmazoniaTwoPhaselabel) Approximated sampling distribution of the simple regression estimator of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia in the case that the covariate is observed for all sampling units (One-phase) and for the subsample only (Two-phase).
 
 ```{r RegressionEstimatorsAmazoniaTwoPhase, echo=FALSE, fig.cap="(ref:RegressionEstimatorsAmazoniaTwoPhaselabel)"}
-load(file="data/Amazonia_1km.RData")
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 
 estimates<-data.frame(mz_reg2ph, mz_regr)
 names(estimates)<-c("Two-phase","One-phase")
@@ -133,7 +133,7 @@ names(estimates)<-c("Two-phase","One-phase")
 df_lf <- estimates %>% pivot_longer(.,cols=c("Two-phase","One-phase"))
 ggplot(data=df_lf) +
     geom_boxplot(aes(y=value, x=name)) +
-    geom_hline(yintercept=mean(gridAmazonia$AGB), colour="red") +
+    geom_hline(yintercept=mean(grdAmazonia$AGB), colour="red") +
     scale_x_discrete(name = "Sampling design") +
     scale_y_continuous(name = "Estimated mean AGB")
 ```
@@ -201,10 +201,10 @@ grid.arrange(plt1, plt2, nrow=1)
 4. See [`SpatialCoverageCircularPlot.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SpatialCoverageCircularPlot.R). See Figure \@ref(fig:SCScircularplot).
 
 ```{r SCScircularplot, echo=FALSE, fig.cap="Spatial coverage samples of five and six points in a circular plot."}
-load(file="results/SpatialCoverageCircularPlot_5pnts.RData")
+load(file = "results/SpatialCoverageCircularPlot_5pnts.RData")
 plt1 <- plot(myStrata, mySample)
 
-load(file="results/SpatialCoverageCircularPlot_6pnts.RData")
+load(file = "results/SpatialCoverageCircularPlot_6pnts.RData")
 plt2 <- plot(myStrata, mySample)
 
 grid.arrange(plt1, plt2, nrow=1)
@@ -218,7 +218,7 @@ grid.arrange(plt1, plt2, nrow=1)
 1. See [`CovariateSpaceCoverageSample.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/CovariateSpaceCoverageSample.R). See Figure \@ref(fig:CSCsamplingHunterValley).  
 
 ```{r CSCsamplingHunterValley, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space coverage sample from  Hunter valley, using cti, ndvi, and elevation as clustering variables, plotted on a map of cti."}
-load(file="data/HunterValley.RData")
+grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
 
 n <- 20
 set.seed(314)
@@ -232,8 +232,8 @@ units <- apply(res,MARGIN=1, FUN=which.min)
 myCSCsample <- grdHunterValley[units,]
 
 ggplot(data=grdHunterValley) +
-  geom_raster(mapping=aes(x=Easting/1000, y=Northing/1000, fill=cti)) +
-  geom_point(data=myCSCsample, mapping=aes(x=Easting/1000, y=Northing/1000), colour="orange", size=1)+
+  geom_raster(mapping=aes(x=s1/1000, y=s2/1000, fill=cti)) +
+  geom_point(data=myCSCsample, mapping=aes(x=s1/1000, y=s2/1000), colour="orange", size=1)+
   scale_fill_continuous(name="cti",type= "viridis") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
@@ -257,7 +257,7 @@ ggplot(data=grdHunterValley) +
 (ref:QuantilesOKVarGridspacinglabel) Three quantiles of the ordinary kriging variance of predicted SOM concentrations in West-Amhara, as a function of the grid spacing.
 
 ```{r QuantilesOKVarGridspacing, echo=FALSE, fig.asp=0.7, fig.cap="(ref:QuantilesOKVarGridspacinglabel)"}
-load(file="results/MBGridSpacing_Ethiopia_QOKV.RData")
+load(file = "results/MBGridSpacing_Amhara_QOKV.RData")
 
 df <- result %>% pivot_longer(.,cols=c("V1","V2","V3"))
 ggplot(data=df) +
@@ -271,7 +271,7 @@ ggplot(data=df) +
 97, 137, and 200 points.
 
 ```{r SensitivityMKV, echo=FALSE, fig.asp=0.7, fig.cap="Mean ordinary kriging variance of predicted SOM concentrations in West-Amhara, as a function of grid spacing for three semivariograms."}
-load(file="results/MBGridSpacing_Ethiopia_Sensitivity.RData")
+load(file = "results/MBGridSpacing_Amhara_Sensitivity.RData")
 
 df_lf <- df %>% pivot_longer(.,cols=c("MKV","MKV_morenugget","MKV_smallerrange"))
 ggplot(data=df_lf) +
@@ -289,7 +289,7 @@ ggplot(data=df_lf) +
 1. See [`MBSampleSquare_OK.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleSquare_OK.Rmd).  The optimised sample (Figure \@ref(fig:SixteenPntsInSquare)) is most likely not the global optimum. The spatial pattern is somewhat irregular. I expect the optimal sampling locations to be close to the centres of the subsquares.    
 
 ```{r SixteenPntsInSquare, echo=FALSE, out.width='50%', fig.cap="Optimised sampling pattern of sixteen  points in a square for ordinary kriging."}
-load(file="results/MBSampleSquare_OK_NoNugget_16pnts.RData")
+load(file = "results/MBSampleSquare_OK_NoNugget_16pnts.RData")
 sample<-res$points
 s1 <- s2 <- 1:20 - 0.5
 grid <- expand.grid(s1,s2)
@@ -307,9 +307,9 @@ ggplot(data = grid) +
 2. See [`MBSample_QOKV.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_QOKV.Rmd). Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sampling pattern. Compared with the optimised sampling pattern using the *mean* ordinary kriging variance (MOKV) as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with the sample optimised for MOKV near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
 
 ```{r MBsampleP90OKVCRF, echo=FALSE, fig.cap="Optimised sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECe as a minimisation criterion."}
-load(file="data/CottonResearchFarm.RData")
-load(file="results/MBSample_OK_P90_Uzbekistan.RData")
-ggplot(data=EM_CRF) +
+load(file = "results/CottonResearchFarm_Uzbekistan.RData")
+load(file = "results/MBSample_OK_P90_Uzbekistan.RData")
+ggplot(data=grdCRF) +
   geom_raster(mapping = aes(x = x1/1000, y = x2/1000),fill="grey") +
   geom_point(data = mysample, mapping = aes(x = x/1000, y = y/1000), size= 2) +
   scale_x_continuous(name = "Easting (km)") +
@@ -328,11 +328,11 @@ s1 <- s2 <- 1:20 - 0.5
 grid <- expand.grid(s1,s2)
 names(grid) <- c("s1","s2")
 
-load(file="results/MBSampleSquare_KED_NoNugget_16pnts.RData")
+load(file = "results/MBSampleSquare_KED_NoNugget_16pnts.RData")
 sample_nonug<-res$points
-load(file="results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
+load(file = "results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
 sample_largenug<-res$points
-load(file="results/MBSampleSquare_KED_PureNugget_16pnts.RData")
+load(file = "results/MBSampleSquare_KED_PureNugget_16pnts.RData")
 sample_purenug<-res$points
 
 mysamples <- rbind(sample_nonug,sample_largenug,sample_purenug)
@@ -358,18 +358,18 @@ ggplot(data=mysamples) +
 4. See [`MBSample_SSA_varkrigvar.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_varkrigvar.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The circular cluster of sampling points covers a larger area than the cluster obtained with a ratio of spatial dependence of 0.8.
 
 ```{r MBSupSamples, echo=FALSE, out.width='100%', fig.cap="Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean variance of the kriging variance (MVKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
-load(file="data/HunterValley.RData")
-load(file="results/MBSample_logdet_phi200nug05.RData")
+grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
+load(file = "results/MBSample_logdet_phi200nug05.RData")
 mysample_logdet <- mysample
 
-load(file="results/MBSample_varkrigvar_phi200nug05.RData")
+load(file = "results/MBSample_varkrigvar_phi200nug05.RData")
 mysample_MVKV <- mysample
 
 mysamples <- rbind(mysample_logdet,mysample_MVKV)
 mysamples$criterion <- rep(c("logdet","MVKV"),each=100)
 
 ggplot(mysamples) +
-  geom_raster(data=grdHunterValley, mapping=aes(x=Easting/1000, y=Northing/1000), fill="grey") +
+  geom_raster(data=grdHunterValley, mapping=aes(x=s1/1000, y=s2/1000), fill="grey") +
   geom_point(mapping=aes(x=x/1000, y=y/1000), shape =1, size=1.5 ) +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
@@ -377,7 +377,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 ```{r, echo=FALSE}
-load(file="results/MBSample_EAC_80_20.RData")
+load(file = "results/MBSample_EAC_80_20.RData")
 MEACopt <- as.numeric(tail(res$objective$energy,1))
 ```
 
@@ -387,12 +387,11 @@ MEACopt <- as.numeric(tail(res$objective$energy,1))
 
 ```{r MBSampleEACHV, echo=FALSE, fig.cap="Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
 
-load(file="data/HunterValley.RData")
-grd <- grdHunterValley
-gridded(grd) <- ~Easting+Northing
+grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
+gridded(grdHunterValley) <- ~ s1 + s2
 n  <- 80
 set.seed(314)
-myStrata <- stratify(grd, nStrata = n, equalArea=FALSE, nTry=10)
+myStrata <- stratify(grdHunterValley, nStrata = n, equalArea=FALSE, nTry=10)
 mySCsample <- as(spsample(myStrata),"SpatialPoints")
 mySCsampledf <- as(mySCsample,"data.frame")
 
@@ -401,7 +400,7 @@ units <- which(mysample$free==1)
 mysupsample <- mysample[units, c("x","y")]
 
 plot(myStrata) +
-  geom_point(data=mySCsampledf, mapping=aes(x=Easting, y=Northing), shape=1, size=1.5 )+
+  geom_point(data=mySCsampledf, mapping=aes(x=s1, y=s2), shape=1, size=1.5 )+
   geom_point(data=mysupsample, mapping=aes(x=x, y=y), shape=2, size=2, colour="red")
 
 MEACopt <- tail(res$objective$energy$obj,1)

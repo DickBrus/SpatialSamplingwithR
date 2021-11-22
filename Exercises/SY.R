@@ -1,7 +1,7 @@
 library(sp)
 library(ggplot2)
 
-load(file="../data/Voorst.RData")
+grdVoorst <- readRDS("../data/grdVoorst.rds")
 
 #change class to SpatialPixelsDataFrame
 gridded(grdVoorst) <- ~s1+s2

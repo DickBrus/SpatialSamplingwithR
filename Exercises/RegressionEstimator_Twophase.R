@@ -1,6 +1,6 @@
-load(file="../data/Amazonia_1km.RData")
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 
-N <- nrow(gridAmazonia)
+N <- nrow(grdAmazonia)
 #set sample sizes
 n1 <- 250
 n2 <- 100
@@ -11,14 +11,14 @@ set.seed(314)
 
 for (i in 1:10000) {
   #select large simple random sample
-  units <- sample(nrow(gridAmazonia), size = n1, replace = FALSE)
-  mysample <- gridAmazonia[units,]
+  units <- sample(nrow(grdAmazonia), size = n1, replace = FALSE)
+  mysample <- grdAmazonia[units,]
   
   #fit simple linear model
   lm_sam <- lm(AGB~lnSWIR2, data=mysample)
   
   #estimate the population mean of AGB with the regression estimator
-  mz_regr[i] <- mean(mysample$AGB)+coef(lm_sam)[2]*(mean(gridAmazonia$lnSWIR2)-mean(mysample$lnSWIR2))
+  mz_regr[i] <- mean(mysample$AGB)+coef(lm_sam)[2]*(mean(grdAmazonia$lnSWIR2)-mean(mysample$lnSWIR2))
   
   #subsample the selected sample
   units_subsam <- sample(nrow(mysample), size = n2, replace = FALSE)
@@ -38,4 +38,4 @@ for (i in 1:10000) {
 (var(mz_reg2ph))
 (mean(av_mz_reg2ph))
 
-#save(mz_regr, mz_reg2ph, av_mz_reg2ph, file="results/RegressionEstimator_Twophase.RData")
+#save(mz_regr, mz_reg2ph, av_mz_reg2ph, file = "results/RegressionEstimator_Twophase.RData")

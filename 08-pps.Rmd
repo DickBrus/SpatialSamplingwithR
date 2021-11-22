@@ -15,7 +15,7 @@ Sampling units can be selected with probabilities proportional to their size *wi
 pps sampling is illustrated with the simulated map of poppy area per 5 km square in the province of Kandahar (Figure \@ref(fig:mapsKandahar)). The first six rows of the data frame are shown below. Variable `poppy` is the study variable, variable `agri` is the agricultural area within the 5 km squares, used as a size variable. The dataset is using a UTM projection (zone 41N) with WGS84 datum.
 
 ```{r}
-load("data/Kandahar.RData")
+grdKandahar <- readRDS(file = "data/grdKandahar.rds")
 head(grdKandahar)
 ```
 
@@ -67,7 +67,7 @@ Figure \@ref(fig:ppswrKandahar) shows the selected sampling units, plotted on a 
 
 ```{r ppswrKandahar, echo = FALSE, out.width = '100%', fig.cap = "Sample of size 40 from Kandahar, selected with probabilities proportional to agricultural area with replacement. Four units are selected twice, so that the number of distinct units is 36."}
 ggplot(data = grdKandahar) +
-  geom_raster(mapping = aes(x = x, y = y, fill = agri)) +
+  geom_raster(mapping = aes(x = s1, y = s2, fill = agri)) +
   geom_tile(data = mysample, mapping = aes(x = x, y = y), colour = "white", width = 5, height = 5, size = 0.7, fill = NA) +
   scale_fill_viridis_c(name = "Agriarea") +
   scale_y_continuous(name = "Northing (km)") +
@@ -98,7 +98,7 @@ The estimators of Equations \@ref(eq:HHTotalppswr) and \@ref(eq:VarHHTotalppswr)
 
 #### Exercises {-}
 
-1. Write an **R** script to select a pps with replacement sample from Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2) as a size variable. Use the 5 km $\times$ 5 km subgrid to reduce computing time (data are in `data/Amazonia_5km.RData`).      
+1. Write an **R** script to select a pps with replacement sample from Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2) as a size variable. Use the 5 km $\times$ 5 km subgrid to reduce computing time (data are in `results`/grdAmazonia_5km.rds`).      
     +  The correlation of AGB and lnSWIR2 is negative. The first step is to compute an appropriate size variable, so that the larger the size variable, the larger the selection probability is. Multiply the lnSWIR2 values by -1. Then add a small value, so that the size variable becomes strictly positive.
     +  Select in a for-loop 10,000 times a ppswr sample of size 100 ($n=100$), and estimate from each sample the population mean of AGB with the pwr estimator (Hansen-Hurwitz estimator) and its sampling variance.  Compute the variance of the 10,000 estimated population means and the mean of the 10,000 estimated variances. Make a histogram of the 10,000 estimated means.
     +  Compute the true sampling variance of the $\pi$ estimator with simple random sampling with replacement and the same sample size.

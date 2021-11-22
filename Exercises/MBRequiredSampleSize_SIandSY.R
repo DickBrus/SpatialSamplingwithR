@@ -3,7 +3,7 @@ library(rgdal)
 
 vgmodel <- vgm(model="Sph", psill=966, range=44.6)
 
-shpField <- readOGR(dsn="../data",layer="Leest5")
+shpField <- readOGR(dsn="../data",layer="Leest")
 proj4string(shpField) <- NA_character_
 mygrid <- spsample(shpField,type="regular", n=2000, offset=c(0.5,0.5)) %>% as(.,"data.frame")
 H <- as.matrix(dist(mygrid))

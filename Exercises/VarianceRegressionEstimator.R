@@ -1,26 +1,25 @@
 #load data
-load("../data/Amazonia_1km.RData")
-load("data/Amazonia_1km.RData")
-N <- nrow(gridAmazonia)
+grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+N <- nrow(grdAmazonia)
 
-lm_exhaustive <- lm(AGB~lnSWIR2,data=gridAmazonia)
+lm_exhaustive <- lm(AGB~lnSWIR2,data=grdAmazonia)
 ab_pop <- coef(lm_exhaustive)
-S2e_pop_exhaustive <- sum(lm_exhaustive$residuals^2)/nrow(gridAmazonia)
+S2e_pop_exhaustive <- sum(lm_exhaustive$residuals^2)/nrow(grdAmazonia)
 
 # set sample sizes
 n <- c(10,25,100)
 
 (Vp_mz_regr_exhaustive <- S2e_pop_exhaustive/n)
 
-mx_pop <- mean(gridAmazonia$lnSWIR2)
+mx_pop <- mean(grdAmazonia$lnSWIR2)
 Vp_mz_regr <- Ep_av_mz_regr <- numeric(length=3) 
 mz_regr <- av_mz_regr <- numeric(length=10000)
 
 set.seed(314)
 for (i in 1:length(n)) {
   for (j in 1:10000){
-    units <- sample(nrow(gridAmazonia), size=n[i], replace=FALSE)
-    mysample <- gridAmazonia[units,]
+    units <- sample(nrow(grdAmazonia), size=n[i], replace=FALSE)
+    mysample <- grdAmazonia[units,]
     mx_sam <- mean(mysample$lnSWIR2)
     mz_sam <- mean(mysample$AGB)
     
@@ -42,7 +41,7 @@ Ep_av_mz_regr[i] <- mean(av_mz_regr)
 }
 
 df <- data.frame(n, Vp_mz_regr_exhaustive, Vp_mz_regr, Ep_av_mz_regr)
-#save(df, file="results/VarRegressionEstimator.RData")
+#save(df, file = "results/VarRegressionEstimator.RData")
 names(df) <- c("n", "VarMean_exh", "VarMean_sam", "ApproxVar")
 
 #compute difference between variance of regression estimator with exhaustive fit of model and variance with sample fit of model,
