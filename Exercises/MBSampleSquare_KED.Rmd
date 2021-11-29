@@ -18,8 +18,8 @@ Create a discretisation grid of 20 x 20 nodes. Add a covariate, which is equal t
 
 ```{r}
 s1 <- s2 <- 1:20 - 0.5
-grid <- expand.grid(s1,s2)
-names(grid) <- c("s1","s2")
+grid <- expand.grid(s1, s2)
+names(grid) <- c("s1", "s2")
 grid$x <- grid$s1
 ```
 
@@ -32,14 +32,14 @@ sill <- 2
 range <- 4
 nugget <- 0
 partial_sill <- sill - nugget
-vgm_gstat <- vgm(model="Exp", psill=partial_sill, range=range, nugget=nugget)
+vgm_gstat <- vgm(model = "Exp", psill = partial_sill, range = range, nugget = nugget)
 ```
 
 Specify the candidate sampling points. Note that not the grid nodes themselves are used as candidate points, but all points within the grid cells. So, the set of candidate points is not finite but infinite. In the optimisation a new candidate point is selected in two steps. First, a grid cell is randomly selected. Second, a random point within the selected grid cell is selected.
 
 ```{r}
-candi <- grid[,c(1,2)]
-names(candi) <- c("x","y")
+candi <- grid[, c(1, 2)]
+names(candi) <- c("x", "y")
 ```
 
 ## Optimising the sampling locations
@@ -53,12 +53,12 @@ The chain.length is the number of iterations during which the temperature is kep
 ```{r}
 schedule <- scheduleSPSANN(initial.acceptance = 0.8,
                            initial.temperature = 0.07,
-                           temperature.decrease=0.90,
-                           chains=500,
-                           chain.length=10,
-                           stopping=10,
-                           x.max=5, y.max=5,
-                           cellsize=1)
+                           temperature.decrease = 0.90,
+                           chains = 500,
+                           chain.length = 10,
+                           stopping = 10,
+                           x.max = 5, y.max = 5,
+                           cellsize = 1)
 ```
 
 ### Optimisation of sampling locations
@@ -68,15 +68,15 @@ Start the simulated annealing algorithm.
 ```{r}
 set.seed(314)
 res <- optimMKV(
-  points = 16, 
-  candi = candi, 
-  covars=grid, 
+  points = 16,
+  candi = candi,
+  covars = grid,
   vgm = vgm_gstat,
-  eqn = z ~ x, 
+  eqn = z ~ x,
   schedule = schedule,
-  track=TRUE)
+  track = TRUE)
 
-save(res,file = "../results/MBSampleSquare_KED_NoNugget_16pnts.RData")
+save(res, file = "../results/MBSampleSquare_KED_NoNugget_16pnts.RData")
 ```
 
 ## Optimisation using semivariogram with nugget
@@ -87,33 +87,33 @@ Repeat the optimisation using a semivariogram with large nugget, and with a pure
 # Semivariogram with large nugget
 nugget <- 1.5
 partial_sill <- sill - nugget
-vgm_gstat <- vgm(model="Exp", psill=partial_sill, range=range, nugget=nugget)
+vgm_gstat <- vgm(model = "Exp", psill = partial_sill, range = range, nugget = nugget)
 
 set.seed(314)
 res <- optimMKV(
-  points = 16, 
-  candi = candi, 
-  covars=grid, 
+  points = 16,
+  candi = candi,
+  covars = grid,
   vgm = vgm_gstat,
-  eqn = z ~ x, 
+  eqn = z ~ x,
   schedule = schedule,
-  track=TRUE)
+  track = TRUE)
 
-save(res,file = "../results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
+save(res, file = "../results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
 
 #Pure nugget semivariogram
-vgm_gstat <- vgm(model="Nug", psill=sill, range=0)
+vgm_gstat <- vgm(model = "Nug", psill = sill, range = 0)
 set.seed(314)
 res <- optimMKV(
-  points = 16, 
-  candi = candi, 
-  covars=grid, 
+  points = 16,
+  candi = candi,
+  covars = grid,
   vgm = vgm_gstat,
-  eqn = z ~ x, 
+  eqn = z ~ x,
   schedule = schedule,
-  track=TRUE)
+  track = TRUE)
 
-save(res,file = "../results/MBSampleSquare_KED_PureNugget_16pnts.RData")
+save(res, file = "../results/MBSampleSquare_KED_PureNugget_16pnts.RData")
 ```
 
 
@@ -122,22 +122,22 @@ save(res,file = "../results/MBSampleSquare_KED_PureNugget_16pnts.RData")
 Plot the optimised samples.
 
 ```{r}
-load(file = "results/MBSampleSquare_KED_NoNugget_16pnts.RData")
-sample_nonug<-res$points
-load(file = "results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
-sample_largenug<-res$points
-load(file = "results/MBSampleSquare_KED_PureNugget_16pnts.RData")
-sample_purenug<-res$points
+load(file = "../results/MBSampleSquare_KED_NoNugget_16pnts.RData")
+sample_nonug <- res$points
+load(file = "../results/MBSampleSquare_KED_LargeNugget_16pnts.RData")
+sample_largenug <- res$points
+load(file = "../results/MBSampleSquare_KED_PureNugget_16pnts.RData")
+sample_purenug <- res$points
 
-mysamples <- rbind(sample_nonug,sample_largenug,sample_purenug)
-mysamples$model <- rep(c("no","large","pure"), each=16)
+mysamples <- rbind(sample_nonug, sample_largenug, sample_purenug)
+mysamples$model <- rep(c("no", "large", "pure"), each = 16)
 
-ggplot(data=mysamples) +
-  geom_tile(data=grid, mapping = aes(x = s1, y = s2, fill = s1)) +
-  geom_point(mapping = aes(x = x, y = y), colour="red", size=1.5) +
-  scale_fill_continuous(name="x",type= "viridis") +
-  geom_vline(xintercept=c(5,10,15)) +
-  geom_hline(yintercept=c(5,10,15)) +
+ggplot(data = mysamples) +
+  geom_tile(data = grid, mapping = aes(x = s1, y = s2, fill = s1)) +
+  geom_point(mapping = aes(x = x, y = y), colour = "red", size = 1.5) +
+  scale_fill_continuous(name = "x", type = "viridis") +
+  geom_vline(xintercept = c(5, 10, 15)) +
+  geom_hline(yintercept = c(5, 10, 15)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
   facet_wrap(~ model) +

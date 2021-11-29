@@ -6,12 +6,13 @@ library(rgdal)
 set.seed(31415)
 
 # read field of interest
-shpField <- readOGR(dsn="./data",layer="Leest", verbose=FALSE)
+shpField <- readOGR(dsn = "../data", layer = "Leest", verbose = FALSE)
 proj4string(shpField) <- NA_character_
 
 # compute compact geographical strata; either use argument cellSize or nGridCells
-myStrata <- stratify(shpField, nStrata = 10, cellSize=2, equalArea=TRUE, nTry=3)
-#myStrata <- stratify(shpField, nStrata = 10, nGridCells = 2500, equalArea=TRUE, nTry=3)
+myStrata <- spcosa::stratify(
+  shpField, nStrata = 10, cellSize = 2, equalArea = TRUE, nTry = 3)
+#myStrata <- stratify(shpField, nStrata = 10, nGridCells = 2500, equalArea = TRUE, nTry = 3)
 plot(myStrata)
 
 # obtain the areas of the strata

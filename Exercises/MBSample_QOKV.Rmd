@@ -32,9 +32,9 @@ vgm_lnECe <- vgm(model = "Exp", psill = 0.336, range = 192, nugget = 0.116)
 Read square grid that discretises the study area. This 25 $\times$ 25 grid serves as the evaluation sample, and is also used to select candidate sampling points.
 
 ```{r}
-load(file = "../results/CottonResearchFarm_Uzbekistan.RData")
-mysample_eval <- grdCRF[,c("x1","x2")]
-names(mysample_eval) <- c("x","y")
+grdCRF <- readRDS("../results/CottonResearchFarm_Uzbekistan.rds")
+mysample_eval <- grdCRF[, c("x1", "x2")]
+names(mysample_eval) <- c("x", "y")
 candi <- mysample_eval
 ```
 
@@ -45,19 +45,19 @@ Define function to compute objective function (P90 of ordinary kriging variance)
 ```{r}
 QOKV <- function(points, esample, model, nmax, prob) {
   points <- as.data.frame(points)
-  coordinates(points) <- ~x+y
+  coordinates(points) <- ~ x + y
   # add dummy variable
-  points$dum=1
+  points$dum <- 1
   # compute variance of prediction error
   res <- krige(
-    formula = dum~1,
+    formula = dum ~ 1,
     locations = points,
     newdata = esample,
     model = model,
     nmax = nmax,
     debug.level = 0
   )
-  quantile(res$var1.var, probs=prob)
+  quantile(res$var1.var, probs = prob)
 }
 ```
 
@@ -82,7 +82,7 @@ schedule <- scheduleSPSANN(
 Start the optimisation through annealing.
 
 ```{r}
-coordinates(mysample_eval) <- ~x+y
+coordinates(mysample_eval) <- ~ x + y
 
 set.seed(314)
 rslt <- optimUSER(
@@ -96,7 +96,7 @@ rslt <- optimUSER(
   schedule = schedule,
   track = TRUE)
 
-mysample <- candi[rslt$points$id,]
+mysample <- candi[rslt$points$id, ]
 save(mysample, file = "../results/MBSample_OK_P90_Uzbekistan.RData")
 ```
 
@@ -105,11 +105,11 @@ save(mysample, file = "../results/MBSample_OK_P90_Uzbekistan.RData")
 Plot the optimised sample
 
 ```{r}
-ggplot(data=EM_CRF) +
-  geom_raster(mapping = aes(x = x1/1000, y = x2/1000), fill="grey")+
-  geom_point(data = mysample, mapping = aes(x = x/1000, y = y/1000), shape = 2, size= 2)+
-  scale_x_continuous(name = "Easting (km)")+
-  scale_y_continuous(name = "Northing (km)")+
-  coord_fixed() 
+ggplot(data = EM_CRF) +
+  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000), fill = "grey") +
+  geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), shape = 2, size = 2) +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
+  coord_fixed()
 ```
 

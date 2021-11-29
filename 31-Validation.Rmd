@@ -2,15 +2,15 @@
 
 In the previous chapters of Part II various methods are described for selecting sampling units with the aim to map the study variable. Once the map has been made, we would like to know how good it is. It should come as no surprise that the value of the study variable at a randomly selected location as shown on the map differs from the value at that location in reality. This difference is a prediction error. The question is how large this error is on average, and how variable it is. In this chapter I describe and illustrate with a real-world case study how to select sampling units at which we will confront the predictions with the true values, and how to estimate map quality indices from the prediction errors at these sampling locations.
 
-If the map has been made with a statistical model, then the predictors are typically model-unbiased, and the variance of the prediction errors can be computed from the model. Think, for instance, of kriging which also yields a map of the kriging variance. In Chapters \@ref(MBgridspacing) and \@ref(MBSamplePattern) I showed how this kriging variance can be used to optimise the grid spacing (sample size) and the spatial coordinates of the sampling units for mapping. So, if we have a map of these variances, why do we still need to collect new data for estimating the map quality?
+If the map has been made with a statistical model, then the predictors are typically model-unbiased and the variance of the prediction errors can be computed from the model. Think, for instance, of kriging which also yields a map of the kriging variance. In Chapters \@ref(MBgridspacing) and \@ref(MBSamplePattern) I showed how this kriging variance can be used to optimise the grid spacing (sample size) and the spatial coordinates of the sampling units for mapping, respectively So, if we have a map of these variances, why do we still need to collect new data for estimating the map quality?
 
-The problem is that these kriging variances rely on the validity\index{Validity} of the assumptions made in modelling the spatial variation of the study variable. Do we assume a constant mean, or a mean that is a linear combination of some covariates? In the latter case, which covariates are assumedd  to be related to the study variable? Or should we model the mean with a non-linear function as in a random forest model? How certain are we about the semivariogram model type (spherical, exponential, etc.), and how good are our estimates of the semivariogram parameters? If one or more of the modelling assumptions are violated, the variances of the prediction errors as computed with the model may become biased. For this reason the quality of the map is preferably determined through independent validation, i.e. by comparing predictions with observations not used in mapping, and followed by design-based estimation of the map quality indices. This process is often referred to as validation\index{Validation}, perhaps better statistical validation, a subset of the more comprehensive term map quality evaluation\index{Map quality evaluation}, which includes the concept of fitness-for-use. 
+The problem is that the kriging variances rely on the validity\index{Validity} of the assumptions made in modelling the spatial variation of the study variable. Do we assume a constant mean, or a mean that is a linear combination of some covariates? In the latter case, which covariates are assumed  to be related to the study variable? Or should we model the mean with a non-linear function as in a random forest model? How certain are we about the semivariogram model type (spherical, exponential, etc.), and how good are our estimates of the semivariogram parameters? If one or more of the modelling assumptions are violated, the variances of the prediction errors as computed with the model may become biased. For this reason the quality of the map is preferably determined through independent validation, i.e. by comparing predictions with observations not used in mapping, followed by design-based estimation of the map quality indices. This process is often referred to as validation\index{Validation}, perhaps better statistical validation, a subset of the more comprehensive term map quality evaluation\index{Map quality evaluation}, which includes the concept of fitness-for-use. 
 
-Statistical validation of maps is often done through data splitting\index{Data splitting} or cross-validation\index{Cross-validation}. In data-splitting the data are split into two subsets, one for calibrating the model and mapping, one for validation. In cross-validation the data set is split into a number of disjoint subsets of equal size. Each subset is used one-by-one for calibration and prediction. The remaining subsets are used for validation. Leave-one-out cross-validation\index{Cross-validation!leave-one-out cross-validation} (LOOCV) is a special case of this, in which each sampling unit is left out one-by-one, and all other units are used for calibration and prediction of the study variable of the unit that is left out. The problem with data-splitting and cross-validation is that the data used for mapping typically are from non-probability samples. This makes design-based estimation of the map quality indices unfeasible [@brus2011d]. Designing a sampling scheme starts with a comprehensive description of the aim of the sampling project [@gru06]. Mapping and validation are different aims which ask for different sampling approaches. For validation probability sampling is the best option because then a statistical model of the spatial variation of the prediction errors is not needed. Map quality indices, defined as population parameters, can be estimated model-free, by design-based inference (see also Section \@ref(DBvsMB)).
+Statistical validation of maps is often done through data splitting\index{Data splitting} or cross-validation\index{Cross-validation}. In data splitting the data are split into two subsets, one for calibrating the model and mapping, one for validation. In cross-validation the data set is split into a number of disjoint subsets of equal size. Each subset is used one-by-one for calibration and prediction. The remaining subsets are used for validation. Leave-one-out cross-validation\index{Cross-validation!leave-one-out cross-validation} (LOOCV) is a special case of this, in which each sampling unit is left out one-by-one, and all other units are used for calibration and prediction of the study variable of the unit that is left out. The problem with data splitting and cross-validation is that the data used for mapping typically are from non-probability samples. This makes design-based estimation of the map quality indices unfeasible [@brus2011d]. Designing a sampling scheme starts with a comprehensive description of the aim of the sampling project [@gru06]. Mapping and validation are different aims which ask for different sampling approaches. For validation probability sampling is the best option because then a statistical model of the spatial variation of the prediction errors is not needed. Map quality indices, defined as population parameters, can be estimated model-free, by design-based inference (see also Section \@ref(DBvsMB)).
 
 ## Map quality indices
 
-In validation we want to assess the accuracy of the map as a whole. We are not interested in the accuracy at a sample of population units only. For instance, we would like to know the population mean of the prediction error, i.e. the average of the errors over all population units, and not merely the average prediction error at a sample of units. Map quality indices are therefore defined as population parameters. We cannot afford to determine the prediction error for each unit of the mapping area to calculate these population means (if we could do that there would be no need for a mapping model). Therefore, we have to take a sample of units at which the predictions of the study variable are confronted with the observations. This sample is then used to *estimate* population parameters of the prediction error and our uncertainty about these population parameters, as quantified, for instance, by their standard errors or confidence interval.
+In validation we want to assess the accuracy of the map as a whole. We are not interested in the accuracy at a sample of population units only. For instance, we would like to know the population mean of the prediction error, i.e. the average of the errors over all population units, and not merely the average prediction error at a sample of units. Map quality indices are therefore defined as population parameters. We cannot afford to determine the prediction error for each unit of the mapping area to calculate the population means (if we could do that there would be no need for a mapping model). Therefore, we have to take a sample of units at which the predictions of the study variable are confronted with the observations. This sample is then used to *estimate* population parameters of the prediction error and our uncertainty about these population parameters, as quantified, for instance, by their standard errors or confidence interval.
 
 For quantitative maps, i.e. maps depicting a quantitative study variable\index{Quantitative map}, popular map quality indices\index{Map quality index} are (i) the population mean error\index{Population mean error} (ME); (ii) the population mean absolute error\index{Population mean absolute error} (MAE); and (iii) the population mean squared error\index{Population mean squared error} (MSE), defined as
 
@@ -21,7 +21,7 @@ MSE = \frac{1}{N} \sum_{k=1}^N (\hat{z}_k-z_k)^2\;,
 (\#eq:mapqualityindices)
 \end{align}
 
-with $N$ the total number of units (e.g. raster cells) in the population, $\hat{z}_k$ the predicted value for unit $k$, $z_k$ the true value of that unit, and $|\cdot|$ the absolute value operator. For infinite populations the sum must be replaced by an integral over all locations in the mapped area and divided by the size of the area. The ME quantifies the systematic error\index{Systematic error} and ideally  equals 0. It can be positive (in case of overprediction)  and negative (in case of underprediction). Positive and negative errors cancel out and, as a consequence, the ME does not quantify the magnitude of the prediction errors. The MAE and MSE do quantify the magnitude of the errors, they are nonnegative. Often the square root of MSE is taken, denoted by RMSE, which is in the same units as the study variable and is therefore more intelligible. The RMSE is strongly affected by outliers (large prediction errors), due to the squaring of the errors, and for this reason I recommended to estimate both MAE and RMSE.
+with $N$ the total number of units (e.g. raster cells) in the population, $\hat{z}_k$ the predicted value for unit $k$, $z_k$ the true value of that unit, and $|\cdot|$ the absolute value operator. For infinite populations the sum must be replaced by an integral over all locations in the mapped area and divided by the size of the area. The ME quantifies the systematic error\index{Systematic error} and ideally  equals 0. It can be positive (in case of overprediction)  and negative (in case of underprediction). Positive and negative errors cancel out and, as a consequence, the ME does not quantify the magnitude of the prediction errors. The MAE and MSE do quantify the magnitude of the errors, they are non-negative. Often the square root of MSE is taken, denoted by RMSE, which is in the same units as the study variable and is therefore more intelligible. The RMSE is strongly affected by outliers (large prediction errors), due to the squaring of the errors, and for this reason I recommend to estimate both MAE and RMSE.
 
 Two other important map quality indices are the population coefficient of determination\index{Population coefficient of determination} and the Nash-Sutcliffe model efficiency coefficient\index{Model efficiency coefficient} (MEC). The population coefficient  of determination $R^2$ is defined as the square of the Pearson correlation coefficient $r$ of the study variable and the predictions of the study variable, given by
 
@@ -30,7 +30,7 @@ r = \frac{\sum_{k=1}^{N}(z_k - \bar{z})(\hat{z}_k-\bar{\hat{z}})}{\sqrt{\sum_{k=
 (\#eq:r)
 \end{equation}
 
-with $\bar{z}$ the population mean of the study variable, $\bar{\hat{z}}$ the population mean of the predictions, $S^2(z,\hat{z})$ the population covariance of the study variable and the predictions of $z$, $S(z)$ the population standard deviation of the study variable and $S(\hat{z})$ the population standard deviation of the predictions. Note that $R^2$ is unaffected by bias and therefore should not be used in isolation, but always accompanied by ME.
+with $\bar{z}$ the population mean of the study variable, $\bar{\hat{z}}$ the population mean of the predictions, $S^2(z,\hat{z})$ the population covariance of the study variable and the predictions of $z$, $S(z)$ the population standard deviation of the study variable, and $S(\hat{z})$ the population standard deviation of the predictions. Note that $R^2$ is unaffected by bias and therefore should not be used in isolation, but always accompanied by ME.
 
 MEC is defined as [@Janssen1995]
 
@@ -39,7 +39,7 @@ MEC=1-\frac{\sum_{k=1}^{N}(\hat{z}_k - z_k)^{2}}{\sum_{k=1}^{N}(z_k -\bar{z})^{2
 (\#eq:MEC)
 \end{equation}
 
-with $S^2(z)$ the population variance\index{Population variance} of the study variable. MEC quantifies the improvement made by the model over using the mean of the observations as prediction. An MEC value of 1 indicates a perfect match between the observed and predicted values of the study variable, whereas a value of 0 indicates that the mean of the observations is as good a predictor as the model. A negative value occurs when the mean of the observations is a better predictor than the model, i.e.  when the residual variance is larger than the variance of the measurements.
+with $S^2(z)$ the population variance\index{Population variance} of the study variable. MEC quantifies the improvement made by the model over using the mean of the observations as a predictor. An MEC value of 1 indicates a perfect match between the observed and the predicted values of the study variable, whereas a value of 0 indicates that the mean of the observations is as good a predictor as the model. A negative value occurs when the mean of the observations is a better predictor than the model, i.e.  when the residual variance is larger than the variance of the measurements.
 
 For categorical maps\index{Categorical map} a commonly used map quality index is the overall purity\index{Overall purity}, which is defined as the proportion of units that is correctly classified (mapped):
 
@@ -62,7 +62,7 @@ y_k = \left\{
 
 with $c_k$ and $\hat{c}_k$ the true and predicted class of unit $k$, respectively. For infinite populations the purity is the fraction of the area that is correctly classified (mapped).
 
-The population ME, MSE, $R^2$, MEC and purity can also be defined for subpopulations. For categorical maps natural subpopulations are the classes depicted in the map, the map units. In that case, for infinite populations the purity of map unit $u$ is defined as the fraction of the area of map unit $u$ that is correctly mapped as $u$.
+The population ME, MSE, $R^2$, MEC, and purity can also be defined for subpopulations. For categorical maps natural subpopulations are the classes depicted in the map, the map units. In that case, for infinite populations the purity of map unit $u$ is defined as the fraction of the area of map unit $u$ that is correctly mapped as $u$.
 
 A different subpopulation is the part of the population that is *in reality* class $u$ (but possibly not mapped as $u$). We are interested in the fraction of the area covered by this subpopulation that is correctly mapped as $u$. This is referred to as the class representation\index{Class representation} of class $u$, for which I use hereafter the symbol $R_u$.
 
@@ -82,25 +82,25 @@ With simple random sampling the square of the sample correlation coefficient, i.
 The population MEC can be estimated by
 
 \begin{equation}
-\widehat{MEC}=1-\frac{\widehat{MSE}}{\widehat{S^2}(z)}\;,
+\widehat{MEC}=1-\frac{\widehat{MSE}}{\widehat{S^2}(z)}\;.
 (\#eq:HTMEC)
 \end{equation}
 
 For simple random sampling the sample variance\index{Sample variance}, i.e. the variance of the observations of $z$ in the sample, is an unbiased estimator of the population variance $S^2(z)$. For other sampling designs this population variance can be estimated by Equation \@ref(eq:EstimatorPopulationVariance4AnyDesign).
 
-Estimation of the class representations is slightly more difficult because the sizes of the classes (number of pixels or area where in reality class $u$ is present) are unknown, and therefore must also be estimated from the sample. This leads to the ratio estimator:
+Estimation of the class representations is slightly more difficult because the sizes of the classes (number of raster cells or area where in reality class $u$ is present) are unknown, and therefore these sizes must also be estimated from the sample. This leads to the ratio estimator:
 
 \begin{equation}
 \hat{R}_{u}=\frac{\sum_{k \in \mathcal{S}}\frac{y_k}{\pi_k}}{\sum_{k \in \mathcal{S}}\frac{x_k}{\pi_k}}\;,
 \label{RatioEstimatorClassRepresentation}
 \end{equation}
 
-where $y_{u,k}$ denotes an indicator defined as
+where $y_{k}$ denotes an indicator defined as
 
 \begin{equation}
-y_{u,k} = \left\{
+y_{k} = \left\{
 \begin{array}{cc}
-1 & \;\;\;\mathrm{if}\;\;\; \hat{c}_k = c_k =  u\\
+1 & \;\;\;\mathrm{if}\;\;\; \hat{c}_k = c_k = u\\
 0 & \;\;\;\mathrm{otherwise}\;,
 \end{array}
 \right.
@@ -119,25 +119,25 @@ x_k = \left\{
 (\#eq:indicatorfromx)
 \end{equation}
 
-This estimator is also recommended for estimating other map quality indices from a sample with a sample szie that is not fixed but varies among  samples selected with the sampling design. This is the case, for instance, when estimating the mean (absolute or squared) error or purity of a given map unit from a simple random sample. The number of selected sampling units within the map unit is uncontrolled and varies among the simple random samples. In this case we can either estimate the mean error or purity of a map unit $u$ by dividing the estimated population total by the *known* size (area, number of pixels) of map unit $u$, or by the *estimated* size. Interestingly, using the estimated size in the denominator instead of the known size, yields in general a more precise estimator [@sar92]. See also Section \@ref(LargeDomainsDirectEstimator). 
+This estimator is also recommended for estimating other map quality indices from a sample with a sample size that is not fixed but varies among  samples selected with the sampling design. This is the case, for instance, when estimating the mean (absolute or squared) error or the purity of a given map unit from a simple random sample. The number of selected sampling units within the map unit is uncontrolled and varies among the simple random samples. In this case we can either estimate the mean error or purity of a map unit $u$ by dividing the estimated population total by the *known* size (number of raster cells, area) of map unit $u$, or by the *estimated* size. Interestingly, in general using the estimated size in the denominator instead of the known size, yields a more precise estimator [@sar92]. See also Section \@ref(LargeDomainsDirectEstimator). 
 
 All probability sampling designs described in Part I are in principle appropriate for validation. @steh99 evaluated five basic probability sampling designs and concluded that in general stratified random sampling is a good choice. For validation of categorical maps natural strata are the map units, i.e. the groups of polygons or grid cells assigned to each class. Systematic random sampling is less suitable as no unbiased estimator of the sampling variance of the estimator of a population mean exists for this design (see Chapter \@ref(SY)). For validation of maps of extensive areas, think of whole continents, travel time between sampling locations can become substantial. In this case sampling designs that lead to spatial clustering of validation locations can become efficient, for instance cluster random sampling (Chapter \@ref(Cl)) or two-stage cluster random sampling (Chapter \@ref(Twostage)).
 
 ## Real-world case study
 
-As an illustration two soil maps of the three northern counties of Xuancheng City (Anhui province, China), both depicting soil organic matter (SOM) concentration (g kg^-1^) in the topsoil, are evaluated. In Section \@ref(Ospats) the data of three samples, including the stratified random sample, were merged to estimate the parameters of a spatial model for the natural log of the SOM concentration. Here only the data of the two non-random samples, the grid sample and the iPSM sample, are used to map the SOM concentration. The stratified simple random sample is used for validation.
+As an illustration two soil maps of the three northern counties of Xuancheng (China), both depicting soil organic matter (SOM) concentration (g kg^-1^) in the topsoil, are evaluated. In Section \@ref(Ospats) the data of three samples, including the stratified random sample, were merged to estimate the parameters of a spatial model for the natural log of the SOM concentration. Here only the data of the two non-random samples, the grid sample and the iPSM sample, are used to map the SOM concentration. The stratified simple random sample is used for validation.
 
-Two methods are used in mapping, kriging with an external drift\index{Kriging!kriging with an external drift} (KED) and  random forest prediction\index{Random forest} (RF). For mapping with RF seven covariates are used: planar curvature, profile curvature, slope, temperature, precipitation, topographic wetness index and elevation. For mapping with KED only the two most important covariates in the RF model are used: precipitation and elevation. 
+Two methods are used in mapping, kriging with an external drift\index{Kriging!kriging with an external drift} (KED) and  random forest prediction\index{Random forest} (RF). For mapping with RF seven covariates are used: planar curvature, profile curvature, slope, temperature, precipitation, topographic wetness index, and elevation. For mapping with KED only the two most important covariates in the RF model are used: precipitation and elevation. 
 
 <!-- projection attributes of Xuancheng: wgs_1984_UTM_Zone_50N  -->
 
 ```{r, echo=FALSE, eval=FALSE}
 sample_all <- read.csv("data/Sample_Xuancheng.csv")
-sample_train <- sample_all[sample_all$sample %in% c("grid","iPSM"),]
+sample_train <- sample_all[sample_all$sample %in% c("grid", "iPSM"), ]
 
 library(ranger)
 set.seed(314)
-forest <- ranger(SOM_A_hori ~ plan.curvature + profile.curvature + slope+temperature + precipitation+twi + dem, data=sample_train, num.trees=5000, importance="impurity")
+forest <- ranger(SOM_A_hori ~ plan.curvature + profile.curvature + slope + temperature + precipitation + twi + dem, data = sample_train, num.trees = 5000, importance = "impurity")
 
 #predict at validation sample
 sample_test <- sample_all[sample_all$sample == "STSI", ]
@@ -154,34 +154,34 @@ library(gstat)
 library(geoR)
 #change dimension of coordinates to km
 sample_trn <- sample_train %>%
-  mutate(s1 = s1/1000, s2 = s2/1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 sample_tst <- sample_test %>%
-  mutate(s1 = s1/1000, s2 = s2/1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 
 coordinates(sample_trn) <- ~ s1 + s2
-vg <- variogram(SOM_A_hori ~ dem+precipitation, data = sample_trn, cutoff=10)
-vgfitOLS <- fit.variogram(vg, model = vgm(model = "Sph", psill = 30, range = 10, nugget = 0), fit.sills=c(FALSE, TRUE))
-sample_trn <- as(sample_trn,"data.frame")
+vg <- variogram(SOM_A_hori ~ dem + precipitation, data = sample_trn, cutoff = 10)
+vgfitOLS <- fit.variogram(vg, model = vgm(model = "Sph", psill = 30, range = 10, nugget = 0), fit.sills = c(FALSE, TRUE))
+sample_trn <- as(sample_trn, "data.frame")
 dGeoR <- as.geodata(
-  obj=sample_trn, 
-  header=TRUE, 
-  coords.col=c("s1", "s2"), 
-  data.col="SOM_A_hori",
-  data.names=NULL, 
-  covar.col=c("plan.curvature", "profile.curvature", "slope", "temperature", "precipitation", "twi", "dem")
+  obj = sample_trn,
+  header = TRUE,
+  coords.col = c("s1", "s2"),
+  data.col = "SOM_A_hori",
+  data.names = NULL,
+  covar.col = c("plan.curvature", "profile.curvature", "slope", "temperature", "precipitation", "twi", "dem")
 )
 
-lmSOM_REML <- likfit(geodata = dGeoR, trend = ~ dem + precipitation, cov.model = "spherical", ini.cov.pars=c(vgfitOLS[2,2], vgfitOLS[2,3]), nugget = vgfitOLS[1,2], lik.method = "REML")
+lmSOM_REML <- likfit(geodata = dGeoR, trend = ~ dem + precipitation, cov.model = "spherical", ini.cov.pars = c(vgfitOLS[2, 2], vgfitOLS[2, 3]), nugget = vgfitOLS[1, 2], lik.method = "REML")
 vgfitREML <- vgfitOLS
-vgfitREML[1,2] <- lmSOM_REML$nugget
-vgfitREML[2,2] <- lmSOM_REML$sigmasq
-vgfitREML[2,3] <- lmSOM_REML$phi
+vgfitREML[1, 2] <- lmSOM_REML$nugget
+vgfitREML[2, 2] <- lmSOM_REML$sigmasq
+vgfitREML[2, 3] <- lmSOM_REML$phi
 
 #predict at validation sites
-coordinates(sample_trn)<- ~ s1 + s2
-coordinates(sample_tst)<- ~ s1 + s2
+coordinates(sample_trn) <- ~ s1 + s2
+coordinates(sample_tst) <- ~ s1 + s2
 predictions  <- krige(
-  SOM_A_hori ~ dem+precipitation,
+  SOM_A_hori ~ dem + precipitation,
   sample_trn,
   newdata = sample_tst,
   model = vgfitREML,
@@ -191,11 +191,11 @@ sample_test$SOM_KED <- predictions$var1.pred
 
 #Map SOM with KED
 grd <- grdXuancheng %>%
-  mutate(s1 = s1/1000, s2 = s2/1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 coordinates(grd) <- ~ s1 + s2
 
 predictions  <- krige(
-  SOM_A_hori ~ dem+precipitation,
+  SOM_A_hori ~ dem + precipitation,
   sample_trn,
   newdata = grd,
   model = vgfitREML,
@@ -203,15 +203,15 @@ predictions  <- krige(
 )
 grdXuancheng$SOM_KED <- predictions$var1.pred
 
-write.csv(sample_test, file = "results/STSI_Xuancheng_SOMpred.csv",row.names=FALSE)
-saveRDS(grdXuancheng,file = "data/grdXuancheng.rds")
+write.csv(sample_test, file = "results/STSI_Xuancheng_SOMpred.csv", row.names = FALSE)
+saveRDS(grdXuancheng, file = "data/grdXuancheng.rds")
 ```
 
 The two maps that are to be validated are shown in Figure \@ref(fig:validatedmaps). Note that non-soil areas (built-up, water, roads) are not predicted. The maps are quite similar. The most striking difference between the maps is the smaller range of the RF predictions: they range from 9.8 to 61.5, whereas the KED predictions range from 5.3 to 90.5.
 
 (ref:validatedmapslabel) Map of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng, obtained by kriging with an external drift (KED) and random forest (RF).
 
-```{r validatedmaps, echo=FALSE, out.width="100%", fig.cap="(ref:validatedmapslabel)"}
+```{r validatedmaps, echo = FALSE, out.width = "100%", fig.cap = "(ref:validatedmapslabel)"}
 grdXuancheng <- readRDS(file = "data/grdXuancheng.rds")
 
 df <- grdXuancheng %>%
@@ -219,23 +219,23 @@ df <- grdXuancheng %>%
 df_lf <- df %>% pivot_longer(cols = c("SOM_KED", "SOM_RF"))
 
 ggplot(df_lf) +
-  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill=value)) +
-  scale_fill_viridis_c(name = "SOM", limits=c(5, 90)) + 
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = value)) +
+  scale_fill_viridis_c(name = "SOM", limits = c(5, 90)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  facet_wrap(~ name, ncol=2, nrow=1) +
+  facet_wrap(~ name, ncol = 2, nrow = 1) +
   coord_fixed()
 ```
 
 The two maps are evaluated by statistical validation with a stratified simple random sample of 62 units (points). The strata are the eight units of a geological map (Figure \@ref(fig:validationsample)).
 
-```{r validationsample, echo=FALSE, fig.cap="Stratified simple random sample for validation of the two maps of the SOM concentration in Xuancheng, China."}
+```{r validationsample, echo = FALSE, fig.cap = "Stratified simple random sample for validation of the two maps of the SOM concentration in Xuancheng."}
 library(terra)
 
 rmap <- rast("data/Geo_Xuancheng.tif")
-grd <- as.data.frame(rmap, xy=TRUE, na.rm=TRUE)
+grd <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
 units <- which(grd$Geo_Xuancheng == 99)
-grd <- grd[-units,]
+grd <- grd[-units, ]
 #1: granite and granodiorite
 #2: pyroclastic rocks
 #3: conglomerate
@@ -248,36 +248,36 @@ grd <- grd[-units,]
 sample_all <- read.csv("data/Sample_Xuancheng.csv")
 sample_test <- sample_all[sample_all$sample == "STSI", ]
 
-ggplot(data=grd) +
-  geom_raster(mapping = aes(x = x/1000, y = y/1000,fill=factor(Geo_Xuancheng))) +
+ggplot(data = grd) +
+  geom_raster(mapping = aes(x = x / 1000, y = y / 1000, fill = factor(Geo_Xuancheng))) +
   scale_fill_viridis_d(name = "Stratum") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  geom_point(data=sample_test,mapping = aes(x=s1/1000,y=s2/1000),size=2, colour="red") +
+  geom_point(data = sample_test, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 2, colour = "red") +
 coord_fixed()
 ```
 
 
-### Estimation of the population Mean Error and Mean Squared Error
+### Estimation of the population mean error and mean squared error
 
-To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in the `data.frame` `sample_test` is `SOM_A_hori`. Four new columns are added to `sample_test` using function `mutate`, by computing the prediction errors for KED and RF and squaring these errors.
+To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in `data.frame` `sample_test` is `SOM_A_hori`. Four new columns are added to `sample_test` using function `mutate`, by computing the prediction errors for KED and RF and squaring these errors.
 
 
 ```{r}
 sample_test <- read.csv(file = "results/STSI_Xuancheng_SOMpred.csv")
 sample_test <- sample_test %>%
     mutate(
-      eKED=SOM_A_hori-SOM_KED,
-      eRF=SOM_A_hori-SOM_RF,
-      e2KED=(SOM_A_hori-SOM_KED)^2,
-      e2RF=(SOM_A_hori-SOM_RF)^2)
+      eKED = SOM_A_hori - SOM_KED,
+      eRF = SOM_A_hori - SOM_RF,
+      e2KED = (SOM_A_hori - SOM_KED)^2,
+      e2RF = (SOM_A_hori - SOM_RF)^2)
 ```
 
 These four new variables now are our study variables of which we would like to estimate the population means. These population means can be estimated as explained in Chapter \@ref(STSI). First, the stratum weights are computed, that is the relative number of raster cells.
 
 ```{r}
 mystrata <- read.csv(file = "data/Strata_Xuancheng.csv") %>%
-    mutate(w_h=N_h/sum(N_h))
+    mutate(w_h = N_h / sum(N_h))
 ```
 
 Next, the stratum means of the prediction errors, obtained with KED and RF, are estimated by the sample means, and the population mean of the errors are estimated by the weighted mean of the estimated stratum means.
@@ -286,12 +286,12 @@ Next, the stratum means of the prediction errors, obtained with KED and RF, are 
 me <- sample_test %>%
     group_by(stratum) %>%
     summarise(
-      meKED_h=mean(eKED),
-      meRF_h=mean(eRF)) %>%
-    left_join(mystrata, by="stratum") %>%
+      meKED_h = mean(eKED),
+      meRF_h = mean(eRF)) %>%
+    left_join(mystrata, by = "stratum") %>%
     summarise(
-      meKED=sum(w_h*meKED_h),
-      meRF=sum(w_h*meRF_h))
+      meKED = sum(w_h * meKED_h),
+      meRF = sum(w_h * meRF_h))
 ```
 
 This is repeated for the squared prediction errors.
@@ -300,12 +300,12 @@ This is repeated for the squared prediction errors.
 mse <- sample_test %>%
     group_by(stratum) %>%
     summarise(
-      mseKED_h=mean(e2KED),
-      mseRF_h=mean(e2RF)) %>%
-    left_join(mystrata, by="stratum") %>%
+      mseKED_h = mean(e2KED),
+      mseRF_h = mean(e2RF)) %>%
+    left_join(mystrata, by = "stratum") %>%
     summarise(
-      mseKED=sum(w_h*mseKED_h),
-      mseRF=sum(w_h*mseRF_h))
+      mseKED = sum(w_h * mseKED_h),
+      mseRF = sum(w_h * mseRF_h))
 ```
 
 The estimated MSE of the KED map equals `r as.character(round(mse$mseKED,1))` (g kg^-1^)^2^, that of the RF map `r as.character(round(mse$mseRF,1))` (g kg^-1^)^2^.
@@ -314,70 +314,70 @@ The estimated MSE of the KED map equals `r as.character(round(mse$mseKED,1))` (g
 
 1. Are you certain that the population MSE of the KED map is smaller than the population MSE of the RF map?
 
-### Estimation of the standard error of the estimated population ME and MSE
+### Estimation of the standard error of the estimator of the population mean error and mean squared error
 
 We are uncertain about both population MSEs, as we measured the squared errors at `r nrow(sample_test)` sampling points only. So, we would like to know how uncertain we are. This uncertainty is quantified by the standard error of the estimated population MSE. A problem is that in the second stratum we have only one sampling point. So, for this stratum we cannot compute the variance of the squared errors. To compute the variance we need at least two sampling points. 
 
 ```{r}
 lut <- sample_test %>%
     group_by(stratum) %>%
-    summarise(n=n())
+    summarise(n = n())
 lut
 ```
 
-A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to the look-up table `lut`. This table is subsequently used  to add the collapsed strata identifiers to the `data.frame`s `sample_test` and `mystrata`.
+A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to the look-up table `lut`. This table is subsequently used  to add the collapsed stratum identifiers to `data.frames` `sample_test` and `mystrata`.
 
 ```{r}
 lut <- lut %>%
-    mutate(stratum_clp=c(1, 1:7))
+    mutate(stratum_clp = c(1, 1:7))
 sample_test <- sample_test %>%
-    left_join(lut, by="stratum")
+    left_join(lut, by = "stratum")
 mystrata <- mystrata %>%
-    left_join(lut, by="stratum")
+    left_join(lut, by = "stratum")
 ```
 
-The collapsed strata\index{Collapsed strata} can be used to estimate the standard errors of the estimated population MSEs. As a first step the stratum weights and the sample sizes of the collapsed strata are computed.
+The collapsed strata\index{Collapsed strata} can be used to estimate the standard errors of the estimated population MSEs. As a first step the weights and the sample sizes of the collapsed strata are computed.
 
 ```{r}
 mystrata_clp <- mystrata %>%
     group_by(stratum_clp) %>%
-    summarise(N_hc=sum(N_h)) %>%
-    mutate(w_hc=N_hc/sum(N_hc)) %>%
+    summarise(N_hc = sum(N_h)) %>%
+    mutate(w_hc = N_hc / sum(N_hc)) %>%
     left_join(
       sample_test %>%
         group_by(stratum_clp) %>%
-        summarise(n_hc=n()),
-      by="stratum_clp")
+        summarise(n_hc = n()),
+      by = "stratum_clp")
 ```
 
-The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation \@ref(eq:EstVarMeanSTSI). The estimated MSE and MSE and their estimated standard errors are shown in Table \@ref(tab:validationresults).
+The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation \@ref(eq:EstVarMeanSTSI). The estimated ME and MSE and their estimated standard errors are shown in Table \@ref(tab:validationresults).
 
 ```{r}
 se <- sample_test %>%
     group_by(stratum_clp) %>%
     summarise(
-      s2e_KED_hc=var(eKED),
-      s2e2_KED_hc=var(e2KED),
-      s2e_RF_hc=var(eRF),
-      s2e2_RF_hc=var(e2RF)) %>%
-    left_join(mystrata_clp, by="stratum_clp") %>%
+      s2e_KED_hc = var(eKED),
+      s2e2_KED_hc = var(e2KED),
+      s2e_RF_hc = var(eRF),
+      s2e2_RF_hc = var(e2RF)) %>%
+    left_join(mystrata_clp, by = "stratum_clp") %>%
     summarise(
-      se_me_KED =sqrt(sum(w_hc^2*s2e_KED_hc/n_hc)),
-      se_mse_KED=sqrt(sum(w_hc^2*s2e2_KED_hc/n_hc)),
-      se_me_RF  =sqrt(sum(w_hc^2*s2e_RF_hc/n_hc)),        
-      se_mse_RF =sqrt(sum(w_hc^2*s2e2_RF_hc/n_hc)))
+      se_me_KED = sqrt(sum(w_hc^2 * s2e_KED_hc / n_hc)),
+      se_mse_KED = sqrt(sum(w_hc^2 * s2e2_KED_hc / n_hc)),
+      se_me_RF = sqrt(sum(w_hc^2 * s2e_RF_hc / n_hc)),      
+      se_mse_RF = sqrt(sum(w_hc^2 * s2e2_RF_hc / n_hc)))
 ```
 
-```{r validationresults, echo=FALSE}
+```{r validationresults, echo = FALSE}
 valres <- data.frame(
-    KED=round(c(me[["meKED"]], mse[["mseKED"]]), 2:1),
-    seKED=round(c(se[["se_me_KED"]], se[["se_mse_KED"]]), 2:1),
-    RF=round(c(me[["meRF"]], mse[["mseRF"]]), 2:1),
-    seRF=round(c(se[["se_me_RF"]], se[["se_mse_RF"]]), 2:1))
+    KED = round(c(me[["meKED"]], mse[["mseKED"]]), 2:1),
+    seKED = round(c(se[["se_me_KED"]], se[["se_mse_KED"]]), 2:1),
+    RF = round(c(me[["meRF"]], mse[["mseRF"]]), 2:1),
+    seRF = round(c(se[["se_me_RF"]], se[["se_mse_RF"]]), 2:1))
 row.names(valres) <- c("ME", "MSE")
 
 knitr::kable(
-  valres, caption = 'Estimated population mean error (ME) and population mean squared error (MSE) of KED and RF map, and their standard errors.',
+  valres, caption = "Estimated population mean error (ME) and population mean squared error (MSE) of KED and RF map, and their standard errors.",
   booktabs = TRUE
 ) %>%
   kable_classic()
@@ -385,25 +385,25 @@ knitr::kable(
 
 #### Exercises {-}
 
-2. Do you think there is a systematic error in the KED and RF predictions?   
+2. Do you think there is a systematic error in the KED and the RF predictions?   
 3. Do you think the difference between the two estimated population MSEs is statistically significant?  
 
-### Estimation of MEC
+### Estimation of model efficiency coefficient
 
-To estimate MEC, we must first estimate the population variance of the study variable from the stratified simple random sample (the denominator in Equation \@ref(eq:HTMEC)). First, the sizes and the sample sizes of the collapsed strata must be added to `sample_test`. Then, the population variance is estimated with function `s2` of package **surveyplanning** (Subsection \@ref(WhyStratify)).
+To estimate the MEC, we must first estimate the population variance of the study variable from the stratified simple random sample (the denominator in Equation \@ref(eq:HTMEC)). First the sizes and the sample sizes of the collapsed strata must be added to `sample_test`. Then, the population variance is estimated with function `s2` of package **surveyplanning** (Subsection \@ref(WhyStratify)).
 
 ```{r}
 library(surveyplanning)
 s2z <- sample_test %>%
-  left_join(mystrata_clp, by="stratum_clp") %>%
+  left_join(mystrata_clp, by = "stratum_clp") %>%
   summarise(s2z = s2(SOM_A_hori, w = N_hc / n_hc)) %>%
   flatten_dbl
 ```
 
-Now the MEC's for KED and RF can be estimated.
+Now the MECs for KED and RF can be estimated.
 
 ```{r}
-mec <- 1-mse/s2z
+mec <- 1 - mse / s2z
 ```
 
 The estimated MEC for KED equals `r round(mec[1],3)` and for RF `r round(mec[2],3)`, showing that the two models used in mapping are no better than the estimated mean SOM concentration used as a predictor. This is quite a disappointing result.
@@ -413,55 +413,55 @@ The estimated MEC for KED equals `r round(mec[1],3)` and for RF `r round(mec[2],
 The hypothesis that the population ME equals 0 can be tested by a one-sample *t*-test\index{\emph{t}-test!one-sample \emph{t}-test}. The alternative hypothesis is that ME is unequal to 0 (two-sided alternative). The number of degrees of freedom of the *t* distribution is approximated by the total sample size minus the number of strata (Section \@ref(CISTSI)). Note that we have a two-sided alternative hypothesis\index{Two-sided alternative hypothesis}, so we must compute a two-sided *p*-value\index{\emph{p}-value of a test!two-sided \emph{p}-value}.
 
 ```{r}
-t_KED <- me$meKED/se$se_me_KED
-df <- nrow(sample_test)-length(unique(sample_test$stratum_clp))
-p_KED <- 2 * pt(t_KED, df=df, lower.tail=t_KED<0)
+t_KED <- me$meKED / se$se_me_KED
+df <- nrow(sample_test) - length(unique(sample_test$stratum_clp))
+p_KED <- 2 * pt(t_KED, df = df, lower.tail = t_KED < 0)
 ```
 
-```{r,echo=FALSE}
+```{r, echo = FALSE}
 t_RF <- me$meRF / se$se_me_RF
 p_RF <- 2 * pt(t_RF, df = df, lower.tail = t_RF < 0)
 ```
 
-The outcomes of the test statistics are `r as.character(round(t_KED,3))` and `r as.character(round(t_RF,3))` for KED and RF, respectively, with *p*-values `r as.character(round(p_KED,3))` and `r as.character(round(p_RF,3))`. So, we clearly have not enough evidence for systematic errors, neither with KED, nor with RF mapping.
+The outcomes of the test statistics are `r as.character(round(t_KED,3))` and `r as.character(round(t_RF,3))` for KED and RF, respectively, with *p*-values `r as.character(round(p_KED,3))` and `r as.character(round(p_RF,3))`. So, we clearly have not enough evidence for systematic errors, neither with KED nor with RF mapping.
 
 Now we test whether the two population MSEs  differ significantly. This can be done by a paired *t*-test\index{\emph{t}-test!paired \emph{t}-test}. The first step in a paired *t*-test is to compute pairwise differences of squared prediction errors, and then we can proceed as in a one-sample *t*-test. 
 
-```{r, echo=FALSE, eval=FALSE}
-sample_test$de2 <- sample_test$e2KED-sample_test$e2RF
-m_de2_h <- tapply(sample_test$de2, INDEX=sample_test$stratum, FUN=mean)
-m_de2 <- sum(mystrata$w_h*m_de2_h)
+```{r, echo = FALSE, eval = FALSE}
+sample_test$de2 <- sample_test$e2KED - sample_test$e2RF
+m_de2_h <- tapply(sample_test$de2, INDEX = sample_test$stratum, FUN = mean)
+m_de2 <- sum(mystrata$w_h * m_de2_h)
 
-s2_de2_hc <- tapply(sample_test$de2, INDEX=sample_test$stratum_clp, FUN=var)
-se_m_de2 <- sqrt(sum(mystrata_clp$w_hc^2*s2_de2_hc/mystrata$clp$n_hc))
-t <- m_de2/se_m_de2
-p <- 2*pt(t, df=df, lower.tail=t<0)
+s2_de2_hc <- tapply(sample_test$de2, INDEX = sample_test$stratum_clp, FUN = var)
+se_m_de2 <- sqrt(sum(mystrata_clp$w_hc^2 * s2_de2_hc / mystrata$clp$n_hc))
+t <- m_de2 / se_m_de2
+p <- 2 * pt(t, df = df, lower.tail = t < 0)
 ```
 
 ```{r}
 m_de2 <- sample_test %>%
-  mutate(de2=e2KED-e2RF) %>%
+  mutate(de2 = e2KED - e2RF) %>%
   group_by(stratum) %>%
-  summarise(m_de2_h=mean(de2)) %>%
-  left_join(mystrata, by="stratum") %>%
-  summarise(m_de2=sum(w_h*m_de2_h)) %>%
+  summarise(m_de2_h = mean(de2)) %>%
+  left_join(mystrata, by = "stratum") %>%
+  summarise(m_de2 = sum(w_h * m_de2_h)) %>%
   flatten_dbl
 
 se_m_de2 <- sample_test %>%
-  mutate(de2=e2KED-e2RF) %>%
+  mutate(de2 = e2KED - e2RF) %>%
   group_by(stratum_clp) %>%
-  summarise(s2_de2_hc=var(de2)) %>%
-  left_join(mystrata_clp, by="stratum_clp") %>%
-  summarise(se_m_de2=sqrt(sum(w_hc^2*s2_de2_hc/n_hc))) %>%
+  summarise(s2_de2_hc = var(de2)) %>%
+  left_join(mystrata_clp, by = "stratum_clp") %>%
+  summarise(se_m_de2 = sqrt(sum(w_hc^2 * s2_de2_hc / n_hc))) %>%
   flatten_dbl
 
-t <- m_de2/se_m_de2
-p <- 2*pt(t, df=df, lower.tail=t<0)
+t <- m_de2 / se_m_de2
+p <- 2 * pt(t, df = df, lower.tail = t < 0)
 ```
 
 The outcome of the test statistic is `r as.character(round(t, 3))`, with a *p*-value\index{\emph{p}-value of a test!two-sided \emph{p}-value} of `r as.character(round(p,3))`, so we clearly do not have enough evidence that the population MSEs obtained with the two mapping methods are different.
 
-```{r, echo=FALSE}
-rm(list=ls())
+```{r, echo = FALSE}
+rm(list = ls())
 ```
 

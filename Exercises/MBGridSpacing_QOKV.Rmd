@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -27,9 +27,9 @@ Load the data on soil organic matter concentration in west-Amhara (Ethiopia). Al
 sampleAmhara <- readRDS(file = "../data/Sample_Amhara.rds")
 grdAmhara <- readRDS(file = "../data/grdAmhara.rds")
 sampleAmhara <- sampleAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 grdAmhara <- grdAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 ```
 
 ## Estimation of the semivariogram
@@ -43,7 +43,7 @@ vg <- variogram(SOM~1, data = sampleAmhara)
 plot(vg)
 #fit semivariogram model
 vgm_MoM <- fit.variogram(vg, model = vgm(psill = 0.6, model = "Sph", range = 40, nugget = 0.6))
-plot(vg,vgm_MoM)
+plot(vg, vgm_MoM)
 print(vgm_MoM)
 ```
 
@@ -55,12 +55,12 @@ Select a simple random sample with replacement of size 1,000 for evaluating the 
 
 ```{r}
 set.seed(314)
-units <- sample(nrow(grdAmhara), size=1000, replace=TRUE)
-mysample <- grdAmhara[units,]
+units <- sample(nrow(grdAmhara), size = 1000, replace = TRUE)
+mysample <- grdAmhara[units, ]
 
 #Shift the randomly selected points to random points within the cells
-mysample$s1 <- jitter(mysample$s1, amount=0.5)
-mysample$s2 <- jitter(mysample$s2, amount=0.5)
+mysample$s1 <- jitter(mysample$s1, amount = 0.5)
+mysample$s2 <- jitter(mysample$s2, amount = 0.5)
 ```
 
 ### Kriging
@@ -70,8 +70,8 @@ Specify the grid spacings to be evaluated, and the cumulative probabilities from
 Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the evaluation points by ordinary kriging.  Repeat this for the other spacings (construct a for-loop). Finally plot the quantiles of the kriging variance against the grid spacing.
 
 ```{r}
-coordinates(mysample) <- ~s1+s2
-gridded(grdAmhara) <- ~s1+s2
+coordinates(mysample) <- ~s1 + s2
+gridded(grdAmhara) <- ~s1 + s2
 
 #define grid spacings
 spacing <- 5:12
@@ -79,12 +79,12 @@ spacing <- 5:12
 #specify cumulative probabilities
 cprob <- c(0.5, 0.8, 0.95)
 
-QKV <- matrix(nrow=length(spacing), ncol=length(cprob))
-for (i in 1:length(spacing)) {
-    mygridxy <- spsample(x=grdAmhara, cellsize=spacing[i], type="regular", offset=c(0.5,0.5))
+QKV <- matrix(nrow = length(spacing), ncol = length(cprob))
+for (i in seq_len(length(spacing))) {
+    mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular", offset = c(0.5, 0.5))
     #add a dummy variable for interpolation
-    mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
-    coordinates(mygrid) <- ~s1+s2
+    mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+    coordinates(mygrid) <- ~s1 + s2
     #Use gstat for ordinary kriging predictions
     predictions  <- krige(
         dummy ~ 1,
@@ -93,26 +93,25 @@ for (i in 1:length(spacing)) {
         model = vgm_MoM,
         nmax = 20
     )
-    QKV[i,] <- quantile(predictions$var1.var, probs=cprob)
+    QKV[i, ] <- quantile(predictions$var1.var, probs = cprob)
 }
 
 result <- data.table(spacing, QKV)
 #save(result, file = "../results/MBGridSpacing_Amhara_QOKV.RData")
 
-df <- result %>% pivot_longer(.,cols=c("V1","V2","V3"))
-ggplot(data=df)+
-  geom_point(mapping=aes(x=spacing, y=value, shape=name), size=3)+
-  scale_shape_manual(values=c(0,1,2), labels=c("P50","P80","P95"), name="Criterion") +
-  scale_x_continuous(name="Spacing (km)")+
-  scale_y_continuous(name="Quantile kriging Variance")
+df <- result %>% pivot_longer(., cols = c("V1", "V2", "V3"))
+ggplot(data = df) +
+  geom_point(mapping = aes(x = spacing, y = value, shape = name), size = 3) +
+  scale_shape_manual(values = c(0, 1, 2), labels = c("P50", "P80", "P95"), name = "Criterion") +
+  scale_x_continuous(name = "Spacing (km)") +
+  scale_y_continuous(name = "Quantile kriging Variance")
 ```
-Finally, compute the tolerable grid-spacing so that P50, P80 and P95 of the ordinary kriging variance do not exceed 0.85
+Finally, compute the tolerable grid spacing so that P50, P80 and P95 of the ordinary kriging variance do not exceed 0.85
 
 ```{r}
-names(result)[c(2,3,4)] <- c("P50","P80","P95")
-(spacing_tol_P50 <- approx(x=result$P50, y=result$spacing, xout=0.85)$y)
-(spacing_tol_P80 <- approx(x=result$P80, y=result$spacing, xout=0.85)$y)
-(spacing_tol_P95 <- approx(x=result$P95, y=result$spacing, xout=0.85)$y)
-
+names(result)[c(2, 3, 4)] <- c("P50", "P80", "P95")
+(spacing_tol_P50 <- approx(x = result$P50, y = result$spacing, xout = 0.85)$y)
+(spacing_tol_P80 <- approx(x = result$P80, y = result$spacing, xout = 0.85)$y)
+(spacing_tol_P95 <- approx(x = result$P95, y = result$spacing, xout = 0.85)$y)
 ```
 

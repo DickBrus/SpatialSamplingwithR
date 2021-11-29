@@ -70,11 +70,11 @@ mysubsample <- getdata(mysample, units)
 table(mysubsample$stratum)
 ```
 
-```{r DoubleSampleVoorst, echo = FALSE, out.width = '100%', fig.cap = "Two-phase sample for stratification from Voorst. Coloured dots: first-phase sample of 100 points selected by simple random sampling, with observations of the soil-land use combination.  Triangles: second-phase sample of 40 points selected by stratified simple random subsampling of the first-phase sample, using the soil-land use combinations as strata, with measurements of SOM."}
+```{r DoubleSampleVoorst, echo = FALSE, out.width = '100%', fig.cap = "Two-phase random sample for stratification from Voorst. Coloured dots: first-phase sample of 100 points selected by simple random sampling, with observations of the soil-land use combination.  Triangles: second-phase sample of 40 points selected by stratified simple random subsampling of the first-phase sample, using the soil-land use combinations as strata, with measurements of SOM."}
 ggplot() +
   geom_raster(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000, colour = stratum), size = 1.5) +
-  scale_fill_manual(name = "", values = c(BA = "darkgreen", EA = "brown", PA = "orange", RA = "green", XF = "grey")) +
+  scale_fill_manual(name = "Stratum", values = c(BA = "darkgreen", EA = "brown", PA = "orange", RA = "green", XF = "grey")) +
   geom_point(data = mysubsample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 2.5, shape = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -119,7 +119,7 @@ se_mz <- sqrt(v_mz_1 + v_mz_2)
 
 The estimated standard error equals `r round(se_mz,1)` g kg^-1^.
 
-The mean and its standard error can be estimated with functions `twophase` and `svymean` of package **survey** [@Lumley2020]. A data frame with the first-phase sample is assigned to argument `data` of function `twophase`. A column in this data frame, passed to argument `subset`, is an indicator with value `TRUE` if this unit is selected in the second phase, and `FALSE` otherwise. 
+The mean and its standard error can be estimated with functions `twophase` and `svymean` of package **survey** [@Lumley2020]. A data frame with the first-phase sample is passed to function `twophase` using argument `data`. A column in this data frame, passed to function `twophase` with argument `subset`, is an indicator with value `TRUE` if this unit is selected in the second phase, and `FALSE` otherwise. 
 
 ```{r}
 library(survey)
@@ -158,6 +158,7 @@ In the next code chunk a first-phase sample of 250 units (the dots in the plot) 
 
 ```{r twophasesample}
 grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
+grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 n1 <- 250; n2 <- 100
 set.seed(314)
 units_1 <- sample(nrow(grdAmazonia), size = n1, replace = FALSE)
@@ -168,7 +169,7 @@ mysubsample <- mysample[units_2, ]
 
 Figure \@ref(fig:twophaseAmazonia) shows the selected two-phase sample. 
 
-```{r twophaseAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Two-phase sample for the regression estimator of the mean AGB in Eastern Amazonia. Coloured dots: simple random sample without replacement of 250 units with measurements of covariate lnSWIR2 (first-phase sample). Triangles: simple random subsample without replacement of 100 units with measurements of AGB (second-phase sample)."}
+```{r twophaseAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Two-phase random sample for the regression estimator of the mean AGB in Eastern Amazonia. Coloured dots: simple random sample without replacement of 250 units with measurements of covariate lnSWIR2 (first-phase sample). Triangles: simple random subsample without replacement of 100 units with measurements of AGB (second-phase sample)."}
 ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000), fill = "grey") +
   geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = lnSWIR2), size = 1) +

@@ -1,5 +1,9 @@
 # Model-based optimisation of probability sampling designs {#MBpredictionofDesignVariance}
 
+```{r, echo = FALSE}
+evalFT <- FALSE
+```
+
 In Chapter \@ref(Modelassisted) on model-assisted estimation I explained how a linear regression model or a non-linear model obtained with a  machine learning algorithm can be used to increase the precision of design-based estimates of the population mean or total using the data collected by a given probability sampling design. In this chapter I will explain how a model of the study variable can be used at an earlier stage to optimise probability sampling designs. I will show how a model can help to choose between alternative sampling design types, for instance between systematic random sampling, spreading out the sampling units throughout the study area, and two-stage cluster random sampling, resulting in spatial clusters of sampling units. Besides I will explain  how to use a model to optimise the sample size of a given sampling design type, for instance, the number of primary and secondary sampling units with two-stage cluster random sampling. The final section of this chapter is about how a model can be used to optimise spatial strata for stratified simple random sampling.
 
 The models used in this chapter are all geostatistical models of the spatial variation. Chapter \@ref(Introkriging) is an introduction to geostatistical modelling. Several geostatistical concepts explained in that chapter are needed here to predict the sampling variance.
@@ -203,9 +207,9 @@ This approach is illustrated with the western part of the Amhara region in Ethio
 library(geoR)
 sampleAmhara <- readRDS(file = "data/Sample_Amhara.rds")
 sampleAmhara <- sampleAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 dGeoR <- as.geodata(obj = sampleAmhara, header = TRUE,
-  coords.col = c("s1","s2"), data.col = "SOM", covar.col = c("dem", "rfl_NIR", "rfl_red", "lst"))
+  coords.col = c("s1", "s2"), data.col = "SOM", covar.col = c("dem", "rfl_NIR", "rfl_red", "lst"))
 vgm_REML <- likfit(geodata = dGeoR,
   trend = ~ dem + rfl_NIR + rfl_red + lst,
   cov.model = "spherical", ini.cov.pars = c(1, 50), nugget = 0.2,
@@ -214,7 +218,7 @@ vgm_REML <- likfit(geodata = dGeoR,
 
 The estimated parameters of the residual semivariogram of the SOM concentration are shown in Table \@ref(tab:VariogramREMLEthiopia). The estimated regression coefficients are `r round(vgm_REML$beta[1],1)` for the intercept, `r round(vgm_REML$beta[2],3)` for elevation (dem), `r round(vgm_REML$beta[3],2)` for NIR reflectance, `r round(vgm_REML$beta[4],2)` for red reflectance, and `r round(vgm_REML$beta[5],3)` for land surface temperature. 
 
-Package **gstat** is used for geostatistical simulation, and therefore first the REML estimates of the semivariogram parameters are passed to arguments `nugget`, `psill`, and `range` of function `vgm` of this package. 
+Package **gstat** is used for geostatistical simulation, and therefore first the REML estimates of the semivariogram parameters are passed to function `vgm` using arguments `nugget`, `psill`, and `range` of function `vgm` of this package. 
 
 ```{r}
 vgm_REML_gstat <- vgm(model = "Sph", nugget = vgm_REML$tausq,
@@ -235,10 +239,10 @@ Note that by first drawing 100 samples, followed by simulating values of $z$ at 
 
 With systematic random sampling the sample mean is an approximately unbiased estimator of the population mean (Chapter \@ref(SY)). Therefore, of each sample the mean of the simulated values is computed, using function `tapply`. Finally, the variance of the 100 sample means is computed. This is a conditional variance, conditional on the simulated values. In the code chunk below the whole procedure is repeated 100 times ($R=100$), leading to 100 conditional variances of sample means.
 
-```{r MonteCarloEthiopia, eval=FALSE}
+```{r MonteCarloEthiopia, eval = FALSE}
 grdAmhara <- readRDS(file = "data/grdAmhara.rds")
 grdAmhara <- grdAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 gridded(grdAmhara) <- ~ s1 + s2
 S <- R <- 100
 v_mzsim_SY <- numeric(length = R)
@@ -268,14 +272,14 @@ for (i in 1:R) {
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(v_mzsim_SY, file = "results/MBpredictionDesignVariance_SY.RData")
+saveRDS(v_mzsim_SY,file = "results/MBpredVariance_SY_Amhara.rds")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/MBpredictionDesignVariance_SY.RData")
+v_mzsim_SY <- readRDS(file = "results/MBpredVariance_SY_Amhara.rds")
 ```
 
-```{r, echo = FALSE}
+```{r}
 Exi_vmz_SY <- mean(v_mzsim_SY)
 ```
 
@@ -287,12 +291,12 @@ Due to the geographical spreading of the sampling points with systematic random 
 
 In the next code chunk 100 compact geostrata (see Section \@ref(geostrata)) are computed for West-Amhara. Here these geostrata are not used as strata in stratified random sampling, but as PSUs in two-stage cluster random sampling. The difference is that in stratified random sampling from each geostratum at least one sampling unit is selected, whereas in two-stage cluster random sampling only a randomly selected subset of the geostrata is sampled. The compact geostrata, used as PSUs, are computed with function `kmeans`, and as a consequence the PSUs do not have equal size, see output of code chunk below. This is not needed in two-stage cluster random sampling, see Chapter \@ref(Twostage). If PSUs of equal size are preferred, then these can be computed with function `stratify` of package **spcosa** with argument `equalArea = TRUE`, see Section \@ref(geostrata).
 
-<!--Projection attributes of the file with covariates: crs <- st_crs("+proj=laea +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")-->
+<!--Projection attributes of the file with covariates: crs <- st_crs("+proj=laea +ellps=WGS84  +lat_0=5 +lon_0=20 +no_defs")-->
 
 ```{r}
 grdAmhara <- readRDS(file = "data/grdAmhara.rds")
 grdAmhara <- grdAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 set.seed(314)
 res <- kmeans(
   grdAmhara[, c("s1", "s2")], iter.max = 1000, centers = 100, nstart = 100)
@@ -341,12 +345,12 @@ Exi_S2b <- mean(S2b)
 Exi_S2w <- mean(S2w)
 ```
 
-The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1n + c_2nm$, with $c_0$ the fixed costs, $c_1$ the access costs per PSU, including the access costs of the SSUs (points) within a given PSU, and $c_2$ the observation costs per SSU. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
+The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1n + c_2nm$, with $c_0$ the fixed costs, $c_1$ the access costs per PSU, including the access costs of the SSUs (points) within a given PSU, and $c_2$ the observation costs per SSU. In the next code chunk I use $c_1=5$ and $c_2=1$. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
 
 Given values for $c_1$ and $c_2$, the optimal number of PSU draws $n$ and the optimal number of SSU draws per PSU draw $m$ are computed, required for a sampling variance of the estimator of the mean equal to the sampling variance with systematic random sampling of 50 points, see Equations \@ref(eq:nopt) and \@ref(eq:mopt). 
 
 ```{r}
-c1 <- 2; c2 <- 1
+c1 <- 5; c2 <- 1
 nopt <- 1 / Exi_vmz_SY * (sqrt(Exi_S2w * Exi_S2b) * sqrt(c2 / c1) + Exi_S2b)
 mopt <- sqrt(Exi_S2w / Exi_S2b) * sqrt(c1 / c2)
 ```
@@ -371,7 +375,7 @@ pvalue <- shapiro.test(mydata$N)$p.value
 
 The Q-Q plot\index{Q-Q plot} (Figure \@ref(fig:qqplotMelle)) shows that a normal distribution is not very likely: there are too many large values, the distribution is skewed to the right. Also the *p*-value\index{Significance level}\index{\emph{p}-value of a test} of the Shapiro-Wilk test\index{Shapiro-Wilk test} shows that we should reject the null hypothesis of a normal distribution for the data: $p=0.0028$. I therefore proceed with the natural log of NO$_3$-N, in short lnN.
 
-```{r, echo=FALSE}
+```{r}
 mydata$lnN <- log(mydata$N)
 ```
 
@@ -399,11 +403,10 @@ ll <- function(thetas) {
   vgmodel <- vgm(
     model = model, psill = psill, range = thetas[3], nugget = nugget)
   C <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
-  Cinv <- solve(C)
-  XCXinv <- solve(crossprod(X, Cinv) %*% X)
-  XCz <- crossprod(X, Cinv) %*% z
-  beta <- XCXinv %*% XCz
-  mu <- as.numeric(X %*% beta)
+  XCX <- crossprod(X, solve(C, X))
+  XCz <- crossprod(X, solve(C, z))
+  betaGLS <- solve(XCX,XCz)
+  mu <- as.numeric(X %*% betaGLS)
   logLik <- dmvnorm(x = z, mean = mu, sigma = C, log = TRUE)
   logLik
 }
@@ -426,9 +429,9 @@ vgML <- optim(pars, ll, control = list(fnscale = -1),
 
 The maximum likelihood (ML) estimates of the semivariogram parameters are used as initial values in MCMC sampling. A uniform prior is used for the inverse of the sill parameter, $\lambda=1/\sigma^2$, with a lower bound of $10^{-6}$ and an upper bound of 1. For the relative nugget, $\tau^2/\sigma^2$, a uniform prior is assumed with a lower bound of 0 and an upper bound of 1. For the distance parameter $\phi$ of the exponential semivariogram a uniform prior is assumed, with a lower bound of $10^{-6}$ m and an upper bound of 150 m. 
 
-These priors can be defined by function `createUniformPrior` of package **BayesianTools** [@Hartig2018]. Function `createBayesianSetup` is then used to define the setup of the MCMC sampling, specifying the likelihood function, the prior, and the vector with best prior estimates of the model parameters, passed to argument `best`. Argument `sampler` of function `runMCMC` specifies the type of MCMC sampler. I used the differential evolution algorithm\index{Differential evolution algorithm} of @terBraak2008. Argument `start` of function `getSample` specifies the burn-in period\index{Burn-in period}, i.e. the number of first samples that are discarded to diminish the influence of the initial semivariogram parameter values. Argument `numSamples` specifies the sample size, i.e. the number of saved vectors with semivariogram parameter values, drawn from the posterior distribution.
+These priors can be defined by function `createUniformPrior` of package **BayesianTools** [@Hartig2018]. Function `createBayesianSetup` is then used to define the setup of the MCMC sampling, specifying the likelihood function, the prior, and the vector with best prior estimates of the model parameters, passed to function `createBayesianSetup` using argument `best`. Argument `sampler` of function `runMCMC` specifies the type of MCMC sampler. I used the differential evolution algorithm\index{Differential evolution algorithm} of @terBraak2008. Argument `start` of function `getSample` specifies the burn-in period\index{Burn-in period}, i.e. the number of first samples that are discarded to diminish the influence of the initial semivariogram parameter values. Argument `numSamples` specifies the sample size, i.e. the number of saved vectors with semivariogram parameter values, drawn from the posterior distribution.
 
-```{r MCMCMelles, eval=FALSE}
+```{r MCMCMelles, eval = FALSE}
 library(BayesianTools)
 priors <- createUniformPrior(lower = c(1e-6, 0, 1e-6),
                              upper = c(1000, 1, 150))
@@ -441,7 +444,7 @@ MCMCsample <- getSample(res, start = 1000, numSamples = 1000) %>% data.frame(.)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(MCMCsample, file = "results/MCMC_Melles.RData")
+saveRDS(MCMCsample, file = "results/MCMC_Melles.rds")
 ```
 
 Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled by MCMC from the posterior distribution of the estimated semivariogram parameters.
@@ -449,7 +452,7 @@ Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled b
 (ref:MCMCsampleVariogramlnNlabel) Semivariograms of the natural log of NO~3~-N for field Melle obtained by MCMC sampling from posterior distribution of the estimated semivariogram parameters.
 
 ```{r MCMCsampleVariogramlnN, echo = FALSE, fig.asp = 0.7, fig.cap = "(ref:MCMCsampleVariogramlnNlabel)"}
-load(file = "results/MCMC_Melles.RData")
+MCMCsample <- readRDS(file = "results/MCMC_Melles.rds")
 d <- 1:150
 semivar <- matrix(nrow = length(d), ncol = 20)
 for (i in 1:20) {
@@ -520,7 +523,7 @@ for (i in 1:100) {
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(V, file = "results/SimulatedSamplingVariances_Melle.RData")
+saveRDS(V, file = "results/SimulatedVariances_Melle.rds")
 ```
 
 Figure \@ref(fig:plotsimulatedmapsMelle) shows sixteen maps simulated with the first four semivariograms. The four maps in a row (a to d) are simulated with the same semivariogram. All maps show that the simulated data have positive skew, which is in agreement with the prior data. The data obtained by simulating from a lognormal distribution are always strictly positive. This is not guaranteed when simulating from a normal distribution.
@@ -578,13 +581,10 @@ round(v, 3)
 
 The sampling variance shows quite strong variation among the maps. The histogram of Figure \@ref(fig:histogramNMelle) shows our uncertainty about the sampling variance, due to uncertainty about the semivariogram, as well as due to uncertainty about the spatial distribution of NO$_3$-N within the agricultural field given the semivariogram and the available data from that field.
 
-```{r, echo = FALSE}
-load(file = "results/SimulatedSamplingVariances_Melle.RData")
-```
-
 (ref:histogramNMellelabel) Histogram of simulated sampling variances of the $\pi$ estimator of the mean of NO~3~-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum.
 
 ```{r histogramNMelle, echo = FALSE, fig.asp = 0.7, fig.cap = "(ref:histogramNMellelabel)"}
+V <- readRDS(file = "results/SimulatedVariances_Melle.rds")
 ggplot() +
   geom_histogram(aes(x = V), binwidth = 0.2, fill = "black", alpha = 0.5, colour = "black") +
   scale_y_continuous(name = "Frequency") +
@@ -597,16 +597,15 @@ P50_V_STSI <- quantile(V, 0.5)
 P90_V_STSI <- quantile(V, 0.9)
 ```
 
-As a model-based prediction of the sampling variance we can take the mean or the median of the sampling variances over all $100 \times 100$ simulated maps, which are equal to `r round(Exi_V_STSI,3)` (dag kg^-1^) and `r round(P50_V_STSI,3)` (dag kg^-1^), respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r round(P90_V_STSI,3)` (dag kg^-1^).
+As a model-based prediction of the sampling variance we can take the mean or the median of the sampling variances over all 100 $\times$ 100 simulated maps, which are equal to `r round(Exi_V_STSI,3)` (dag kg^-1^) and `r round(P50_V_STSI,3)` (dag kg^-1^), respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r round(P90_V_STSI,3)` (dag kg^-1^).
 
 I used the 30 available NO$_3$-N data as conditioning data in geostatistical simulation. Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data have been observed. For NO$_3$-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model-mean $\mu$ to argument `beta` of function `krige`. The estimated model-mean depends on the semivariogram parameters. The next code chunk shows how this model-mean can be estimated (see also function `ll` above).
 
 ```{r, eval = FALSE}
 C <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
-Cinv <- solve(C)
-XCXinv <- solve(crossprod(X, Cinv) %*% X)
-XCz <- crossprod(X, Cinv) %*% z
-beta <- XCXinv %*% XCz
+XCX <- crossprod(X, solve(C, X))
+XCz <- crossprod(X, solve(C, z))
+betaGLS <- solve(XCX,XCz)
 ```
 
 ## Model-based optimisation of spatial strata {#Ospats}
@@ -738,24 +737,24 @@ The variance of the residuals is more constant (Figure \@ref(fig:checkassumption
 ```{r}
 grdXuancheng <- readRDS(file = "data/grdXuancheng.rds")
 res <- predict(lm_lnSOM, newdata = as(grdXuancheng, "data.frame"), se.fit = TRUE)
-grdXuancheng <- within(as(grdXuancheng, "data.frame"), {
+grdXuancheng <- within(grdXuancheng, {
   lnSOMpred <- res$fit; varpred <- res$se.fit^2})
 ```
 
 The predictions and their standard errors are shown in Figure \@ref(fig:predictedlnSOM).
 
-(ref:predictedlnSOMlabel) Predicted natural log of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng and its standard error, obtained with a linear regression model with elevation as a predictor.
+(ref:predictedlnSOMlabel) Predicted natural log of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng and its standard error (se), obtained with a linear regression model with elevation as a predictor.
 
 ```{r predictedlnSOM, echo = FALSE, out.width = "100%", fig.cap = "(ref:predictedlnSOMlabel)"}
 plt1 <- ggplot(grdXuancheng) +
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill = lnSOMpred)) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = lnSOMpred)) +
   scale_fill_continuous(name = "lnSOM", type = "viridis") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 
 plt2 <- ggplot(grdXuancheng) +
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill = sqrt(varpred))) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = sqrt(varpred))) +
   scale_fill_continuous(name = "se", type = "viridis") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -767,8 +766,8 @@ Let us check now whether the spatial structure of the study variable lnSOM is fu
 
 ```{r residualvariogramSOM, echo = FALSE, fig.asp = 0.7, fig.cap = "Sample semivariogram of the residuals of a simple linear regression model for the natural log of the SOM concentration in Xuancheng."}
 library(gstat)
-mysample$s1 <- mysample$s1 / 1000
-mysample$s2 <- mysample$s2 / 1000
+mysample <- mysample %>%
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 coordinates(mysample) <- ~ s1 + s2
 vg <- variogram(lnSOM ~ dem, data = mysample)
 plot(vg, plot.numbers = TRUE)
@@ -780,7 +779,7 @@ The sample semivariogram does not show much spatial structure, but the first two
 library(geoR)
 mysample <- as(mysample, "data.frame")
 dGeoR <- as.geodata(obj = mysample, header = TRUE,
-   coords.col = c("s1", "s2"), data.col = "SOM_A_hori", covar.col = "dem"
+   coords.col = c("s1", "s2"), data.col = "lnSOM", covar.col = "dem"
  )
 vgm_REML <- likfit(
   geodata = dGeoR, trend = ~ dem, cov.model = "exponential",
@@ -819,7 +818,7 @@ subgrd <- data.frame(coordinates(subgrd), over(subgrd, grdXuancheng))
 
 The first step in optimisation of spatial strata with package **SamplingStrata** is to build the sampling frame with function `buildFrameSpatial`. Argument `X` specifies the stratification variables, and argument `Y` specifies the study variables. In our case we have only one stratification variable and one study variable, and these are the same variable. Argument `variance` specifies the variance of the prediction error of the study variable. Variable `dom` is an identifier of the domain of interest of which we want to estimate the mean or total. I assign the value 1 to all population units, see code chunk below, which implies that the stratification is optimised for the entire population. If we have multiple domains of interest, the stratification is optimised for each domain separately.
 
-Finally, as a preparatory step we must specify how precise the estimated mean should be. This precision must be specified in terms of the coefficient of variation (cv), i.e. the standard error of the estimated mean divided by the mean. I use a cv of 0.005. In case of multiple domains of interest and multiple study variables a cv must be specified per domain and per study variable. This precision requirement is used to compute the sample size for Neyman allocation (Equation \@ref(eq:Neymanallocation))^[For multivariate stratification, i.e. stratification with multiple study variables, Bethel allocation is used to compute the required sample size.]. The optimal stratification is independent of the precision requirement, although for a large cv the optimal number of strata can be smaller than the value passed to argument `nStrata` of function `optimStrata`, see hereafter.
+Finally, as a preparatory step we must specify how precise the estimated mean should be. This precision must be specified in terms of the coefficient of variation (cv), i.e. the standard error of the estimated mean divided by the mean. I use a cv of 0.005. In case of multiple domains of interest and multiple study variables a cv must be specified per domain and per study variable. This precision requirement is used to compute the sample size for Neyman allocation (Equation \@ref(eq:Neymanallocation))^[For multivariate stratification, i.e. stratification with multiple study variables, Bethel allocation is used to compute the required sample size.]. The optimal stratification is independent of the precision requirement.
 
 ```{r}
 library(SamplingStrata)
@@ -830,7 +829,7 @@ frame <- buildFrameSpatial(df = subgrd, id = "id", X = c("lnSOMpred"), Y = c("ln
 cv <- as.data.frame(list(DOM = "DOM1", CV1 = 0.005, domainvalue = 1))
 ```
 
-The optimal spatial stratification can be computed with function `optimStrata`, with argument `method = "spatial"`. The $R^2$ value of the linear regression model, used in the minimisation criterion (Equation \@ref(eq:minicritospatsDeGruijter)), can be passed to argument `fitting`.
+The optimal spatial stratification can be computed with function `optimStrata`, with argument `method = "spatial"`. The $R^2$ value of the linear regression model, used in the minimisation criterion (Equation \@ref(eq:minicritospatsDeGruijter)), can be specified with argument `fitting`.
 
 ```{block2, type = 'rmdnote'}
 I am not sure that the correction factor $R^2$ in Equation \@ref(eq:Exid2ij2) is really needed. I believe that the smoothing effect is already accounted for by the variances and covariances of the prediction errors. I used an $R^2$ value of 1.
@@ -845,11 +844,11 @@ res <- optimStrata(
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(res, file = "results/OptimalStrataXuancheng_SamplingStrata_cv005.RData")
+saveRDS(res, file = "results/OptimalStrata_Xuancheng.rds")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/OptimalStrataXuancheng_SamplingStrata_cv005.RData")
+res <- readRDS(file = "results/OptimalStrata_Xuancheng.rds")
 ```
 
 A summary of the optimised strata can be obtained with function `summaryStrata`.
@@ -880,8 +879,7 @@ Figure \@ref(fig:optimalstrataXuanchengSamplingStrata) shows the optimised strat
 
 ```{r optimalstrataXuanchengSamplingStrata, echo = FALSE, out.width = "100%", fig.cap = "Model-based optimal strata for estimating the mean of the natural log of the SOM concentration in Xuancheng."}
 grdXuancheng <- as(grdXuancheng, "data.frame")
-preds <- predict(lm_lnSOM, grdXuancheng)
-strat <- findInterval(preds, smr_strata$Upper_X1[-5])
+strat <- findInterval(grdXuancheng$lnSOMpred, smr_strata$Upper_X1[-nrow(smr_strata)])
 
 labels <- as.character(round(smr_strata$Upper_X1, 2))
 first <- paste("<", labels[1])
@@ -892,7 +890,7 @@ fifth <- paste(">", labels[4])
 labs <- c(first, second, third, fourth, fifth)
 
 ggplot(grdXuancheng) +
-  geom_raster(mapping = aes(x = s1/1000, y = s2/1000, fill = factor(strat))) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = factor(strat))) +
   scale_fill_viridis_d(name = "lnSOM", labels = labs) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +

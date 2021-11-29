@@ -1,11 +1,11 @@
 ---
-title: "Exercise sensititivity of model-based optimisation of grid-spacing to semivariogram parameters."
+title: "Exercise sensititivity of model-based optimisation of grid spacing to semivariogram parameters."
 author: "Dick Brus"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-```{r, include=FALSE}
+```{r, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -23,12 +23,12 @@ library(tidyverse)
 Load the data on soil organic matter in West-Amhara (Ethiopia) and a discretisation grid of the study area. 
 
 ```{r}
-sampleAmhara <- readRDS(file = "..data/Sample_Amhara.rds")
+sampleAmhara <- readRDS(file = "../data/Sample_Amhara.rds")
 grdAmhara <- readRDS(file = "../data/grdAmhara.rds")
 sampleAmhara <- sampleAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 grdAmhara <- grdAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 /1000)
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 ```
 
 ## Estimation of the semivariogram
@@ -51,12 +51,12 @@ Select a simple random sample of size 1,000 for evaluating the square grids. Add
 
 ```{r}
 set.seed(314)
-units <- sample(nrow(grdAmhara),size=1000,replace=TRUE)
-mysample <- grdAmhara[units,]
+units <- sample(nrow(grdAmhara), size = 1000, replace = TRUE)
+mysample <- grdAmhara[units, ]
 
 #Shift the randomly selected points to random points within the cells
-mysample$s1 <- jitter(mysample$s1, amount=0.5)
-mysample$s2 <- jitter(mysample$s2, amount=0.5)
+mysample$s1 <- jitter(mysample$s1, amount = 0.5)
+mysample$s2 <- jitter(mysample$s2, amount = 0.5)
 ```
 
 ## Kriging
@@ -66,19 +66,19 @@ Specify the grid spacings to be evaluated and the cumulative probabilities from 
 Select a square grid with the first spacing, add a dummy variable and predict the dummy variable at the evaluation points by ordinary kriging.  Repeat this for the other spacings (for-loop).
 
 ```{r}
-coordinates(mysample) <- ~s1+s2
-coordinates(grdAmhara) <- ~s1+s2
+coordinates(mysample) <- ~ s1 + s2
+coordinates(grdAmhara) <- ~ s1 + s2
 gridded(grdAmhara) <- TRUE
 
 #define grid spacings
 spacing <- 5:12
 
 MKV <- NULL
-for (i in 1:length(spacing)) {
-    mygridxy <- spsample(x=grdAmhara, cellsize=spacing[i], type="regular", offset=c(0.5,0.5))
+for (i in seq_len(length(spacing))) {
+    mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular", offset = c(0.5, 0.5))
     #add a dummy variable for prediction
-    mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
-    coordinates(mygrid) <- ~s1+s2
+    mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+    coordinates(mygrid) <- ~ s1 + s2
     #Use gstat for ordinary kriging predictions
     predictions  <- krige(
         dummy ~ 1,
@@ -86,7 +86,7 @@ for (i in 1:length(spacing)) {
         newdata = mysample,
         model = vgm_MoM,
         nmax = 20,
-        debug.level = 0 
+        debug.level = 0
     )
     MKV[i] <- mean(predictions$var1.var)
 }
@@ -102,22 +102,22 @@ In practice we are uncertain about the semivariogram. For this reason it can be 
 Increase the nugget by 5\%, and change the partial sill parameter so that the sill (nugget + partial sill) is equal to the original sill. 
 
 ```{r}
-nugget <- vgm_MoM$psill[1] + 0.05*vgm_MoM$psill[1]
+nugget <- vgm_MoM$psill[1] + 0.05 * vgm_MoM$psill[1]
 psill <- vgm_MoM$psill[1] + vgm_MoM$psill[2] - nugget
 vgm_MoM_morenugget <- vgm(psill = psill, model = "Sph", range = vgm_MoM$range[2], nugget = nugget)
 
 MKV_morenugget <- NULL
-for (i in 1:length(spacing)) {
-    mygridxy <- spsample(x=grdAmhara,cellsize=spacing[i],type="regular",offset=c(0.5,0.5))
-    mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
-    coordinates(mygrid) <- ~s1+s2
+for (i in seq_len(length(spacing))) {
+    mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular", offset = c(0.5, 0.5))
+    mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+    coordinates(mygrid) <- ~ s1 + s2
     predictions  <- krige(
         dummy ~ 1,
         mygrid,
         newdata = mysample,
         model = vgm_MoM_morenugget,
         nmax = 20,
-        debug.level=0
+        debug.level = 0
     )
     MKV_morenugget[i] <- mean(predictions$var1.var)
 }
@@ -128,20 +128,20 @@ for (i in 1:length(spacing)) {
 Do the same for a smaller range. Decrease the range by 5\%. Use the original values for nugget and partial sill.
 
 ```{r}
-range <- vgm_MoM$range[2] - 0.05*vgm_MoM$range[2]
+range <- vgm_MoM$range[2] - 0.05 * vgm_MoM$range[2]
 vgm_MoM_smallerrange <- vgm(psill = vgm_MoM$psill[2], model = "Sph", range = 30, nugget = vgm_MoM$psill[1])
 MKV_smallerrange <- NULL
-for (i in 1:length(spacing)) {
-    mygridxy <- spsample(x=grdAmhara,cellsize=spacing[i],type="regular",offset=c(0.5,0.5))
-    mygrid <- data.frame(s1=mygridxy$x1,s2=mygridxy$x2,dummy=1)
-    coordinates(mygrid) <- ~s1+s2
+for (i in seq_len(length(spacing))) {
+    mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular", offset = c(0.5, 0.5))
+    mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+    coordinates(mygrid) <- ~ s1 + s2
     predictions  <- krige(
         dummy ~ 1,
         mygrid,
         newdata = mysample,
         model = vgm_MoM_smallerrange,
         nmax = 20,
-        debug.level=0
+        debug.level = 0
     )
     MKV_smallerrange[i] <- mean(predictions$var1.var)
 }
@@ -156,24 +156,23 @@ Plot the MKV's obtained  with the three semivariograms against the grid spacing.
 df <- data.frame(spacing, MKV, MKV_morenugget, MKV_smallerrange)
 #save(df,file = "../results/MBGridSpacing_Amhara_Sensitivity.RData")
 
-df_lf <- df %>% pivot_longer(.,cols=c("MKV","MKV_morenugget","MKV_smallerrange"))
-ggplot(data=df_lf)+
-  geom_point(mapping=aes(x=spacing, y=value, shape=name), size=3)+
-  scale_shape_manual(values=c(0,1,2), labels=c("Original","More nugget","Smaller range"), name="Semivariogram") +
-  scale_x_continuous(name="Spacing (km)")+
-  scale_y_continuous(name="Mean kriging variance")
+df_lf <- df %>% pivot_longer(., cols = c("MKV", "MKV_morenugget", "MKV_smallerrange"))
+ggplot(data = df_lf) +
+  geom_point(mapping = aes(x = spacing, y = value, shape = name), size = 3) +
+  scale_shape_manual(values = c(0, 1, 2), labels = c("Original", "More nugget", "Smaller range"), name = "Semivariogram") +
+  scale_x_continuous(name = "Spacing (km)") +
+  scale_y_continuous(name = "Mean kriging variance")
 ```
 
 Compute the tolerable grid spacing and the corresponding expected sample size for a MKV value of 0.85.
 
 ```{r}
-(spacings_tol <- lapply(1:3, function (i) approx(x=df[,i+1], y=df$spacing, xout=0.85)$y) %>% as.numeric(.))
+(spacings_tol <- lapply(1:3, function(i) approx(x = df[, i + 1], y = df$spacing, xout = 0.85)$y) %>% as.numeric(.))
 #compute size of pixels
 res2 <- getGridTopology(grdAmhara) %>% data.frame(.)
 #compute total area in km2
 A <- length(grdAmhara) * res2$cellsize[1] * res2$cellsize[2]
 #compute required expected sample size
-(nreq <- A/spacings_tol^2)
-
+(nreq <- A / spacings_tol^2)
 ```
 

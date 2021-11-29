@@ -1,5 +1,9 @@
 # Systematic random sampling {#SY}
 
+```{r, echo = FALSE}
+evalFT <- FALSE
+```
+
 A simple way of drawing probability samples whose units are spread uniformly over the study area, is systematic random sampling\index{Systematic random sampling} (SY). Systematic random sampling from a two-dimensional spatial population entails sampling on a regular grid\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type="regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. 
 
 ```{r}
@@ -107,7 +111,7 @@ matern <- function(s) {
 }
 ```
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo = FALSE, eval = FALSE}
 number_of_samples <- 10000
 
 mz_SY_HT <- mz_SY_ratio <- mz_SI <- sampleSizes <- numeric(length = number_of_samples)
@@ -177,11 +181,11 @@ for (i in 1:number_of_samples) {
   mysample <- spsample(x = grdVoorst, cellsize = c(dx, dy), type = "regular")
   sampleSizes[i] <- length(mysample)
 }
-save(sampleSizes, file = "results/SYVoorst_rectangular.RData")
+saveRDS(sampleSizes, file = "results/SYVoorst_rectangular_samplesize.rds")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/SYVoorst_rectangular.RData")
+sampleSizes <- readRDS(file = "results/SYVoorst_rectangular_samplesize.rds")
 ```
 
 ```{r}
@@ -197,7 +201,7 @@ dx <- r * sqrt(3)
 dy <- sqrt(3) / 2 * dx
 ```
 
-Function `spsample` does not work properly in combination with argument `type = "hexagonal"`. Over repeated sampling the average sample size is not equal to the chosen sample size passed to argument `n`. The same problem remains when using argument `cellsize`.
+Function `spsample` does not work properly in combination with argument `type = "hexagonal"`. Over repeated sampling the average sample size is not equal to the chosen sample size passed to function `spsample` with argument `n`. The same problem remains when using argument `cellsize`.
 
 ```{r, eval = FALSE, echo = FALSE}
 sampleSizes <- numeric(length = 10000)
@@ -206,11 +210,11 @@ for (i in 1:10000) {
   mysample <- spsample(x = grdVoorst, n = n, type = "hexagonal")
   sampleSizes[i] <- length(mysample)
 }
-save(sampleSizes, file = "results/SYVoorst_hexagonal.RData")
+saveRDS(sampleSizes, file = "results/SYVoorst_hexagonal_samplesize.rds")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/SYVoorst_hexagonal.RData")
+sampleSizes <- readRDS(file = "results/SYVoorst_hexagonal_samplesize.rds")
 summary(sampleSizes)
 ```
 
@@ -253,8 +257,8 @@ Figure \@ref(fig:Triangulargrid) shows a triangular grid, selected randomly from
 ggplot(as(grdVoorst, "data.frame")) +
   geom_raster(mapping = aes(x = s1  / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(mySYsample_tri, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
-  scale_x_continuous(name = "Easting") +
-  scale_y_continuous(name = "Northing") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   theme(legend.position = "none") +
   coord_fixed()
 ```
@@ -431,8 +435,8 @@ ggplot(as(grdVoorst, "data.frame")) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = as.factor(cluster)), size = 2) +
   scale_colour_viridis_d() +
-  scale_x_continuous(name = "Easting") +
-  scale_y_continuous(name = "Northing") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)") +
   theme(legend.position = "none") +
   coord_fixed()
 ```
@@ -449,7 +453,7 @@ d^2_{r,s} & = \left(\frac{z_{r,s}+z_{r+1,s+1}}{2}-\frac{z_{r+1,s}+z_{r,s+1}}{2}\
 (\#eq:sqdiflocalmean)
 \end{equation}
 
-with $r = 0,1, \dots ,R$ an index for the column number and $s=0,1, \cdots, S$ an index for the row number of the extended grid. The variance of the estimator of the mean (sample mean) is then approximated by the sum of the squared differences divided by the squared sample size:
+with $r = 0,1, \dots ,R$ an index for the column number and $s=0,1, \dots, S$ an index for the row number of the extended grid. The variance of the estimator of the mean (sample mean) is then approximated by the sum of the squared differences divided by the squared sample size:
 
 \begin{equation}
 \widehat{V}(\bar{z}_{\mathcal{S}}) = \frac{\sum_{g=1}^G d^2_g}{n^2}\;,
@@ -462,11 +466,11 @@ To approximate the variance with Mat&eacute;rn's method\index{Mat$\text{{\'e}}$r
 
 ```{r}
 matern <- function(s) {
-  g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[, c("gr","gs","z11")]
-  g_12 <- within(s, {gr <- i; gs <- j - 1; z12 <- z})[, c("gr","gs","z12")]
-  g_21 <- within(s, {gr <- i - 1; gs <- j; z21 <- z})[, c("gr","gs","z21")]
-  g_22 <- within(s, {gr <- i - 1; gs <- j-1; z22 <- z})[, c("gr","gs","z22")]
-  g <- Reduce(function(x, y) merge(x = x, y = y, by = c("gr","gs"), all = TRUE),
+  g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[, c("gr", "gs", "z11")]
+  g_12 <- within(s, {gr <- i; gs <- j - 1; z12 <- z})[, c("gr", "gs", "z12")]
+  g_21 <- within(s, {gr <- i - 1; gs <- j; z21 <- z})[, c("gr", "gs", "z21")]
+  g_22 <- within(s, {gr <- i - 1; gs <- j-1; z22 <- z})[, c("gr", "gs", "z22")]
+  g <- Reduce(function(x, y) merge(x = x, y = y, by = c("gr", "gs"), all = TRUE),
               list(g_11, g_12, g_21, g_22))
   g[is.na(g)] <- mean(s$z)
   g <- within(g, T <- (z11 - z12 - z21 + z22)^2 / 4)
@@ -543,7 +547,7 @@ w_h <- nh / sum(nh)
 av_STSI_mz_SYtri <- sum(w_h^2 * v_mz_h)
 ```
 
-The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`
+The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`.
 
 
 @Brus2016c compared various variance approximations for systematic random sampling, among which model-based prediction of the variance, using a semivariogram that is estimated from the systematic sample, see Chapter \@ref(MBpredictionofDesignVariance).
@@ -552,7 +556,7 @@ The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`
 #### Exercises {-}  
 
 1. One solution to the problem of variance estimation with systematic random sampling is to select multiple systematic random samples independently from each other. So, for instance, instead of one systematic random sample with an expected sample size of 40, we may select two systematic random samples with an expected size of 20.  
-    + Write an **R** script to select two systematic random samples (random square grids) both with an expected size of 20 from Voorst (data are in `data/Voorst.RData`).
+    + Write an **R** script to select two systematic random samples (random square grids) both with an expected size of 20 from Voorst (data are in `data/Voorst.rds`).
     + Use each sample to estimate the population mean, so that you obtain two estimated means. Overlay the points of each sample with `grdVoorst`, using function `over` and extract the $z$-values.
     + Use the two estimated means to estimate the sampling variance of the estimator of the mean for systematic random sampling *with an expected sample size of 20*.
     + Use the two estimated means to compute a single, final estimate of the population mean, as estimated from *two systematic random samples, each with an expected sample size of 20*. 

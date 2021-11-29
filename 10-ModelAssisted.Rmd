@@ -1,6 +1,10 @@
 # Model-assisted estimation {#Modelassisted}
 
-In many cases ancillary information is available that could be useful to increase the accuracy of the estimated mean or total of the study variable. The ancillary variable(s) can be qualitative (i.e. classifications) or quantitative. As we have seen before, both types of ancillary variable can be used at the design stage, i.e. in selecting the sampling units, to improve the performance of the sampling strategy, for instance by stratification (Chapter \@ref(STSI)), selecting sampling units with probabilities proportional to size (Chapter \@ref(pps)), or through balancing and/or spreading the sample on the covariates (Chapter \@ref(BalancedSpreaded)). In this chapter I explain how these covariates can be used at the stage of *estimation*, once the data have been collected.
+```{r, echo = FALSE}
+evalFT <- FALSE
+```
+
+In many cases ancillary information is available that could be useful to increase the accuracy of the estimated mean or total of the study variable. The ancillary variable(s) can be qualitative (i.e. classifications) or quantitative. As we have seen before, both types of ancillary variable can be used at the design stage, i.e. in selecting the sampling units, to improve the performance of the sampling strategy, for instance by stratification (Chapter \@ref(STSI)), selecting sampling units with probabilities proportional to size (Chapter \@ref(pps)), or through balancing and/or spreading the sample on the covariates (Chapter \@ref(BalancedSpreaded)). In this chapter I explain how these covariates can be used at the stage of *estimation*, once the data are collected.
 
 In the design-based approach for sampling various estimators are developed that exploit one or more covariates. These estimators are derived from different superpopulation models\index{Superpopulation model} of the study variable. A superpopulation model is a statistical model that can be used to generate an infinite number of populations, a superpopulation, through simulation. An example is the simulation of spatial populations using a geostatistical model, see Chapter \@ref(MBpredictionofDesignVariance). A superpopulation is a construct, it does not exist in reality. We assume that the population of interest is one of the populations that can be generated with the chosen model. The combination of probability sampling and estimators that are built on a superpopulation model is referred to as the model-assisted approach\index{Model-assisted approach}. Also in the model-based approach a superpopulation model is used, however, its role is fundamentally different from that in the model-assisted approach, see Chapter \@ref(Approaches). To stress the different use of the superpopulation model in the model-assisted approach this model is referred to as the "working model"\index{Working model}, i.e. the superpopulation model that is used to derive a model-assisted estimator.
 
@@ -287,7 +291,7 @@ svymean(~ AGB, mysample_cal)
 
 The standard error is computed with Equation \@ref(eq:AlternativeVarianceRegressionEstimator). Figure \@ref(fig:SamplingDistributionRegression) shows the sampling distribution of the simple regression estimator along with the distribution of the $\pi$ estimator, obtained by repeating simple random sampling of 100 units and estimation 10,000 times.
 
-```{r, eval = FALSE, echo = FALSE}
+```{r, eval = evalFT, echo = FALSE}
 number_of_samples <- 10000
 mz_HT <- mz_regr <- v_mz_regr <-  numeric(length = number_of_samples)
 set.seed(314)
@@ -380,14 +384,7 @@ The multiple regression estimate is equal to the estimate obtained with function
 sqrt(res$pop_mean_var)
 ```
 
-which is slightly smaller than the standard error computed with package **survey**. This standard error is computed by ignoring the g-weights [@McConville2020].  In an exercise the two approximate standard errors are compared in a sampling experiment.
-
-```{r, eval = FALSE}
-mlr <- lm(AGB ~ lnSWIR2 + Terra_PP + Elevation, data = mysample)
-e <- residuals(mlr)
-S2e <- var(e)
-print(se <- sqrt((1 - n / N) * S2e / n))
-```
+which is slightly smaller than the standard error computed with package **survey**. The standard error obtained with function `greg` is computed by ignoring the g-weights [@McConville2020].  In an exercise the two approximate standard errors are compared in a sampling experiment.
 
 ### Penalised least squares estimation
 
@@ -612,9 +609,9 @@ The next step is to estimate the population regression coefficients, using Equat
 W <- diag(x = 1 / mysample$Prob, nrow = n, ncol = n)
 X <- matrix(nrow = n, ncol = 2, data = 1)
 X[, 2] <- mysample$lnSWIR2
-XWXinv <- solve(t(X) %*% W %*% X)
+XWX <- t(X) %*% W %*% X
 XWz <- t(X) %*% W %*% mysample$AGB
-print(ab <- t(XWXinv %*% XWz))
+print(ab <- t(solve(XWX,XWz)))
 ```
 
 Note that the same estimates are obtained by model-based estimation, using weighted least squares\index{Weighted least squares}, based on the assumption that the variances $\sigma^2(\epsilon_k)$ are proportional to the inclusion probabilities (which is a weird assumption).
@@ -857,7 +854,7 @@ mysample_cal <- calibrate(
 svytotal(~ poppy, mysample_cal)
 ```
 
-Computing the separate ratio estimator goes along the same lines. Function `svyratio` with argument `separate = TRUE` estimates the ratio and its variance for each stratum separately. To predict the population total the stratum totals of the covariate must be passed to argument `total` of function ` predict`.
+Computing the separate ratio estimator goes along the same lines. Function `svyratio` with argument `separate = TRUE` estimates the ratio and its variance for each stratum separately. To predict the population total the stratum totals of the covariate must be passed to function `predict` using argument `total`.
 
 ```{r}
 separate <- svyratio(~ poppy, ~ agri, design_stsi, separate = TRUE)
@@ -1126,19 +1123,19 @@ sqrt(res$pop_mean_var)
 
 The variance of the estimator of the mean can also be estimated by bootstrapping the sample (@loh99, Section 9.3.3).
  
-```{r, eval = FALSE}
+```{r, eval = evalFT}
 res <- gregTree(
   mysample$AGB, xsample = mysample[, covs],
   xpop = grdAmazonia[, covs], pi = pi,
   var_est = TRUE, var_method = "bootstrapSRS", B = 100)
 ```
 
-```{r, echo = FALSE, eval = FALSE}
-save(res, file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.RData")
+```{r, echo = FALSE, eval = evalFT}
+saveRDS(res, file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.RData")
+res <- readRDS(file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
 ```
 
 ```{r}
@@ -1149,7 +1146,7 @@ The standard error obtained by the bootstrap is considerably larger than the pre
 
 The simple random sampling of 100 units and the model-assisted estimation are repeated 500 times, using a regression tree for prediction. The variance is estimated by Taylor linearisation (`var_method = LinHTSRS`) and by bootstrapping (`var_method = bootstrapSRS`) using 100 bootstrap samples.
 
-```{r, echo = FALSE, eval = FALSE}
+```{r, echo = FALSE, eval = evalFT}
 mz_rtree <- v_mz_rtree_linHTSRS <- v_mz_rtree_btstrp <- numeric(length = 500)
 set.seed(314)
 for (i in 1:500) {

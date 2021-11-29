@@ -17,8 +17,8 @@ library(ggplot2)
 Create a grid that discretises the population.
 ```{r}
 s1 <- s2 <- 1:20 - 0.5
-grid <- expand.grid(s1,s2)
-names(grid) <- c("s1","s2")
+grid <- expand.grid(s1, s2)
+names(grid) <- c("s1", "s2")
 ```
 
 ## Semivariogram
@@ -29,14 +29,14 @@ The coordinates of sixteen sampling locations are optimised for ordinary kriging
 nugget <- 0
 partial_sill <- 2
 range <- 4
-vgm_gstat <- vgm(model="Exp", psill=partial_sill, range=range, nugget=nugget)
+vgm_gstat <- vgm(model = "Exp", psill = partial_sill, range = range, nugget = nugget)
 ```
 
 Specify the candidate sampling points. Note that not the grid points themselves are used as candidate points, but all points within the grid cells with the grid points at their centres. So, the set of candidate points is not finite but infinite. In the optimisation a new candidate point is selected in two steps. First, a grid cell is randomly selected. Then a random point within the selected grid cell is selected.
 
 ```{r}
-candi <- grid[,c(1,2)]
-names(candi) <- c("x","y") #these names are required by spsann 
+candi <- grid[, c(1, 2)]
+names(candi) <- c("x", "y") #these names are required by spsann
 ```
 
 ## Optimising the sampling locations
@@ -50,12 +50,12 @@ The chain.length is the number of iterations during which the temperature is kep
 ```{r}
 schedule <- scheduleSPSANN(initial.acceptance = 0.8,
                            initial.temperature = 0.07,
-                           temperature.decrease=0.90,
-                           chains=500,
-                           chain.length=10,
-                           stopping=10,
-                           x.max=5,y.max=5,
-                           cellsize=1)
+                           temperature.decrease = 0.90,
+                           chains = 500,
+                           chain.length = 10,
+                           stopping = 10,
+                           x.max = 5, y.max = 5,
+                           cellsize = 1)
 ```
 
 ### Optimisation of sampling locations
@@ -65,12 +65,12 @@ Now start the simulated annealing algorithm.
 ```{r}
 set.seed(314)
 res <- optimMKV(
-  points = 16, 
-  candi = candi, 
+  points = 16,
+  candi = candi,
   vgm = vgm_gstat,
-  eqn = z ~ 1, 
+  eqn = z ~ 1,
   schedule = schedule,
-  track=TRUE)
+  track = TRUE)
 #save(res,file = "../results/MBSampleSquare_OK_NoNugget_16pnts.RData")
 ```
 
@@ -79,10 +79,10 @@ res <- optimMKV(
 Plot the trace to check convergence
 
 ```{r}
-#load(file = "../results/MBSampleSquare_OK_NoNugget_16pnts.RData")
+load(file = "../results/MBSampleSquare_OK_NoNugget_16pnts.RData")
 trace <- res$objective$energy
 ggplot(trace) +
-  geom_line(mapping = aes(x=1:nrow(trace), y = obj), colour="red") +
+  geom_line(mapping = aes(x = seq_len(nrow(trace)), y = obj), colour = "red") +
   scale_y_continuous(name = "Mean kriging variance") +
   scale_x_continuous(name = "Iteration")
 ```
@@ -92,12 +92,12 @@ Plot the optimised sample
 ```{r}
 sample <- res$points
 ggplot(data = grid) +
-  geom_tile(mapping = aes(x = s1, y = s2), fill="grey") +
-  geom_point(data=sample,mapping = aes(x = x, y = y), size=2) +
-  geom_vline(xintercept=c(5,10,15)) +
-  geom_hline(yintercept=c(5,10,15)) +
-  scale_y_continuous(name = "Northing") +
+  geom_tile(mapping = aes(x = s1, y = s2), fill = "grey") +
+  geom_point(data = sample, mapping = aes(x = x, y = y), size = 2) +
+  geom_hline(yintercept = c(5, 10, 15)) +
+  geom_vline(xintercept = c(5, 10, 15)) +
   scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
   coord_fixed()
 ```
 

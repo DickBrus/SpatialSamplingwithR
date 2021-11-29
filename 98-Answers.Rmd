@@ -29,7 +29,7 @@
 4. The proof is as follows: $\sum_N \pi_k=\sum_H \sum_{N_h}\pi_{hk}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n$.  
 5. See [`STSIcumrootf.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R). The default allocation is Neyman allocation, see help of function `strata.cumrootf`.  
 6. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum.  
-7. On average the sampling variance of the estimator of the mean with $100 \times 1$ point is smaller than with $50 \times 2$ points because the geographical spreading will be somewhat better (less spatial clustering).  
+7. On average the sampling variance of the estimator of the mean with 100 $\times$ 1 point is smaller than with $50 \times 2$ points because the geographical spreading will be somewhat better (less spatial clustering).  
 8. With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: $\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{\mathcal{S}h} = \bar{z}_{\mathcal{S}}$, with $\bar{z}_{\mathcal{S}h}$ the average of the sample from stratum $h$ and $\bar{z}_{\mathcal{S}}$ the average of all sampling points.  
 9. See [`STSIgeostrata.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIgeostrata.R).
     + Collapsing the geostrata on the basis of the measurements of the study variable is not a proper way, as it will lead to a biased estimator of the sampling variance of the estimator of the mean. The estimated stratum variances $\widehat{S}^2(z)$ will be small, and so the estimated sampling variance will underestimate the true sampling variance.
@@ -54,7 +54,7 @@
 ## Two-stage cluster random sampling {-}
 
 1. See [`TwoStage.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R).  
-2. With ten PSU draws and four SSUs per PSU draw (10 $\times$ 4) the expected standard error of the estimated population mean is smaller than with four PSU draws and ten SSUs per PSU draw ($4 \times 10$) because spatial clustering of the sampling points is less strong.  
+2. With ten PSU draws and four SSUs per PSU draw (10 $\times$ 4) the expected standard error of the estimator of the population mean is smaller than with four PSU draws and ten SSUs per PSU draw ($4 \times 10$) because spatial clustering of the sampling points is less strong.  
 3. See [`TwoStage.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R).   
 4. See [`TwoStage.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R).  
 5. See [`TwoStage.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/TwoStage.R).  
@@ -149,7 +149,7 @@ ggplot(data=df_lf) +
 (ref:ReqSamSizelabel) Required sample size as a function of the half-length of a 95\% confidence interval of the population proportion, for a prior proportion of 0.1 (left subfigure), and as a function of the prior proportion for a half-length of a 95\% confidence interval of 0.2 (right subfigure).
 
 ```{r ReqSamSize, echo=FALSE, out.width="100%", fig.asp=0.5, fig.cap="(ref:ReqSamSizelabel)"}
-
+library(binomSamSize)
 #compute required sample sizes for a given p0 (prior proportion), as a function of d (half the width of CI)
 p0 <- 0.1
 d <- seq(from=0.01, to=0.49, by=0.01)
@@ -195,7 +195,7 @@ grid.arrange(plt1, plt2, nrow=1)
 
 ## Regular grid and spatial coverage sampling {-}
 
-1. See [`SquareGrid.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SquareGrid.R). The number of grid points passed to argument `n` is the expected number of grid points over repeated selection of square grids with a random start. With a fixed start (using argument `offset`) the number of grid points can differ from the expected sample size.  
+1. See [`SquareGrid.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SquareGrid.R). The number of grid points specified with argument `n` is the expected number of grid points over repeated selection of square grids with a random start. With a fixed start (using argument `offset`) the number of grid points can differ from the expected sample size.  
 2. The optimal spatial coverage sample (optimal in terms of MSSD) consists of the four points in the centre of the four subsquares of equal size.  
 3. If we are also interested in the accuracy of the estimated plot means, the sampling units can best be selected by probability sampling, for instance by simple random sampling, from the subsquares (strata). Preferably at least two points should then be selected from the strata, see Section \@ref(geostrata).   
 4. See [`SpatialCoverageCircularPlot.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SpatialCoverageCircularPlot.R). See Figure \@ref(fig:SCScircularplot).
@@ -244,11 +244,11 @@ ggplot(data=grdHunterValley) +
 
 ## Conditioned Latin hypercube sampling {-}  
 
-1. See [`cLHS.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R). Most units are selected in the part of the diagram with the highest density of pixels. Pixels with a large cti value and low elevation and pixels with high elevation and small cti value are (nearly) absent in the sample. In the population not many pixels are present with these combinations of covariate values.        
+1. See [`cLHS.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R). Most units are selected in the part of the diagram with the highest density of raster cells. Raster cells with a large cti value and low elevation and pixels with high elevation and small cti value are (nearly) absent in the sample. In the population not many pixels are present with these combinations of covariate values.        
 2. See [`cLHS_Square.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS_Square.R).
     +  Spatial coverage is improved by using the spatial coordinates as covariates, but it is not optimal in terms of MSSD. 
     +  It may happen that not all marginal strata of $s1$ and $s2$ are sampled. Even when all these marginal strata are sampled, this does not guarantee a perfect spatial coverage.
-    +  With `set.seed(314)` and default values for the arguments of function `clhs` there is one unsampled marginal stratum and one marginal strata with two sampling locations. So, component O1 equals 2. The minimised value (2.62) is slightly larger due to the contribution of O3 to the criterion.   
+    +  With `set.seed(314)` and default values for the arguments of function `clhs` there is one unsampled marginal stratum and one marginal stratum with two sampling locations. So, component O1 equals 2. The minimised value (2.62) is slightly larger due to the contribution of O3 to the criterion.   
 
 ## Model-based optimisation of the grid spacing {-}
 
@@ -301,13 +301,14 @@ ggplot(data = grid) +
   geom_hline(yintercept=c(5,10,15)) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
+  theme(axis.title=element_text(size=16)) +
   coord_fixed()
 ```
 
 2. See [`MBSample_QOKV.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_QOKV.Rmd). Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sampling pattern. Compared with the optimised sampling pattern using the *mean* ordinary kriging variance (MOKV) as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with the sample optimised for MOKV near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
 
 ```{r MBsampleP90OKVCRF, echo=FALSE, fig.cap="Optimised sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECe as a minimisation criterion."}
-load(file = "results/CottonResearchFarm_Uzbekistan.RData")
+grdCRF <- readRDS(file = "results/CottonResearchFarm_Uzbekistan.rds")
 load(file = "results/MBSample_OK_P90_Uzbekistan.RData")
 ggplot(data=grdCRF) +
   geom_raster(mapping = aes(x = x1/1000, y = x2/1000),fill="grey") +
@@ -354,15 +355,15 @@ ggplot(data=mysamples) +
 
 1. See [`NestedSampling_v1.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/NestedSampling_v1.R).  
 2. See [`SI_PointPairs.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SI_PointPairs.R). With the seed I used (314) the variance of the estimator of the range parameter with the smaller separation distances is much smaller compared to that obtained with the larger separation distances (the estimated standard error is 115 m).  
-3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. With the smaller ratio of spatial dependence of 0.5 the sampling locations are more spread out across the area as compared to the sampling pattern obtained with a ratio of spatial dependence of 0.8 (see Figure \@ref(fig:MBVariogram)), but still spatial clusters of points can be seen.   
-4. See [`MBSample_SSA_varkrigvar.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_varkrigvar.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The circular cluster of sampling points covers a larger area than the cluster obtained with a ratio of spatial dependence of 0.8.
+3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. With the smaller ratio of spatial dependence of 0.5 the cluster of sampling points coveres a larger area as compared to the sampling pattern obtained with a ratio of spatial dependence of 0.8 (see Figure \@ref(fig:MBVariogram)). Again, quite a few pairs of points at very short distance can be seen.   
+4. See [`MBSample_SSA_MVKV.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MVKV.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The circular cluster of sampling points covers a larger area than the cluster obtained with a ratio of spatial dependence of 0.8.
 
 ```{r MBSupSamples, echo=FALSE, out.width='100%', fig.cap="Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean variance of the kriging variance (MVKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
 grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
-load(file = "results/MBSample_logdet_phi200nug05.RData")
+mysample <- readRDS(file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
 mysample_logdet <- mysample
 
-load(file = "results/MBSample_varkrigvar_phi200nug05.RData")
+mysample <- readRDS(file = "results/MBSample_MVKV_phi200nug05_HunterValley.rds")
 mysample_MVKV <- mysample
 
 mysamples <- rbind(mysample_logdet,mysample_MVKV)
@@ -376,18 +377,21 @@ ggplot(mysamples) +
   facet_wrap(~ criterion) +
   coord_fixed()
 ```
+
 ```{r, echo=FALSE}
-load(file = "results/MBSample_EAC_80_20.RData")
+res <- readRDS(file = "results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
 MEACopt <- as.numeric(tail(res$objective$energy,1))
 ```
 
 
-5. See [`MBSample_SSA_EAC.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_EAC.R).  Figure \@ref(fig:MBSampleEACHV) shows the optimised sampling pattern of the 20 sampling points together with the 80 spatial coverage sampling points. The minimised MEAC value equals `r round(MEACopt,3)`, which is smaller than that for the spatial coverage sample of 90 points supplemented by 10 points (0.788).
+5. See [`MBSample_SSA_MEAC.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MEAC.R).  Figure \@ref(fig:MBSampleMEACHV) shows the optimised sampling pattern of the 20 sampling points together with the 80 spatial coverage sampling points. The minimised MEAC value equals `r round(MEACopt,3)`, which is smaller than that for the spatial coverage sample of 90 points supplemented by 10 points (0.788).
 
 
-```{r MBSampleEACHV, echo=FALSE, fig.cap="Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
+```{r MBSampleMEACHV, echo=FALSE, fig.cap="Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
 
 grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
+grdHunterValley <- grdHunterValley %>%
+  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 gridded(grdHunterValley) <- ~ s1 + s2
 n  <- 80
 set.seed(314)
@@ -400,8 +404,11 @@ units <- which(mysample$free==1)
 mysupsample <- mysample[units, c("x","y")]
 
 plot(myStrata) +
-  geom_point(data=mySCsampledf, mapping=aes(x=s1, y=s2), shape=1, size=1.5 )+
-  geom_point(data=mysupsample, mapping=aes(x=x, y=y), shape=2, size=2, colour="red")
+  geom_point(data=mySCsampledf, mapping=aes(x = s1, y = s2), shape=1, size=1.5 ) +
+  geom_point(data=mysupsample, mapping=aes(x = x / 1000, y = y / 1000), shape=2, size=2, colour="red") +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing (km)")
+
 
 MEACopt <- tail(res$objective$energy$obj,1)
 ```
@@ -413,6 +420,12 @@ MEACopt <- tail(res$objective$energy$obj,1)
 1. I am not certain about that, because the computed  MSEs are estimates of the population MSEs only and I am uncertain about both population MSEs.  
 2. The standard errors of the estimated MEs are large when related to the estimated MEs, so my guess is that we do not have enough evidence against the hypothesis that there is no systematic error.  
 3. Both standard errors are large compared to the difference in MSEs, so maybe there is no significant difference. However we must be careful, because the variance of the difference in MSEs cannot be computed as the sum of the variances of estimated MSEs. This is because the two prediction errors at the same location are correlated, so the covariance must be subtracted from the sum of the variances to obtain the variance of the estimator of the difference in MSEs.
+
+```{r, echo=FALSE}
+SessionInfo <- devtools::session_info()
+saveRDS(SessionInfo,file="SessionInfo.rds")
+```
+
 
 ```{r, echo=FALSE}
 rm(list=ls())

@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -35,18 +35,18 @@ Select a simple random sample with replacement of size 1000 for evaluating the s
 
 ```{r}
 #read discretisation grid with interpolated natural log-transformed EM values
-load(file = "../results/CottonResearchFarm_Uzbekistan.RData")
+grdCRF <- readRDS(file = "../results/CottonResearchFarm_Uzbekistan.rds")
 
-#select simple random sample with replacement of size 1000 
+#select simple random sample with replacement of size 1000
 set.seed(314)
-units <- sample(nrow(EM_CRF), size=1000, replace=TRUE)
-mysample <- EM_CRF[units,]
+units <- sample(nrow(grdCRF), size = 1000, replace = TRUE)
+mysample <- grdCRF[units, ]
 
 #Shift the randomly selected grid points to random points within the cells
-mysample$x1 <- jitter(mysample$x1, amount=25/2)
-mysample$x2 <- jitter(mysample$x2, amount=25/2)
+mysample$x1 <- jitter(mysample$x1, amount = 25 / 2)
+mysample$x2 <- jitter(mysample$x2, amount = 25 / 2)
 
-coordinates(mysample) <- ~x1+x2
+coordinates(mysample) <- ~x1 + x2
 ```
 
 ### Kriging with an external drift
@@ -57,22 +57,22 @@ Select a randomly placed square grid of the first spacing, add a dummy variable 
 
 ```{r kriging}
 #specify spacings
-spacing <- seq(from=70, to=100, by=5)
+spacing <- seq(from = 70, to = 100, by = 5)
 
 #set number of times grid sampling of a given spacing is repeated
 r <- 10
 
-gridded(EM_CRF) <- ~x1+x2
-MKV <- matrix(nrow=length(spacing),ncol=r)
+gridded(grdCRF) <- ~x1 + x2
+MKV <- matrix(nrow = length(spacing), ncol = r)
 
-for (i in 1:length(spacing)) {
+for (i in seq_len(length(spacing))) {
     for (j in 1:r) {
-        mygridxy <- spsample(x=EM_CRF, cellsize=spacing[i], type="regular")
+        mygridxy <- spsample(x = grdCRF, cellsize = spacing[i], type = "regular")
         #add a dummy variable for interpolation
-        mygrid <- data.frame(s1=mygridxy$x1, s2=mygridxy$x2, dummy=1)
-        coordinates(mygrid) <- ~s1+s2
-        mygrd <- data.frame(over(mygrid, EM_CRF), mygrid)
-        coordinates(mygrd) <- ~s1+s2
+        mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+        coordinates(mygrid) <- ~s1 + s2
+        mygrd <- data.frame(over(mygrid, grdCRF), mygrid)
+        coordinates(mygrd) <- ~s1 + s2
         #Use gstat for KED predictions
         predictions  <- krige(
             dummy ~ lnEM100cm,
@@ -83,7 +83,7 @@ for (i in 1:length(spacing)) {
             debug.level = 0
         )
         preds <- as.data.frame(predictions)
-    MKV[i,j] <- mean(predictions$var1.var)
+    MKV[i, j] <- mean(predictions$var1.var)
     }
 }
 ```
@@ -93,17 +93,17 @@ for (i in 1:length(spacing)) {
 Plot the mean kriging variance against the grid spacing.
 
 ```{r}
-MMKV <- apply(MKV,MARGIN=1,FUN=mean)
-df <- data.frame(spacing,MMKV)
+MMKV <- apply(MKV, MARGIN = 1, FUN = mean)
+df <- data.frame(spacing, MMKV)
 
-ggplot(data=df)+
-  geom_point(mapping=aes(x=spacing,y=MMKV),size=3)+
-  scale_x_continuous(name="Spacing (m)")+
-  scale_y_continuous(name="Mean kriging variance",limits=c(0.16,0.17))
+ggplot(data = df) +
+  geom_point(mapping = aes(x = spacing, y = MMKV), size = 3) +
+  scale_x_continuous(name = "Spacing (m)") +
+  scale_y_continuous(name = "Mean kriging variance", limits = c(0.16, 0.17))
 ```
 Compute tolerable grid spacing for a MMKV of 0.165.
 
 ```{r}
-print(spacing_tol <- approx(x=df$MMKV, y=df$spacing, xout=0.165)$y)
+print(spacing_tol <- approx(x = df$MMKV, y = df$spacing, xout = 0.165)$y)
 ```
 

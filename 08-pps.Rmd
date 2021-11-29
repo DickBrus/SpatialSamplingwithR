@@ -1,5 +1,9 @@
 # Sampling with probabilities proportional to size {#pps}
 
+```{r, echo = FALSE}
+evalFT <- FALSE
+```
+
 In simple random sampling the inclusion probabilities are equal for all population units. The advantage of this is simple and straightforward statistical inference. With equal inclusion probabilities the unweighted sample mean is an unbiased estimator of the spatial mean, i.e. the sampling design is *self-weighting*. However, in some situations equal probability sampling is not very efficient, i.e. given the sample size the precision of the estimated mean or total will be relatively low. An example is the following. In order to estimate the total area of a given crop in a country, a raster of square cells of, for instance, 1 km $\times$ 1 km is constructed and projected on the country. The square cells are the population units, and these units serve as the sampling units. Note that near the country border cells cross the border. Some of them may contain only a few hectares of the target population, the country under study. We do not want to select many of these squares with only a few hectares of the study area, as intuitively it is clear that this will result in a low precision of the estimated crop area. In such situation it can be more efficient to select units with probabilities proportional to the area of the target population within the squares, so that small units near the border have a smaller probability of being selected than interior units. Actually, the sampling units are not the square cells, but the pieces of land obtained by overlaying the cells and the GIS map of the country under study. As a consequence, the sampling units have unequal size. The sampling units of unequal size are selected by probabilities proportional to their size (pps).
 
 ```{block2, type = 'rmdnote'}
@@ -12,7 +16,7 @@ In this example the sampling units have an area. However, sampling with probabil
 
 Sampling units can be selected with probabilities proportional to their size *with* or *without* replacement. This distinction is immaterial for infinite populations, as in sampling points from an area. pps sampling with replacement (ppswr) is much easier to implement than pps sampling without replacement (ppswor). The problem with ppswor is that after each draw the selected unit is removed from the sampling frame, so that the sum of the size variable over all remaining units changes and as a result the draw-by-draw selection probabilities of the units.
 
-pps sampling is illustrated with the simulated map of poppy area per 5 km square in the province of Kandahar (Figure \@ref(fig:mapsKandahar)). The first six rows of the data frame are shown below. Variable `poppy` is the study variable, variable `agri` is the agricultural area within the 5 km squares, used as a size variable. The dataset is using a UTM projection (zone 41N) with WGS84 datum.
+pps sampling is illustrated with the simulated map of poppy area per 5 km square in the province of Kandahar (Figure \@ref(fig:mapsKandahar)). The first six rows of the data frame are shown below. Variable `poppy` is the study variable, variable `agri` is the agricultural area within the 5 km squares, used as a size variable. The data set is using a UTM projection (zone 41N) with WGS84 datum.
 
 ```{r}
 grdKandahar <- readRDS(file = "data/grdKandahar.rds")
@@ -67,8 +71,8 @@ Figure \@ref(fig:ppswrKandahar) shows the selected sampling units, plotted on a 
 
 ```{r ppswrKandahar, echo = FALSE, out.width = '100%', fig.cap = "Sample of size 40 from Kandahar, selected with probabilities proportional to agricultural area with replacement. Four units are selected twice, so that the number of distinct units is 36."}
 ggplot(data = grdKandahar) +
-  geom_raster(mapping = aes(x = s1, y = s2, fill = agri)) +
-  geom_tile(data = mysample, mapping = aes(x = x, y = y), colour = "white", width = 5, height = 5, size = 0.7, fill = NA) +
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = agri)) +
+  geom_tile(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), colour = "white", width = 5, height = 5, size = 0.7, fill = NA) +
   scale_fill_viridis_c(name = "Agriarea") +
   scale_y_continuous(name = "Northing (km)") +
   scale_x_continuous(name = "Easting (km)") +
@@ -98,7 +102,7 @@ The estimators of Equations \@ref(eq:HHTotalppswr) and \@ref(eq:VarHHTotalppswr)
 
 #### Exercises {-}
 
-1. Write an **R** script to select a pps with replacement sample from Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2) as a size variable. Use the 5 km $\times$ 5 km subgrid to reduce computing time (data are in `results`/grdAmazonia_5km.rds`).      
+1. Write an **R** script to select a pps with replacement sample from Eastern Amazonia to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2) as a size variable. Use the 5 km $\times$ 5 km subgrid to reduce computing time (data are in `results/grdAmazonia_5km.rds`).      
     +  The correlation of AGB and lnSWIR2 is negative. The first step is to compute an appropriate size variable, so that the larger the size variable, the larger the selection probability is. Multiply the lnSWIR2 values by -1. Then add a small value, so that the size variable becomes strictly positive.
     +  Select in a for-loop 10,000 times a ppswr sample of size 100 ($n=100$), and estimate from each sample the population mean of AGB with the pwr estimator (Hansen-Hurwitz estimator) and its sampling variance.  Compute the variance of the 10,000 estimated population means and the mean of the 10,000 estimated variances. Make a histogram of the 10,000 estimated means.
     +  Compute the true sampling variance of the $\pi$ estimator with simple random sampling with replacement and the same sample size.

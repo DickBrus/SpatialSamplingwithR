@@ -4,14 +4,14 @@ n <- 40
 N <- nrow(grdVoorst)
 set.seed(314)
 units <- sample(N, size = n, replace = TRUE)
-mysample <- grdVoorst[units,]
+mysample <- grdVoorst[units, ]
 print(mz <- mean(mysample$z))
 
-v_mz <- var(mysample$z)/n
+v_mz <- var(mysample$z) / n
 print(se_mz <- sqrt(v_mz))
 
 #compute lower and upper bound of 95% confidence interval using the t distribution
-margin95 <- qt(0.975, n-1, lower.tail=TRUE)*se_mz
+margin95 <- qt(0.975, n - 1, lower.tail = TRUE) * se_mz
 print(lower95 <- mz - margin95)
 print(upper95 <- mz + margin95)
 
@@ -20,7 +20,7 @@ print(mz_pop <- mean(grdVoorst$z))
 print(ind <- (mz_pop > lower95 & mz_pop < upper95))
 
 #compute 90% confidence interval
-margin90 <- qt(0.95, n-1, lower.tail=TRUE)*se_mz
+margin90 <- qt(0.95, n - 1, lower.tail = TRUE) * se_mz
 print(lower90 <- mz - margin90)
 print(upper90 <- mz + margin90)
 
@@ -36,5 +36,5 @@ mass_soil <- vol_soil * 1500
 print(tz <- mz * mass_soil * 10^-6)
 
 #Estimate the standard error of estimated total
-v_tz <- v_mz * mass_soil^2 *10^-12
+v_tz <- v_mz * mass_soil^2 * 10^-12
 print(se_tz <- sqrt(v_tz))

@@ -1,5 +1,9 @@
 # Balanced and well-spread sampling {#BalancedSpreaded}
 
+```{r, echo = FALSE}
+evalFT <- FALSE
+```
+
 In this chapter two related but fundamentally different sampling designs are described and illustrated. The similarity and difference are shortly outlined below, but hopefully will become more clear in following sections.
 
 Roughly speaking, for a balanced sample the sample means of covariates are equal to the population means of these covariates. When the covariates are linearly related to the study variable, this may yield a more precise estimate of the population mean or total of the study variable.
@@ -229,8 +233,8 @@ estimate_b <- function(z, X, c) {
     cXz_i <- c[i] * t(x) * z[i]
     cXz <- cXz + cXz_i
   }
-  b <- solve(cXX) %*% t(cXz)
-  b
+  b <- solve(cXX, t(cXz))
+  return(b)
 }
 ```
 
@@ -315,9 +319,9 @@ ggplot(data = estimates) +
 
 #### Exercises {-}
 
-1. Read the data of Eastern Amazonia (`results`/grdAmazonia_5km.rds`) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
+1. Read the data of Eastern Amazonia (`results/grdAmazonia_5km.rds`) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
     + Estimate the population mean.
-    + Estimate the standard error of the $\pi$ estimator. First, estimate the regression coefficients, using function `estimate_b` defined above, then compute the residuals, and finally compute the variance.    
+    + Estimate the standard error of the $\pi$ estimator. First estimate the regression coefficients, using function `estimate_b` defined above, then compute the residuals, and finally compute the variance.    
 2. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
 
 ### Stratified random sampling {#StratifiedsamplingasBalancedsampling}
@@ -375,7 +379,7 @@ In the next code chunk the inclusion probabilities are computed by $\pi_{hk}=n_h
 mypop <- mypop[, -4]
 ```
 
-```{r, eval = FALSE}
+```{r}
 N_h <- tapply(mypop$s1, INDEX = mypop$stratum, FUN = length)
 n_h <- rep(5, times = 4)
 n <- sum(n_h)
@@ -429,7 +433,7 @@ The advantage of selecting a stratified random sample by balancing the sample on
 
 ### Multi-way stratification {#Multiwaystratification}
 
-@Falorsi2008 describe how a multi-way stratified sample\index{Multi-way stratification} can be selected as a balanced sample. Multi-way stratification is of interest when one has multiple stratification variables, each stratification variable leading to several strata, so that the total number of cross-classification strata\index{Cross-classification stratum} becomes so large that the stratum sample sizes are strongly disproportional to their size, or even exceed the total sample size. For instance, suppose we have three maps with 4, 3, and 5 map units. Further, suppose that all combinations of map units are non-empty, so that we have $4 \times 3 \times 5=60$ combinations. We may not like to use all combinations (cross-classifications) as strata. The alternative is then to use the $4+3+5=12$ map units as strata.
+@Falorsi2008 describe how a multi-way stratified sample\index{Multi-way stratification} can be selected as a balanced sample. Multi-way stratification is of interest when one has multiple stratification variables, each stratification variable leading to several strata, so that the total number of cross-classification strata\index{Cross-classification stratum} becomes so large that the stratum sample sizes are strongly disproportional to their size, or even exceed the total sample size. For instance, suppose we have three maps with 4, 3, and 5 map units. Further, suppose that all combinations of map units are non-empty, so that we have 4 $\times$ 3 $\times$ 5 = 60 combinations. We may not like to use all combinations (cross-classifications) as strata. The alternative is then to use the $4+3+5=12$ map units as strata.
 
 The sample sizes of the marginal strata can be controlled using a design matrix with as many columns as there are strata. The units of an individual map used for stratification are referred to as marginal strata\index{Marginal stratum}. Each row $k = 1, \dots, N$ in the design matrix  $\mathbf{X}$ has as many non-zero values as we have maps, in entries corresponding to the cross-classification map unit of population unit $k$, and zeroes in the remaining entries. The non-zero value is the inclusion probability of that unit. Each column of the design matrix has non-zero values in entries corresponding to the population units in that marginal stratum and zeroes in all other entries.
 
@@ -748,12 +752,12 @@ ggplot(data = datfr) +
   scale_fill_viridis_d(guide = "none")
 ```
 
-GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. `data.frame` `grdKandahar` is first coerced to an `sf` object with function `st_as_sf` of package **sf** [@sf]. The dataset is using a UTM projection (zone 41N) with WGS84 datum. This projection is passed to argument `crs` (`crs = 32641`). Argument `sframe` of function `grts` specifies the sampling frame. The sample size is passed to argument `n_base`. Argument `seltype` is set to `proportional` to select units with probabilities proportional to an ancillary variable passed to argument `aux_var`. 
+GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. `data.frame` `grdKandahar` is first coerced to an `sf` object with function `st_as_sf` of package **sf** [@sf]. The data set is using a UTM projection (zone 41N) with WGS84 datum. This projection is passed to function `st_as_df` with argument `crs` (`crs = 32641`). Argument `sframe` of function `grts` specifies the sampling frame. The sample size is passed to function `grts` with argument `n_base`. Argument `seltype` is set to `proportional` to select units with probabilities proportional to an ancillary variable which is passed to function `grts` with argument `aux_var`. 
 
 ```{r GRTSppsKandahar}
 library(spsurvey)
 library(sf)
-sframe_sf <- st_as_sf(grdKandahar, coords = c("x", "y"), crs = 32641)
+sframe_sf <- st_as_sf(grdKandahar, coords = c("s1", "s2"), crs = 32641)
 set.seed(314)
 res <- grts(
   sframe = sframe_sf, n_base = 40, seltype = "proportional", aux_var = "agri")
@@ -824,7 +828,7 @@ with $p$ the number of balancing variables, $e_k$ the regression model residual 
 (\#eq:localmeanresdual)
 \end{equation}
 
-The variance estimator can be computed with functions `localmean_weight` and `localmean_var` of package **spsurvey** [@spsurvey].
+The variance estimator can be computed with functions `localmean_weight` and `localmean_var` of package **spsurvey** [@spsurvey].^[In the current version of **spsurvey** (version 5.0.1) these functions are not available, but these will be included in the next version. For the moment the two functions are included in the package **sswr**.]
 
 ```{r, echo=FALSE}
 source("Rscripts/localmean_weight.R")
@@ -846,8 +850,9 @@ v_mz <- localmean_var(z = e / pi, weight_1st = weights) / N^2
 
 ```{r, echo = FALSE, eval = FALSE}
 #Alternative for variance estimation, but nbh equals 4 and cannot be changed
+mysample$e <- mysample$AGB - zpred[units]
 mysample$weight <- 1 / pi
-mysample$siteID <- paste0("siteID", seq_len(mysample))
+mysample$siteID <- paste0("siteID", 1:nrow(mysample))
 res <- cont_analysis(mysample, vars = "e", siteID = "siteID", weight = "weight", xcoord = "x1", ycoord = "x2", statistics = "Mean")
 v_mz <- res$Mean$StdError
 ```
