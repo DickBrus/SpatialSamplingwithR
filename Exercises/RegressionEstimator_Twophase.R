@@ -1,4 +1,3 @@
-grdAmazonia <- readRDS(file = "../data/grdAmazonia.rds")
 grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 
 N <- nrow(grdAmazonia)

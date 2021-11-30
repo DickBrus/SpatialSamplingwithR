@@ -25,10 +25,6 @@ SelectPoint <- function(start, h, area) {
   xypoint
 }
 
-#Read field of interest
-
-grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
-
 #Make a copy of grdHunterValley. The copy is used later to select a main station. The data frame grdHunterValley is coerced to a SpatialPixelsDataFrame
 
 grid <- grdHunterValley

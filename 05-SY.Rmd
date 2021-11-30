@@ -7,7 +7,6 @@ evalFT <- FALSE
 A simple way of drawing probability samples whose units are spread uniformly over the study area, is systematic random sampling\index{Systematic random sampling} (SY). Systematic random sampling from a two-dimensional spatial population entails sampling on a regular grid\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type="regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. 
 
 ```{r}
-grdVoorst <- readRDS("data/grdVoorst.rds")
 set.seed(777)
 #change class of grdVoorst to SpatialPixelsDataFrame
 gridded(grdVoorst) <- ~s1 + s2
@@ -152,7 +151,7 @@ for (i in 1:number_of_samples) {
 save(mz_SY_HT, mz_SY_ratio, mz_SI, av_SI_mz, av_STSI_mz, av_Matern_mz, sampleSizes, file = "results/SYVoorst_square.RData")
 ```
 
-```{r samplesizeSY, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample size of systematic random samples from Voorst. The expected sample size is 40."}
+```{r samplesizeSY, echo = FALSE, fig.width=5, fig.cap = "Approximated sampling distribution of the sample size of systematic random samples from Voorst. The expected sample size is 40."}
 load(file = "results/SYVoorst_square.RData")
 
 df <- data.frame(size = sampleSizes)
@@ -492,7 +491,7 @@ Figure \@ref(fig:SamplingDistributionSY) shows the approximated sampling distrib
 
 (ref:SamplingDistributionSYlabel) Approximated sampling distribution of estimators of the mean SOM concentration (g kg^-1^) in Voorst, for systematic random sampling (square grid) and simple random sampling and an (expected) sample size of 40. With systematic random sampling both the $\pi$ estimator (SY.HT) and the ratio estimator (SY.ratio) are used in estimation.
 
-```{r SamplingDistributionSY,  echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionSYlabel)"}
+```{r SamplingDistributionSY,  echo = FALSE, fig.asp = .8, fig.width=5, fig.cap = "(ref:SamplingDistributionSYlabel)"}
 load(file = "results/SYVoorst_square.RData")
 estimates <- data.frame(mz_SY_HT, mz_SY_ratio, mz_SI)
 names(estimates) <- c("SY.HT", "SY.ratio", "SI")
@@ -515,7 +514,7 @@ The average of the 10,000 approximated variances treating the systematic sample 
 
 (ref:SamplingDistributionApproxVarSYlabel) Sampling distribution of the approximated standard error of the ratio estimator of the mean SOM concentration (g kg^-1^) in Voorst, with systematic random sampling (square grid) and an expected sample size of 40. Approximations are obtained by treating the systematic sample as a simple random sample (SI) or a stratified simple random sample (STSI), and with  Mat&eacute;rn's method (Mat).
 
-```{r SamplingDistributionApproxVarSY,  echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionApproxVarSYlabel)"}
+```{r SamplingDistributionApproxVarSY,  echo = FALSE, fig.asp = .8, fig.width=5, fig.cap = "(ref:SamplingDistributionApproxVarSYlabel)"}
 estimates <- data.frame(SI = sqrt(av_SI_mz), STSI = sqrt(av_STSI_mz),
                         Mat = sqrt(av_Matern_mz))
 df <- estimates %>% pivot_longer(., cols = c("SI", "STSI", "Mat"))
@@ -556,7 +555,7 @@ The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`
 #### Exercises {-}  
 
 1. One solution to the problem of variance estimation with systematic random sampling is to select multiple systematic random samples independently from each other. So, for instance, instead of one systematic random sample with an expected sample size of 40, we may select two systematic random samples with an expected size of 20.  
-    + Write an **R** script to select two systematic random samples (random square grids) both with an expected size of 20 from Voorst (data are in `data/Voorst.rds`).
+    + Write an **R** script to select two systematic random samples (random square grids) both with an expected size of 20 from Voorst.
     + Use each sample to estimate the population mean, so that you obtain two estimated means. Overlay the points of each sample with `grdVoorst`, using function `over` and extract the $z$-values.
     + Use the two estimated means to estimate the sampling variance of the estimator of the mean for systematic random sampling *with an expected sample size of 20*.
     + Use the two estimated means to compute a single, final estimate of the population mean, as estimated from *two systematic random samples, each with an expected sample size of 20*. 

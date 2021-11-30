@@ -1,5 +1,4 @@
 library(sampling)
-grdVoorst <- readRDS("../data/grdVoorst.rds")
 
 #compute total number of pixels per stratum and stratum weights (relative size)
 N_h <- tapply(grdVoorst$z, INDEX = grdVoorst$stratum, FUN = length)

@@ -5,10 +5,6 @@ library(matrixcalc)
 # Annealing functions
 source("../Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 
-#Read data with coordinates and other attributes of fine grid (discretisation of study area)
-
-grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
-
 gridded(grdHunterValley) <- ~ s1 + s2
 candi <- spsample(grdHunterValley, type = "regular", cellsize = c(50, 50))
 candi <- as.data.frame(candi)

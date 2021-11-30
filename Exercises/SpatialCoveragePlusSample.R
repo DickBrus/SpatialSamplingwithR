@@ -1,12 +1,8 @@
 library(spcosa)
 library(sp)
 
-#Read data with coordinates and other attributes of fine grid (discretisation of study area)
-
-grd <- readRDS(file = "../data/grdHunterValley.rds")
-
-head(grd)
-N <- nrow(grd)
+head(grdHunterValley)
+N <- nrow(grdHunterValley)
 
 # Choose number of locations of spatial coverage sample
 
@@ -14,14 +10,14 @@ n <- 90
 
 #Compute clusters (geostrata) and select centres
 
-coordinates(grd) <- ~ s1 + s2
-gridded(grd) <- TRUE
+coordinates(grdHunterValley) <- ~ s1 + s2
+gridded(grdHunterValley) <- TRUE
 set.seed(314)
-myStrata <- stratify(grd, nStrata = n, equalArea = FALSE, nTry = 10)
+myStrata <- stratify(grdHunterValley, nStrata = n, equalArea = FALSE, nTry = 10)
 mySCsample <- spsample(myStrata)
 
 # Compute average distance between neighbouring points of spatial coverage sample
-gridTopology <- as(getGridTopology(grd), "data.frame")
+gridTopology <- as(getGridTopology(grdHunterValley), "data.frame")
 A <- N *  gridTopology$cellsize[1]^2
 d <- sqrt(A / n)
 

@@ -1,9 +1,6 @@
 library(fields)
 library(ggplot2)
 
-# read data
-grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
-
 n <- 20
 set.seed(314)
 covars <- c("cti", "ndvi", "elevation_m")

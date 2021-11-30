@@ -57,8 +57,6 @@ Note that the separation distances are in descending order. The largest separati
 
 ```{r}
 library(sp)
-grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
-#make a copy of grdHunterValley
 grid <- grdHunterValley
 gridded(grdHunterValley) <- ~ s1 + s2
 lags <- c(2000, 1000, 500, 250)
@@ -392,10 +390,9 @@ with $\mathbf{A}$ the correlation matrix of the sampling points, $\frac{\partial
 
 As an illustration I selected a simple random sample of 100 points from Hunter Valley. A matrix with distances between the points of a sample is computed. Preliminary values for the semivariogram parameters $\xi$ (ratio of spatial dependence\index{Ratio of spatial dependence}) and $\phi$ (distance parameter\index{Distance parameter}) are obtained by visual inspection of the sample semivariogram, and the  **gstat** [@peb04] function `variogramLine` is used to compute the correlation matrix.
 
-```{r, echo=FALSE}
-grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
+```{r, echo = FALSE}
+grdHunterValley <- as(grdHunterValley, "data.frame")
 ```
-
 
 ```{r}
 library(sp)
@@ -428,7 +425,7 @@ for (i in seq_len(length(thetas))) {
 }
 ```
 
-Finally, the Fisher information matrix is computed using Equation \@ref(eq:FisherInformation). We do not need to compute the inverse of the Fisher information matrix, because the determinant of the inverse of a matrix is equal to the inverse of the determinant of the (not inverted) matrix. The determinant is computed with function `determinant`. The trace of the matrix is computed with function `matrix.trace` of package **matrixcalc** [@matrixcalc].
+Finally, the Fisher information matrix is computed using Equation \@ref(eq:FisherInformation). We do not need to compute the inverse of the Fisher information matrix, because the determinant of the inverse of a matrix is equal to the inverse of the determinant of the (not inverted) matrix. The determinant is computed with function `determinant`.
 
 ```{r, echo = FALSE, eval = FALSE}
 library(matrixcalc)
@@ -436,7 +433,7 @@ invA <- solve(A)
 I <- matrix(0, length(thetas), length(thetas))
 for (i in seq_len(length(thetas))) {
   for (j in i:length(thetas)) {
-    I[i, j] <- I[j, i] <- 0.5 * matrix.trace(invA %*% dA[[i]] %*% invA %*% dA[[j]])
+    I[i, j] <- I[j, i] <- 0.5 * sum(diag(invA %*% dA[[i]] %*% invA %*% dA[[j]])
   }
 }
 invI <- solve(I)
@@ -451,7 +448,7 @@ for (i in seq_len(length(thetas))) {
   m_i <- solve(A, dA[[i]])
   for (j in i:length(thetas)) {
     m_j <- solve(A, dA[[j]])
-    I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+    I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
   }
 }
 logdet0 <- -determinant(I, logarithm = TRUE)$modulus
@@ -459,10 +456,18 @@ logdet0 <- -determinant(I, logarithm = TRUE)$modulus
 
 The joint uncertainty about the semivariogram parameters, as quantified by the log of the determinant of the inverse of the information matrix, equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the spatial pattern of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note that a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
 
-Function `optimUSER` of package **spsann** can be used to search for the sampling locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). Package **spsann** cannot deal with the 22,124 candidate grid nodes of Hunter Valley; these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. The objective function `logdet` is defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R). Argument `points` specifies the size of the sample for variogram estimation. A simple random sample of size 100 is used as an initial sample (but this is not the simple random sample used above to illustrate the computations). Argument `model`  of function `optimUSER` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. Argument `perturbation` specifies how much the semivariogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
+Function `optimUSER` of package **spsann** can be used to search for the sampling locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). Package **spsann** cannot deal with the 22,124 candidate grid nodes of Hunter Valley; these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. 
+
+<!-- The objective function `logdet` is defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R). -->
+
+The sample size for estimation of the semivariogram is passed to function `optimUSER` with argument `points`. A simple random sample of size 100 is used as an initial sample (but this is not the simple random sample used above to illustrate the computations). The objective function to be minimised is passed to function `optimUSER` with argument `fun`. The objective function `logdet` is defined in package **sswr**.  Argument `model` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. Argument `perturbation` specifies how much the semivariogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
+
+```{r, echo = FALSE}
+source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
+```
+
 
 ```{r, eval = FALSE}
-source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 gridded(grdHunterValley) <- ~ s1 + s2
 candi <- spsample(grdHunterValley, type = "regular", cellsize = c(50, 50))
 candi <- as.data.frame(candi)
@@ -507,9 +512,8 @@ The first step in designing a sample for semivariogram estimation using VKV as a
 To optimise the sampling pattern of the first sampling round for variogram estimation, the population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred, square grid of 101 points, the evaluation sample. (In the code chunk below `n=100` is used in function `spsample`, but actually 101 locations are selected.) 
 
 ```{r, echo=FALSE}
-grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
+grdHunterValley <- as (grdHunterValley, "data.frame")
 ```
-
 
 ```{r}
 library(spcosa)
@@ -596,10 +600,15 @@ MVKV0 <- mean(VKV)
 
 For the simple random sample the square root of MVKV equals `r round(sqrt(MVKV0),3)`. The mean kriging variance (MKV) at these points equals `r round(mean(var),3)`, so the uncertainty about the kriging variance is substantial. Hereafter we will see how much the VKV can be reduced by optimising the sampling pattern with spatial simulated annealing.
 
-As for logdet, the sample with minimum value for MVKV can be searched for using **spsann** function `optimUSER`. The objective function `MVKV` is defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R). Argument `points` specifies the size of the sample for semivariogram estimation. A simple random sample of size 100 is used as an initial sample. Argument `psample` is used to  specify the sample used for prediction at the evaluation points (after the second round of sampling). Argument `esample` is to specify the sample with evaluation points for estimating MVKV.
+ <!-- **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R).-->
+ 
+As for logdet, the sample with minimum value for MVKV can be searched for using **spsann** function `optimUSER`. The objective function `MVKV` is defined in package **sswr**. Argument `points` specifies the size of the sample for semivariogram estimation. A simple random sample of size 100 is used as an initial sample. Argument `psample` is used to  specify the sample used for prediction at the evaluation points (after the second round of sampling). Argument `esample` is to specify the sample with evaluation points for estimating MVKV.
+
+```{r, echo = FALSE}
+source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
+```
 
 ```{r, eval = FALSE}
-source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 schedule <- scheduleSPSANN(
   initial.acceptance = 0.8,
   initial.temperature = 0.0004, temperature.decrease = 0.8,
@@ -734,7 +743,7 @@ for (i in seq_len(length(thetas))) {
   m_i <- solve(A, dA[[i]])
   for (j in i:length(thetas)) {
     m_j <- solve(A, dA[[j]])
-    I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+    I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
   }
 }
 
@@ -826,10 +835,15 @@ MEAC0 <- mean(EAC)
 
 For the spatial coverage sample of 90 points supplemented by a simple random sample of 10 points, MAKV equals `r round(MAKV0,3)` and MEAC equals `r round(MEAC0,3)`.
 
-The sample can be optimised with **spsann** function `optimUSER`. Argument `points` is a list containing a data frame (or matrix) with the coordinates of the fixed points (passed to sub-argument `fixed`) and an integer of the number of supplemental points of which the locations are optimised (passed to sub-argument `free`). As already stressed above an important difference with Section \@ref(samplingforvariogram) is that the free and the fixed sample are merged and used together both for estimation of the semivariogram and for  prediction. The objective functions `MAKV` and `MEAC` are defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R).
+<!--**R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R).-->
+
+The sample can be optimised with **spsann** function `optimUSER`. Argument `points` is a list containing a data frame (or matrix) with the coordinates of the fixed points (passed to sub-argument `fixed`) and an integer of the number of supplemental points of which the locations are optimised (passed to sub-argument `free`). As already stressed above an important difference with Section \@ref(samplingforvariogram) is that the free and the fixed sample are merged and used together both for estimation of the semivariogram and for  prediction. The objective functions `MAKV` and `MEAC` are defined in package **sswr**.
+
+```{r, echo = FALSE}
+source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
+```
 
 ```{r, eval = FALSE}
-source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 schedule <- scheduleSPSANN(
   initial.acceptance = 0.8,
   initial.temperature = 0.008, temperature.decrease = 0.8,
@@ -851,9 +865,7 @@ res <- optimUSER(
 save(res, mySCsample, myStrata, file = "results/MBSample_MAKV_phi200nug02_HunterValley.RData")
 ```
 
-
 ```{r, echo = FALSE, eval = FALSE}
-source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
 schedule <- scheduleSPSANN(
   initial.acceptance = 0.8,
   initial.temperature = 0.01,
@@ -994,7 +1006,7 @@ for (i in seq_len(length(thetas))) {
   m_i <- solve(A, dA[[i]])
   for (j in i:length(thetas)) {
     m_j <- solve(A, dA[[j]])
-    I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+    I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
   }
 }
 

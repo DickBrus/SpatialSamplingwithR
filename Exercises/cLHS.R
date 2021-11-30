@@ -1,8 +1,6 @@
 library(clhs)
 library(ggplot2)
 
-#load grid with covariates
-grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 names(grdHunterValley)
 
 n <- 50

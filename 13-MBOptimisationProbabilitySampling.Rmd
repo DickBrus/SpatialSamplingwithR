@@ -205,7 +205,6 @@ This approach is illustrated with the western part of the Amhara region in Ethio
 
 ```{r}
 library(geoR)
-sampleAmhara <- readRDS(file = "data/Sample_Amhara.rds")
 sampleAmhara <- sampleAmhara %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 dGeoR <- as.geodata(obj = sampleAmhara, header = TRUE,
@@ -240,7 +239,6 @@ Note that by first drawing 100 samples, followed by simulating values of $z$ at 
 With systematic random sampling the sample mean is an approximately unbiased estimator of the population mean (Chapter \@ref(SY)). Therefore, of each sample the mean of the simulated values is computed, using function `tapply`. Finally, the variance of the 100 sample means is computed. This is a conditional variance, conditional on the simulated values. In the code chunk below the whole procedure is repeated 100 times ($R=100$), leading to 100 conditional variances of sample means.
 
 ```{r MonteCarloEthiopia, eval = FALSE}
-grdAmhara <- readRDS(file = "data/grdAmhara.rds")
 grdAmhara <- grdAmhara %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 gridded(grdAmhara) <- ~ s1 + s2
@@ -269,6 +267,7 @@ for (i in 1:R) {
   m_zsim <- tapply(zsim$sim1, INDEX = mySYs$sample, FUN = mean)
   v_mzsim_SY[i] <- var(m_zsim)
 }
+grdAmhara <- as(grdAmhara, "data.frame")
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
@@ -294,9 +293,6 @@ In the next code chunk 100 compact geostrata (see Section \@ref(geostrata)) are 
 <!--Projection attributes of the file with covariates: crs <- st_crs("+proj=laea +ellps=WGS84  +lat_0=5 +lon_0=20 +no_defs")-->
 
 ```{r}
-grdAmhara <- readRDS(file = "data/grdAmhara.rds")
-grdAmhara <- grdAmhara %>%
-  mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 set.seed(314)
 res <- kmeans(
   grdAmhara[, c("s1", "s2")], iter.max = 1000, centers = 100, nstart = 100)
@@ -365,7 +361,7 @@ The Bayesian approach is illustrated with a case study on predicting the samplin
 
 (ref:qqplotMellelabel) Q-Q plot of NO~3~-N of field Melle.
 
-```{r qqplotMelle, fig.asp=0.7, fig.cap="(ref:qqplotMellelabel)"}
+```{r qqplotMelle, fig.asp=0.7, fig.width = 5, fig.cap="(ref:qqplotMellelabel)"}
 mydata <- read.csv("data/Sample_Melle.csv", header = TRUE)
 ggplot(mydata, aes(sample = N)) +
   geom_qq() +
@@ -451,7 +447,7 @@ Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled b
 
 (ref:MCMCsampleVariogramlnNlabel) Semivariograms of the natural log of NO~3~-N for field Melle obtained by MCMC sampling from posterior distribution of the estimated semivariogram parameters.
 
-```{r MCMCsampleVariogramlnN, echo = FALSE, fig.asp = 0.7, fig.cap = "(ref:MCMCsampleVariogramlnNlabel)"}
+```{r MCMCsampleVariogramlnN, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:MCMCsampleVariogramlnNlabel)"}
 MCMCsample <- readRDS(file = "results/MCMC_Melles.rds")
 d <- 1:150
 semivar <- matrix(nrow = length(d), ncol = 20)
@@ -583,7 +579,7 @@ The sampling variance shows quite strong variation among the maps. The histogram
 
 (ref:histogramNMellelabel) Histogram of simulated sampling variances of the $\pi$ estimator of the mean of NO~3~-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum.
 
-```{r histogramNMelle, echo = FALSE, fig.asp = 0.7, fig.cap = "(ref:histogramNMellelabel)"}
+```{r histogramNMelle, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:histogramNMellelabel)"}
 V <- readRDS(file = "results/SimulatedVariances_Melle.rds")
 ggplot() +
   geom_histogram(aes(x = V), binwidth = 0.2, fill = "black", alpha = 0.5, colour = "black") +
@@ -694,7 +690,7 @@ lm_SOM <- lm(SOM_A_hori ~ dem, data = mysample)
 
 In fitting a linear regression model we assume that the relation is linear, the residual variance is constant (independent of the fitted value), and the residuals have a normal distribution. These assumptions are checked with a scatter plot of the residuals against the fitted value and a Q-Q plot\index{Q-Q plot}, respectively (Figure \@ref(fig:checkassumptions)).
 
-```{r checkassumptions, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "Scatter plot of residuals against fitted value and Q-Q plot of residuals, for a simple linear regression model of the SOM concentration in Xuancheng, using elevation as a predictor."}
+```{r checkassumptions, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Scatter plot of residuals against fitted value and Q-Q plot of residuals, for a simple linear regression model of the SOM concentration in Xuancheng, using elevation as a predictor."}
 fit <- fitted(lm_SOM)
 e <- residuals(lm_SOM)
 df <- data.frame(fit = fit, resid = e)
@@ -713,7 +709,7 @@ grid.arrange(plt1, plt2, nrow = 1)
 
 The scatter plot shows that the first assumption is realistic. No pattern can be seen: at all fitted values the residuals are scattered around the horizontal line. However, the second and third assumption are questionable: the residual variance clearly increases with the fitted value, and the distribution of the residuals has positive skew, i.e. it has a long upper tail. There clearly is some evidence that these two assumptions are violated. Possibly these problems can be solved by fitting a model for the natural log of the SOM concentration.
 
-```{r checkassumptions2, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "Scatter plot of residuals against fitted value and Q-Q plot of residuals, for a simple linear regression model of the natural log of the SOM concentration in Xuancheng, using elevation as a predictor."}
+```{r checkassumptions2, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Scatter plot of residuals against fitted value and Q-Q plot of residuals, for a simple linear regression model of the natural log of the SOM concentration in Xuancheng, using elevation as a predictor."}
 mysample$lnSOM <- log(mysample$SOM_A_hori)
 lm_lnSOM <- lm(lnSOM ~ dem, data = mysample)
 e <- residuals(lm_lnSOM)
@@ -735,7 +731,6 @@ grid.arrange(plt1, plt2, nrow = 1)
 The variance of the residuals is more constant (Figure \@ref(fig:checkassumptions2)), and the Q-Q plot is improved, although we now have too many strong negative residuals for a normal distribution. I proceed with the model for natural-log transformed SOM (lnSOM). The fitted linear regression model is used to predict lnSOM at the nodes of a 200 m $\times$ 200 m discretisation grid.
 
 ```{r}
-grdXuancheng <- readRDS(file = "data/grdXuancheng.rds")
 res <- predict(lm_lnSOM, newdata = as(grdXuancheng, "data.frame"), se.fit = TRUE)
 grdXuancheng <- within(grdXuancheng, {
   lnSOMpred <- res$fit; varpred <- res$se.fit^2})

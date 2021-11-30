@@ -1,5 +1,3 @@
-grdVoorst <- readRDS("../data/grdVoorst.rds")
-
 n <- 40
 N <- nrow(grdVoorst)
 set.seed(314)

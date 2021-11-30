@@ -1,5 +1,3 @@
-grdSpainPortugal <- readRDS(file = "../data/grdSpainPortugal.rds")
-
 
 n <- 100 #size of simple random samples per time
 t <- 1:4 #sampling times (unit of time is five years)

@@ -16,7 +16,7 @@ Balanced sampling is a sampling method that exploits one or more quantitative co
 
 Let me illustrate balanced sampling with a small simulation study. The simulated population shown in Figure \@ref(fig:simpleexample) shows a linear trend from West to East and besides a trend from South to North. Due to the West-East trend the simulated study variable $z$ is correlated with the covariate Easting and, due to the South-North trend, also with the covariate Northing. To estimate the population mean of the simulated study variable, intuitively  it is attractive to select a sample with an average of the Easting coordinate that is equal to the population mean of Easting (which is 10). Figure \@ref(fig:simpleexample) (subfigure on the left) shows such a sample of size four; we say that the sample is `balanced' on the covariate Easting. The sample in the subfigure on the right is balanced on Easting as well as on Northing.  
 
-```{r simpleexample, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on Easting (E) and on Easting and Northing (E and N)."}
+```{r simpleexample, echo = FALSE, out.width = "100%", fig.cap = "Sample balanced on Easting (E) and on Easting and Northing (E and N)."}
 library(sampling)
 library(gstat)
 #define residual variogram for simulation
@@ -110,7 +110,7 @@ Figure \@ref(fig:scatterplotsqerror) shows for 1,000 simple random samples the s
 
 (ref:scatterplotsqerrorlabel) Squared error in the estimated population mean of $z$ against the difference between the sample mean and the population mean of Easting, for 1,000 simple random samples of size four selected from the population shown in Figure \@ref(fig:simpleexample).
 
-```{r scatterplotsqerror, echo = FALSE, fig.cap = "(ref:scatterplotsqerrorlabel)"}
+```{r scatterplotsqerror, echo = FALSE, fig.width = 5, fig.cap = "(ref:scatterplotsqerrorlabel)"}
 nsam <- 1000
 n <- 4
 mz_sample <- mx_sample <- numeric(length = nsam)
@@ -192,16 +192,20 @@ Working this out for balanced sampling without replacement with equal inclusion 
 
 @Deville2005 give several formulas for computing the weights $c_k$, one of which is $c_k = (1-\pi_k)$.
 
-Balanced sampling is now illustrated with aboveground biomass (AGB) data of Eastern Amazonia, see Figure \@ref(fig:mapsAmazonia). Log-transformed short-wave infrared radiation (lnSWIR2) is used as a balancing variable. The `samplecube` function of the **sampling** package [@Tille2016] implements the cube algorithm. Argument `X` of this function specifies the matrix of ancillary variables on which the sample must be balanced. The first column of this matrix is filled with ones, so that the sample size is fixed.
+Balanced sampling is now illustrated with aboveground biomass (AGB) data of Eastern Amazonia, see Figure \@ref(fig:mapsAmazonia). Log-transformed short-wave infrared radiation (lnSWIR2) is used as a balancing variable. The `samplecube` function of the **sampling** package [@Tille2016] implements the cube algorithm. Argument `X` of this function specifies the matrix of ancillary variables on which the sample must be balanced. The first column of this matrix is filled with ones, so that the sample size is fixed. To speed up the computations a 5 km $\times$ 5 km subgrid of `grdAmazonia` is used.
 
 ```{block2, type='rmdnote'}
 Recall that a sample is balanced on a covariate $x$ if the $\pi$ estimate of the population total of $x$ is equal to the known true population total of $x$ (Equation \@ref(eq:generaldefinitionbalanced)). If we know the total number of units in a population, $N$, we can balance the sample on this known total using a constant with value 1 as a balancing variable. Only for samples of size $n$ the $\pi$ estimate of the total number of population units equals $N$: $\sum_{k \in \mathcal{S}} 1/\pi_k = N$ for samples of size $n$.
 ```
 
 Equal inclusion probabilities are used, i.e. for all population units the inclusion probability equals $n/N$.
+
+```{r, echo = FALSE}
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+```
+
  
 ```{r}
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
 grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 library(sampling)
 N <- nrow(grdAmazonia)
@@ -252,7 +256,7 @@ v_mz <- v_tz / N^2
 
 Figure \@ref(fig:BalancedSampleAmazonia) shows the selected balanced sample. Note the spatial clustering of some units. The estimated population mean (as estimated by the sample mean) of AGB equals `r as.character(round(mz,1))` 10^9^ kg ha^-1^. The population mean of AGB equals `r as.character(round(mean(grdAmazonia$AGB),1))` 10^9^ kg ha^-1^. The standard error of the estimated mean equals `r as.character(round(sqrt(v_mz),1))` 10^9^ kg ha^-1^.
 
-```{r BalancedSampleAmazonia, echo = FALSE, out.width = '100%', fig.cap = "Sample balanced on lnSWIR2 from Eastern Amazonia."}
+```{r BalancedSampleAmazonia, echo = FALSE, out.width = "100%", fig.cap = "Sample balanced on lnSWIR2 from Eastern Amazonia."}
 ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnSWIR2)) +
   geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
@@ -294,7 +298,7 @@ save(mz, mz_SI, v_mz, mx_sample, file = "results/Balanced_Amazonia.RData")
 
 (ref:SamplingDistributionBalancedlabel) Approximated sampling distribution of the $\pi$ estimator of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia, with balanced sampling, balanced on lnSWIR2 and using equal inclusion probabilities, and simple random sampling without replacement (SI) of 100 units.
 
-```{r SamplingDistributionBalanced, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionBalancedlabel)"}
+```{r SamplingDistributionBalanced, echo = FALSE, fig.width = 5, fig.asp = .8, fig.cap = "(ref:SamplingDistributionBalancedlabel)"}
 load(file = "results/Balanced_Amazonia.RData")
 estimates <- data.frame(mz, mz_SI, v_mz, mx_sample)
 names(estimates)[c(1, 2)] <- c("Balanced", "SI")
@@ -309,7 +313,7 @@ ggplot(data = df) +
 
 The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r as.character(round(var(estimates$Bal),1))` (10^9^ kg ha^-1^)^2^. The gain in precision compared to simple random sampling, equals `r as.character(round(var(estimates$SI)/var(estimates$Bal),3))`, so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r as.character(round(mean(estimates$v_mz),1))` (10^9^ kg ha^-1^)^2^, indicating that the approximated variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r round(mean(grdAmazonia$lnSWIR2),3)`. The sample mean of lnSWIR2 varies a bit among the samples. Figure \@ref(fig:histSampleMeanSWIR) shows the approximated sampling distribution of the sample mean of lnSWIR2. In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
 
-```{r histSampleMeanSWIR, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample mean of balancing variable lnSWIR2 in Eastern Amazonia with balanced sampling of size 100 and equal inclusion probabilities."}
+```{r histSampleMeanSWIR, echo = FALSE, fig.width = 5, fig.cap = "Approximated sampling distribution of the sample mean of balancing variable lnSWIR2 in Eastern Amazonia with balanced sampling of size 100 and equal inclusion probabilities."}
 ggplot(data = estimates) +
   geom_histogram(aes(x = mx_sample, y = ..density..), binwidth = 0.0025, fill = "black", alpha = 0.5, color = "black") +
   geom_density(aes(x = mx_sample, y = ..density..), lwd = 1, adjust = 2) +
@@ -319,8 +323,9 @@ ggplot(data = estimates) +
 
 #### Exercises {-}
 
-1. Read the data of Eastern Amazonia (`results/grdAmazonia_5km.rds`) to select a sample of size 100 balanced on lnSWIR2 and Terra_PP, using equal inclusion probabilities for all units.   
-    + Estimate the population mean.
+1. Select a sample of size 100 balanced on lnSWIR2 and Terra_PP from Eastern Amazonia, using equal inclusion probabilities for all units.   
+    + First select a subgrid of 5 km $\times$ 5 km using function `spsample`, see Chapter \@ref(SY).  
+    + Estimate the population mean.  
     + Estimate the standard error of the $\pi$ estimator. First estimate the regression coefficients, using function `estimate_b` defined above, then compute the residuals, and finally compute the variance.    
 2. Spatial clustering of sampling units is not avoided in balanced sampling. What effect do you expect of this spatial clustering on the precision of the estimated mean? Can you think of a situation where this effect does not occur?   
 
@@ -345,7 +350,7 @@ Much in the same way as we controlled in the previous subsection the sample size
 
 The first four rows refer to the four leftmost bottom row population units in Figure \@ref(fig:BalancedSampleCategorical). These units belong to class A, which explains that the first column for these units contain ones. The other three columns for these rows contain all zeroes. The fifth and sixth unit belong to stratum B, so that the second column for these rows contain ones, and so on. The final row is the upper-right sampling unit in stratum D, so the first three columns contain zeroes, and the fourth column is filled with a one. The sum of the indicators in the columns is the total number of population units in the strata.
 
-```{r BalancedSampleCategorical, echo = FALSE, fig.cap = "Sample balanced on a categorical variable with four classes."}
+```{r BalancedSampleCategorical, echo = FALSE, fig.width = 5, fig.cap = "Sample balanced on a categorical variable with four classes."}
 s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
@@ -439,7 +444,7 @@ The sample sizes of the marginal strata can be controlled using a design matrix 
 
 Two-way stratified random sampling is illustrated with a simulated population of 400 units (Figure \@ref(fig:TwowaystratifiedPopulation)). Figure \@ref(fig:Twowaystratifiedsample) shows two classifications of the population units. Classification A consists of four classes (map units), classification B of three classes. Instead of using $4 \times 3 = 12$ cross-classifications as strata in random sampling, only $4+3=7$ marginal strata are used in two-way stratified random sampling.
 
-```{r TwowaystratifiedPopulation, echo = FALSE, fig.cap = "Simulated population, used for illustration of two-way stratified random sampling."}
+```{r TwowaystratifiedPopulation, echo = FALSE, fig.width = 5, fig.cap = "Simulated population, used for illustration of two-way stratified random sampling."}
 s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
@@ -578,7 +583,6 @@ Inclusion probabilities are computed with function `inclusionprobabilities` of p
 ```{r}
 library(BalancedSampling)
 library(sampling)
-grdKandahar <- readRDS(file = "data/grdKandahar.rds")
 n <- 40
 pi <- inclusionprobabilities(grdKandahar$agri, n)
 X <- cbind(grdKandahar$s1, grdKandahar$s2)
@@ -710,7 +714,7 @@ start <- round(runif(1) * interval, 2)
 mysys <- c(start, 1:(n - 1) * interval + start)
 ```
 
-```{r GRTS, echo = FALSE, fig.asp = .15, fig.cap = "Systematic random sample along a line with equal inclusion probabilities."}
+```{r GRTS, echo = FALSE, fig.asp = .15, out.width = "100%", fig.cap = "Systematic random sample along a line with equal inclusion probabilities."}
 cellbound <- c(0, cumsum(size))
 #compute width of cells
 w <- diff(cellbound)
@@ -732,7 +736,7 @@ ggplot(data = datfr) +
 ```
 Figure \@ref(fig:GRTSpps) shows a systematic random sample along a line with unequal inclusion probabilities. The inclusion probabilities are proportional to a size variable, with values 1, 2, 3, or 4. The selected population units are the units in subcells 10, 20, 31, 01, and 02.
 
-```{r GRTSpps, echo = FALSE, fig.asp = .15, fig.cap = "Systematic random sample along a line with inclusion probabilities proportional to size."}
+```{r GRTSpps, echo = FALSE, fig.asp = .15, out.width = "100%", fig.cap = "Systematic random sample along a line with inclusion probabilities proportional to size."}
 size <- sample(4, size = N, replace = TRUE)
 n <- 5
 interval <- sum(size) / n
@@ -834,7 +838,6 @@ The variance estimator can be computed with functions `localmean_weight` and `lo
 source("Rscripts/localmean_weight.R")
 source("Rscripts/localmean_var.R")
 ```
-
 
 ```{r}
 library(spsurvey)

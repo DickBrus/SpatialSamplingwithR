@@ -12,8 +12,7 @@ Grids can be selected with function `spsample` of package **sp** [@Pebesma2005].
 
 ```{r grid}
 library(sp)
-grdVoorst <- readRDS("data/grdVoorst.rds")
-gridded(grdVoorst) <- ~s1 + s2
+gridded(grdVoorst) <- ~ s1 + s2
 mysample <- spsample(
   x = grdVoorst, type = "regular", cellsize = c(200, 200),
   offset = c(0.5, 0.5)) %>% as(., "data.frame")
@@ -36,7 +35,7 @@ The number of grid points in this example equals `r n`. Nodes of the square grid
 
 #### Exercises {-}
 
-1. Write an **R** script to select a square grid of size 100 from West-Amhara in Ethiopia. Use `data.frame` `grdAmhara`, stored in `data/grdAmhara.rds`, as a sampling frame. Use a fixed starting point of the grid, i.e. do not select the grid randomly.   
+1. Write an **R** script to select a square grid of size 100 from West-Amhara in Ethiopia. Use `data.frame` `grdAmhara` of package **sswr** as a sampling frame. Use a fixed starting point of the grid, i.e. do not select the grid randomly.   
     +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?
     +  Select a square grid with a spacing of 10.2 km, and compute the sample size.
     +  Write a for-loop to select 200 times a square grid of, on average, 100 points with random starting point. Set a seed so that the result can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size, and plot a histogram.
@@ -126,11 +125,10 @@ In Figure \@ref(fig:spatialcoveragesamplefromsquare) the clusters are of equal s
 Spatial coverage samples can be computed with package **spcosa** [@walvoort2010], using functions `stratify` and `spsample`, see code chunk below. Argument `nTry` of function ` stratify` specifies the number of initial stratifications in k-means clustering. Note that function `spsample` of package **spcosa** without optional argument `n` selects non-randomly one point in each cluster, being the centre. Figure \@ref(fig:spatcovVoorst) shows a spatial coverage sample of the same size as the regular grid in study area Voorst (Figure \@ref(fig:gridVoorst)). Note that the undersampled area in the centre of the study area is now covered by a sampling point.
 
 ```{r}
-grdVoorst <- readRDS("data/grdVoorst.rds")
 library(spcosa)
 n <- 115
 set.seed(314)
-gridded(grdVoorst) <- ~s1 + s2
+gridded(grdVoorst) <- ~ s1 + s2
 mystrata <- spcosa::stratify(
   grdVoorst, nStrata = n, equalArea = FALSE, nTry = 10)
 mysample <- spsample(mystrata)
@@ -206,9 +204,7 @@ Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for West-A
 
 <!--Projection attributes of the file with legacy sample: crs <- st_crs("+proj=laea +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")-->
 
-```{r spatialinfillEthiopia, fig.cap = "Spatial infill sample of 100 points from West-Amhara."}
-grdAmhara <- readRDS(file = "data/grdAmhara.rds")
-sampleAmhara <- readRDS(file = "data/Sample_Amhara.rds")
+```{r spatialinfillEthiopia, out.width="100%", fig.cap = "Spatial infill sample of 100 points from West-Amhara."}
 gridded(grdAmhara) <- ~s1 + s2
 n <- 100
 ntot <- n + nrow(sampleAmhara)
@@ -230,7 +226,7 @@ mysample_new <- mysample[units, ]
 ```
 
 #### Exercises {-}
-6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Use the iPSM sample in `data.frame` `data/Sample_Xuancheng.csv` as a legacy sample. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. Use the raster file `data/Elevation_Xuancheng.tif` as a discretisation of the study area. This file can be read with function `rast` of package **terra**. 
+6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Use the iPSM sample in `data.frame` `sampleXuancheng` of package **sswr** as a legacy sample. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. Use the raster file `elevation.tif` as a discretisation of the study area. This file can be read with `rmap <- rast(system.file("extdata", "Xuancheng", "elevation.tif", package = "sswr"))`. 
     +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type = "regular"`.
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
   

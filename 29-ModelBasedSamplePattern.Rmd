@@ -136,9 +136,12 @@ The coordinates of the sampling points are optimised with function `optimMKV` of
 
 During the optimisation a sample is perturbed by replacing one randomly selected point of the current sample by a new point. This selection of the new point is done in two steps. In the first step one node of the discretisation grid (specified with argument `candi`) is randomly selected. Only the nodes within a neighbourhood defined by `x.min`, `x.max`, `y.min`, and `y.max` can be selected. The nodes within this neighbourhood have equal probability of being selected. In the second step one point is selected within a grid cell with the selected node at its centre and a side length specified with argument `cellsize`. So, it is natural to set `cellsize` to the spacing of the discretisation grid. With `cellsize=0` the population is finite, and the sampling points are restricted to the nodes of the discretisation grid.
 
+```{r, echo = FALSE}
+grdCRF <- readRDS(file = "data/CottonResearchFarm_Uzbekistan.rds")
+```
+
 ```{r}
 library(spsann)
-grdCRF <- readRDS(file = "results/CottonResearchFarm_Uzbekistan.rds")
 candi <- grdCRF[, c("x1", "x2")]
 names(candi) <- c("x", "y")
 schedule <- scheduleSPSANN(
@@ -264,7 +267,7 @@ Optimisation of the sampling pattern for KED is illustrated with the Cotton Rese
 
 At several points multiple pairs of observations of the study variable ECe and the covariate EM have been made. These calibration data have exactly the same spatial coordinates. This leads to problems with REML estimation. The covariance matrix is not positive definite, so that it cannot be inverted. To solve this problem I jittered the coordinates of the sampling points by a small amount.
 
-<!-- Note that in the next chunk I use EM as measured at the calibration sites (Sample_ECEM_CRF_Uzbekistan.csv) to fit the regression model and to compute the residuals. Ideally the interpolated EM values in results/CottonResearchFarm_Uzbekistan.RData (obtained by ordinary kriging of EM data in TransectsData_EM_CRF_Uzbekistan.csv) at the calibration sites are used as a covariate. However, the EM measurements in  the transects are at one time only, whereas the calibration data consist of simultaneous EM and EC measurements at multiple times. Therefore, to keep it simple, I used the EM data at the calibration sites -->
+<!-- Note that in the next chunk I use EM as measured at the calibration sites (Sample_ECEM_CRF_Uzbekistan.csv) to fit the regression model and to compute the residuals. Ideally the interpolated EM values in data/CottonResearchFarm_Uzbekistan.RData (obtained by ordinary kriging of EM data in TransectsData_EM_CRF_Uzbekistan.csv) at the calibration sites are used as a covariate. However, the EM measurements in  the transects are at one time only, whereas the calibration data consist of simultaneous EM and EC measurements at multiple times. Therefore, to keep it simple, I used the EM data at the calibration sites -->
 
 ```{r}
 library(geoR)
@@ -389,8 +392,6 @@ In Section \@ref(GridspacingOK) the legacy data of West-Amhara were used to esti
 
 ```{r, echo = FALSE}
 library(geoR)
-grdAmhara <- readRDS(file = "data/grdAmhara.rds")
-sampleAmhara <- readRDS(file = "data/Sample_Amhara.rds")
 grdAmhara <- grdAmhara %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 sampleAmhara <- sampleAmhara %>%

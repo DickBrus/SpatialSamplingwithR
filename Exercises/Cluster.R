@@ -1,5 +1,3 @@
-grdVoorst <- readRDS("../data/grdVoorst.rds")
-
 #construct zones
 cellsize <- 25 #size of pixels
 w <- 1000 #width of zones

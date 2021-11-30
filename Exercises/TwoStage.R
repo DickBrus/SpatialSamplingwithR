@@ -1,4 +1,3 @@
-grdVoorst <- readRDS("../data/grdVoorst.rds")
 
 #construct PSUs
 w <- 500 #width of PSUs

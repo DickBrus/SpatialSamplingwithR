@@ -3,20 +3,19 @@ library(spcosa)
 library(ggplot2)
 library(terra)
 
-#load data frame with coordinates (and other attributes) of fine grid (discretisation of study area)
-rmap <- rast("../data/Elevation_Xuancheng.tif")
+#read data frame with coordinates (and other attributes) of fine grid (discretisation of study area)
+rmap <- rast(system.file("extdata", "Xuancheng", "elevation.tif", package = "sswr"))
 rmap
 rmap <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
-gridded(rmap) <- ~ x + y
 
-#subsample grid; grid is too large for computing spatial infill sample
+#subsample rmap; rmap is too large for computing spatial infill sample
+gridded(rmap) <- ~ x + y
 subgrid <- spsample(rmap, type = "regular", cellsize = c(900, 900), offset = c(0.5, 0.5))
 length(subgrid)
 subgrid <- as(subgrid, "data.frame")
 
 #load existing sampling points
-sample_all <- read.csv(file = "../data/Sample_Xuancheng.csv")
-legacy <- sample_all[sample_all$sample == "iPSM", ]
+legacy <- sampleXuancheng[sampleXuancheng$sample == "iPSM", ]
 
 #plot prior points
 ggplot(subgrid) +

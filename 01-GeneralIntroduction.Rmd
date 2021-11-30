@@ -222,6 +222,22 @@ The exhaustive data sets are used in the first part of this book on probability 
 
 Furthermore, various data sets are used with data for a sample of population units only. These data sets are described at places where they are first used.
 
+All data sets are available by installing the **R** package **sswr**. This package can be installed from github with function `install_github` of package **devtools** [@devtools].
+
+```{r, eval = FALSE}
+library(devtools)
+install_github("DickBrus/sswr")
+```
+
+The package can then be loaded. You can see the contents of the package and of the data files by typing a question mark, followed by the name of the package or a data file.
+
+```{r, eval = FALSE}
+library("sswr")
+?sswr
+?grdVoorst
+```
+
+
 ### Soil organic matter in Voorst (Netherlands) {#Voorst}
 
 The study area of Voorst is located in the eastern part of the Netherlands. The size of the study area is 6 km $\times$ 1 km. At 132 points samples of the topsoil were collected by graduate students of Wageningen University, which were then analysed for SOM concentrations (in g kg^-1^ dry soil) in a laboratory. The map is created by conditional geostatistical simulation of natural logs of the SOM concentration on a 25 m $\times$ 25 m grid, followed by backtransformation, using a linear mixed model with spatially correlated residuals and combinations of soil type and land use as a qualitative predictor (factor). Figure \@ref(fig:mapVoorst) shows the simulated map of the SOM concentration. 
@@ -229,7 +245,6 @@ The study area of Voorst is located in the eastern part of the Netherlands. The 
 (ref:mapVoorstlabel) Simulated map of the SOM concentration (g kg^-1^) in Voorst.
 
 ```{r mapVoorst, echo = FALSE,  out.width = '100%', fig.cap = "(ref:mapVoorstlabel)"}
-grdVoorst <- readRDS("data/grdVoorst.rds")
 ggplot(data = grdVoorst) +
         geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = z)) +
         scale_x_continuous(name = "Easting (km)") +
@@ -276,7 +291,6 @@ Cultivation of poppy for opium production is a serious problem in Afghanistan. T
 In 2014 the poppy area within 83 randomly selected squares in the province of Kandahar (Afghanistan) was determined, as well as the agricultural area within all 965 squares in this province. These data were used to simulate a map of poppy area per 5 km square. The map is simulated with an ordinary kriging model for the logit transform of the proportion of the agricultural area cultivated with poppy within a 5 km square. For privacy reasons the field was simulated *unconditionally* on these sample data. Figure \@ref(fig:mapsKandahar) shows the map with the agricultural area in hectares per 5 km square and the map with the simulated poppy area in hectares per square. The histogram of the simulated poppy area per square shows very strong positive skew (Figure \@ref(fig:histogramPoppyarea)). For 375 squares the simulated poppy area was smaller than 1 ha. 
 
 ```{r mapsKandahar, echo = FALSE, fig.cap = "Agricultural area and simulated poppy area, in ha per 5 km square, in Kandahar."}
-grdKandahar <- readRDS(file = "data/grdKandahar.rds")
 df <- grdKandahar %>%
   pivot_longer(cols = c("poppy", "agri"))
 df$name <- factor(df$name, levels = c("poppy", "agri"), ordered = TRUE)
@@ -306,7 +320,6 @@ This data set consists of data on the aboveground live woody biomass (AGB) in me
 (ref:mapsAmazonialabel) Aboveground biomass (AGB) in 10^9^ kg ha^-1^ and short-wave infrared radiation (SWIR2) of Eastern Amazonia.
 
 ```{r mapsAmazonia, echo = FALSE, out.width = '100%', fig.cap = "(ref:mapsAmazonialabel)"}
-grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 plt1 <- ggplot(grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = AGB)) +
   scale_x_continuous(name = "Easting (km)") +
@@ -332,6 +345,7 @@ density2d <- function(data, mapping, ...) {
     ggplot(data = data, mapping = mapping) +
         geom_density2d_filled(...)
 }
+
 grdAmazonia %>%
   dplyr::select(AGB, SWIR2, Terra_PP, Prec_dm, Elevation, Clay) %>%
   slice_sample(n = 50000) %>%
@@ -346,7 +360,6 @@ grdAmazonia %>%
 The space-time designs of Chapter \@ref(RepeatedSurveys) are illustrated with the annual mean air temperature at two metres above the earth surface (TAS) in $^\circ$C, in Spain and Portugal (islands excluded) for the years 2004, 2009, 2014, and 2019 (Figure \@ref(fig:TASofSpainPortugal)). These data are part of the data set [CHELSA](https://chelsa-climate.org/wp-admin/download-page/CHELSA_tech_specification_V2.pdf) [@Karger2017]. The raster files are latitude-longitude grids with a resolution of 30 arc sec. These latitude-longitude grids are not suitable for sampling, as the area of the grid cells is not constant. The data are projected using the Lambert azimuthal equal area (laea) projection. The resolution of the resulting laea raster file is about 780 m $\times$ 780 m.
 
 ```{r TASofSpainPortugal, echo = FALSE, out.width = '100%', fig.cap = "Annual mean air temperature in Spain and Portugal for the years 2004, 2009, 2014, and 2019."}
-grdSpainPortugal <- readRDS(file = "data/grdSpainPortugal.rds")
 df_lf <- grdSpainPortugal %>% pivot_longer(cols = c("TAS2004", "TAS2009", "TAS2014", "TAS2019"))
 ggplot(df_lf) +
   geom_raster(mapping = aes(x = x / 1000, y = y / 1000, fill = value)) +

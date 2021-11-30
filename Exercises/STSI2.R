@@ -1,7 +1,6 @@
 library(stratification)
 library(forcats)
 
-grdVoorst <- readRDS("../data/grdVoorst.rds")
 grdVoorst$newstratum <- fct_collapse(grdVoorst$stratum, SA = c("EA", "PA"))
 
 #compute total number of pixels per stratum and stratum weights (relative size)

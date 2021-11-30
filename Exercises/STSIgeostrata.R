@@ -6,7 +6,9 @@ library(rgdal)
 set.seed(31415)
 
 # read field of interest
-shpField <- readOGR(dsn = "../data", layer = "Leest", verbose = FALSE)
+shpField <- rast(system.file("extdata", "Leest", "", package = "sswr"))
+
+#shpField <- readOGR(dsn = "../data", layer = "Leest", verbose = FALSE)
 proj4string(shpField) <- NA_character_
 
 # compute compact geographical strata; either use argument cellSize or nGridCells

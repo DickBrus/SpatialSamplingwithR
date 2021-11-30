@@ -1,9 +1,8 @@
 library(sampling)
 library(stratification)
 library(ggplot2)
+library(sswr)
 
-#load grid
-grdAmazonia <- readRDS(file = "../results/grdAmazonia_5km.rds")
 grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 
 #set number of strata
@@ -30,8 +29,10 @@ grdAmazonia$optstrata <- optstrata$stratumID
 w_h <- optstrata$Nh / sum(optstrata$Nh)
 (n_h <- round(w_h * n))
 sum(n_h)
+n_h[1] <- n_h[1] + 1
 
 #select stratified simple random sample
+set.seed(314)
 units <- sampling::strata(
   grdAmazonia, stratanames = "optstrata", size = n_h, method = "srswor")
 mysample <- getdata(grdAmazonia, units)

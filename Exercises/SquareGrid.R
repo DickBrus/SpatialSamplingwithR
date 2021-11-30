@@ -1,4 +1,3 @@
-grdAmhara <- readRDS(file = "../data/grdAmhara.rds")
 
 library(sp)
 

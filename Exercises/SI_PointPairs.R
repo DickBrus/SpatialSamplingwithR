@@ -34,10 +34,6 @@ SIpairs <- function(h, n, area) {
   cbind(xypnts1, xypnts2)
 }
 
-#Read simulated field
-
-grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
-
 grd <- grdHunterValley
 coordinates(grd) <- ~ s1 + s2
 gridded(grd) <- TRUE

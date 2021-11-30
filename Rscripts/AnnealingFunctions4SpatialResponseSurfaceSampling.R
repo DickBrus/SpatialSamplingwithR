@@ -3,7 +3,8 @@ getCriterion <- function(mysample, dpnt, weight, phi) {
   D <- as.matrix(dist(mysample[, c("x1", "x2")]))
   if (is.null(phi)) {
     diag(D) <- NA
-    logdmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE) %>% log
+    dmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE)
+    logdmin <- log(dmin)
     criterion_cur <- mean(-logdmin) + mean(D2dpnt) * weight
   } else {
     C <- variogramLine(vgm(model = "Exp", psill = 1, range = phi), dist_vector = D, covariance = TRUE)
@@ -24,6 +25,10 @@ permute <- function(mysample, candidates)  {
   mysample
 }
 
+# This function optimises the sampling pattern of a
+# central composite response surface design sample
+# 
+#
 # @ param mysample. Data frame of units of initial sample, with unit ID, 
 #                   two spatial coordinates, two principal component scores, 
 #                   and associated design-point 
@@ -41,10 +46,13 @@ permute <- function(mysample, candidates)  {
 # @ param maxPermuted. Multiplier for maximum number of permutations per chain
 # @ param MaxNoChange. Stopping criterion. Maximum number of successive chains
 #                      without change of the criterion
+# @ param verbose. logical for printing the temperature, criterion,
+#                 number of accepted proposals per chain,
+#                 and number of improvements per chain during the optimisation
 # @ return list with data frame of optimised sample, numeric with mimimised 
 #          criterion, and numeric with trace of criterion 
 
-anneal <- function(mysample,
+anneal <- function(mysample0,
                  candidates,
                  dpnt,
                  weight = 0,
@@ -66,7 +74,8 @@ anneal <- function(mysample,
     criterion_cur <- mean(C) + mean(D2dpnt) * weight
   } else {
     diag(D) <- NA
-    logdmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE) %>% log(.)
+    dmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE)
+    logdmin <- log(dmin)
     criterion_cur <- mean(-logdmin) + mean(D2dpnt) * weight
   }
 

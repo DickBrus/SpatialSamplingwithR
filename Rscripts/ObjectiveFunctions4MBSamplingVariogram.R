@@ -25,7 +25,7 @@ logdet <- function(points, model, thetas, perturbation)  {
         m_i <- solve(A, dA[[i]])
         for (j in i:length(thetas)) {
           m_j <- solve(A, dA[[j]])
-          I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+          I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
         }
       }
 
@@ -65,7 +65,7 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
         m_i <- solve(A, dA[[i]])
         for (j in i:length(thetas)) {
           m_j <- solve(A, dA[[j]])
-          I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+          I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
         }
       }
       cholI <- try(chol(I), silent = TRUE)
@@ -166,7 +166,7 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
         m_i <- solve(A, dA[[i]])
         for (j in i:length(thetas)) {
           m_j <- solve(A, dA[[j]])
-          I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+          I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
         }
       }
 
@@ -248,13 +248,17 @@ MEAC <- function(points, esample, model, thetas, perturbation)  {
   coordinates(points) <- ~x + y
 
   D <- spDists(points)
-  vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
+  vgmodel <- vgm(
+    model = model, psill = thetas[1], range = thetas[2],
+    nugget = 1 - thetas[1])
   A <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
   pA <- dA <- list()
   for (i in seq_len(length(thetas))) {
     thetas.pert <- thetas
     thetas.pert[i] <- (1 + perturbation) * thetas[i]
-    vgmodel.pert <- vgm(model = model, psill = thetas.pert[1], range = thetas.pert[2], nugget = 1 - thetas.pert[1])
+    vgmodel.pert <- vgm(
+      model = model, psill = thetas.pert[1], range = thetas.pert[2],
+      nugget = 1 - thetas.pert[1])
     pA[[i]] <- variogramLine(vgmodel.pert, dist_vector = D, covariance = TRUE)
     dA[[i]] <- (pA[[i]] - A) / (thetas[i] * perturbation)
   }
@@ -269,7 +273,7 @@ MEAC <- function(points, esample, model, thetas, perturbation)  {
         m_i <- solve(A, dA[[i]])
         for (j in i:length(thetas)) {
           m_j <- solve(A, dA[[j]])
-          I[i, j] <- I[j, i] <- 0.5 * matrix.trace(m_i %*% m_j)
+          I[i, j] <- I[j, i] <- 0.5 * sum(diag(m_i %*% m_j))
         }
       }
       cholI <- try(chol(I), silent = TRUE)

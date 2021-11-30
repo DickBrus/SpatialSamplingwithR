@@ -145,7 +145,6 @@ res <- predict(forest, sample_test)
 sample_test$SOM_RF <- res$predictions
 
 #map SOM with RF
-grdXuancheng <- readRDS(file = "data/grdXuancheng.rds")
 res <- predict(forest, grdXuancheng)
 grdXuancheng$SOM_RF <- res$predictions
 
@@ -212,8 +211,6 @@ The two maps that are to be validated are shown in Figure \@ref(fig:validatedmap
 (ref:validatedmapslabel) Map of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng, obtained by kriging with an external drift (KED) and random forest (RF).
 
 ```{r validatedmaps, echo = FALSE, out.width = "100%", fig.cap = "(ref:validatedmapslabel)"}
-grdXuancheng <- readRDS(file = "data/grdXuancheng.rds")
-
 df <- grdXuancheng %>%
     dplyr::select(s1, s2, SOM_KED, SOM_RF)
 df_lf <- df %>% pivot_longer(cols = c("SOM_KED", "SOM_RF"))
@@ -232,7 +229,7 @@ The two maps are evaluated by statistical validation with a stratified simple ra
 ```{r validationsample, echo = FALSE, fig.cap = "Stratified simple random sample for validation of the two maps of the SOM concentration in Xuancheng."}
 library(terra)
 
-rmap <- rast("data/Geo_Xuancheng.tif")
+rmap <- rast(system.file("extdata", "Xuancheng", "geo.tif", package = "sswr"))
 grd <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
 units <- which(grd$Geo_Xuancheng == 99)
 grd <- grd[-units, ]

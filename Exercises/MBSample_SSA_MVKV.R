@@ -6,7 +6,6 @@ library(ggplot2)
 
 
 source ("../Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
-grdHunterValley <- readRDS(file = "../data/grdHunterValley.rds")
 
 gridded(grdHunterValley) <- ~ s1 + s2
 candi <- spsample(grdHunterValley, type="regular", cellsize=c(50,50))

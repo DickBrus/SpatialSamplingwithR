@@ -33,10 +33,14 @@ Argument `cost` is for cost-constrained cLH sampling [@Roudier2012], and argumen
 
 cLH sampling is illustrated with the five covariates of Eastern Amazonia that were used before in covariate space coverage sampling (Chapter \@ref(kmeans)). 
 
+```{r, echo = FALSE}
+grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+```
+
+
 ```{r}
 library(clhs)
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
-covs <- names(grdAmazonia)[c(4, 5, 6, 7, 8)]
+covs <- c("SWIR2", "Terra_PP", "Prec_dm", "Elevation", "Clay")
 set.seed(314)
 res <- clhs(grdAmazonia[, covs], size = 20, iter = 50000, temp = 1, tdecrease = 0.95,
   length.cycle = 10, progress = FALSE, simple = FALSE)
@@ -56,7 +60,7 @@ ggplot(data = grdAmazonia) +
   coord_fixed()
 ```
 
-```{r cLHSscat, echo = FALSE, fig.cap = "Conditioned Latin hypercube sample plotted in a biplot of precipitation in the dryest month against SWIR2. The vertical and horizontal lines are at the bounds of the marginal strata of the covariates SWIR2 and precipitation dryest month, respectively."}
+```{r cLHSscat, echo = FALSE, out.width = "100%", fig.cap = "Conditioned Latin hypercube sample plotted in a biplot of precipitation in the dryest month against SWIR2. The vertical and horizontal lines are at the bounds of the marginal strata of the covariates SWIR2 and precipitation dryest month, respectively."}
 probs <- seq(from = 0, to = 1, length.out = nrow(myCLHsample) + 1)
 bounds <- apply(grdAmazonia[, covs], MARGIN = 2, FUN = function(x) quantile(x, probs = probs))
 ggplot(data = grdAmazonia) +
@@ -98,7 +102,7 @@ trace <- res$obj
 tail(trace, n = 1)
 ```
 
-```{r tracecLHS, echo = FALSE, fig.asp = 0.6, fig.cap = "Trace of minimisation criterion during optimisation of conditioned Latin hypercube sampling from Eastern Amazonia."}
+```{r tracecLHS, echo = FALSE, fig.asp = 0.6, fig.width = 5, fig.cap = "Trace of minimisation criterion during optimisation of conditioned Latin hypercube sampling from Eastern Amazonia."}
 tracedf <- data.frame(trace = trace)
 ggplot(tracedf) +
   geom_line(mapping = aes(x = seq_len(nrow(tracedf)), y = trace), colour = "black", size = 0.6) +
@@ -120,7 +124,7 @@ cLH samples can also be selected with function `optimCLHS` of package **spsann**
 
 #### Exercises {-}
 
-1. Read the data of Hunter Valley (`data/grdHunterValley.rds`) to select a cLH sample of size 50, using elevation_m, slope_deg, cos_aspect, cti, and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a 2D-scatter plot of cti against elevation_m. In which part of the scatter plot are most units selected, and which part is undersampled?   
+1. Use the data of Hunter Valley (`data.frame grdHunterValley` of package **sswr**) to select a cLH sample of size 50, using elevation_m, slope_deg, cos_aspect, cti, and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a biplot of cti against elevation_m. In which part of the biplot are most units selected, and which part is undersampled?   
 2. Load the simulated data of Figure \@ref(fig:twosamples) (`results/SimulatedSquare.RData`), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
     +  What do you think of the geographical spreading of the sampling units? Is it optimal?
     +  Compute the number of sampling units in the marginal strata of $s1$, $s2$, and the covariate $x$. First compute the bounds of these marginal strata.  Are all marginal strata of $s1$ and $s2$ sampled?  Suppose that all marginal strata of $s1$ and $s2$ are sampled (contain one sampling point), does this guarantee good spatial coverage?
@@ -142,7 +146,7 @@ myCLHIsample <- grdAmazonia[index, ]
 myCLHIsample$free <- as.factor(rep(c(1, 0), c(20, 10)))
 ```
 
-Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a map of SWIR2. In Figure \@ref(fig:cLHISscat) the sample is plotted in a scatter plot of SWIR2 against Prec_dm. The marginal strata already covered by the legacy sample are mostly avoided by the additional sample.
+Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a map of SWIR2. In Figure \@ref(fig:cLHISscat) the sample is plotted in a biplot of SWIR2 against Prec_dm. The marginal strata already covered by the legacy sample are mostly avoided by the additional sample.
 
 ```{r cLHIS, echo = FALSE, out.width = "100%", fig.cap = "Conditioned Latin hypercube infill sample from Eastern Amazonia in a map of SWIR2. Legacy units have free-value 0, infill units have free-value 1."}
 ggplot(data = grdAmazonia) +
@@ -154,7 +158,7 @@ ggplot(data = grdAmazonia) +
   coord_fixed()
 ```
 
-```{r cLHISscat, echo = FALSE, fig.asp = 0.7, fig.cap = "Conditioned Latin hypercube infill sample plotted in scatter plot of SWIR2 against precipitation in the dryest month. Legacy units have free-value 0, infill units have free-value 1."}
+```{r cLHISscat, echo = FALSE, fig.asp = 0.7, out.width = "100%", fig.cap = "Conditioned Latin hypercube infill sample plotted in a biplot of SWIR2 against precipitation in the dryest month. Legacy units have free-value 0, infill units have free-value 1."}
 #recompute stratum bounds as we have now 10 + 20 units
 probs <- seq(from = 0, to = 1, length.out = 31)
 bounds <- apply(grdAmazonia[, covs], MARGIN = 2, FUN = function(x) quantile(x, probs = probs))
@@ -176,8 +180,6 @@ The performance of cLH sampling is studied in the same experiment as covariate s
 ```{r repeatedCSCandcLHS, echo = FALSE, eval = FALSE}
 library(LICORS)
 library(ranger)
-grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
-covs <- names(grdAmazonia)[c(2, 3, 4, 5, 6)]
 #select subgrid to be used as master sample for selecting calibration samples
 grdAmazonia$id <- seq_len(nrow(grdAmazonia))
 gridded(grdAmazonia) <- ~x1 + x2
@@ -212,30 +214,30 @@ for (i in 1:S) {
   time <- system.time(myClusters <- kmeans(scale(grdAmazonia[, covs]), centers = n, iter.max = 10000, nstart = 500)) #n = 25
 #  time <- system.time(myClusters <- kmeans(scale(grdAmazonia[, covs]), centers = n, iter.max = 10000, nstart = 350)) #n = 50
 #  time <- system.time(myClusters <- kmeans(scale(subgrid[, covs]), centers = n, iter.max = 10000, nstart = 200)) #n = 100
-  time.CSC[i] <- time[1]
-  subgrid$cluster <- myClusters$cluster
-  res <- rdist(x1 = myClusters$centers,
-                     x2 = scale(subgrid[, covs]))
-  units <- apply(res, MARGIN = 1, FUN = which.min)
-  myCSCsample <- subgrid[units, ]
+ time.CSC[i] <- time[1]
+ subgrid$cluster <- myClusters$cluster
+ res <- rdist(x1 = myClusters$centers,
+                    x2 = scale(subgrid[, covs]))
+ units <- apply(res, MARGIN = 1, FUN = which.min)
+ myCSCsample <- subgrid[units, ]
 #compute MSSSD
-  res <- rdist(x1 = scale(myCSCsample[, covs], center = populationmeans, scale = populationsds),
-                   x2 = scale(subgrid[, covs]))
-  dmin <- apply(res, MARGIN = 2, min)
-  MSSSD.CSC[i] <- mean(dmin^2)
+ res <- rdist(x1 = scale(myCSCsample[, covs], center = populationmeans, scale = populationsds),
+                  x2 = scale(subgrid[, covs]))
+ dmin <- apply(res, MARGIN = 2, min)
+ MSSSD.CSC[i] <- mean(dmin^2)
 #compute O1 + O3
-  counts <- lapply(1:5, function(i)
-  hist(myCSCsample[, i + 3], bounds[, i], plot = FALSE)$counts
-  )
-  countslf <- data.frame(counts = unlist(counts))
-  O1 <- sum(abs(countslf - 1))
-  r.sample <- cor(myCSCsample[, covs])
-  O3 <- sum(abs(r.population - r.sample))
-  O1O3.CSC[i] <- O1 + O3
+ counts <- lapply(1:5, function(i)
+ hist(myCSCsample[, i + 3], bounds[, i], plot = FALSE)$counts
+ )
+ countslf <- data.frame(counts = unlist(counts))
+ O1 <- sum(abs(countslf - 1))
+ r.sample <- cor(myCSCsample[, covs])
+ O3 <- sum(abs(r.population - r.sample))
+ O1O3.CSC[i] <- O1 + O3
 
 #select cLH sample
 
-   time <- system.time(clhs.out <- clhs(subgrid[, covs], size = n, tdecrease = 0.95, iter = 10000,
+  time <- system.time(clhs.out <- clhs(subgrid[, covs], size = n, tdecrease = 0.95, iter = 10000,
                  progress = FALSE, simple = FALSE))
   time.CLH[i] <- time[1]
   index <- clhs.out$index_samples
@@ -250,36 +252,36 @@ for (i in 1:S) {
 
 #select SI sample
 
-  units <- sample(nrow(subgrid), size = n, replace = FALSE)
-  mySIsample <- subgrid[units, ]
+ units <- sample(nrow(subgrid), size = n, replace = FALSE)
+ mySIsample <- subgrid[units, ]
 #compute MSSSD
-  res <- rdist(x1 = scale(mySIsample[, covs], center = populationmeans, scale = populationsds),
-                   x2 = scale(subgrid[, covs]))
-  dmin <- apply(res, MARGIN = 2, min)
-  MSSSD.SI[i] <- mean(dmin^2)
+ res <- rdist(x1 = scale(mySIsample[, covs], center = populationmeans, scale = populationsds),
+                  x2 = scale(subgrid[, covs]))
+ dmin <- apply(res, MARGIN = 2, min)
+ MSSSD.SI[i] <- mean(dmin^2)
 #compute O1 + O3
-  counts <- lapply(1:5, function(i)
-  hist(mySIsample[, i + 3], bounds[, i], plot = FALSE)$counts
-  )
-  countslf <- data.frame(counts = unlist(counts))
-  O1 <- sum(abs(countslf - 1))
-  r.sample <- cor(mySIsample[, covs])
-  O3 <- sum(abs(r.population - r.sample))
-  O1O3.SI[i] <- O1 + O3
+ counts <- lapply(1:5, function(i)
+ hist(mySIsample[, i + 3], bounds[, i], plot = FALSE)$counts
+ )
+ countslf <- data.frame(counts = unlist(counts))
+ O1 <- sum(abs(countslf - 1))
+ r.sample <- cor(mySIsample[, covs])
+ O3 <- sum(abs(r.population - r.sample))
+ O1O3.SI[i] <- O1 + O3
 
 #fit random forest
 
 #use CSC sample for calibration
-  forest.sample <- ranger(
-    AGB ~ SWIR2 + Terra_PP + Prec_dm + Elevation + Clay,
-    data = myCSCsample,
-    num.trees = 1000
-  )
-  out <- predict(forest.sample, data = myvalidationsample, type = "response")
-  AGBpred <- out$predictions
-  error <- AGBpred - myvalidationsample$AGB
-  ME.CSC[i] <- mean(error)
-  RMSE.CSC[i] <- sqrt(mean(error^2))
+ forest.sample <- ranger(
+   AGB ~ SWIR2 + Terra_PP + Prec_dm + Elevation + Clay,
+   data = myCSCsample,
+   num.trees = 1000
+ )
+ out <- predict(forest.sample, data = myvalidationsample, type = "response")
+ AGBpred <- out$predictions
+ error <- AGBpred - myvalidationsample$AGB
+ ME.CSC[i] <- mean(error)
+ RMSE.CSC[i] <- sqrt(mean(error^2))
 
 #use CLH sample for calibration
   forest.sample <- ranger(
@@ -305,16 +307,15 @@ for (i in 1:S) {
   ME.SI[i] <- mean(error)
   RMSE.SI[i] <- sqrt(mean(error^2))
 }
-save(ME.CSC, ME.CLH, ME.SI, RMSE.CSC, RMSE.CLH, RMSE.SI, MSSSD.CSC, MSSSD.CLH, MSSSD.SI, O1O3.CSC, O1O3.CLH, O1O3.SI, time.CSC, time.CLH, file = "results/CSCversusCLH_Amazonia_n100.RData")
+save(ME.CSC, ME.CLH, ME.SI, RMSE.CSC, RMSE.CLH, RMSE.SI, MSSSD.CSC, MSSSD.CLH, MSSSD.SI, O1O3.CSC, O1O3.CLH, O1O3.SI, time.CSC, time.CLH, file = "results/CSCversusCLH_Amazonia_n25.RData")
 ```
 
 Figure \@ref(fig:boxplotsval) shows the results as boxplots, each based on 500 estimates. For $n=25$ and $100$ cLH sampling performs best in terms of RMSE and MEC, whereas for $n=50$ CSC sampling performs best. For $n=25$ and $50$ the boxplots of cLH and SI show quite a few outliers with large values of RMSE, resulting in small values of MEC. For CSC these map quality indices are more stable. Remarkably, for $n=100$ SI sampling performs about equal to CSC and cLH sampling.
 
 ```{r boxplotsval, echo = FALSE, out.width = "100%", fig.asp = 0.7, fig.cap = "Boxplots of ME, RMSE, and MEC of predictions with RF models calibrated on conditioned Latin hypercube (cLH), covariate space coverage (CSC), and simple random (SI) samples from Eastern Amazonia, for sample sizes of 25, 50, and 100 units."}
-grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 #select subgrid to be used as master sample for selecting calibration samples
 grdAmazonia$id <- seq_len(nrow(grdAmazonia))
-gridded(grdAmazonia) <- ~x1 + x2
+gridded(grdAmazonia) <- ~ x1 + x2
 subgrid <- spsample(grdAmazonia, type = "regular", cellsize = 10000, offset = c(0.5, 0.5))
 res <- over(subgrid, grdAmazonia)
 subgrid <- data.frame(coordinates(subgrid), res)
@@ -402,10 +403,10 @@ plt3 <- ggplot(d, aes(x = n, y = MEC)) +
 grid.arrange(plt1, plt2, plt3, ncol = 2)
 ```
 
-In Figure \@ref(fig:RelationO1O3RMSE) the RMSE is plotted against the minimised criterion (O1 + O3) for the cLH and the SI samples. For all three sample sizes there is a weak positive correlation of the minimisation criterion and the RMSE: for $n=25$, 50, and 100 this correlation is 0.403, 0.263, and 0.157, respectively. On average cLH performs slightly better than SI for $n=25$ (Table \@ref(tab:TableRMSE4cLHandSI)). The gain in accuracy decreases with the sample size. For $n=100$ the two designs perform about equal. Especially for $n=25$ and 50 the distribution of RMSE with SI has a long right tail. For these small sample sizes the risk of selecting an SI sample leading to a poor map with large RMSE is much larger than with cLH sampling.
+In Figure \@ref(fig:RelationO1O3RMSE) the RMSE is plotted against the minimised criterion (O1 + O3) for the cLH and the SI samples. For all three sample sizes there is a weak positive correlation of the minimisation criterion and the RMSE: for $n=25$, 50, and 100 this correlation is 0.369, 0.290, and 0.140, respectively. On average cLH performs slightly better than SI for $n=25$ (Table \@ref(tab:TableRMSE4cLHandSI)). The gain in accuracy decreases with the sample size. For $n=100$ the two designs perform about equal. Especially for $n=25$ and 50 the distribution of RMSE with SI has a long right tail. For these small sample sizes the risk of selecting an SI sample leading to a poor map with large RMSE is much larger than with cLH sampling.
 
 
-```{r RelationO1O3RMSE, echo = FALSE, fig.asp = 0.7, fig.cap = "Scatter plot of the minimisation criterion (O1 + O3) and the RMSE of RF predictions of AGB in Eastern Amazonia for conditioned Latin hypercube (cLH) sampling and simple random (SI) sampling, and three sample sizes."}
+```{r RelationO1O3RMSE, echo = FALSE, fig.asp = 0.7, out.width = "100%", fig.cap = "Biplot of the minimisation criterion (O1 + O3) and the RMSE of RF predictions of AGB in Eastern Amazonia for conditioned Latin hypercube (cLH) sampling and simple random (SI) sampling, and three sample sizes."}
 load("results/CSCversusCLH_Amazonia_n25.RData")
 df.25 <- data.frame(RMSE = c(RMSE.SI, RMSE.CLH), O1O3 = c(O1O3.SI, O1O3.CLH), Design = rep(c("SI", "cLH"), each = 500), Samplesize = 25)
 

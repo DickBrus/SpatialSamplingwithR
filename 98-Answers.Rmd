@@ -27,7 +27,7 @@
 2. Strata EA and PA can be merged without losing much precision: their means are about equal.  
 3. See [`STSI2.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSI2.R). The true sampling variance of the $\pi$ estimator of the mean SOM obtained by collapsing strata EA and PA equals 42.89, whereas the sampling variance with the original stratification equals 42.53. So, the new stratification with four strata is only slightly worse.       
 4. The proof is as follows: $\sum_N \pi_k=\sum_H \sum_{N_h}\pi_{hk}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n$.  
-5. See [`STSIcumrootf.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R). The default allocation is Neyman allocation, see help of function `strata.cumrootf`.  
+5. See [`STSIcumrootf.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R). The default allocation is Neyman allocation, see help of function `strata.cumrootf`. The true sampling variance of the estimator of the mean equals 20.0. The stratification effect equals 4.26. 
 6. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum.  
 7. On average the sampling variance of the estimator of the mean with 100 $\times$ 1 point is smaller than with $50 \times 2$ points because the geographical spreading will be somewhat better (less spatial clustering).  
 8. With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: $\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{\mathcal{S}h} = \bar{z}_{\mathcal{S}}$, with $\bar{z}_{\mathcal{S}h}$ the average of the sample from stratum $h$ and $\bar{z}_{\mathcal{S}}$ the average of all sampling points.  
@@ -125,8 +125,6 @@ load(file = "results/RegressionEstimator_Twophase.RData")
 (ref:RegressionEstimatorsAmazoniaTwoPhaselabel) Approximated sampling distribution of the simple regression estimator of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia in the case that the covariate is observed for all sampling units (One-phase) and for the subsample only (Two-phase).
 
 ```{r RegressionEstimatorsAmazoniaTwoPhase, echo=FALSE, fig.cap="(ref:RegressionEstimatorsAmazoniaTwoPhaselabel)"}
-grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
-
 estimates<-data.frame(mz_reg2ph, mz_regr)
 names(estimates)<-c("Two-phase","One-phase")
 
@@ -218,8 +216,6 @@ grid.arrange(plt1, plt2, nrow=1)
 1. See [`CovariateSpaceCoverageSample.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/CovariateSpaceCoverageSample.R). See Figure \@ref(fig:CSCsamplingHunterValley).  
 
 ```{r CSCsamplingHunterValley, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space coverage sample from  Hunter valley, using cti, ndvi, and elevation as clustering variables, plotted on a map of cti."}
-grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
-
 n <- 20
 set.seed(314)
 covars <- c("cti","ndvi","elevation_m")
@@ -307,8 +303,11 @@ ggplot(data = grid) +
 
 2. See [`MBSample_QOKV.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_QOKV.Rmd). Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sampling pattern. Compared with the optimised sampling pattern using the *mean* ordinary kriging variance (MOKV) as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with the sample optimised for MOKV near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
 
+```{r, echo = FALSE}
+grdCRF <- readRDS(file = "data/CottonResearchFarm_Uzbekistan.rds")
+```
+
 ```{r MBsampleP90OKVCRF, echo=FALSE, fig.cap="Optimised sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECe as a minimisation criterion."}
-grdCRF <- readRDS(file = "results/CottonResearchFarm_Uzbekistan.rds")
 load(file = "results/MBSample_OK_P90_Uzbekistan.RData")
 ggplot(data=grdCRF) +
   geom_raster(mapping = aes(x = x1/1000, y = x2/1000),fill="grey") +
@@ -359,11 +358,9 @@ ggplot(data=mysamples) +
 4. See [`MBSample_SSA_MVKV.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MVKV.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The circular cluster of sampling points covers a larger area than the cluster obtained with a ratio of spatial dependence of 0.8.
 
 ```{r MBSupSamples, echo=FALSE, out.width='100%', fig.cap="Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean variance of the kriging variance (MVKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
-grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
 mysample <- readRDS(file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
 mysample_logdet <- mysample
 
-mysample <- readRDS(file = "results/MBSample_MVKV_phi200nug05_HunterValley.rds")
 mysample_MVKV <- mysample
 
 mysamples <- rbind(mysample_logdet,mysample_MVKV)
@@ -389,7 +386,6 @@ MEACopt <- as.numeric(tail(res$objective$energy,1))
 
 ```{r MBSampleMEACHV, echo=FALSE, fig.cap="Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
 
-grdHunterValley <- readRDS(file = "data/grdHunterValley.rds")
 grdHunterValley <- grdHunterValley %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 gridded(grdHunterValley) <- ~ s1 + s2

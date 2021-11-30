@@ -24,7 +24,6 @@ In the code chunk below the zones are constructed by first computing a vector wi
 
 ```{r}
 library(sp)
-grdVoorst <- readRDS("data/grdVoorst.rds")
 gridded(grdVoorst) <- ~ s1 + s2
 gridtop <- as(getGridTopology(grdVoorst), "data.frame")
 cellsize <- gridtop$cellsize[1]
@@ -58,7 +57,7 @@ M_cl <- tapply(grdVoorst$z, INDEX = grdVoorst$cluster, FUN = length)
 grdVoorst$unit <- seq_len(nrow(grdVoorst))
 ```
 
-```{r clustersize, echo = FALSE, fig.cap = "Frequency distribution of the size of clusters in Voorst. Clusters are E-W oriented transects within zones, with a spacing of 100 m between units."}
+```{r clustersize, echo = FALSE, fig.width=5, fig.cap = "Frequency distribution of the size of clusters in Voorst. Clusters are E-W oriented transects within zones, with a spacing of 100 m between units."}
 cnts <- table(M_cl) %>% as.numeric(.)
 df <- data.frame(Size = seq(from = min(M_cl), to = max(M_cl), by = 1), Count = cnts)
 ggplot(data = df) +
@@ -250,7 +249,7 @@ save(mz, mz_SI, v_mz, sampleSizes, m_n, file = "results/Cl_Voorst.RData")
 
 (ref:SamplingDistributionCllabel) Approximated sampling distribution of the pwr estimator of the mean SOM concentration (g kg^-1^) in Voorst with cluster random sampling (Cl) and of the $\pi$ estimator with simple random sampling (SI). In Cl six clusters are selected by ppswr. The (expected) sample size is 49 units.
 
-```{r SamplingDistributionCl, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionCllabel)"}
+```{r SamplingDistributionCl, echo = FALSE, fig.asp = .8, fig.width=5, fig.cap = "(ref:SamplingDistributionCllabel)"}
 load(file = "results/Cl_Voorst.RData")
 estimates <- data.frame(mz, mz_SI)
 names(estimates) <- c("Cl", "SI")
@@ -271,7 +270,7 @@ print(m_n <- n * sum(p * M_cl))
 
 So, the unequal draw-by-draw selection probabilities of the clusters are accounted for in computing the expected sample size\index{Expected sample size}. 
 
-```{r histsamplesizeCl, echo = FALSE, fig.cap = "Approximated sampling distribution of the sample size with cluster random sampling from Voorst, for six clusters selected by ppswr."}
+```{r histsamplesizeCl, echo = FALSE, fig.width=5, fig.cap = "Approximated sampling distribution of the sample size with cluster random sampling from Voorst, for six clusters selected by ppswr."}
 n_df <- data.frame(n = sampleSizes)
 ggplot(n_df) +
   geom_histogram(aes(x = n, y = ..density..), fill = "black", alpha = 0.5, breaks = 33.5:60.5, colour = "black") +

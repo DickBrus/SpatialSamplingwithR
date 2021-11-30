@@ -147,7 +147,6 @@ Comparison with the general estimator of the population regression coefficients 
 The simple regression estimator is illustrated with Eastern Amazonia. The population mean of the aboveground biomass (AGB) is estimated by the simple regression estimator, using natural logs of MODIS short-wave infrared radiation (SWIR2) as a covariate.
 
 ```{r, echo=FALSE}
-grdAmazonia <- readRDS(file = "data/grdAmazonia.rds")
 grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 units <- sample(nrow(grdAmazonia), size = 10000, replace = FALSE)
 mysample <- grdAmazonia[units, c("AGB", "lnSWIR2")]
@@ -183,7 +182,7 @@ Figure \@ref(fig:ScatterAGBvsSWIR2) shows the scatter plot for the simple random
 
 (ref:ScatterAGBvsSWIR2label) Scatter plot of AGB (10^9^ kg ha^-1^) against lnSWIR2 of a simple random sample of size 100 from Eastern Amazonia and the fitted simple linear regression model for AGB.
 
-```{r ScatterAGBvsSWIR2, echo = FALSE, fig.asp = .6, fig.cap = "(ref:ScatterAGBvsSWIR2label)"}
+```{r ScatterAGBvsSWIR2, echo = FALSE, fig.width = 5, fig.asp = .6, fig.cap = "(ref:ScatterAGBvsSWIR2label)"}
 ggplot(data = mysample) +
         geom_point(mapping = aes(x = lnSWIR2, y = AGB)) +
         geom_abline(intercept = ab[1], slope = ab[2]) +
@@ -311,7 +310,7 @@ save(mz_HT, mz_regr, v_mz_regr, file = "results/SimpleRegressionEstimatesAGB_Ama
 
 (ref:SamplingDistributionRegressionlabel) Approximated sampling distribution of the simple regression estimator (Regression) and the $\pi$ estimator (HT) of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia, for simple random sampling without replacement of size 100.
 
-```{r SamplingDistributionRegression, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionRegressionlabel)"}
+```{r SamplingDistributionRegression, echo = FALSE, fig.width = 5, fig.asp = .8, fig.cap = "(ref:SamplingDistributionRegressionlabel)"}
 load(file = "results/SimpleRegressionEstimatesAGB_Amazonia.RData")
 estimates <- data.frame(mz_regr, mz_HT)
 names(estimates) <- c("Regression", "HT")
@@ -721,7 +720,6 @@ For simple random sampling without replacement from finite populations Equation 
 In **R** the ratio estimator for the total poppy area and the estimator of its variance for a simple random sample without replacement can be computed as follows.
 
 ```{r}
-grdKandahar <- readRDS(file = "data/grdKandahar.rds")
 n <- 50
 N <- nrow(grdKandahar)
 units <- sample(N, size = n, replace = FALSE)
@@ -761,7 +759,7 @@ predict(b, total = tx_pop)
 
 (ref:SamplingDistributionRatiolabel) Approximated sampling distribution of the ratio estimator (Ratio) and the $\pi$ estimator (HT) of the total poppy area (ha) in Kandahar with simple random sampling without replacement of size 50.
 
-```{r SamplingDistributionRatio, echo = FALSE, fig.asp = .8, fig.cap = "(ref:SamplingDistributionRatiolabel)"}
+```{r SamplingDistributionRatio, echo = FALSE, fig.width = 5, fig.asp = .8, fig.cap = "(ref:SamplingDistributionRatiolabel)"}
 number_of_samples <- 10000
 tz_ratio <- v_tz_ratio <- tz_HT <- numeric(length = number_of_samples)
 set.seed(314)
@@ -920,7 +918,6 @@ This is an estimator of the *conditional* sampling variance, i.e. the variance o
 The poststratified estimator is illustrated with study area Voorst. We consider the situation that we do not have the map with the five combinations of soil type and land use that served as strata in Chapter \@ref(STSI). The soil-land use classes (groups) used in the poststratified estimator are only observed at the selected sampling units. Only three poststrata are distinguished: the original strata BA, EA, and PA are merged into one stratum SA with function `fct_collapse` of package **forcats** [@forcats].  The sizes of these poststrata must be known. 
 
 ```{r poststratification}
-grdVoorst <- readRDS("data/grdVoorst.rds")
 library(forcats)
 grdVoorst$poststratum <- fct_collapse(
   grdVoorst$stratum, SA = c("BA", "EA", "PA"))
@@ -1252,7 +1249,7 @@ v_mz_MD_OOB <- (1 - n / N) * var(d_OOB) / n
 
 For the difference estimator the results are very similar. The two difference estimates are `r round(mz_MD,1)` 10^9^ kg ha^-1^ and 227.0 10^9^ kg ha^-1^, and their estimated variances are `r round(v_mz_MD,2)` (10^9^ kg ha^-1^)^2^ and `r round(v_mz_MD_OOB,2)` (10^9^ kg ha^-1^)^2^, respectively. The model-calibration estimate and the generalised difference estimate are nearly equal.
 
-The sampling and estimation are repeated 1,000 times: 1,000 times a simple random sample without replacement of size 100 is selected. Each sample is used to calibrate a RF, each forest consisting of 1,000 trees. This results in 2 $\times$ 1,000 model-calibration estimates and their estimated variances as well as 2 $\times$ 1,000 difference estimates and their estimated variances. To limit the computing time, a 5 km $\times$ 5 km subgrid is used for selecting the simple random samples and for predicting AGB with the RF.
+The sampling and estimation are repeated 1,000 times: 1,000 times a simple random sample without replacement of size 100 is selected. Each sample is used to calibrate a RF, each forest consisting of 1,000 trees. This results in 2 $\times$ 1,000 model-calibration estimates and their estimated variances as well as 2 $\times$ 1,000 difference estimates and their estimated variances. To limit the computing time, a 5 km $\times$ 5 km subgrid of `grdAmazonia` is used for selecting the simple random samples and for predicting AGB with the RF.
 
 ```{r, eval = FALSE, echo = FALSE}
 grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")

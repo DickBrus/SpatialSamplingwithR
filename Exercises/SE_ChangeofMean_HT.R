@@ -1,5 +1,3 @@
-grdSpainPortugal <- readRDS(file = "../data/grdSpainPortugal.rds")
-
 
 n <- 100 #size of simple random samples per time
 m <- 50 #size of matched sample
