@@ -1,3 +1,17 @@
+#' Minimisation Criterion
+#' 
+#' This function computes the minimisation criterion (value of objective function)
+#' 
+#' @param mysample Data frame of units of proposed sample
+#' @param dpnt Data frame with coordinates of design points of a 
+#' rotatable central composite design for two factors 
+#' @param weight Weight for the average distance of the sampling points to the
+#  associated design points (optional)  
+#' @param phi Distance parameter of exponential semivariogram (optional); 
+#' if NULL (default value) the geometric criterion is used, 
+#' else the model-based criterion is used
+#' @return Minimisation criterion value of proposed sample
+
 getCriterion <- function(mysample, dpnt, weight, phi) {
   D2dpnt <- sqrt((mysample$PC1 - dpnt$x1)^2 + (mysample$PC2 - dpnt$x2)^2)
   D <- as.matrix(dist(mysample[, c("x1", "x2")]))
@@ -12,6 +26,15 @@ getCriterion <- function(mysample, dpnt, weight, phi) {
   }
 }
 
+#' Permutation
+#' 
+#' This function permutes a current sample by replacing one randomly selected unit
+#' by a unit randomly selected from the remaining candidate units of the same design point
+#' 
+#' @param mysample Data frame of units of current sample
+#' @param candidates Data frame with candidate units per design point
+#' Data frame has same variables as mysample
+#' @returm Data frame with units of permuted sample
 
 permute <- function(mysample, candidates)  {
   unit.rand <- sample(nrow(mysample), size = 1)
@@ -25,32 +48,33 @@ permute <- function(mysample, candidates)  {
   mysample
 }
 
-# This function optimises the sampling pattern of a
-# central composite response surface design sample
-# 
-#
-# @ param mysample. Data frame of units of initial sample, with unit ID, 
-#                   two spatial coordinates, two principal component scores, 
-#                   and associated design-point 
-# @ param candidates. Data frame with two or more candidates per design point.
-#                     Data frame has same variables as mysample
-# @ param dpnt. Data frame with coordinates of points of a rotatable central composite
-#               design for two factors 
-# @ param weight. Weight for the average distance of the sampling points to the
-#                 associated design points (optional)  
-# @ param phi. Distance parameter of exponential semivariogram (optional); 
-#              if NULL (default value) the geometric criterion is used, 
-#              else the model-based criterion is used
-# @ param T_ini. Initial temperature of annealing schedule
-# @ param coolingRate. Cooling rate of annealing schedule
-# @ param maxPermuted. Multiplier for maximum number of permutations per chain
-# @ param MaxNoChange. Stopping criterion. Maximum number of successive chains
-#                      without change of the criterion
-# @ param verbose. logical for printing the temperature, criterion,
-#                 number of accepted proposals per chain,
-#                 and number of improvements per chain during the optimisation
-# @ return list with data frame of optimised sample, numeric with mimimised 
-#          criterion, and numeric with trace of criterion 
+#' Simulated Annealing
+#' 
+#' This function optimises the sampling pattern of a
+#' central composite response surface design sample
+#' 
+#' @param mysample Data frame of units of initial sample, with unit ID, 
+#' two spatial coordinates, two principal component scores,
+#' and associated design-point 
+#' @param candidates Data frame with candidate units per design point.
+#' Data frame has same variables as mysample
+#' @param dpnt Data frame with coordinates of design points of a 
+#' rotatable central composite design for two factors 
+#' @param weight Weight for the average distance of the sampling points to the
+#  associated design points (optional)  
+#' @param phi Distance parameter of exponential semivariogram (optional); 
+#' if NULL (default value) the geometric criterion is used, 
+#' else the model-based criterion is used
+#' @param T_ini Initial temperature of annealing schedule
+#' @param coolingRate Cooling rate of annealing schedule
+#' @param maxPermuted. Multiplier for maximum number of permutations per chain
+#' @param MaxNoChange Stopping criterion. Maximum number of successive chains
+#' without change of the criterion
+#' @param verbose Logical for printing the temperature, the criterion,
+#' the number of accepted proposals per chain,
+#' and the number of improvements per chain during the optimisation
+#' @return list with data frame of optimised sample, numeric with minimised 
+#' criterion, and numeric with trace of criterion 
 
 anneal <- function(mysample0,
                  candidates,

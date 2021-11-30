@@ -1,3 +1,14 @@
+#' Determinant Information Matrix
+#' 
+#' This function computes the negative of the log of the determinant of
+#' the inverse of the Fisher information matrix
+#' 
+#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
+#' @model gstat model type of a priori semivariogram model
+#' @thetas Parameters of semivariogram model
+#' @perurbation Proportion of a semivariogram parameter value added to that value
+#' @return Negative of log of determinant of inverse of Fisher information matrix
+
 logdet <- function(points, model, thetas, perturbation)  {
   points <- as.data.frame(points)
   coordinates(points) <- ~x + y
@@ -38,6 +49,16 @@ logdet <- function(points, model, thetas, perturbation)  {
           }
     }
 }
+
+#' Variance Kriging Variance
+#' 
+#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
+#' @psample SpatialPoints used for prediction at the evaluation points
+#' @esample SpatialPoints used for evaluation
+#' @model gstat model type of a priori semivariogram model
+#' @thetas Parameters of semivariogram model
+#' @perurbation Proportion of a semivariogram parameter value added to that value
+#' @return Mean variance of the kriging variance
 
 MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
   nobs <- nrow(points)
@@ -138,6 +159,15 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
         }
     }
 }
+
+#' Augmented Variance
+#' 
+#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
+#' @esample SpatialPoints used for evaluation
+#' @model gstat model type of a priori semivariogram model
+#' @thetas Parameters of semivariogram model
+#' @perurbation Proportion of a semivariogram parameter value added to that value
+#' @return Mean augmented kriging variance
 
 MAKV <- function(points, esample, model, thetas, perturbation)  {
   points <- as.data.frame(points)
@@ -241,6 +271,16 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
         }
     }
 }
+
+#' Estimation Adjusted Criterion
+#' 
+#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
+#' @psample SpatialPoints used for prediction at the evaluation points
+#' @esample SpatialPoints used for evaluation
+#' @model gstat model type of a priori semivariogram model
+#' @thetas Parameters of semivariogram model
+#' @perurbation Proportion of a semivariogram parameter value added to that value
+#' @return Mean estimation adjusted criterion
 
 MEAC <- function(points, esample, model, thetas, perturbation)  {
   points <- as.data.frame(points)

@@ -147,7 +147,7 @@ with $\mu$ the mean, $A_i$ the effect of the $i$th first stage station, $B_{ij}$
 
 For balanced designs the variance components\index{Variance component} can be estimated by the MoM from a hierarchical ANOVA. The first step is to assign factors to the sampling points that indicate the grouping of the sampling points in the various stages. The number of factors needed is the number of stages minus 1. All factors have two levels. Figures \@ref(fig:FactorLevelsBalancedNestedSample) and \@ref(fig:FactorLevelsBalancedNestedSample2) show the levels of the three factors. The levels of the first factor show the strongest spatial clustering, those of the second factor the one-but-strongest, and so on.
 
-```{r FactorLevelsBalancedNestedSample, echo = FALSE, out.width = '100%', fig.asp = 0.30, fig.cap = "The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the first version."}
+```{r FactorLevelsBalancedNestedSample, echo = FALSE, out.width = "100%", fig.asp = 0.30, fig.cap = "The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the first version."}
 mynestedsample$factor1 <- rep(1:2)
 mynestedsample$factor2 <- rep(1:2, each = 2)
 mynestedsample$factor3 <- rep(1:2, each = 4)
@@ -171,7 +171,7 @@ mynestedsample_2$factor2 <- rep(1:2, each = 4)
 mynestedsample_2$factor3 <- rep(1:2, each = 2)
 ```
 
-```{r FactorLevelsBalancedNestedSample2, echo = FALSE, out.width = '100%', fig.asp = 0.30, fig.cap = "The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the second version."}
+```{r FactorLevelsBalancedNestedSample2, echo = FALSE, out.width = "100%", fig.asp = 0.30, fig.cap = "The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the second version."}
 df <- mynestedsample_2 %>% pivot_longer(., cols = c("factor1", "factor2", "factor3"))
 ggplot(df) +
   geom_tile(data = grid, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
@@ -343,7 +343,7 @@ signif(var(allpars), 3)
 
 Note the large variance for the range parameter (the standard deviation is 258 m) as well as the negative covariance of the nugget and the partial sill parameter (the Pearson correlation coefficient is -0.72). Histograms of the three estimated semivariogram parameters are shown in Figure \@ref(fig:histogramsvariogramparameters)\index{Simple random sampling of point-pairs|}.
 
-```{r histogramsvariogramparameters, echo = FALSE, out.width = '100%', fig.asp = 0.6, fig.cap = "Sampling distribution of estimators of the parameters of a spherical semivariogram with nugget of compound topographic index in Hunter Valley."}
+```{r histogramsvariogramparameters, echo = FALSE, out.width = "100%", fig.asp = 0.6, fig.cap = "Sampling distribution of estimators of the parameters of a spherical semivariogram with nugget of compound topographic index in Hunter Valley."}
 df <- as.data.frame(allpars)
 names(df) <- c("PartialSill", "Range", "Nugget")
 
@@ -457,8 +457,6 @@ logdet0 <- -determinant(I, logarithm = TRUE)$modulus
 The joint uncertainty about the semivariogram parameters, as quantified by the log of the determinant of the inverse of the information matrix, equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the spatial pattern of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note that a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
 
 Function `optimUSER` of package **spsann** can be used to search for the sampling locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). Package **spsann** cannot deal with the 22,124 candidate grid nodes of Hunter Valley; these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. 
-
-<!-- The objective function `logdet` is defined in **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R). -->
 
 The sample size for estimation of the semivariogram is passed to function `optimUSER` with argument `points`. A simple random sample of size 100 is used as an initial sample (but this is not the simple random sample used above to illustrate the computations). The objective function to be minimised is passed to function `optimUSER` with argument `fun`. The objective function `logdet` is defined in package **sswr**.  Argument `model` specifies the model *type*, using the characters of **gstat**. Argument `thetas` specifies the preliminary semivariogram parameter values. Argument `perturbation` specifies how much the semivariogram parameters are changed to compute the perturbed correlation matrices (`pA`) and the partial derivatives of the correlation matrix (`dA`).
 
@@ -634,7 +632,7 @@ MVKVopt <- tail(res$objective$energy$obj, 1)
 
 Figure \@ref(fig:MBVariogram) shows the optimised sample. The minimised value of MVKV is `r round(100*MVKVopt/MVKV0,0)`\% of the value of the simple random sample used to illustrate the computations. As for logdet the optimised sample shows strong spatial clustering. However, the shape is quite different. The points are clustered in a circle.
 
-```{r MBVariogram, echo = FALSE, out.width = '100%', fig.cap = "Optimised sampling pattern of 100 points for semivariogram estimation, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean estimation variance of the kriging variance (MVKV) as a minimisation criterion."}
+```{r MBVariogram, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern of 100 points for semivariogram estimation, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean estimation variance of the kriging variance (MVKV) as a minimisation criterion."}
 res <- readRDS(file = "results/MBSample_logdet_phi200nug02_HunterValley.rds")
 mysample_logdet <- res$points
 
@@ -891,7 +889,7 @@ save(res, mySCsample, myStrata, file = "results/MBSample_MEAC_phi200nug02_Hunter
 
 Figure \@ref(fig:FigMBEK) shows for Hunter Valley a spatial coverage sample of 90 points, supplemented by 10 points optimised by SSA, using MAKV and MEAC as a minimisation criterion.
 
-```{r FigMBEK, echo = FALSE, out.width = '100%', fig.cap = "Optimised sampling pattern of 10 points supplemented to spatial coverage sample of 90 points, for semivariogram estimation and prediction, using the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC) as a minimisation criterion. The prior semivariogram used in optimising the sampling pattern of the supplemental sample is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
+```{r FigMBEK, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern of 10 points supplemented to spatial coverage sample of 90 points, for semivariogram estimation and prediction, using the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC) as a minimisation criterion. The prior semivariogram used in optimising the sampling pattern of the supplemental sample is an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
 load(file = "results/MBSample_MAKV_phi200nug02_HunterValley.RData")
 mysample <- res$points
 MAKVopt <- tail(res$objective$energy$obj, 1)
@@ -939,7 +937,7 @@ With MAKV as a minimisation criterion there are two pairs of supplemental points
 
 A histogram of the shortest distance to the spatial coverage sample is shown in Figure \@ref(fig:HistogramShortestDistance). With MEAC three supplemental points are at very short distance of the spatial coverage sample ($<3$ m). The average distance between neighbouring spatial coverage sampling points equals `r round(mDSCmin,0)` m. 
 
-```{r HistogramShortestDistance, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "Shortest distance to the spatial coverage sample of the supplemental sample, optimised with the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC)."}
+```{r HistogramShortestDistance, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Shortest distance to the spatial coverage sample of the supplemental sample, optimised with the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC)."}
 
 df <- data.frame(MAKV = DminAV, MEAC = DminEAC)
 

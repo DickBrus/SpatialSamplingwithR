@@ -23,7 +23,7 @@ The name of this parameter shows the link with annealing in metallurgy. Annealin
 
 The larger the value of $T$, the larger the probability that a proposed sample with a given increase of the criterion is accepted (Figure \@ref(fig:AcceptanceProbabilitySSA)). The temperature $T$ is stepwise decreased during the optimisation: $T_{k+1} = \alpha T_k$. In Figure \@ref(fig:AcceptanceProbabilitySSA) $\alpha$ equals 0.9. The effect of decreasing the temperature is that the acceptance probability of worse samples decreases during the optimisation and approaches 0 towards the end of the optimisation. Note that the temperature remains constant during a number of iterations, referred to as the chain length\index{Chain length}. In Figure \@ref(fig:AcceptanceProbabilitySSA) this chain length equals 100 iterations. Finally, a stopping criterion is required. Various stopping criteria are possible; one option is to set the maximum numbers of chains with no improvement. $T, \alpha$, the chain length, and the stopping criterion are annealing schedule parameters that must be chosen by the user.
 
-```{r AcceptanceProbabilitySSA, echo=FALSE, out.width='100%', fig.asp=0.4, fig.cap="Acceptance probability as a function of the change in the mean kriging variance (MKV) used as a minimisation criterion, and cooling schedule in spatial simulated annealing. For negative changes (MKV of proposed sample smaller than of current sample) the acceptance probability equals 1."}
+```{r AcceptanceProbabilitySSA, echo=FALSE, out.width="100%", fig.asp=0.4, fig.cap="Acceptance probability as a function of the change in the mean kriging variance (MKV) used as a minimisation criterion, and cooling schedule in spatial simulated annealing. For negative changes (MKV of proposed sample smaller than of current sample) the acceptance probability equals 1."}
 dMKV <- seq(from = 0.0001, to = 0.05, by = 0.0001)
 T1 <- 0.01
 pr01 <- exp(-dMKV / T1)
@@ -71,7 +71,7 @@ The sample semivariogram is computed by first estimating sample semivariograms f
 The semivariogram parameters as estimated by `nls` are then used to define a semivariogram model of class `variogramModel` of package **gstat**, using function `vgm`. This is done because function `optimMKV` requires a semivariogram model of this class, see hereafter. As already mentioned in Chapter \@ref(MBgridspacing), in practice we often do not have legacy data from which we can estimate the semivariogram, and a best guess of the semivariogram then must be made.
 
 
-```{r variogramlnECe, echo = FALSE, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted exponential model of lnECe at the Cotton Research Farm."}
+```{r variogramlnECe, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted exponential model of lnECe at the Cotton Research Farm."}
 library(gstat)
 #read calibration data
 clbdat <- read.csv(file = "data/Sample_ECEM_CRF_Uzbekistan.csv", header = TRUE)
@@ -169,7 +169,7 @@ save(mysample, trace, file = "results/MBSample_OK_Uzbekistan.RData")
 
 The spatial pattern of the sample in Figure \@ref(fig:ModelBasedSampleOK) and the trace of the MKV in Figure \@ref(fig:TraceMOKV) suggest that we are close to the global optimum.
 
-```{r ModelBasedSampleOK, echo = FALSE, out.width = '100%', fig.cap = "Optimised sampling pattern for the mean variance of OK predictions of lnECe (model-based sample) and spatial coverage sample of the Cotton Research Farm."}
+```{r ModelBasedSampleOK, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern for the mean variance of OK predictions of lnECe (model-based sample) and spatial coverage sample of the Cotton Research Farm."}
 library(spcosa)
 load(file = "results/MBSample_OK_Uzbekistan.RData")
 
@@ -206,7 +206,7 @@ MKV <- mean(predictions$var1.var)
 myspcsample <- as(myspcsample, "data.frame")
 ```
 
-```{r TraceMOKV, echo = FALSE, fig.asp = 0.6, fig.cap = "Trace of the mean ordinary kriging variance (MOKV)."}
+```{r TraceMOKV, echo = FALSE, fig.width = 5, fig.asp = 0.6, fig.cap = "Trace of the mean ordinary kriging variance (MOKV)."}
 ggplot(trace) +
   geom_line(mapping = aes(x = seq_len(nrow(trace)), y = obj)) +
   scale_x_continuous(name = "Iteration") +
@@ -339,7 +339,7 @@ save(mysample, trace, file = "results/MBSample_KED_Uzbekistan.RData")
 
 Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample of 50 points. This clearly shows the irregular spatial pattern of the sampling points induced by the covariate lnEM100cm. 
 
-```{r ModelBasedSampleKED, echo = FALSE, fig.cap = "Optimised sampling pattern for KED of lnECe at the Cotton Research Farm, using lnEM100cm as a covariate."}
+```{r ModelBasedSampleKED, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern for KED of lnECe at the Cotton Research Farm, using lnEM100cm as a covariate."}
 load(file = "results/MBSample_KED_Uzbekistan.RData")
 
 covars <- grdCRF
@@ -356,7 +356,7 @@ ggplot(data = covars) +
 
 Comparing the population and sample histograms of the covariate clearly shows that locations with small and locations with large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sampling pattern is a compromise between spreading in geographic space and covariate space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the estimator of the model-mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.
 
-```{r histogramslnEM, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "Sample histogram and population histogram of lnEM100cm used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
+```{r histogramslnEM, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Sample histogram and population histogram of lnEM100cm used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
 plt1 <- ggplot(data = mysample) +
   geom_histogram(mapping = aes(x = lnEM100cm), breaks = seq(from = 2.75, to = 5, by = 0.25), fill = "black", alpha = 0.5, color = "black") +
   ggtitle("Sample") +
@@ -440,7 +440,7 @@ save(res, file = "results/MBInfillSample_OK_Amhara.RData")
 
 Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the soil organic matter (SOM) concentration (dag kg^-1^) throughout West-Amhara. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range, `r round(vgm_ML$phi,1)` km, of the semivariogram.
 
-```{r ModelBasedInfill, echo = FALSE, fig.cap = "Model-based infill sample for OK of the SOM concentration throughout West-Amhara. Legacy units have free-value 0, infill units have free-value 1."}
+```{r ModelBasedInfill, echo = FALSE, out.width="100%", fig.cap = "Model-based infill sample for OK of the SOM concentration throughout West-Amhara. Legacy units have free-value 0, infill units have free-value 1."}
 load("results/MBInfillSample_OK_Amhara.RData")
 df <- data.frame(x = res$points$x, y = res$points$y, free = res$points$free)
 df$free <- as.factor(df$free)
@@ -495,7 +495,7 @@ save(res, file = "results/MBInfillSample_KED_Amhara.RData")
 
 Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with OK because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with OK, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated model-mean.
 
-```{r ModelBasedInfillKED, echo = FALSE, fig.cap = "Model-based infill sample for KED of the SOM concentration throughout West-Amhara, plotted on a map of one of the covariates. Legacy units have free-value 0, infill units have free-value 1."}
+```{r ModelBasedInfillKED, echo = FALSE, out.width = "100%", fig.cap = "Model-based infill sample for KED of the SOM concentration throughout West-Amhara, plotted on a map of one of the covariates. Legacy units have free-value 0, infill units have free-value 1."}
 load("results/MBInfillSample_KED_Amhara.RData")
 df <- data.frame(x = res$points$x, y = res$points$y, free = res$points$free)
 df$free <- as.factor(df$free)

@@ -19,7 +19,7 @@ This design has been applied, among others, for mapping soil salinity (ECe), usi
 
 Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude-longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
-```{r EMdataUzbekistan, echo=FALSE, out.width='100%', fig.cap="Natural log of EM measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
+```{r EMdataUzbekistan, echo = FALSE, out.width = "100%", fig.cap = "Natural log of EM measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
 dat <- read.csv(file = "data/TransectsData_EM_CRF_Uzbekistan.csv")
 dat$lnEM100cm <- log(dat$EMv1mt)
 dat$lnEM50cm <- log(dat$EMv05mt)
@@ -97,7 +97,7 @@ saveRDS(grdCRF, file = "data/CottonResearchFarm_Uzbekistan.rds")
 grdCRF <- readRDS(file = "data/CottonResearchFarm_Uzbekistan.rds")
 ```
 
-```{r EMdataUzbekistan2, echo = FALSE, out.width = '100%', fig.cap = "Interpolated surfaces of natural log of EM measurements on the Cotton Research Farm, used as covariates in spatial response surface sampling."}
+```{r EMdataUzbekistan2, echo = FALSE, out.width = "100%", fig.cap = "Interpolated surfaces of natural log of EM measurements on the Cotton Research Farm, used as covariates in spatial response surface sampling."}
 df <- grdCRF %>% pivot_longer(cols = c("lnEM100cm", "lnEM50cm"))
 
 ggplot(data = df) +
@@ -287,7 +287,7 @@ saveRDS(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_mb.rds")
 
 Figure \@ref(fig:CCRSDinPCspace) shows the optimised CCRSD samples plotted in the space spanned by the two principal components, obtained with the geometric and the model-based criterion, plotted together with the design points. The two optimised samples are very similar.
 
-```{r CCRSDinPCspace, echo = FALSE, out.width = '100%', fig.cap = "Principal component scores of the spatial CCRSD sample (triangles), optimised with the geometric and the model-based criterion. Dots: design points of CCRSD."}
+```{r CCRSDinPCspace, echo = FALSE, out.width = "100%", fig.cap = "Principal component scores of the spatial CCRSD sample (triangles), optimised with the geometric and the model-based criterion. Dots: design points of CCRSD."}
 mySRSsample <- readRDS(file = "results/SpatialResponseSurfaceSample_CRF_geo.rds")
 mysample_geo <- mySRSsample$mysample
 critmin_geo <- tail(mySRSsample$trace, 1)
@@ -386,7 +386,7 @@ ggplot(grdCRF) +
   coord_fixed()
 ```
 
-```{r CCRSDinPCSpace2n, echo = FALSE, out.width = '70%', fig.cap = "CCRSD sample (triangles) with two points per design point (dots), optimised with model-based criterion, plotted in the space spanned by the two standardised principal components."}
+```{r CCRSDinPCSpace2n, echo = FALSE, fig.width = 5, fig.cap = "CCRSD sample (triangles) with two points per design point (dots), optimised with model-based criterion, plotted in the space spanned by the two standardised principal components."}
 mySRSsample <- readRDS(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
 mysample <- mySRSsample$mysample
 ggplot(mysample) +
@@ -407,7 +407,7 @@ The spatial strata are not used for fitting separate regression models. All data
 
 Figure \@ref(fig:StrataCRF4CCRSD) shows two subareas used as strata in stratified response surface sampling of the Cotton Research Farm.
 
-```{r StrataCRF4CCRSD, echo = FALSE, fig.cap = "Two subareas of the Cotton Research Farm used as strata in stratified CCRSD sampling."}
+```{r StrataCRF4CCRSD, echo = FALSE, out.width = "100%", fig.cap = "Two subareas of the Cotton Research Farm used as strata in stratified CCRSD sampling."}
 ggplot(grdCRF) +
   geom_raster(aes(x = x1 / 1000, y = x2 / 1000, fill = as.factor(subarea))) +
   scale_fill_grey(name = "Stratum") +
@@ -436,7 +436,7 @@ for (h in c(1, 2)) {
 }
 ```
 
-```{r candidatesSTResponse, echo = FALSE, fig.cap = "Candidate sampling points for stratified CCRSD sampling, plotted on a map of the first principal component (PC1)."}
+```{r candidatesSTResponse, echo = FALSE, out.width = "100%", fig.cap = "Candidate sampling points for stratified CCRSD sampling, plotted on a map of the first principal component (PC1)."}
 subarea <- as.factor(c(rep(1, nrow(candi_all) / 2), rep(2, nrow(candi_all) / 2)))
 dpnt9 <- c(rep(1:9, each = 8), rep(1:9, each = 8))
 ggplot(grdCRF) +
@@ -480,7 +480,7 @@ saveRDS(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_
 
 Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left cube point is very large. In this stratum no population units are present that are close to these two design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance. In geographical space no differences can be seen between the two samples.  
 
-```{r StratifiedCCRSD, echo = FALSE, fig.cap = "Stratified CCRSD samples from the Cotton Research Farm, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
+```{r StratifiedCCRSD, echo = FALSE, out.width = "100%", fig.cap = "Stratified CCRSD samples from the Cotton Research Farm, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
 mySRSsample <- readRDS(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
 mysample_w0 <- mySRSsample$mysample
 
@@ -499,7 +499,7 @@ ggplot(mysamples) +
   coord_fixed()
 ```
 
-```{r StratifiedCCRSDinPCSpace, echo = FALSE, out.width = '100%', fig.cap = "Principal component scores of the stratified CCRSD sample, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)."}
+```{r StratifiedCCRSDinPCSpace, echo = FALSE, out.width = "100%", fig.cap = "Principal component scores of the stratified CCRSD sample, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)."}
 mySRSsample <- readRDS(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
 mysample_w0 <- mySRSsample$mysample
 mysample_w0$subarea <- as.factor(rep(c(1, 2), each = 9))

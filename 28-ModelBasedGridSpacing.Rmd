@@ -24,7 +24,7 @@ vgmdl <- vgm(model = "Sph", psill = 0.6, range = 40, nugget = 0.6)
 vgm_MoM <- fit.variogram(vg, model = vgmdl)
 ```
 
-```{r variogramSOMEthiopia, echo = FALSE, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted spherical model of the SOM concentration in West-Amhara, estimated from the legacy data."}
+```{r variogramSOMEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted spherical model of the SOM concentration in West-Amhara, estimated from the legacy data."}
 fitted <- variogramLine(vgm_MoM, maxdist = 60, n = 1000)
 ggplot(data = vg) +
   geom_point(mapping = aes(x = dist, y = gamma), size = 3) +
@@ -111,7 +111,7 @@ dfKV_OK <- data.frame(spacing, samplesize, MKV_OK, P50KV_OK, P90KV_OK)
 
 The estimated mean and quantiles of the kriging variance are plotted against the grid spacing (Figure \@ref(fig:MOKVvsSpacingEthiopia)).
 
-```{r MOKVvsSpacingEthiopia, echo = FALSE, fig.asp = 0.7, fig.cap = "Mean, median (P50), and 0.90 quantile (P90) of the ordinary kriging variance of predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid."}
+```{r MOKVvsSpacingEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Mean, median (P50), and 0.90 quantile (P90) of the ordinary kriging variance of predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid."}
 names(dfKV_OK)[c(3, 4, 5)] <- c("Mean", "P50", "P90")
 df <- dfKV_OK %>% pivot_longer(., cols = c("Mean", "P50", "P90"))
 
@@ -173,7 +173,7 @@ Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50, and P90 of th
 
 (ref:MOBKVvsSpacingEthiopia) Mean, median (P50), and 0.90 quantile (P90) of the ordinary block-kriging variance of predictions of the mean SOM concentration of blocks of 100 m $\times$ 100 m, in West-Amhara, as a function of the spacing of a square grid.
 
-```{r MOBKVvsSpacingEthiopia, echo = FALSE, fig.asp = 0.7, fig.cap = "(ref:MOBKVvsSpacingEthiopia)"}
+```{r MOBKVvsSpacingEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:MOBKVvsSpacingEthiopia)"}
 names(dfKV_OBK)[c(2, 3, 4)] <- c("Mean", "P50", "P90")
 df <- dfKV_OBK %>% pivot_longer(., cols = c("Mean", "P50", "P90"))
 
@@ -193,7 +193,8 @@ The SOM concentration data of West-Amhara are used to estimate the parameters (r
 ```{r}
 library(geoR)
 dGeoR <- as.geodata(obj = sampleAmhara, header = TRUE,
-  coords.col = c("s1", "s2"), data.col = "SOM", covar.col = c("dem", "rfl_NIR", "rfl_red", "lst"))
+  coords.col = c("s1", "s2"), data.col = "SOM",
+  covar.col = c("dem", "rfl_NIR", "rfl_red", "lst"))
 vgm_REML <- likfit(geodata = dGeoR, trend = ~ dem + rfl_NIR + rfl_red + lst,
   cov.model = "spherical", ini.cov.pars = c(1, 5),
   nugget = 0.2, lik.method = "REML", messages = FALSE)
@@ -243,7 +244,7 @@ dfKV_KED <- data.frame(spacing, MKV_KED)
 save(dfKV_KED, file = "results/MKEDVarvsGridspacing_Amhara.RData")
 ```
 
-```{r MKEDVvsSpacingEthiopia, echo = FALSE, fig.asp = 0.7, fig.cap = "Mean kriging variance of OK and KED predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown obtained by selecting ten randomly placed grids of that spacing."}
+```{r MKEDVvsSpacingEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Mean kriging variance of OK and KED predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown obtained by selecting ten randomly placed grids of that spacing."}
 load(file = "results/MKEDVarvsGridspacing_Amhara.RData")
 dfKV_KED$OK <- dfKV_OK$Mean
 df <- dfKV_KED %>% pivot_longer(., cols = names(dfKV_KED)[-1])
@@ -398,7 +399,7 @@ for (i in seq_len(ncol(MKV))) {
 
 For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that for most sampled semivariograms (MCMC sample units) the tolerable grid spacing equals 8 km, which corresponds with the tolerable grid spacing derived above for OK. For `r as.character(sum(is.na(spacing_tol)))` sampled semivariograms the tolerable grid spacing exceeds 12 km. However, this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
 
-```{r HistogramTolerableSpacing, echo = FALSE, fig.asp = 0.7, fig.cap = "Histogram of tolerable grid spacings for a target MKV of 0.8."}
+```{r HistogramTolerableSpacing, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Histogram of tolerable grid spacings for a target MKV of 0.8."}
 spacing_tol <- spacing_tol[!is.na(spacing_tol)]
 
 ggplot() +
@@ -409,7 +410,7 @@ ggplot() +
 
 Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if we require a probability of 80\% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is about 6.25 km. With a grid spacing of 8 km, as determined before, the probability that the MKV exceeds 0.8 is about 57\%.
 
-```{r ProportionMCMCSamples, echo = FALSE, fig.asp = 0.7, fig.cap = "Proportion of MCMC sample units with a MKV smaller than or equal to a target MKV of 0.8."}
+```{r ProportionMCMCSamples, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Proportion of MCMC sample units with a MKV smaller than or equal to a target MKV of 0.8."}
 CF <- numeric(length = length(spacing))
 for (i in seq_len(length(spacing))) {
   CF[i] <- sum(MKV[i, ] < MKV_target)
