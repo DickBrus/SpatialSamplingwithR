@@ -1,14 +1,23 @@
 #' Determinant Information Matrix
-#' 
-#' This function computes the negative of the log of the determinant of
-#' the inverse of the Fisher information matrix
-#' 
-#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
-#' @model gstat model type of a priori semivariogram model
-#' @thetas Parameters of semivariogram model
-#' @perurbation Proportion of a semivariogram parameter value added to that value
-#' @return Negative of log of determinant of inverse of Fisher information matrix
-
+#'
+#' This function computes the log of the reciprocal determinant of Fisher
+#' information matrix.
+#'
+#' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
+#'   with coordinates of sampling points.
+#' @param model \pkg{gstat} model type of a priori semivariogram model.
+#' @param thetas parameters of semivariogram model.
+#' @param perturbation proportion of a semivariogram parameter value added to
+#'   that value.
+#'
+#' @return log of the reciprocal determinant of Fisher information matrix.
+#'
+#' @seealso \code{\link[gstat]{vgm}}
+#'
+#' @importFrom sp "coordinates<-" spDists
+#' @importFrom gstat variogramLine vgm
+#'
+#' @export
 logdet <- function(points, model, thetas, perturbation)  {
   points <- as.data.frame(points)
   coordinates(points) <- ~x + y
@@ -50,16 +59,25 @@ logdet <- function(points, model, thetas, perturbation)  {
     }
 }
 
-#' Variance Kriging Variance
-#' 
-#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
-#' @psample SpatialPoints used for prediction at the evaluation points
-#' @esample SpatialPoints used for evaluation
-#' @model gstat model type of a priori semivariogram model
-#' @thetas Parameters of semivariogram model
-#' @perurbation Proportion of a semivariogram parameter value added to that value
-#' @return Mean variance of the kriging variance
 
+
+#' Variance Kriging Variance
+#'
+#' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
+#'   with coordinates of sampling points.
+#' @param psample \code{\link[sp]{SpatialPoints}} used for prediction at the
+#'   evaluation points.
+#' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
+#' @param model \pkg{gstat} model type of a priori semivariogram model.
+#' @param thetas parameters of semivariogram model.
+#' @param perturbation proportion of a semivariogram parameter value added to
+#'   that value.
+#' @return mean variance of the kriging variance.
+#'
+#' @importFrom sp "coordinates<-" spDists
+#' @importFrom gstat variogramLine vgm
+#'
+#' @export
 MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
   nobs <- nrow(points)
   points <- as.data.frame(points)
@@ -161,14 +179,21 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
 }
 
 #' Augmented Variance
-#' 
-#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
-#' @esample SpatialPoints used for evaluation
-#' @model gstat model type of a priori semivariogram model
-#' @thetas Parameters of semivariogram model
-#' @perurbation Proportion of a semivariogram parameter value added to that value
-#' @return Mean augmented kriging variance
-
+#'
+#' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
+#'   with coordinates of sampling points
+#' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
+#' @param model \pkg{gstat} model type of a priori semivariogram model.
+#' @param thetas parameters of semivariogram model.
+#' @param perturbation proportion of a semivariogram parameter value added to
+#'   that value.
+#'
+#' @importFrom sp "coordinates<-" spDists
+#' @importFrom gstat variogramLine vgm
+#'
+#' @return mean augmented kriging variance.
+#'
+#' @export
 MAKV <- function(points, esample, model, thetas, perturbation)  {
   points <- as.data.frame(points)
   nobs <- nrow(points)
@@ -272,16 +297,24 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
     }
 }
 
-#' Estimation Adjusted Criterion
-#' 
-#' @param points DataFrame or SpatialPoints(DataFrame) with coordinates of sampling points
-#' @psample SpatialPoints used for prediction at the evaluation points
-#' @esample SpatialPoints used for evaluation
-#' @model gstat model type of a priori semivariogram model
-#' @thetas Parameters of semivariogram model
-#' @perurbation Proportion of a semivariogram parameter value added to that value
-#' @return Mean estimation adjusted criterion
 
+
+#' Estimation Adjusted Criterion
+#'
+#' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
+#'   with coordinates of sampling points.
+#' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
+#' @param model \pkg{gstat} model type of a priori semivariogram model.
+#' @param thetas parameters of semivariogram model.
+#' @param perturbation proportion of a semivariogram parameter value added to
+#'   that value.
+#'
+#' @importFrom sp "coordinates<-" spDists
+#' @importFrom gstat variogramLine vgm
+#'
+#' @return Mean estimation adjusted criterion.
+#'
+#' @export
 MEAC <- function(points, esample, model, thetas, perturbation)  {
   points <- as.data.frame(points)
   nobs <- nrow(points)

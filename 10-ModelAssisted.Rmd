@@ -1,9 +1,5 @@
 # Model-assisted estimation {#Modelassisted}
 
-```{r, echo = FALSE}
-evalFT <- FALSE
-```
-
 In many cases ancillary information is available that could be useful to increase the accuracy of the estimated mean or total of the study variable. The ancillary variable(s) can be qualitative (i.e. classifications) or quantitative. As we have seen before, both types of ancillary variable can be used at the design stage, i.e. in selecting the sampling units, to improve the performance of the sampling strategy, for instance by stratification (Chapter \@ref(STSI)), selecting sampling units with probabilities proportional to size (Chapter \@ref(pps)), or through balancing and/or spreading the sample on the covariates (Chapter \@ref(BalancedSpreaded)). In this chapter I explain how these covariates can be used at the stage of *estimation*, once the data are collected.
 
 In the design-based approach for sampling various estimators are developed that exploit one or more covariates. These estimators are derived from different superpopulation models\index{Superpopulation model} of the study variable. A superpopulation model is a statistical model that can be used to generate an infinite number of populations, a superpopulation, through simulation. An example is the simulation of spatial populations using a geostatistical model, see Chapter \@ref(MBpredictionofDesignVariance). A superpopulation is a construct, it does not exist in reality. We assume that the population of interest is one of the populations that can be generated with the chosen model. The combination of probability sampling and estimators that are built on a superpopulation model is referred to as the model-assisted approach\index{Model-assisted approach}. Also in the model-based approach a superpopulation model is used, however, its role is fundamentally different from that in the model-assisted approach, see Chapter \@ref(Approaches). To stress the different use of the superpopulation model in the model-assisted approach this model is referred to as the "working model"\index{Working model}, i.e. the superpopulation model that is used to derive a model-assisted estimator.
@@ -203,9 +199,9 @@ N <- nrow(grdAmazonia)
 se_mz_regr <- sqrt((1 - n / N) * S2e / n)
 ```
 
-The difference $\delta(x)$ between the population mean of the covariate lnSWIR2 (`r as.character(round(mx_pop,3))`) and its estimated mean (`r as.character(round(mx_sam,3))`) equals `r as.character(round(mx_pop - mx_sam,3))`. We may expect the difference between the unknown population mean of the study variable AGB and its sample mean (`r as.character(round(mz_sam,3))`) to be equal to $\delta(x)$, multiplied by the estimated slope of the line, which equals `r as.character(round(ab[2],1))`. The result, `r as.character(round(ab[2] * (mx_pop - mx_sam),4))`, is added to the simple random sample estimate, so that the ultimate regression estimate is adjusted downward to `r round(mz_regr,1)` 10^9^ kg ha^-1^. 
+The difference $\delta(x)$ between the population mean of the covariate lnSWIR2 (`r formatC(mx_pop, 3, format = "f")`) and its estimated mean (`r formatC(mx_sam, 3, format = "f")`) equals `r formatC(mx_pop - mx_sam, 3, format = "f")`. We may expect the difference between the unknown population mean of the study variable AGB and its sample mean (`r formatC(mz_sam, 3, format = "f")`) to be equal to $\delta(x)$, multiplied by the estimated slope of the line, which equals `r formatC(ab[2], 1, format = "f")`. The result, `r formatC(ab[2] * (mx_pop - mx_sam), 4, format = "f")`, is added to the simple random sample estimate, so that the ultimate regression estimate is adjusted downward to `r formatC(mz_regr, 1, format = "f")` 10^9^ kg ha^-1^. 
 
-The estimated approximate standard error of the regression estimator equals `r as.character(round(se_mz_regr,3))` 10^9^ kg ha^-1^. The approximated variance is a simplification of a more complicated approximation derived from writing the regression estimator of the population total as a weighted sum of the $\pi$-expanded observations (@sar92, Equation (6.5.9)):
+The estimated approximate standard error of the regression estimator equals `r formatC(se_mz_regr, 3, format = "f")` 10^9^ kg ha^-1^. The approximated variance is a simplification of a more complicated approximation derived from writing the regression estimator of the population total as a weighted sum of the $\pi$-expanded observations (@sar92, Equation (6.5.9)):
 
 \begin{equation}
 \hat{\bar{z}}_{\mathrm{regr}}=\frac{1}{N}\sum_{k \in \mathcal{S}} g_k \frac{z_k}{\pi_k}\;,
@@ -290,7 +286,7 @@ svymean(~ AGB, mysample_cal)
 
 The standard error is computed with Equation \@ref(eq:AlternativeVarianceRegressionEstimator). Figure \@ref(fig:SamplingDistributionRegression) shows the sampling distribution of the simple regression estimator along with the distribution of the $\pi$ estimator, obtained by repeating simple random sampling of 100 units and estimation 10,000 times.
 
-```{r, eval = evalFT, echo = FALSE}
+```{r, eval = FALSE, echo = FALSE}
 number_of_samples <- 10000
 mz_HT <- mz_regr <- v_mz_regr <-  numeric(length = number_of_samples)
 set.seed(314)
@@ -329,7 +325,7 @@ v_mz_SI <- (1 - n / N) * var(grdAmazonia$AGB) / n
 gain <- v_mz_SI / var(mz_regr)
 ```
 
-The average of the 10,000 regression estimates equals `r as.character(round(mean(mz_regr),1))` 10^9^ kg ha^-1^. The population mean of the study variable AGB equals `r as.character(round(mean(grdAmazonia$AGB),1))` 10^9^ kg ha^-1^, so the estimated bias of the regression estimator equals `r as.character(round(bias,1))` 10^9^ kg ha^-1^, which is negligibly small related to the estimated population mean. The variance of the 10,000 regression estimates equals `r as.character(round(v_mz_regr_sim,2))` (10^9^ kg ha^-1^)^2^, and the average of the 10,000 estimated approximate variances using Equation \@ref(eq:AlternativeVarianceRegressionEstimator)  equals `r as.character(round(m_v_mz_regr_sim,2))` (10^9^ kg ha^-1^)^2^. The gain in precision due to the regression estimator, quantified by the ratio of the variance of the $\pi$ estimator to the variance of the regression estimator equals `r as.character(round(gain,3))`.
+The average of the 10,000 regression estimates equals `r formatC(mean(mz_regr), 1, format = "f")` 10^9^ kg ha^-1^. The population mean of the study variable AGB equals `r formatC(mean(grdAmazonia$AGB), 1, format = "f")` 10^9^ kg ha^-1^, so the estimated bias of the regression estimator equals `r formatC(bias, 1, format = "f")` 10^9^ kg ha^-1^, which is negligibly small related to the estimated population mean. The variance of the 10,000 regression estimates equals `r formatC(v_mz_regr_sim, 2, format = "f")` (10^9^ kg ha^-1^)^2^, and the average of the 10,000 estimated approximate variances using Equation \@ref(eq:AlternativeVarianceRegressionEstimator)  equals `r formatC(m_v_mz_regr_sim, 2, format = "f")` (10^9^ kg ha^-1^)^2^. The gain in precision due to the regression estimator, quantified by the ratio of the variance of the $\pi$ estimator to the variance of the regression estimator equals `r formatC(gain, 3, format = "f")`.
 
 For simple random sampling the ratio of the variances of the simple regression estimator and the $\pi$ estimator
 is independent of the sample size and equals $1-r^2$, with $r$ the correlation coefficient of the study variable and the covariate (@sar92, p. 274).
@@ -354,7 +350,7 @@ The best model with one predictor is the model with lnSWIR2, the best model with
 which.max(res.sum$adjr2)
 ```
 
-The standard error of the estimated mean AGB is somewhat reduced by adding the covariates Terra_PP, and Elevation to the regression estimator.
+The standard error of the estimated mean AGB is somewhat reduced by adding the covariates Terra_PP and Elevation to the regression estimator.
 
 ```{r}
 mysample$fpc <- nrow(grdAmazonia)
@@ -610,7 +606,7 @@ X <- matrix(nrow = n, ncol = 2, data = 1)
 X[, 2] <- mysample$lnSWIR2
 XWX <- t(X) %*% W %*% X
 XWz <- t(X) %*% W %*% mysample$AGB
-print(ab <- t(solve(XWX,XWz)))
+print(ab <- t(solve(XWX, XWz)))
 ```
 
 Note that the same estimates are obtained by model-based estimation, using weighted least squares\index{Weighted least squares}, based on the assumption that the variances $\sigma^2(\epsilon_k)$ are proportional to the inclusion probabilities (which is a weird assumption).
@@ -789,7 +785,7 @@ m_v_tz_ratio_sim <- mean(v_tz_ratio)
 gain <- var(tz_HT) / var(tz_ratio)
 ```
 
-Figure \@ref(fig:SamplingDistributionRatio) shows the sampling distribution of the ratio estimator and the $\pi$ estimator, obtained by repeating simple random sampling of size 50 and estimation 10,000 times. The average of the 10,000 ratio estimates of the total poppy area equals 62,512 ha. The population total of poppy equals 63,038 ha, so the estimated bias of the ratio estimator equals `r as.character(round(bias,0))` ha. The boxplots in Figure \@ref(fig:SamplingDistributionRatio) show that the ratio estimator has less extreme outliers. The standard deviation of the 10,000 ratio estimates equals 24,177 ha. The gain in precision due to the ratio estimator, quantified by the ratio of the variance of the $\pi$ estimator to the variance of the ratio estimator, equals `r as.character(round(gain,3))`.
+Figure \@ref(fig:SamplingDistributionRatio) shows the sampling distribution of the ratio estimator and the $\pi$ estimator, obtained by repeating simple random sampling of size 50 and estimation 10,000 times. The average of the 10,000 ratio estimates of the total poppy area equals `r formatC(m_tz_ratio_sim, 0, format = "f", big.mark = ",")`. The population total of poppy equals `r formatC(sum(grdKandahar$poppy), 0, format = "f", big.mark = ",")` ha, so the estimated bias of the ratio estimator equals `r formatC(bias, 0, format = "f")` ha. The boxplots in Figure \@ref(fig:SamplingDistributionRatio) show that the ratio estimator has less extreme outliers. The standard deviation of the 10,000 ratio estimates equals `r formatC(sqrt(v_tz_ratio_sim), 0, format = "f", big.mark = ",")` ha. The gain in precision due to the ratio estimator, quantified by the ratio of the variance of the $\pi$ estimator to the variance of the ratio estimator, equals `r formatC(gain, 3, format = "f")`.
 
 #### Exercises {-}
 
@@ -1120,14 +1116,14 @@ sqrt(res$pop_mean_var)
 
 The variance of the estimator of the mean can also be estimated by bootstrapping the sample (@loh99, Section 9.3.3).
  
-```{r, eval = evalFT}
+```{r, eval = FALSE}
 res <- gregTree(
   mysample$AGB, xsample = mysample[, covs],
   xpop = grdAmazonia[, covs], pi = pi,
   var_est = TRUE, var_method = "bootstrapSRS", B = 100)
 ```
 
-```{r, echo = FALSE, eval = evalFT}
+```{r, echo = FALSE, eval = FALSE}
 saveRDS(res, file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
 ```
 
@@ -1143,7 +1139,7 @@ The standard error obtained by the bootstrap is considerably larger than the pre
 
 The simple random sampling of 100 units and the model-assisted estimation are repeated 500 times, using a regression tree for prediction. The variance is estimated by Taylor linearisation (`var_method = LinHTSRS`) and by bootstrapping (`var_method = bootstrapSRS`) using 100 bootstrap samples.
 
-```{r, echo = FALSE, eval = evalFT}
+```{r, echo = FALSE, eval = FALSE}
 mz_rtree <- v_mz_rtree_linHTSRS <- v_mz_rtree_btstrp <- numeric(length = 500)
 set.seed(314)
 for (i in 1:500) {
@@ -1174,7 +1170,7 @@ save(mz_rtree, v_mz_rtree_linHTSRS, v_mz_rtree_btstrp, file = "results/Regressio
 load(file = "results/RegressionTreeEstimates_Amazonia_100pnts.RData")
 ```
 
-The variance of the 500 estimated population means of AGB is `r round(var(mz_rtree),1)` (10^9^ kg ha^-1^)^2^. Estimation of the variance through Taylor linearisation strongly underestimates the variance: the average of the 500 estimated variances equals `r round(mean(v_mz_rtree_linHTSRS),1)` (10^9^ kg ha^-1^)^2^. On the contrary, the bootstrap variance estimator overestimates the variance: the average of the 500 estimated variances equals `r round(mean(v_mz_rtree_btstrp),1)` (10^9^ kg ha^-1^)^2^. I prefer to overestimate my uncertainty about the mean, instead of being overoptimistic, and so I would recommend to report the bootstrap variance.
+The variance of the 500 estimated population means of AGB is `r formatC(var(mz_rtree), 1, format = "f")` (10^9^ kg ha^-1^)^2^. Estimation of the variance through Taylor linearisation strongly underestimates the variance: the average of the 500 estimated variances equals `r formatC(mean(v_mz_rtree_linHTSRS), 1, format = "f")` (10^9^ kg ha^-1^)^2^. On the contrary, the bootstrap variance estimator overestimates the variance: the average of the 500 estimated variances equals `r formatC(mean(v_mz_rtree_btstrp), 1, format = "f")` (10^9^ kg ha^-1^)^2^. I prefer to overestimate my uncertainty about the mean, instead of being overoptimistic, and so I would recommend to report the bootstrap variance.
 
 ### Predicting with a random forest
 
@@ -1233,7 +1229,7 @@ u_OOB <- mysample$AGB - AGBpred_OOB * b_OOB
 v_mz_MC_OOB <- (1 - n / N) * var(u_OOB) / n
 ```
 
-The two calibration estimates are about equal: `r round(mz_MC,1)` 10^9^ kg ha^-1^ using sample predictions obtained with function `predict`, and `r round(mz_MC_OOB,1)` 10^9^ kg ha^-1^ with the out-of-bag sample predictions. However, their estimated variances are largely different: `r as.character(round(v_mz_MC,2))` (10^9^ kg ha^-1^)^2^ and `r as.character(round(v_mz_MC_OOB,2))` (10^9^ kg ha^-1^)^2^, respectively. 
+The two calibration estimates are about equal: `r formatC(mz_MC, 1, format = "f")` 10^9^ kg ha^-1^ using sample predictions obtained with function `predict`, and `r formatC(mz_MC_OOB, 1, format = "f")` 10^9^ kg ha^-1^ with the out-of-bag sample predictions. However, their estimated variances are largely different: `r formatC(v_mz_MC, 2, format = "f")` (10^9^ kg ha^-1^)^2^ and `r formatC(v_mz_MC_OOB,2, format = "f")` (10^9^ kg ha^-1^)^2^, respectively. 
 
 In the next code chunk the generalised difference estimate (Equation \@ref(eq:GeneralizedDifferenceEstimator)) is computed. Similar to the model-calibration estimate, this difference estimate is computed from predictions based on all trees and from the out-of-bag predictions.
 
@@ -1247,7 +1243,7 @@ mz_MD_OOB <- mean(AGBpred) + mean(d_OOB)
 v_mz_MD_OOB <- (1 - n / N) * var(d_OOB) / n
 ```
 
-For the difference estimator the results are very similar. The two difference estimates are `r round(mz_MD,1)` 10^9^ kg ha^-1^ and 227.0 10^9^ kg ha^-1^, and their estimated variances are `r round(v_mz_MD,2)` (10^9^ kg ha^-1^)^2^ and `r round(v_mz_MD_OOB,2)` (10^9^ kg ha^-1^)^2^, respectively. The model-calibration estimate and the generalised difference estimate are nearly equal.
+For the difference estimator the results are very similar. The two difference estimates are `r formatC(mz_MD, 1, format = "f")` 10^9^ kg ha^-1^ and 227.0 10^9^ kg ha^-1^, and their estimated variances are `r formatC(v_mz_MD, 2, format = "f")` (10^9^ kg ha^-1^)^2^ and `r formatC(v_mz_MD_OOB, 2, format = "f")` (10^9^ kg ha^-1^)^2^, respectively. The model-calibration estimate and the generalised difference estimate are nearly equal.
 
 The sampling and estimation are repeated 1,000 times: 1,000 times a simple random sample without replacement of size 100 is selected. Each sample is used to calibrate a RF, each forest consisting of 1,000 trees. This results in 2 $\times$ 1,000 model-calibration estimates and their estimated variances as well as 2 $\times$ 1,000 difference estimates and their estimated variances. To limit the computing time, a 5 km $\times$ 5 km subgrid of `grdAmazonia` is used for selecting the simple random samples and for predicting AGB with the RF.
 
@@ -1348,7 +1344,7 @@ RE_MC <- MSE_HT / MSE_MC
 RE_MC_OOB <- MSE_HT / MSE_MC_OOB
 ```
 
-The variance of the 1,000 model-calibration estimates (experimental variance), using all trees to predict AGB for the sampled units, equals 15.0. This is `r round(v_mz_MC_sim/m_v_mz_MC_sim,2)` times larger than the average of the 1,000 estimated variances, which equals `r as.character(round(m_v_mz_MC_sim,2))`. When using the out-of-bag sample predictions, the experimental variance is about equal to the average of the 1,000 variance estimates: `r round(v_mz_MC_OOB_sim,1)` versus 15.0.
+The variance of the 1,000 model-calibration estimates (experimental variance), using all trees to predict AGB for the sampled units, equals `r formatC(v_mz_MC_sim, 1, format = "f")`. This is `r formatC(v_mz_MC_sim/m_v_mz_MC_sim, 2, format = "f")` times larger than the average of the 1,000 estimated variances, which equals `r formatC(m_v_mz_MC_sim, 2, format = "f")`. When using the out-of-bag sample predictions, the experimental variance is about equal to the average of the 1,000 variance estimates: `r formatC(v_mz_MC_OOB_sim, 1, format = "f")` versus `r formatC(v_mz_MC_sim, 1, format = "f")`.
 
 The reason of underestimation of the variance when predicting AGB at sample units with function `predict` is that all 1,000 trees are used in prediction, including the trees calibrated on bootstrap samples that contain the unit in the sample to be predicted. On the contrary, the out-of-bag predicted values are computed as the average of predictions from the trees calibrated on bootstrap samples that do not contain the sample unit to be predicted. The default sample fraction is 0.632, see argument `sample.fraction` of function `ranger`, so with 1,000 trees these predictions are the average of, on average, 368 tree predictions. This explains why the out-of-bag prediction errors are larger than the prediction errors obtained with function `predict`. In other words, the variance of the out-of-bag differences $d$ and of the out-of-bag residuals $u$ are larger than those obtained with predicting using all trees.
 

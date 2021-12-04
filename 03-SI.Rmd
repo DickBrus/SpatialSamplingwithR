@@ -107,7 +107,7 @@ The simple random sample of size 40 selected above is used to estimate the total
 mz <- mean(mysample$z)
 ```
 
-The estimated mean SOM concentration is `r round(mz,1)` g kg^-1^. Simply multiplying the estimated mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is in g kg^-1^ m^2^. To estimate the total mass of SOM in the soil layer $0-30$ cm, first the soil volume in m^3^ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil (1,500 kg m^-3^), and the estimated population mean (g kg^-1^). This is multiplied by 10^-6^ to obtain the total mass of SOM in Mg (1 Mg is 1,000 kg).
+The estimated mean SOM concentration is `r formatC(mz, 1, format = "f")` g kg^-1^. Simply multiplying the estimated mean by the area $A$ to obtain an estimate of the population total is not very useful, as the dimension of the total then is in g kg^-1^ m^2^. To estimate the total mass of SOM in the soil layer $0-30$ cm, first the soil volume in m^3^ is computed by the total number of grid cells, $N$, multiplied by the size of the grid cells and by the thickness of the soil layer. The total is then estimated by the product of this volume, the bulk density of soil (1,500 kg m^-3^), and the estimated population mean (g kg^-1^). This is multiplied by 10^-6^ to obtain the total mass of SOM in Mg (1 Mg is 1,000 kg).
 
 ```{r}
 vol_soil <- N * 25^2 * 0.3
@@ -153,7 +153,7 @@ When the expectation\index{Expectation of estimator} equals the population mean,
 
 The variance, referred to as the sampling variance\index{Sampling variance}, is a measure of the random error\index{Random error}. Ideally, this variance is as small as possible, so that there is a large probability that for an individual estimate the estimation error is small. The variance is a measure of the *precision*\index{Precision} of an estimator. An estimator with a small variance but a strong bias is not a good estimator. To assess the quality of an estimator we should look at both. The variance and the bias are often combined in the *mean squared error*\index{Mean squared error} (MSE), which is the sum of the variance and the *squared* bias. An estimator with a small MSE is an *accurate* estimator. So, contrary to precision, accuracy\index{Accuracy} also accounts for the bias\index{Bias}.
 
-Do not confuse the *population* variance and the *sampling* variance. The population variance\index{Population variance} (spatial variance) is a *population characteristic*, whereas the sampling variance is a *characteristic of a sampling strategy*,\index{Sampling strategy} i.e. a combination of a sampling design and an estimator. The sampling variance quantifies our *uncertainty* about the population mean. The sampling variance can be manipulated by changing the sample size $n$, the type of sampling design, and the estimator. This has no effect on the population variance. The average of the 10,000 estimated population means equals `r round(mean(mz),1)` g kg^-1^, so the difference with the true population mean equals `r round(mean(mz)-mean(grdVoorst$z),1)` g kg^-1^. The variance of the 10,000 estimated population means equals `r round(var(mz),1)` (g kg^-1^)^2^. The square root of this variance, referred to as the *standard error*\index{Standard error},  equals `r round(sqrt(var(mz)),1)` g kg^-1^. Note that the standard error has the same units as the study variable, g kg^-1^, whereas the units of the variance are the squared units of the study variable. 
+Do not confuse the *population* variance and the *sampling* variance. The population variance\index{Population variance} (spatial variance) is a *population characteristic*, whereas the sampling variance is a *characteristic of a sampling strategy*,\index{Sampling strategy} i.e. a combination of a sampling design and an estimator. The sampling variance quantifies our *uncertainty* about the population mean. The sampling variance can be manipulated by changing the sample size $n$, the type of sampling design, and the estimator. This has no effect on the population variance. The average of the 10,000 estimated population means equals `r formatC(mean(mz), 1, format = "f")` g kg^-1^, so the difference with the true population mean equals `r formatC(mean(mz)-mean(grdVoorst$z), 1, format = "f")` g kg^-1^. The variance of the 10,000 estimated population means equals `r formatC(var(mz), 1, format = "f")` (g kg^-1^)^2^. The square root of this variance, referred to as the *standard error*\index{Standard error},  equals `r formatC(sqrt(var(mz)), 1, format = "f")` g kg^-1^. Note that the standard error has the same units as the study variable, g kg^-1^, whereas the units of the variance are the squared units of the study variable. 
 
 ### Population proportion {#PopProportion}
 
@@ -191,6 +191,7 @@ Function `quantile` actually computes sample quantiles\index{Sample quantile}, i
 quantile(mysample$z, probs = c(0.25, 0.5, 0.75), type = 4) %>%
   round(., 1)
 ```
+Note the pipe operator `%>%` of package **magrittr** [@magrittr] forwarding the result of function `quantile` to function `round`.  
 
 Package **QuantileNPCI** [@QuantileNPCI] can be used to compute a non-parametric confidence interval estimate of a quantile, using fractional order statistics [@Hutson1999]. Parameter `q` specifies the proportion.
 
@@ -199,7 +200,7 @@ library(QuantileNPCI)
 res <- quantCI(mysample$z, q = 0.5, alpha = 0.05, method = "exact")
 ```
 
-The estimated median equals `r round(res$qx,1)` g kg^-1^, the lower bound of the 95% confidence interval equals `r round(res$lower.ci,1)` g kg^-1^, and the upper bound equals `r round(res$upper.ci,1)` g kg^-1^.
+The estimated median equals `r formatC(res$qx, 1, format = "f")` g kg^-1^, the lower bound of the 95% confidence interval equals `r formatC(res$lower.ci, 1, format = "f")` g kg^-1^, and the upper bound equals `r formatC(res$upper.ci, 1, format = "f")` g kg^-1^.
 
 #### Exercises {-}
 
@@ -246,7 +247,7 @@ with $\widehat{S^2}(z)$ the *estimated* population variance. With simple random 
 
 The term $1-\frac{n}{N}$ is referred to as the finite population correction\index{Finite population correction} (fpc).
 
-In the sampling experiment\index{Sampling experiment} described above, the average of the 10,000 *estimated* sampling variances equals `r round(mean(v_mz),1)` (g kg^-1^)^2^. The true sampling variance equals `r round( (1-n/N) * var(grdVoorst$z)/n,1)` (g kg^-1^)^2^. So, the difference is very small, indicating that the estimator of the sampling variance, Equation \@ref(eq:EstVarMeanSI), is design-unbiased.
+In the sampling experiment\index{Sampling experiment} described above, the average of the 10,000 *estimated* sampling variances equals `r formatC(mean(v_mz), 1, format = "f")` (g kg^-1^)^2^. The true sampling variance equals `r formatC( (1-n/N) * var(grdVoorst$z)/n, 1, format = "f")` (g kg^-1^)^2^. So, the difference is very small, indicating that the estimator of the sampling variance, Equation \@ref(eq:EstVarMeanSI), is design-unbiased.
 
 The sampling variance of the estimator of the total of a finite population can be estimated by multiplying the estimated variance of the estimator of the population mean by $N^2$. For simple random sampling without replacement this estimator thus equals
 
@@ -289,7 +290,7 @@ The population mean is then estimated with function `svymean`. The first argumen
 ```{r}
 library(survey)
 mysample$pi <- n / N
-design_si <- svydesign(id = ~ 1, probs = ~pi, data = mysample)
+design_si <- svydesign(id = ~ 1, probs = ~ pi, data = mysample)
 svymean(~ z, design = design_si)
 ```
 
@@ -319,7 +320,7 @@ svyquantile(~ z, design_si, quantile = c(0.5, 0.9))
 
 ## Confidence interval estimate {#ConfidenceInterval}
 
-A second way of expressing our uncertainty about the estimated total, mean or proportion is to present not merely a single number, but an interval. The wider the interval, the more uncertain we are, and vice versa, the narrower the interval, the more confident we are about the estimate. To learn how to compute a confidence interval\index{Confidence interval}, I return to the sampling distribution of the estimator of the mean SOM concentration. Suppose we would like to compute the bounds of an interval $[a,b]$ such that 5\% of the estimated population means is smaller than $a$, and 5\% is larger than $b$. To compute the lower bound $a$ and the upper bound $b$ of this 90\%-interval, we must specify the distribution function. When the distribution of the study variable $z$ is normal and we know the variance of $z$ in the population, then the sampling distribution of the estimator of the population mean is also normal, regardless of the sample size. The larger the sample size, the smaller the effect of the distribution of $z$ on the sampling distribution of the estimator of the population mean. For instance, even when the distribution of $z$ is far from symmetric, then still the sampling distribution of the estimator of the population mean is approximately normal if the sample size is large, say $n > 100$. This is the essence of the central limit theorem\index{Central limit theorem}. Above we already noticed that the sampling distribution is much less asymmetric than the histogram of the simulated values, and looks much more like a normal distribution. Assuming a normal distribution, the bounds of the 90\%-interval are given by
+A second way of expressing our uncertainty about the estimated total, mean, or proportion is to present not merely a single number, but an interval. The wider the interval, the more uncertain we are, and vice versa, the narrower the interval, the more confident we are about the estimate. To learn how to compute a confidence interval\index{Confidence interval}, I return to the sampling distribution of the estimator of the mean SOM concentration. Suppose we would like to compute the bounds of an interval $[a,b]$ such that 5\% of the estimated population means is smaller than $a$, and 5\% is larger than $b$. To compute the lower bound $a$ and the upper bound $b$ of this 90\%-interval, we must specify the distribution function. When the distribution of the study variable $z$ is normal and we know the variance of $z$ in the population, then the sampling distribution of the estimator of the population mean is also normal, regardless of the sample size. The larger the sample size, the smaller the effect of the distribution of $z$ on the sampling distribution of the estimator of the population mean. For instance, even when the distribution of $z$ is far from symmetric, then still the sampling distribution of the estimator of the population mean is approximately normal if the sample size is large, say $n > 100$. This is the essence of the central limit theorem\index{Central limit theorem}. Above we already noticed that the sampling distribution is much less asymmetric than the histogram of the simulated values, and looks much more like a normal distribution. Assuming a normal distribution, the bounds of the 90\%-interval are given by
 
 \begin{equation}
 \hat{\bar{z}} \pm u_{(0.10/2)}\cdot \sqrt{V\!\left(\hat{\bar{z}}\right)} \;,
@@ -357,7 +358,7 @@ The interpretation of a confidence interval is not straightforward. A common mis
 
 Figure \@ref(fig:coverageconfinterval) shows the 90\% confidence interval estimates of the mean SOM concentration for the first 100 simple random samples drawn above. Note that both the location and the length of the intervals differ between samples. For each sample I determined whether this interval covers the population mean.
 
-(ref:coverageconfintervallabel) Estimated confidence intervals of the mean SOM concentration (g kg^-1^) in Voorst, estimated from 100 simple random samples of size 40. The vertical red line is at the true population mean (`r round(mean(grdVoorst$z),1)` g kg^-1^).
+(ref:coverageconfintervallabel) Estimated confidence intervals of the mean SOM concentration (g kg^-1^) in Voorst, estimated from 100 simple random samples of size 40. The vertical red line is at the true population mean (`r formatC(mean(grdVoorst$z), 1, format = "f")` g kg^-1^).
 
 ```{r coverageconfinterval, echo = FALSE, fig.width = 5, fig.cap = "(ref:coverageconfintervallabel)"}
 lower <- mz - qt(0.05, n - 1, lower.tail = FALSE) * sqrt(v_mz)
@@ -444,12 +445,16 @@ plt1 <- ggplot() +
   geom_tile(mapping = aes(x = 50, y = 50), width = 100, height = 100, fill = "lightgrey") +
   geom_circle(data = circles, mapping = aes(x0 = s1, y0 = s2, r = r)) +
   geom_circle(data = mysample, mapping = aes(x0 = s1, y0 = s2, r = 5), fill = "red") +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
   coord_fixed()
 #non-overlapping circles
 plt2 <- ggplot() +
   geom_tile(mapping = aes(x = 50, y = 50), width = 100, height = 100, fill = "lightgrey") +
   geom_circle(data = circles, aes(x0 = s1, y0 = s2, r = 5)) +
   geom_circle(data = mysample, aes(x0 = s1, y0 = s2, r = 5), fill = "red") +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
   coord_fixed()
 grid.arrange(plt1, plt2, nrow = 1)
 ```
@@ -476,6 +481,8 @@ ggplot() +
   geom_tile(aes(x = 50, y = 50), width = 100, height = 100, fill = "lightgrey") +
   geom_point(data = circles, mapping = aes(x = s1, y = s2), size = 1) +
   geom_circle(data = circles, mapping = aes(x0 = s1, y0 = s2, r = 4)) +
+  scale_x_continuous(name = "Easting") +
+  scale_y_continuous(name = "Northing") +
   coord_fixed()
 ```
 

@@ -41,7 +41,7 @@ dmin <- apply(D, MARGIN = 2, min)
 MSSSD <- mean(dmin^2)
 ```
 
-Note that to centre and scale the covariate values in the CSC sample, the population means and the population standard deviations are used, as passed to function `scale` with arguments `center` and `scale`. If these means and standard deviations are unspecified the *sample* means and the *sample* standard deviations are used, resulting in an incorrect value of the minimised MSSSD value. The MSSSD of the selected sample equals `r as.character(round(MSSSD,3))`.
+Note that to centre and scale the covariate values in the CSC sample, the population means and the population standard deviations are used, as passed to function `scale` with arguments `center` and `scale`. If these means and standard deviations are unspecified the *sample* means and the *sample* standard deviations are used, resulting in an incorrect value of the minimised MSSSD value. The MSSSD of the selected sample equals `r formatC(MSSSD, 3, format = "f")`.
 
 (ref:CSCsamplelabel) Covariate space coverage sample of twenty units from Eastern Amazonia, obtained with k-means clustering using five covariates, plotted on a map of the clusters.
 
@@ -182,7 +182,7 @@ ggplot(data = grdAmazonia) +
 
 (ref:CSInfillsampleinscatterlabel) Covariate space infill sample of Figure \@ref(fig:CSCIS) plotted in biplots of covariates, coloured by cluster. The dots represent the fixed centres (legacy sample), the triangles the infill sample.
 
-```{r CSInfillsampleinscatter, echo = FALSE, out.width = '100%', fig.asp = 0.5, fig.cap = "(ref:CSInfillsampleinscatterlabel)"}
+```{r CSInfillsampleinscatter, echo = FALSE, fig.asp = 0.5, out.width = "100%", fig.cap = "(ref:CSInfillsampleinscatterlabel)"}
 units <- sample(nrow(grdAmazonia), size = 10000, replace = FALSE)
 grd <- grdAmazonia[units, ]
 
@@ -192,19 +192,19 @@ plt1 <- ggplot(grd) +
   geom_point(data = myCSIsample, mapping = aes(x = SWIR2, y = Prec_dm, shape = free), size = 1.5, colour = "red") +
   scale_x_continuous(name = "SWIR2") +
   scale_y_continuous(name = "Precipitation dryest month") +
-  theme(legend.position = "none")
-#  theme(axis.title.x = element_text(size = 14),
-#        axis.title.y = element_text(size = 14))
+  theme(legend.position = "none") +
+  theme(axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12))
 
 plt2 <- ggplot(grd) +
   geom_point(mapping = aes(x = Terra_PP, y = Elevation, colour = as.character(cluster)), alpha = 0.5) +
   scale_colour_viridis_d() +
   geom_point(data = myCSIsample, mapping = aes(x = Terra_PP, y = Elevation, shape = free), size = 1.5, colour = "red") +
   scale_x_continuous(name = "Terra_PP") +
-  scale_y_continuous(name = "Elevation")
+  scale_y_continuous(name = "Elevation") +
   theme(legend.position = "none") +
-#  theme(axis.title.x = element_text(size = 14),
-#        axis.title.y = element_text(size = 14))
+  theme(axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12))
 grid.arrange(plt1, plt2, nrow = 1)
 ```
 
@@ -218,7 +218,7 @@ Three sample sizes are used, $n=$ 25, 50, 100. Of each sample size 500 CSC sampl
 
 In Figure \@ref(fig:RelationMSSSDRMSE) the root mean squared error (RMSE) of the RF predictions of AGB is plotted against the minimised MSSSD, both for the $3 \times 500$ CSC samples and for the 3 $\times$ 500 simple random samples. It is no surprise that for all three sample sizes the minimised MSSSD values of the CSC samples is substantially smaller than those of the SI samples. However, despite the substantial smaller MSSSD values, the RMSE values for the CSC samples are only a bit smaller than those of the SI samples. Only for $n=50$ a moderately strong positive correlation can be seen: $r=0.513$. For $n=25$ the correlation is 0.264 only, and for $n=100$ it is even negative: $r=-0.183$. On average in this case study CSC and SI perform about equal (Table \@ref(tab:TableRMSE4CSCandSI)). However, especially with $n=25$ and 50 the sampling distribution of RMSE with SI has a long right tail. This implies that with SI there is a serious risk that a sample will be selected resulting in poor RF predictions of AGB.
 
-```{r RelationMSSSDRMSE, echo = FALSE, fig.asp = 0.7, out.width = "100", fig.cap = "Scatter plot of the minimisation criterion MSSSD and the root mean squared error (RMSE) of RF predictions of AGB in Eastern Amazonia for covariate space coverage (CSC) sampling and simple random (SI) sampling, and three sample sizes."}
+```{r RelationMSSSDRMSE, echo = FALSE, fig.asp = 0.7, out.width = "100%", fig.cap = "Scatter plot of the minimisation criterion MSSSD and the root mean squared error (RMSE) of RF predictions of AGB in Eastern Amazonia for covariate space coverage (CSC) sampling and simple random (SI) sampling, and three sample sizes."}
 load("results/CSCversusCLH_Amazonia_n25.RData")
 df.25 <- data.frame(RMSE = c(RMSE.SI, RMSE.CSC), MSSSD = c(MSSSD.SI, MSSSD.CSC), Design = rep(c("SI", "CSC"), each = 500), Samplesize = 25)
 

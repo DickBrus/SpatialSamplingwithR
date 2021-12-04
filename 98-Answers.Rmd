@@ -27,7 +27,7 @@
 2. Strata EA and PA can be merged without losing much precision: their means are about equal.  
 3. See [`STSI2.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSI2.R). The true sampling variance of the $\pi$ estimator of the mean SOM obtained by collapsing strata EA and PA equals 42.89, whereas the sampling variance with the original stratification equals 42.53. So, the new stratification with four strata is only slightly worse.       
 4. The proof is as follows: $\sum_N \pi_k=\sum_H \sum_{N_h}\pi_{hk}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n$.  
-5. See [`STSIcumrootf.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R). The default allocation is Neyman allocation, see help of function `strata.cumrootf`. The true sampling variance of the estimator of the mean equals 20.0. The stratification effect equals 4.26. 
+5. See [`STSIcumrootf.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R). The default allocation is Neyman allocation, see help of function `strata.cumrootf`. The true sampling variance of the estimator of the mean equals 20.0. The stratification effect equals 4.26.  
 6. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum.  
 7. On average the sampling variance of the estimator of the mean with 100 $\times$ 1 point is smaller than with $50 \times 2$ points because the geographical spreading will be somewhat better (less spatial clustering).  
 8. With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: $\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{\mathcal{S}h} = \bar{z}_{\mathcal{S}}$, with $\bar{z}_{\mathcal{S}h}$ the average of the sample from stratum $h$ and $\bar{z}_{\mathcal{S}}$ the average of all sampling points.  
@@ -96,7 +96,7 @@
 
     The difference between the experimental variance (variance of regression estimator with sample fit of coefficients) and the variance obtained with the population fit, as a proportion of the experimental variance, decreases with the sample size. The same holds for the difference between the approximated variance and the experimental variance as a proportion of the experimental variance. Both findings can be explained by the smaller contribution of the variance of the estimated regression coefficients to the variance of the regression estimator with the large sample size. The approximated variance does not account for the uncertainty about the regression coefficients, so that for all three sample sizes this approximated variance is about equal to the variance of the regression estimator as computed with the population fit of the regression coefficients.
 
-```{r RegressionEstimatorsAmazonia, echo=FALSE, fig.asp=0.7, fig.cap="Variance of the regression estimator of the mean AGB in Eastern Amazonia with population fit of regression coefficients (Exhaust), with sample fit of regression coefficients (Sample), and approximated variance of regression estimator (Approx)."}
+```{r RegressionEstimatorsAmazonia, echo = FALSE, fig.asp = 0.7, fig.width = 5, fig.cap = "Variance of the regression estimator of the mean AGB in Eastern Amazonia with population fit of regression coefficients (Exhaust), with sample fit of regression coefficients (Sample), and approximated variance of regression estimator (Approx)."}
 load(file = "results/VarRegressionEstimator.RData")
 names(df) <- c("n", "Exhaust", "Sample", "Approx")
 
@@ -105,7 +105,7 @@ df_lf <- df %>% pivot_longer(.,cols=c("Exhaust", "Sample", "Approx"))
 
 library(ggplot2)
 ggplot(df_lf) +
-  geom_point(mapping=aes(x=n, y=value, shape=name), size=2) +
+  geom_point(mapping=aes(x=n, y=value, shape=name), size=2.5) +
   scale_shape_manual(values=c(1,0,2), name="") +
   scale_x_continuous(name="Sample size") +
   scale_y_continuous(name="Variance")
@@ -120,11 +120,11 @@ load(file = "results/RegressionEstimator_Twophase.RData")
 
 1. See [`RegressionEstimator_Twophase.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/RegressionEstimator_Twophase.R). Figure \@ref(fig:RegressionEstimatorsAmazoniaTwoPhase) shows the approximated sampling distribution of the simple regression estimator of the mean AGB in Eastern Amazonia when lnSWIR2 is observed for all sampling units (One-phase) and when AGB is observed for the subsample only (Two-phase). The variance of the regression estimator with two-phase sampling is considerably larger. Without subsampling the regression estimator exploits our knowledge of the population mean of the covariate lnSWIR2, whereas in two-phase sampling this population mean must be estimated from the first-phase sample, introducing additional uncertainty.
 
-    The average of the 10,000 approximated variances equals `r round(mean(av_mz_reg2ph),1)` (10^9^ kg ha^-1^)^2^, which is considerably smaller than the variance of the 10,000 regression estimates for two-phase sampling, which is equal to `r round(var(mz_reg2ph), 1)` (10^9^ kg ha^-1^)^2^.    
+    The average of the 10,000 approximated variances equals `r formatC(mean(av_mz_reg2ph), 1, format = "f")` (10^9^ kg ha^-1^)^2^, which is considerably smaller than the variance of the 10,000 regression estimates for two-phase sampling, which is equal to `r formatC(var(mz_reg2ph), 1, format = "f")` (10^9^ kg ha^-1^)^2^.    
 
 (ref:RegressionEstimatorsAmazoniaTwoPhaselabel) Approximated sampling distribution of the simple regression estimator of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia in the case that the covariate is observed for all sampling units (One-phase) and for the subsample only (Two-phase).
 
-```{r RegressionEstimatorsAmazoniaTwoPhase, echo=FALSE, fig.cap="(ref:RegressionEstimatorsAmazoniaTwoPhaselabel)"}
+```{r RegressionEstimatorsAmazoniaTwoPhase, echo = FALSE, fig.width = 5, fig.cap="(ref:RegressionEstimatorsAmazoniaTwoPhaselabel)"}
 estimates<-data.frame(mz_reg2ph, mz_regr)
 names(estimates)<-c("Two-phase","One-phase")
 
@@ -215,7 +215,7 @@ grid.arrange(plt1, plt2, nrow=1)
 
 1. See [`CovariateSpaceCoverageSample.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/CovariateSpaceCoverageSample.R). See Figure \@ref(fig:CSCsamplingHunterValley).  
 
-```{r CSCsamplingHunterValley, echo=FALSE, out.width='100%', fig.asp=0.5, fig.cap="Covariate space coverage sample from  Hunter valley, using cti, ndvi, and elevation as clustering variables, plotted on a map of cti."}
+```{r CSCsamplingHunterValley, echo=FALSE, fig.width = 5, fig.cap="Covariate space coverage sample from  Hunter valley, using cti, ndvi, and elevation as clustering variables, plotted on a map of cti."}
 n <- 20
 set.seed(314)
 covars <- c("cti","ndvi","elevation_m")
@@ -229,18 +229,18 @@ myCSCsample <- grdHunterValley[units,]
 
 ggplot(data=grdHunterValley) +
   geom_raster(mapping=aes(x=s1/1000, y=s2/1000, fill=cti)) +
-  geom_point(data=myCSCsample, mapping=aes(x=s1/1000, y=s2/1000), colour="orange", size=1)+
+  geom_point(data=myCSCsample, mapping=aes(x=s1/1000, y=s2/1000), colour="orange", size=1.5)+
   scale_fill_continuous(name="cti",type= "viridis") +
   scale_x_continuous(name="Easting (km)") +
   scale_y_continuous(name="Northing (km)") +
-  coord_fixed()#dev.off()
+  coord_fixed()
 ```
 
 
 
 ## Conditioned Latin hypercube sampling {-}  
 
-1. See [`cLHS.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R). Most units are selected in the part of the diagram with the highest density of raster cells. Raster cells with a large cti value and low elevation and pixels with high elevation and small cti value are (nearly) absent in the sample. In the population not many pixels are present with these combinations of covariate values.        
+1. See [`cLHS.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS.R). Most units are selected in the part of the diagram with the highest density of raster cells. Raster cells with a large cti value and low elevation and raster cells with high elevation and small cti value are (nearly) absent in the sample. In the population not many raster cells are present with these combinations of covariate values.        
 2. See [`cLHS_Square.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/cLHS_Square.R).
     +  Spatial coverage is improved by using the spatial coordinates as covariates, but it is not optimal in terms of MSSD. 
     +  It may happen that not all marginal strata of $s1$ and $s2$ are sampled. Even when all these marginal strata are sampled, this does not guarantee a perfect spatial coverage.
@@ -252,12 +252,12 @@ ggplot(data=grdHunterValley) +
 
 (ref:QuantilesOKVarGridspacinglabel) Three quantiles of the ordinary kriging variance of predicted SOM concentrations in West-Amhara, as a function of the grid spacing.
 
-```{r QuantilesOKVarGridspacing, echo=FALSE, fig.asp=0.7, fig.cap="(ref:QuantilesOKVarGridspacinglabel)"}
+```{r QuantilesOKVarGridspacing, echo=FALSE, fig.asp = 0.7, fig.width = 5, fig.cap = "(ref:QuantilesOKVarGridspacinglabel)"}
 load(file = "results/MBGridSpacing_Amhara_QOKV.RData")
 
-df <- result %>% pivot_longer(.,cols=c("V1","V2","V3"))
+df <- result %>% pivot_longer(.,cols=c("P50","P80","P95"))
 ggplot(data=df) +
-  geom_point(mapping=aes(x=spacing, y=value, shape=name), size=3) +
+  geom_point(mapping=aes(x=spacing, y=value, shape=name), size=2) +
   scale_shape_manual(values=c(0,1,2), labels=c("P50","P80","P95"), name="Criterion") +
   scale_x_continuous(name="Spacing (km)") +
   scale_y_continuous(name="Quantile kriging variance")
@@ -266,12 +266,12 @@ ggplot(data=df) +
 2. See [`MBGridspacing_Sensitivity.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBGridspacing_Sensitivity.Rmd). Increasing the nugget by 5% and decreasing the range by 5% yields a tolerable grid spacing that is smaller than that with the original semivariogram (Figure \@ref(fig:SensitivityMKV)). The tolerable grid spacings for a mean kriging variance of 0.85 are 10.6, 8.9, and 7.4 km for the original semivariogram, the semivariogram with increased nugget and the semivariogram with the smaller range, respectively, leading to a required expected sample size of
 97, 137, and 200 points.
 
-```{r SensitivityMKV, echo=FALSE, fig.asp=0.7, fig.cap="Mean ordinary kriging variance of predicted SOM concentrations in West-Amhara, as a function of grid spacing for three semivariograms."}
+```{r SensitivityMKV, echo=FALSE, fig.asp=0.7, fig.width = 5, fig.cap="Mean ordinary kriging variance of predicted SOM concentrations in West-Amhara, as a function of grid spacing for three semivariograms."}
 load(file = "results/MBGridSpacing_Amhara_Sensitivity.RData")
 
 df_lf <- df %>% pivot_longer(.,cols=c("MKV","MKV_morenugget","MKV_smallerrange"))
 ggplot(data=df_lf) +
-  geom_point(mapping=aes(x=spacing, y=value, shape=as.factor(name)), size=3) +
+  geom_point(mapping=aes(x=spacing, y=value, shape=as.factor(name)), size=2) +
   scale_x_continuous(name="Spacing (km)") +
   scale_y_continuous(name="Mean kriging variance") +
   scale_shape_manual(values=c(0,1,2), name="Semivariogram", labels=c("Original","More nugget","Smaller range"))
@@ -284,7 +284,7 @@ ggplot(data=df_lf) +
 
 1. See [`MBSampleSquare_OK.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSampleSquare_OK.Rmd).  The optimised sample (Figure \@ref(fig:SixteenPntsInSquare)) is most likely not the global optimum. The spatial pattern is somewhat irregular. I expect the optimal sampling locations to be close to the centres of the subsquares.    
 
-```{r SixteenPntsInSquare, echo=FALSE, out.width='50%', fig.cap="Optimised sampling pattern of sixteen  points in a square for ordinary kriging."}
+```{r SixteenPntsInSquare, echo=FALSE, fig.width = 5, fig.cap="Optimised sampling pattern of sixteen  points in a square for ordinary kriging."}
 load(file = "results/MBSampleSquare_OK_NoNugget_16pnts.RData")
 sample<-res$points
 s1 <- s2 <- 1:20 - 0.5
@@ -303,11 +303,7 @@ ggplot(data = grid) +
 
 2. See [`MBSample_QOKV.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_QOKV.Rmd). Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sampling pattern. Compared with the optimised sampling pattern using the *mean* ordinary kriging variance (MOKV) as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with the sample optimised for MOKV near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
 
-```{r, echo = FALSE}
-grdCRF <- readRDS(file = "data/CottonResearchFarm_Uzbekistan.rds")
-```
-
-```{r MBsampleP90OKVCRF, echo=FALSE, fig.cap="Optimised sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECe as a minimisation criterion."}
+```{r MBsampleP90OKVCRF, echo=FALSE, out.width = "100%", fig.cap="Optimised sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECe as a minimisation criterion."}
 load(file = "results/MBSample_OK_P90_Uzbekistan.RData")
 ggplot(data=grdCRF) +
   geom_raster(mapping = aes(x = x1/1000, y = x2/1000),fill="grey") +
@@ -354,10 +350,10 @@ ggplot(data=mysamples) +
 
 1. See [`NestedSampling_v1.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/NestedSampling_v1.R).  
 2. See [`SI_PointPairs.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SI_PointPairs.R). With the seed I used (314) the variance of the estimator of the range parameter with the smaller separation distances is much smaller compared to that obtained with the larger separation distances (the estimated standard error is 115 m).  
-3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. With the smaller ratio of spatial dependence of 0.5 the cluster of sampling points coveres a larger area as compared to the sampling pattern obtained with a ratio of spatial dependence of 0.8 (see Figure \@ref(fig:MBVariogram)). Again, quite a few pairs of points at very short distance can be seen.   
+3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. With the smaller ratio of spatial dependence of 0.5 the cluster of sampling points covers a larger area as compared to the sampling pattern obtained with a ratio of spatial dependence of 0.8 (see Figure \@ref(fig:MBVariogram)). Again, quite a few pairs of points at very short distance can be seen.   
 4. See [`MBSample_SSA_MVKV.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MVKV.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The circular cluster of sampling points covers a larger area than the cluster obtained with a ratio of spatial dependence of 0.8.
 
-```{r MBSupSamples, echo=FALSE, out.width='100%', fig.cap="Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean variance of the kriging variance (MVKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
+```{r MBSupSamples, echo = FALSE, out.width = "100%", fig.cap = "Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean variance of the kriging variance (MVKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
 mysample <- readRDS(file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
 mysample_logdet <- mysample
 
@@ -381,10 +377,10 @@ MEACopt <- as.numeric(tail(res$objective$energy,1))
 ```
 
 
-5. See [`MBSample_SSA_MEAC.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MEAC.R).  Figure \@ref(fig:MBSampleMEACHV) shows the optimised sampling pattern of the 20 sampling points together with the 80 spatial coverage sampling points. The minimised MEAC value equals `r round(MEACopt,3)`, which is smaller than that for the spatial coverage sample of 90 points supplemented by 10 points (0.788).
+5. See [`MBSample_SSA_MEAC.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MEAC.R).  Figure \@ref(fig:MBSampleMEACHV) shows the optimised sampling pattern of the 20 sampling points together with the 80 spatial coverage sampling points. The minimised MEAC value equals `r formatC(MEACopt, 3, format = "f")`, which is smaller than that for the spatial coverage sample of 90 points supplemented by 10 points (0.788).
 
 
-```{r MBSampleMEACHV, echo=FALSE, fig.cap="Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
+```{r MBSampleMEACHV, echo = FALSE, out.width = "100%", fig.cap = "Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
 
 grdHunterValley <- grdHunterValley %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
@@ -419,7 +415,7 @@ MEACopt <- tail(res$objective$energy$obj,1)
 
 ```{r, echo=FALSE}
 SessionInfo <- devtools::session_info()
-saveRDS(SessionInfo,file="SessionInfo.rds")
+saveRDS(SessionInfo, file = "SessionInfo.rds")
 ```
 
 

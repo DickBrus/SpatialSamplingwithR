@@ -1,28 +1,19 @@
-###############################################################################
-# Function: localmean_var (not exported)
-# Programmers: Don Stevens and Tom Kincaid
-# Date: October 17, 2000
-#
-#' Internal Function: Local Mean Variance Estimator
+#' Local Mean Variance Estimator
 #'
 #' This function calculates the local mean variance estimator.
 #'
-#' @param z Vector of weighted response values or weighted residual values for
-#'  the sample points.
-#'
-#' @param weight_1st List from the local mean weight function containing two
-#'  elements: a matrix named \code{ij} composed of the index values of neighboring
-#'  points and a vector named \code{gwt} composed of weights.
+#' @param z \code{\link{vector}} of weighted response values or weighted
+#'   residual values for the sample points.
+#' @param weight_1st \code{\link{list}} from the local mean weight function
+#'   containing two elements: a \code{\link{matrix}} named \code{ij} composed of
+#'   the index values of neighboring points and a vector named \code{gwt}
+#'   composed of weights.
 #'
 #' @return The local mean estimator of the variance.
 #'
 #' @author Tom Kincaid \email{Kincaid.Tom@@epa.gov}
 #'
-#' @keywords survey
-#'
-#' @noRd
-###############################################################################
-
+#' @export
 localmean_var <- function(z, weight_1st) {
 
   # Calculate local means

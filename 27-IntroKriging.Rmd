@@ -19,7 +19,7 @@ Z(\mathbf{s}) &= \mu(\mathbf{s}) + \epsilon(\mathbf{s}) \\
 (\#eq:GeneralKrigingModel)
 \end{equation}
 
-with $Z(\mathbf{s})$ the study variable  at location $\mathbf{s}$, $\mu(\mathbf{s})$ the mean at location $\mathbf{s}$, $\epsilon(\mathbf{s})$ the residual (difference between study variable $z$ and mean $\mu(\mathbf{s})$) at location $\mathbf{s}$, and $C(\mathbf{h})$ the covariance of the residuals at two points separated by vector $\mathbf{h} = \mathbf{s} - \mathbf{s}^{\prime}$.
+with $Z(\mathbf{s})$ the study variable  at location $\mathbf{s}$, $\mu(\mathbf{s})$ the mean at location $\mathbf{s}$, $\epsilon(\mathbf{s})$ the residual (difference between study variable $z$ and mean $\mu(\mathbf{s})$) at location $\mathbf{s}$, and $C(\mathbf{h})$ the covariance of the residuals at two locations separated by vector $\mathbf{h} = \mathbf{s} - \mathbf{s}^{\prime}$.
 
 In *ordinary kriging*\index{Kriging!ordinary kriging} (OK) it is assumed that the mean of the study variable is constant, i.e. the same everywhere [@webster2007]:
 
@@ -331,7 +331,7 @@ knitr::kable(
 
 In the previous section the support of the prediction units is equal to that of the sampling units. So, if the observations are done at points (point support\index{Point support}), the support of the predictions are also points, and if means of small blocks are observed, the predictions are predicted means of blocks of the same size and shape. There is no change of support\index{Change of support}. In some cases we may prefer predictions at a larger support than that of the observations. For instance, we may prefer predictions of the average concentration of some soil property of blocks of 5 m $\times$ 5 m, instead of predictions at points, simply because of practical relevance. If the observations are at points, there is a change of support, from points to blocks. Kriging with a prediction support that is larger than the support of the sample data is referred to as block-kriging\index{Kriging!block-kriging}. Kriging without change of support, sample support and prediction support are equal, is referred to as point-kriging\index{Kriging!point-kriging}.  Note that point-kriging does not necessarily imply that the support is a point, it can be, for instance, a small block.
 
-In block-kriging the mean of a prediction block $\mathcal{B}_0$ is predicted as a weighted average of the observations at the sampling units. The kriging weights are derived much in the same way as in point-kriging (Equations \@ref(eq:krigingequations) to \@ref(eq:krigingweights)). In block-kriging the covariance between a sampling point $i$ and a prediction point, $C(\mathbf{s}_i,\mathbf{s}_0)$, is replaced by the *mean* covariance between the sampling point and a prediction block $\overline{C}(\mathbf{s}_i,\mathcal{B}_0)$ (Equation \@ref(eq:krigingequations)). This mean covariance can be approximated by discretising the prediction block by a fine grid, computing the covariance between a sampling point $i$ and each of the discretisation points and averaging.
+In block-kriging the mean of a prediction block $\mathcal{B}_0$ is predicted as a weighted average of the observations at the sampling units. The kriging weights are derived much in the same way as in point-kriging (Equations \@ref(eq:krigingequations) to \@ref(eq:krigingweights)). In block-kriging the covariance between a sampling point $i$ and a prediction point, $C(\mathbf{s}_i,\mathbf{s}_0)$, is replaced by the *mean* covariance between the sampling point and a prediction block $\overline{C}(\mathbf{s}_i,\mathcal{B}_0)$ (Equation \@ref(eq:krigingequations)). This mean covariance can be approximated by discretising the prediction block by a fine grid, computing the covariance between a sampling point $i$ and each of the discretisation points, and averaging.
 
 The variance of the prediction error of the block-mean (block-kriging variance\index{Block-kriging variance}) equals
 
@@ -527,7 +527,7 @@ Figure \@ref(fig:KEDVarSKVar) shows that, contrary to the SK variance, the krigi
 
 The variance with SK is constant. This is because with SK we assume that the regression coefficients are known, so that we know the model-mean at a prediction location. What remains is the error in the interpolation of the residuals (first two terms in Equation \@ref(eq:KEDvariance2)). This interpolation error is independent of the value of $x$ at the prediction location. In Figure \@ref(fig:KEDVarSKVar) the difference between the variances with KED and SK is the variance of the predictor of the model-mean, due to uncertainty about the regression coefficients. In real-world applications these regression coefficients are unknown and must be *estimated* from the sample data. This variance is smallest for a covariate value about equal to the sample mean of the covariate, and increases with the absolute difference of the covariate value and this sample mean.
 
-```{r KEDVarSKVar, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Variance of the prediction error as a function of the covariate value at a fixed prediction location, obtained with kriging with an external drift (KED) and simple kriging (SK) ."}
+```{r KEDVarSKVar, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Variance of the prediction error as a function of the covariate value at a fixed prediction location, obtained with kriging with an external drift (KED) and simple kriging (SK)."}
 df <- data.frame(x0, KED = v_zpred_KED, SK = v_zpred_SK)
 df_lf <- df %>% pivot_longer(., cols = c("KED", "SK"))
 ggplot(df_lf) +
@@ -539,7 +539,7 @@ ggplot(df_lf) +
 
 ## Estimating the semivariogram {#VariogramEstimation}
 
-Kriging requires a semivariogram or covariance function as input for computing the covariance matrix of the study variable at the sampling locations and the vector of covariance of the study variable at the sampling locations and the prediction location. In most cases the semivariogram model is unknown and must be estimated from sample data. The estimated parameters of the semivariogram model are plugged into the kriging equations. There are two fundamentally different approaches for estimating the semivariogram parameters from sample data: the *method-of-moments*\index{Method-of-moments} and *maximum likelihood estimation*\index{Maximum likelihood estimation} [@lar00b].
+Kriging requires a semivariogram or covariance function as input for computing the covariance matrix of the study variable at the sampling locations and the vector of covariance of the study variable at the sampling locations and the prediction location. In most cases the semivariogram model is unknown and must be estimated from sample data. The estimated parameters of the semivariogram model are plugged into the kriging equations. There are two different approaches for estimating the semivariogram parameters from sample data: the *method-of-moments*\index{Method-of-moments} and *maximum likelihood estimation*\index{Maximum likelihood estimation} [@lar00b].
 
 ### Method-of-moments {#MoM}
 
@@ -566,12 +566,17 @@ vg <- variogram(z ~ 1, data = mysample)
 head(vg[, c(1, 2, 3)])
 ```
 
-The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range, and 75 for the partial sill. These are passed to the `vgm` function and used as the `model` argument of function `fit.variogram`. The sample semivariogram and the fitted model can simply be plotted with function `plot`.
+The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range, and 75 for the partial sill. These are passed to function `vgm`. The sample semivariogram and the fitted model can simply be plotted with function `plot`. The result is shown in Figure \@ref(fig:semivariogramSimulatedField1).
 
-```{r semivariogramSimulatedField1, fig.asp = 0.7}
-vgm_MoM <- fit.variogram(vg, model = vgm(model = "Sph",
-  psill = 75, range = 250, nugget = 25))
+(ref:semivariogramSimulatedField1label) Sample semivariogram and fitted spherical model estimated from a simple random sample of 150 units selected from the first simulated field shown in Figure \@ref(fig:Twokrigingsimulations). Numbers are numbers of point-pairs used in computing semivariances.
+
+```{r semivariogramSimulatedField1, fig.asp = 0.7, fig.cap = "(ref:semivariogramSimulatedField1label)"}
+model_eye <- vgm(model = "Sph", psill = 75, range = 250, nugget = 25)
+vgm_MoM <- fit.variogram(vg, model = model_eye)
 plot(vg, vgm_MoM, plot.numbers = TRUE)
+```
+
+```{r}
 print(vgm_MoM)
 ```
 
@@ -608,7 +613,7 @@ mysample <- as(mysample, "data.frame")
 dGeoR <- as.geodata(obj = mysample, header = TRUE, coords.col = c("s1", "s2"), data.col = "z")
 ```
 
-The model parameters can then be estimated with function `likfit`. Argument `trend="cte"` means that we assume that the mean is constant throughout the study area.
+The model parameters can then be estimated with function `likfit`. Argument `trend = "cte"` means that we assume that the mean is constant throughout the study area.
 
 ```{r}
 vgm_ML <- likfit(geodata = dGeoR, trend = "cte",
@@ -616,7 +621,7 @@ vgm_ML <- likfit(geodata = dGeoR, trend = "cte",
   nugget = 20, lik.method = "ML", messages = FALSE)
 ```
 
-Table \@ref(tab:VariogramEstimates) shows the ML estimates together with the MoM estimates. As can be seen, the estimates are substantially different, especially the division of the a priori variance (sill) into partial sill and nugget. In general, I prefer the ML estimates because the arbitrary choice of distance intervals to compute a sample semivariogram is avoided. Also ML estimates of the parameters are more precise, given a sample size. On the other hand, in ML estimation we need to assume that the data are normally distributed.
+Table \@ref(tab:VariogramEstimates) shows the ML estimates together with the MoM estimates. As can be seen, the estimates are substantially different, especially the division of the a priori variance (sill) into partial sill and nugget. In general I prefer the ML estimates because the arbitrary choice of distance intervals to compute a sample semivariogram is avoided. Also ML estimates of the parameters are more precise, given a sample size. On the other hand, in ML estimation we need to assume that the data are normally distributed.
 
 ```{r VariogramEstimates, echo = FALSE}
 tbl <- data.frame(

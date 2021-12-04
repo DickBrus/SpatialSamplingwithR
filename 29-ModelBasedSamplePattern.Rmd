@@ -2,7 +2,7 @@
 
 In Chapter \@ref(MBgridspacing) a model of the spatial variation is used to optimise the spacing of a regular grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size of a square grid.
 
-This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general, the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Section \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD) which is minimised by k-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm k-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} is used which is explained in the next subsection. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
+This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Section \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD) which is minimised by k-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm k-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} is used which is explained in the next subsection. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
 
 ## Spatial simulated annealing {#SSA}
 
@@ -62,7 +62,7 @@ grid.arrange(plt1, plt2, nrow = 1)
 
 In ordinary kriging (OK) we assume a constant model-mean. No covariates are available that are related to the study variable. Optimisation of the sampling pattern for OK is illustrated with the Cotton Research Farm in Uzbekistan which was used before to illustrate spatial response surface sampling (Chapter \@ref(SpatialResponseSurface)). The spatial coordinates of 50 sampling locations are optimised for mapping of the soil salinity (as measured by the electrical conductivity, ECe, of the soil) by OK. In this section the coordinates of the sampling points are optimised for OK. In Section \@ref(SamplePatternKED) this is done for kriging with an external drift. In that section a map of interpolated electromagnetic induction (EM) measurements is used to further optimise the coordinates of the sampling points. 
 
-Model-based optimisation of the sampling pattern for OK requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe data collected in eight surveys in the period 2008 - 2011 at 142 points to estimate this semivariogram. The ECe data are natural-log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package [@peb04], because this function requires the output of function `variogram` as input, whereas the sample semivariogram is here computed in a different way.
+Model-based optimisation of the sampling pattern for OK requires as input a semivariogram of the study variable. For the Cotton Research Farm I used the ECe (dS m^-1^) data collected in eight surveys in the period 2008 - 2011 at 142 points to estimate this semivariogram [@Akramkhanov2014]. The ECe data are natural-log transformed. The sample semivariogram is shown in Figure \@ref(fig:variogramlnECe). The **R** code below shows how I fitted the semivariogram model with function `nls` ("non-linear least squares") of the **stat** package. I did not use function `fit.variogram` of the **gstat** package [@peb04], because this function requires the output of function `variogram` as input, whereas the sample semivariogram is here computed in a different way.
 
 ```{block2, type = 'rmdnote'}
 The sample semivariogram is computed by first estimating sample semivariograms for each of the eight surveys separately, followed by computing weighted averages of semivariances and distances per lag, using the numbers of pairs as weights (**R** code not shown).
@@ -94,7 +94,7 @@ np <- d <- gamma <- matrix(nrow = length(boundaries) - 1, ncol = length(surveys)
 for (i in seq_len(length(surveys))) {
     # take subset
     sdat <- clbdat[clbdat$survey == surveys[i], ]
-    coordinates(sdat) <- ~x + y
+    coordinates(sdat) <- ~ x + y
     variogram <- variogram(sdat$lnECe ~ 1, data = sdat, boundaries = boundaries)
 
     id <- findInterval(x = variogram$dist, vec = boundaries, rightmost.closed = TRUE, all.inside = TRUE)
@@ -111,12 +111,12 @@ h <- rowSums(npd, na.rm = TRUE) / somnp
 
 npgamma <- np * gamma
 semivar <- rowSums(npgamma, na.rm = TRUE) / somnp
-res <- nls(semivar~nugget + psill * (1 - exp(-h / range)), start = list(nugget = 0.1, psill = 0.4, range = 200), weights = somnp)
+res <- nls(semivar ~ nugget + psill * (1 - exp(-h / range)), start = list(nugget = 0.1, psill = 0.4, range = 200), weights = somnp)
 
 fitted <- coef(res)[1] + coef(res)[2] * (1 - exp(-h / coef(res)[3]))
 df <- data.frame(h, semivar, fitted)
 ggplot(data = df) +
-  geom_point(mapping = aes(x = h, y = semivar), size = 3) +
+  geom_point(mapping = aes(x = h, y = semivar), size = 2) +
   geom_smooth(mapping = aes(x = h, y = fitted), colour = "red") +
   scale_x_continuous(name = "Distance (m)") +
   scale_y_continuous(name = "Semivariance", limits = c(0, 0.55))
@@ -124,7 +124,7 @@ ggplot(data = df) +
 
 ```{r}
 library(gstat)
-res <- nls(semivar~nugget + psill * (1 - exp(-h / range)),
+res <- nls(semivar ~ nugget + psill * (1 - exp(-h / range)),
   start = list(nugget = 0.1, psill = 0.4, range = 200), weights = somnp)
 vgm_lnECe <- vgm(model = "Exp", nugget = coef(res)[1],
   psill = coef(res)[2], range = coef(res)[3])
@@ -134,11 +134,7 @@ The estimated semivariogram parameters are shown in Table \@ref(tab:TableVariogr
 
 The coordinates of the sampling points are optimised with function `optimMKV` of package **spsann** [@Alessandro2016]. First, the candidate sampling points are specified by the nodes of a grid discretising the population. As explained hereafter, this does not necessarily imply that the population is treated as a finite population. Next, the parameters of the annealing schedule are set. Note that both the initial acceptance rate and the initial temperature are set, which may seem weird as the acceptance rate is a function of the temperature, see Equation \@ref(eq:AcceptanceProb). The initial acceptance rate is used as a threshold value. The optimisation stops when an initial temperature is chosen that leads to an acceptance rate smaller than the chosen value for the initial acceptance rate. In this case a larger value for the initial temperature must be chosen. Arguments `chain.length` and `stopping` of function `scheduleSPSANN` are multipliers. So, for a chain length of five, the number of iterations equals $5n$, with $n$ the sample size.
 
-During the optimisation a sample is perturbed by replacing one randomly selected point of the current sample by a new point. This selection of the new point is done in two steps. In the first step one node of the discretisation grid (specified with argument `candi`) is randomly selected. Only the nodes within a neighbourhood defined by `x.min`, `x.max`, `y.min`, and `y.max` can be selected. The nodes within this neighbourhood have equal probability of being selected. In the second step one point is selected within a grid cell with the selected node at its centre and a side length specified with argument `cellsize`. So, it is natural to set `cellsize` to the spacing of the discretisation grid. With `cellsize=0` the population is finite, and the sampling points are restricted to the nodes of the discretisation grid.
-
-```{r, echo = FALSE}
-grdCRF <- readRDS(file = "data/CottonResearchFarm_Uzbekistan.rds")
-```
+During the optimisation a sample is perturbed by replacing one randomly selected point of the current sample by a new point. This selection of the new point is done in two steps. In the first step one node of the discretisation grid (specified with argument `candi`) is randomly selected. Only the nodes within a neighbourhood defined by `x.min`, `x.max`, `y.min`, and `y.max` can be selected. The nodes within this neighbourhood have equal probability of being selected. In the second step one point is selected within a grid cell with the selected node at its centre and a side length specified with argument `cellsize`. So, it is natural to set `cellsize` to the spacing of the discretisation grid. With `cellsize = 0` the population is finite, and the sampling points are restricted to the nodes of the discretisation grid.
 
 ```{r}
 library(spsann)
@@ -156,7 +152,7 @@ The **R** code for optimising the sampling pattern is as follows.
 set.seed(314)
 res <- optimMKV(
   points = 50, candi = candi,
-  vgm = vgm_lnECe, eqn = z~1,
+  vgm = vgm_lnECe, eqn = z ~ 1,
   schedule = schedule,
   plotit = FALSE, track = TRUE)
 mysample <- candi[res$points$id, ]
@@ -174,7 +170,7 @@ library(spcosa)
 load(file = "results/MBSample_OK_Uzbekistan.RData")
 
 s0 <- grdCRF #this grid is constructed in SpatialResponseSurface.Rmd
-gridded(s0) <- ~x1 + x2
+gridded(s0) <- ~ x1 + x2
 set.seed(314)
 myStrata <- stratify(s0, nStrata = 50, equalArea = FALSE, nTry = 10)
 myspcsample <- spsample(myStrata) %>% as(., "data.frame")
@@ -193,7 +189,7 @@ ggplot(data = mysamples) +
 #dev.off()
 
 myspcsample$dummy <- 1
-coordinates(myspcsample) <- ~x1 + x2
+coordinates(myspcsample) <- ~ x1 + x2
 #compute mean kriging variance of spatial coverage sample
 predictions  <- krige(
   formula = dummy ~ 1,
@@ -213,17 +209,17 @@ ggplot(trace) +
   scale_y_continuous(name = "MOKV")
 ```
 
-For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r as.character(round(MKV,4))` (mS m^-1^)^2^, whereas for the model-based sample the MKV equals `r as.character(round(trace$obj[nrow(trace)],4))` (mS m^-1^)^2^. So, a small gain in precision is achieved only by the model-based optimisation of the sampling pattern compared to spatial coverage sampling. This outcome is in agreement with the results reported by @bru07c.
+For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r formatC(MKV, 4, format = "f")` (dS m^-1^)^2^, whereas for the model-based sample the MKV equals `r formatC(trace$obj[nrow(trace)], 4, format = "f")` (dS m^-1^)^2^. So, a small gain in precision is achieved only by the model-based optimisation of the sampling pattern compared to spatial coverage sampling. This outcome is in agreement with the results reported by @bru07c.
 
 Instead of the mean OK variance (MOKV), we may prefer to use some quantile of the cumulative distribution function of the OK variance as a minimisation criterion. For instance, if we use the 0.90 quantile as criterion, we are searching for the sampling locations so that the 90th percentile (P90) of the OK variance is minimal. This can be done with function `optimUSER` of package **spsann**. This function has an argument `fun` that can be used to specify the objective function\index{Objective function} to be minimised. In this case the objective function is as follows.
 
 ```{r}
 QOKV <- function(points, esample, model, nmax, prob) {
   points <- as.data.frame(points)
-  coordinates(points) <- ~x + y
+  coordinates(points) <- ~ x + y
   points$dum <- 1
   res <- krige(
-    formula = dum~1,
+    formula = dum ~ 1,
     locations = points,
     newdata = esample,
     model = model,
@@ -237,7 +233,7 @@ The next code chunk shows how this objective function can be minimised.
 
 ```{r, eval = FALSE}
 myevalsample <- candi
-coordinates(myevalsample) <- ~x + y
+coordinates(myevalsample) <- ~ x + y
 set.seed(314)
 res <- optimUSER(
   points = 50, candi = candi,
@@ -324,7 +320,7 @@ To optimise the sampling pattern for KED, using the mean KED variance as a minim
 set.seed(314)
 res <- optimMKV(
   points = 50, candi = candi, covars = grdCRF,
-  vgm = vgm_REML_gstat, eqn = z~lnEM100cm,
+  vgm = vgm_REML_gstat, eqn = z ~ lnEM100cm,
   schedule = schedule,
   plotit = FALSE, track = FALSE)
 ```
@@ -359,11 +355,13 @@ Comparing the population and sample histograms of the covariate clearly shows th
 ```{r histogramslnEM, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Sample histogram and population histogram of lnEM100cm used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
 plt1 <- ggplot(data = mysample) +
   geom_histogram(mapping = aes(x = lnEM100cm), breaks = seq(from = 2.75, to = 5, by = 0.25), fill = "black", alpha = 0.5, color = "black") +
+  scale_y_continuous(name = "Count") +
   ggtitle("Sample") +
   theme(plot.title = element_text(size = 10, hjust = 0.5))
 
 plt2 <- ggplot(data = grdCRF) +
   geom_histogram(mapping = aes(x = lnEM100cm), breaks = seq(from = 2.75, to = 5, by = 0.25), fill = "black", alpha = 0.5, color = "black") +
+  scale_y_continuous(name = "Count") +
   ggtitle("Population") +
   theme(plot.title = element_text(size = 10,  hjust = 0.5))
 
@@ -420,7 +418,7 @@ schedule <- scheduleSPSANN(
   stopping = 5, x.min = 0, y.min = 0, cellsize = 1)
 ```
 
-Computing time can be reduced with argument `nmax`, which is passed to **gstat** function `krige`.
+The number of points used in kriging can be passed to function `optimMKV` with argument `nmax`.
 
 ```{r, eval = FALSE}
 set.seed(314)
@@ -428,7 +426,7 @@ vgm_ML_gstat <- vgm(model = "Sph", psill = vgm_ML$sigmasq,
   range = vgm_ML$phi, nugget = vgm_ML$nugget)
 res <- optimMKV(
   points = pnts, candi = candi,
-  vgm = vgm_ML_gstat, eqn = z~1,
+  vgm = vgm_ML_gstat, eqn = z ~ 1,
   nmax = 20, schedule = schedule, track = FALSE)
 ids <- which(res$points$free == 1)
 infillSample <- res$points[ids, ]
@@ -461,7 +459,7 @@ sampleAmhara <- as(sampleAmhara, "data.frame")
 library(geoR)
 dGeoR <- as.geodata(obj = sampleAmhara, header = TRUE,
    coords.col = c("s1", "s2"), data.col = "SOM", covar.col = c("dem", "rfl_NIR", "rfl_red", "lst"))
-vgm_REML <- likfit(geodata = dGeoR, trend = ~dem + rfl_NIR + rfl_red + lst,
+vgm_REML <- likfit(geodata = dGeoR, trend = ~ dem + rfl_NIR + rfl_red + lst,
   cov.model = "spherical", ini.cov.pars = c(1, 5), nugget = 0.2,
   lik.method = "REML", messages = FALSE)
 ```
@@ -485,7 +483,7 @@ set.seed(314)
 res <- optimMKV(
   points = pnts, candi = candi, covars = covars,
   vgm = vgm_REML_gstat,
-  eqn = z~dem + rfl_NIR + rfl_red + lst,
+  eqn = z ~ dem + rfl_NIR + rfl_red + lst,
   nmax = 20, schedule = schedule, track = TRUE)
 ```
 
@@ -514,7 +512,7 @@ load("results/MBInfillSample_KED_Amhara.RData")
 MKV_KED_opt <- as.numeric(tail(res$objective$energy, 1))
 ```
 
-The MKV of the optimised sample equals `r as.character(round(MKV_KED_opt,3))` (dag kg^-1^)^2^, which is somewhat larger than the sill (sum of nugget and partial sill) of the residual variogram (Table \@ref(tab:VariogramREMLEthiopia)). This can be explained by the very small range of the semivariogram, so that ignoring the uncertainty about the model-mean, the kriging variance at nearly all locations in the study area equals the sill. Besides, we are uncertain about the model-mean, explaining that the MKV can be larger than the sill.
+The MKV of the optimised sample equals `r formatC(MKV_KED_opt, 3, format = "f")` (dag kg^-1^)^2^, which is somewhat larger than the sill (sum of nugget and partial sill) of the residual variogram (Table \@ref(tab:VariogramREMLEthiopia)). This can be explained by the very small range of the semivariogram, so that ignoring the uncertainty about the model-mean, the kriging variance at nearly all locations in the study area equals the sill. Besides, we are uncertain about the model-mean, explaining that the MKV can be larger than the sill.
 
 ```{r, echo = FALSE}
 rm(list = ls())

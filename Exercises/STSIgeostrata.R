@@ -6,7 +6,7 @@ library(rgdal)
 set.seed(31415)
 
 # read field of interest
-shpField <- rast(system.file("extdata", "Leest", "", package = "sswr"))
+shpField <- readOGR(dsn = "data", layer = "Leest", verbose = FALSE)
 
 #shpField <- readOGR(dsn = "../data", layer = "Leest", verbose = FALSE)
 proj4string(shpField) <- NA_character_

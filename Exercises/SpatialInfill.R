@@ -1,26 +1,25 @@
 library(sp)
 library(spcosa)
 library(ggplot2)
-#library(terra)
-library(sswr)
+library(terra)
 
 #read data frame with coordinates (and other attributes) of fine grid (discretisation of study area)
-#rmap <- rast(system.file("extdata", "Xuancheng", "elevation.tif", package = "sswr"))
-#rmap
-#rmap <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
-rmap <- grdXuancheng
-gridded(rmap) <- ~ s1 + s2
+rmap <- rast(x="data/Elevation_Xuancheng.tif")
+rmap
+rmap <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
+
+gridded(rmap) <- ~ x + y
 subgrid <- spsample(rmap, type = "regular", cellsize = c(900, 900), offset = c(0.5, 0.5))
 length(subgrid)
 subgrid <- as(subgrid, "data.frame")
-
 rmap <- as(rmap, "data.frame")
+
 #load existing sampling points
 legacy <- sampleXuancheng[sampleXuancheng$sample == "iPSM", ]
 
 #plot prior points
 ggplot(rmap) +
-  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
+  geom_raster(mapping = aes(x = x / 1000, y = y / 1000), fill = "grey") +
   geom_point(data = legacy, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -38,7 +37,6 @@ ntot <- n + nrow(legacy)
 #change class of legacy (existing points) to SpatialPoints
 legacy <- SpatialPoints(coords = cbind(legacy$s1, legacy$s2))
 
-res <- over(legacy,rmap)
 #compute geostrata with argument priorPoints
 set.seed(314)
 mystrata <- spcosa::stratify(subgrid, nStrata = ntot, priorPoints = legacy, nTry = 10)

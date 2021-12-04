@@ -1,37 +1,27 @@
-################################################################################
-# Function: localmean_weight (not exported)
-# Programmers: Don Stevens and Tom Kincaid
-# Date: February 6, 2020
-# Revised: April 28, 2021 to use the modified object returned by the
-#          localmean_weight2 function and to return a NULL object when the ginv
-#          function fails to return valid output
-# Revised: April 29, 2021 to eliminate use of the while loop to achieve valid
-#          output from the ginv function, which means that the vincr argument
-#          and the localmean_weight2 function are no longer needed
-#
-#' Internal Function: Local Mean Variance Neighbors and Weights
+#' Local Mean Variance Neighbors and Weights
 #'
 #' This function calculates the index values of neighboring points and
 #' associated weights required by the local mean variance estimator.
 #'
-#' @param x Vector of x-coordinates for location of the sample points.
-#'
-#' @param y Vector of y-coordinates for location of the sample points.
-#'
-#' @param prb Vector of inclusion probabilities for the sample points.
-#'
+#' @param x \code{\link{vector}} of x-coordinates for location of the sample
+#'   points.
+#' @param y \code{\link{vector}} of y-coordinates for location of the sample
+#'   points.
+#' @param prb \code{\link{vector}} of inclusion probabilities for the sample
+#'   points.
 #' @param nbh Number of neighboring points to use in the calculations.
 #'
-#' @return If ginv fails to return valid output, a NULL object.  Otherwise, a
-#'   list containing two elements: a matrix named \code{ij} composed of the
-#'   index values of neighboring points and a vector named \code{gwt}
+#' @return If \code{\link{ginv}} fails to return valid output,
+#'   a \code{\link{NULL}} object.  Otherwise, a \code{\link{list}}
+#'   containing two elements: a \code{\link{matrix}} named \code{ij} composed of
+#'   the index values of neighboring points and a vector named \code{gwt}
 #'   composed of weights.
+#'
+#' @importFrom MASS ginv
 #'
 #' @author  Tom Kincaid \email{Kincaid.Tom@@epa.gov}
 #'
-#' @noRd
-################################################################################
-
+#' @export
 localmean_weight <- function(x, y, prb, nbh = 4) {
 
   # Assign tne number of points

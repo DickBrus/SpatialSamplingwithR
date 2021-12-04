@@ -12,6 +12,7 @@ There is no simple equation that relates the grid spacing to the kriging varianc
 
 In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of the SOM concentration (dag kg^-1^), used before to design a spatial infill sample (Section \@ref(SpatialInfill)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments (MoM), and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget, passed to function `fit.variogram` with argument `model`, are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates. First, the projected coordinates of the sampling points are changed from m into km using function `mutate`.
 
+
 ```{r}
 library(gstat)
 grdAmhara <- grdAmhara %>%
@@ -27,7 +28,7 @@ vgm_MoM <- fit.variogram(vg, model = vgmdl)
 ```{r variogramSOMEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted spherical model of the SOM concentration in West-Amhara, estimated from the legacy data."}
 fitted <- variogramLine(vgm_MoM, maxdist = 60, n = 1000)
 ggplot(data = vg) +
-  geom_point(mapping = aes(x = dist, y = gamma), size = 3) +
+  geom_point(mapping = aes(x = dist, y = gamma), size = 2) +
   geom_smooth(data = fitted, mapping = aes(x = dist, y = gamma), colour = "red") +
   scale_x_continuous(name = "Distance (km)") +
   scale_y_continuous(name = "Semivariance", limits = c(0, 1.3))
@@ -38,7 +39,9 @@ The semivariogram of SOM can also be estimated by maximum likelihood (ML) using 
 ```{r}
 library(geoR)
 sampleAmhara <- as(sampleAmhara, "data.frame")
-dGeoR <- as.geodata(obj = sampleAmhara, header = TRUE, coords.col = c("s1", "s2"), data.col = "SOM")
+dGeoR <- as.geodata(
+  obj = sampleAmhara, header = TRUE, coords.col = c("s1", "s2"),
+  data.col = "SOM")
 vgm_ML <- likfit(geodata = dGeoR, trend = "cte",
   cov.model = "spherical", ini.cov.pars = c(0.4, 40),
   nugget = 0.6, lik.method = "ML", messages = FALSE)
@@ -133,7 +136,7 @@ spacing_tol_Mean <- approx(x = dfKV_OK$Mean, y = dfKV_OK$spacing, xout = 0.8)$y
 spacing_tol_P90 <- approx(x = dfKV_OK$P90, y = dfKV_OK$spacing, xout = 0.8)$y
 ```
 
-For a mean kriging variance of 0.8 (dag kg^-1^)^2^ the tolerable grid spacing is `r round(spacing_tol_Mean,1)` km. For the median kriging variance this is `r round(spacing_tol_P50,1)` km, which is somewhat larger leading to a smaller sample size. The smaller grid spacing for the mean can be explained by the right-skewed distribution of the kriging variance, so that the mean kriging variance is larger than the median kriging variance. For the P90 of the kriging variance the tolerable grid spacing is much smaller, `r round(spacing_tol_P90,1)` km, leading to a much larger sample size.
+For a mean kriging variance of 0.8 (dag kg^-1^)^2^ the tolerable grid spacing is `r formatC(spacing_tol_Mean, 1, format = "f")` km. For the median kriging variance this is `r formatC(spacing_tol_P50, 1, format = "f")` km, which is somewhat larger leading to a smaller sample size. The smaller grid spacing for the mean can be explained by the right-skewed distribution of the kriging variance, so that the mean kriging variance is larger than the median kriging variance. For the P90 of the kriging variance the tolerable grid spacing is much smaller, `r formatC(spacing_tol_P90, 1, format = "f")` km, leading to a much larger sample size.
 
 #### Exercises {-}
 
@@ -169,7 +172,7 @@ for (i in seq_len(length(spacing))) {
 dfKV_OBK <- data.frame(spacing, MKV_OBK, P50KV_OBK, P90KV_OBK)
 ```
 
-Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50, and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure \@ref(fig:MOKVvsSpacingEthiopia)). This can be explained by the large nugget of the semivariogram (Table \@ref(tab:VariogramEstimatesEthiopia)). The side length of a prediction block (100 m) is much smaller than the range of the semivariogram (`r round(vgm_ML$phi,1)` km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, for a given grid spacing the mean point-kriging variance is reduced by an amount about equal to this mean semivariance to yield the mean block-kriging variance for this spacing (Section \@ref(BlockKriging)). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Subsection \@ref(AnalyticalApproach), Equation \@ref(eq:meansemivariance)).
+Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50, and P90 of the block-kriging predictions are substantially smaller than those of the point-kriging predictions (Figure \@ref(fig:MOKVvsSpacingEthiopia)). This can be explained by the large nugget of the semivariogram (Table \@ref(tab:VariogramEstimatesEthiopia)). The side length of a prediction block (100 m) is much smaller than the range of the semivariogram (`r formatC(vgm_ML$phi, 1, format = "f")` km), so that in this case the mean semivariance within a prediction block is about equal to the nugget. Roughly speaking, for a given grid spacing the mean point-kriging variance is reduced by an amount about equal to this mean semivariance to yield the mean block-kriging variance for this spacing (Section \@ref(BlockKriging)). Recall that the mean semivariance within a block is a model-based prediction of the variance within a block (Subsection \@ref(AnalyticalApproach), Equation \@ref(eq:meansemivariance)).
 
 (ref:MOBKVvsSpacingEthiopia) Mean, median (P50), and 0.90 quantile (P90) of the ordinary block-kriging variance of predictions of the mean SOM concentration of blocks of 100 m $\times$ 100 m, in West-Amhara, as a function of the spacing of a square grid.
 
@@ -266,12 +269,12 @@ MMKV_KED <- apply(dfKV_KED[, -1], MARGIN = 1, FUN = mean)
 spacing_tol_KED <- approx(x = MMKV_KED, y = dfKV_KED$spacing, xout = 0.8)$y
 ```
 
-The tolerable grid spacing for a mean kriging variance of 0.8 (dag kg^-1^)^2^, using KED, equals `r round(spacing_tol_KED,1)` km.
+The tolerable grid spacing for a mean kriging variance of 0.8 (dag kg^-1^)^2^, using KED, equals `r formatC(spacing_tol_KED, 1, format = "f")` km.
 
 #### Exercises {-}
 
 3. Given a grid spacing the mean kriging variance varies among randomly selected grids, especially for large spacings. Explain why.   
-4. Write an **R** script to compute the tolerable grid spacing for KED of natural logs of the electrical conductivity of the soil across the Cotton Research Farm of Uzbekistan, using natural logs of the electromagnetic induction (EM) measurements (lnEM100cm) as a covariate. Use a nugget of 0.126, a partial sill of 0.083, and a range of 230 m for an exponential semivariogram of the residuals (Table \@ref(tab:TableVariogramsCRF4)). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEM100cm values to compute the mean kriging variance. Do this by selecting 1,000 grid cells by simple random sampling with replacement and jittering the centres of the selected grid cells  by an amount equal to half the size of the grid cell. Use as grid spacings $70, 75, \dots, 100$ m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
+4. Write an **R** script to compute the tolerable grid spacing for KED of natural logs of the electrical conductivity of the soil across the Cotton Research Farm of Uzbekistan, using natural logs of the electromagnetic induction (EM) measurements (lnEM100cm) as a covariate. Use a nugget of 0.126, a partial sill of 0.083, and a range of 230 m for an exponential semivariogram of the residuals (Table \@ref(tab:TableVariogramsCRF4)). Select a simple random sample of size 1,000 of evaluation points from the discretisation grid with interpolated lnEM100cm values to compute the mean kriging variance. Do this by selecting 1,000 grid cells by simple random sampling with replacement and jittering the centres of the selected grid cells by an amount equal to half the size of the grid cell. Use as grid spacings $70, 75, \dots, 100$ m. With a spacing of 100 m the number of grid points is about 100 (the farm has an area of about 97 ha). What is the tolerable grid spacing for a mean kriging variance of 0.165?
 
 ## Bayesian approach {#BayesianGridSpacing}
 
@@ -397,18 +400,18 @@ for (i in seq_len(ncol(MKV))) {
 }
 ```
 
-For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that for most sampled semivariograms (MCMC sample units) the tolerable grid spacing equals 8 km, which corresponds with the tolerable grid spacing derived above for OK. For `r as.character(sum(is.na(spacing_tol)))` sampled semivariograms the tolerable grid spacing exceeds 12 km. However, this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
+For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that for most sampled semivariograms (MCMC sample units) the tolerable grid spacing equals 8 km, which corresponds with the tolerable grid spacing derived above for OK. For `r sum(is.na(spacing_tol))` sampled semivariograms the tolerable grid spacing exceeds 12 km. However, this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
 
-```{r HistogramTolerableSpacing, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Histogram of tolerable grid spacings for a target MKV of 0.8."}
+```{r HistogramTolerableSpacing, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Frequency distribution of tolerable grid spacings for a target MKV of 0.8."}
 spacing_tol <- spacing_tol[!is.na(spacing_tol)]
 
 ggplot() +
    geom_histogram(mapping = aes(spacing_tol), binwidth = 1, fill = "black", alpha = 0.5, colour = "black") +
    scale_x_continuous(name = "Tolerable grid spacing", breaks = 1:12) +
-   scale_y_continuous(name = "Number of MCMC samples")
+   scale_y_continuous(name = "Count")
 ```
 
-Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if we require a probability of 80\% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is about 6.25 km. With a grid spacing of 8 km, as determined before, the probability that the MKV exceeds 0.8 is about 57\%.
+Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller than or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if we require a probability of 80\% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is about 6.25 km. With a grid spacing of 8 km, as determined before, the probability that the MKV exceeds 0.8 is about 57\%.
 
 ```{r ProportionMCMCSamples, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Proportion of MCMC sample units with a MKV smaller than or equal to a target MKV of 0.8."}
 CF <- numeric(length = length(spacing))
@@ -420,7 +423,7 @@ df <- data.frame(spacing, CF)
 ggplot(df) +
   geom_line(mapping = aes(x = spacing, y = CF), colour = "red") +
   scale_x_continuous(breaks = spacing, name = "Grid spacing") +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(from = 0, to = 1, by = 0.2), name = "Proportion of MCMC samples")
+  scale_y_continuous(limits = c(0, 1), breaks = seq(from = 0, to = 1, by = 0.2), name = "Proportion")
 ```
 
 ```{r, echo = FALSE}

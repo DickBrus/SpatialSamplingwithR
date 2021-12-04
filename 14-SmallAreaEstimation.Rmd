@@ -74,7 +74,7 @@ res <- svyby(~ AGB, by = ~ Ecoregion, design = design_si, FUN = svymean)
 
 The ratio estimates of the mean AGB are shown in Table \@ref(tab:TableRatioEstimatesEcoregions). Two ecoregions are missing in the table: no units are selected from these ecoregions so that a direct estimate is not available. There are three ecoregions with an estimated standard error of 0.0. These ecoregions have less than two sampling units only, so that the standard error cannot be estimated.
 
-(ref:TableRatioEstimatesEcoregionslabel) Ratio estimates of the mean AGB (10^9^ kg ha^-1^) and their standard errors of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200. The estimated standard errors of 0.0 are non-availables.
+(ref:TableRatioEstimatesEcoregionslabel) Ratio estimates and estimated standard errors of the ratio estimator of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200. The estimated standard errors of 0.0 are non-availables.
 
 ```{r TableRatioEstimatesEcoregions, echo = FALSE}
 rownames(res) <- NULL
@@ -145,7 +145,7 @@ for (i in 1:number_of_samples) {
 save(mz_eco_HT, mz_eco_ratio, mz_eco_regr, mz_eco_synt, mz_eco_extsynt, file = "results/MeanAGB_ecoregions.RData")
 ```
 
-(ref:TableRatiovsHTEstimatesEcoregions) Standard deviations of 1,000 $\pi$ estimates (HT) and 1,000 ratio estimates (Ratio) of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200. Expected n: expected sample size.
+(ref:TableRatiovsHTEstimatesEcoregions) Standard deviations of 1,000 $\pi$ estimates (HT) and 1,000 ratio estimates (Ratio) of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, with simple random sampling without replacement of size 200. n: expected sample size.
 
 ```{r TableRatiovsHTEstimatesEcoregions, echo = FALSE}
 load(file = "results/MeanAGB_ecoregions.RData")
@@ -164,7 +164,7 @@ res <- data.frame(nms, sd_mz_HT, sd_mz_ratio, En)
 rownames(res) <- NULL
 knitr::kable(
   res, caption = "(ref:TableRatiovsHTEstimatesEcoregions)",
-  col.names = c("Ecoregion", "HT", "Ratio", "Expected n"),
+  col.names = c("Ecoregion", "HT", "Ratio", "n"),
   booktabs = TRUE
 ) %>%
   kable_classic()
@@ -238,7 +238,7 @@ Function `twophase` of package **forestinventory** [@Hill2021] can be used to co
 The function name 'twophase' is somewhat confusing. It suggests that we have a large sample which is subsampled in a second phase, as described in Chapter \@ref(Twophase). This is not the case here. However, upon considering infinite populations, @Hill2021 treat the grid that discretises the infinite population as the first-phase sample. The sampling error introduced by this discretisation grid can then be accounted for. I ignore this sampling error, it will be very small anyway, because the number of grid cells is very large.
 ```
 
-By assigning the domain means of the covariates to argument `exhaustive` of function `twophase` the sampling error of the first phase is ignored.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package **survey** also a function `twophase` is defined, for this reason the  name of the package is made explicit by `forestinventory::twophase`. With arguments `psmall=TRUE` and element `unbiased=TRUE` in the list `small_area` the regression estimate is computed. Log-transformed SWIR2 is used as a covariate in the regression estimator of the mean AGB of the ecoregions.
+By assigning the domain means of the covariates to argument `exhaustive` of function `twophase` the sampling error of the first phase is ignored.  Function `twophase` assumes simple random sampling (unless optional argument `cluster` is used). Note that for the unobserved population units (not selected units) the AGB values are changed into non-availables. In package **survey** also a function `twophase` is defined, for this reason the  name of the package is made explicit by `forestinventory::twophase`. With argument `psmall = TRUE` and element `unbiased = TRUE` in the list `small_area` the regression estimate is computed. Log-transformed SWIR2 is used as a covariate in the regression estimator of the mean AGB of the ecoregions.
 
 ```{r, echo = FALSE}
 mz_pop <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = mean)
@@ -341,7 +341,7 @@ The variance can be estimated by
 \end{equation}
 
 This is equal to the first variance component of Equation \@ref(eq:Varregressionestimatorsmalldomain). 
-The synthetic estimate can be computed with function `twophase`, with arguments `psmall=FALSE` and element `unbiased=FALSE` in the list `small_area`.
+The synthetic estimate can be computed with function `twophase`, with argument `psmall = FALSE` and element `unbiased = FALSE` in the list `small_area`.
 
 ```{r}
 res <- forestinventory::twophase(AGB ~ lnSWIR2, data = grdAmazonia,
@@ -372,7 +372,7 @@ md <- mean(d_estimates)
 d_vars <- df$g_variance.x - df$g_variance.y
 ```
 
-For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r round(md,1)` 10^9^ kg ha^-1^. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error (and therefore not shown in the table).
+For all ecoregions, also the unsampled ones, a synthetic estimate of the mean AGB is obtained (Table \@ref(tab:TableSyntheticEstimates)). For the sampled ecoregions the synthetic estimate differs from the regression estimate. This difference can be quite large for ecoregions with a small sample size. Averaged over all sampled ecoregions the difference, computed as synthetic estimate minus regression estimate,  equals `r formatC(md, 1, format = "f")` 10^9^ kg ha^-1^. The variance of the regression estimator is always much larger than the variance of the synthetic estimator. The difference is the variance of the estimator of the domain mean of the residuals. However, recall that the regression estimator is design-unbiased, whereas the synthetic estimator is not. A more fair comparison is on the basis of the root mean squared error (RMSE) (Table \@ref(tab:tableRMSEs)). For the regression estimator the RMSE is equal to its standard error (and therefore not shown in the table).
 
 ```{r, echo = FALSE}
 load(file = "results/MeanAGB_ecoregions.RData")
@@ -524,7 +524,7 @@ vgm_REML <- likfit(geodata = dGeoR, trend = ~ lnSWIR2, cov.model = "spherical",
   ini.cov.pars = c(1000, 300), nugget = 1500, lik.method = "REML", messages = FALSE)
 ```
 
-The estimated intercept and slope are 1,744 and `r round(vgm_REML$beta[2],1)`, respectively. The estimated semivariogram parameters are 1,623 (10^9^ kg ha^-1^)^2^, `r round(vgm_REML$sigmasq,0)` (10^9^ kg ha^-1^)^2^, and `r round(vgm_REML$phi,0)` km for the nugget, partial sill, and range, respectively. These model parameters are used to predict AGB for all units in the population, using function `krige` of package **gstat** [@peb04]. The REML estimates of the semivariogram parameters are passed to function `vgm` with arguments `nugget`, `psill`, and `range`. The coordinates of the sample are shifted to a random point within a 1 km $\times$ 1 km grid cell. This is done to avoid that a sampling point coincides with a prediction point, which leads to an error message when predicting AGB at the nodes of the grid.
+The estimated intercept and slope are 1,744 and `r formatC(vgm_REML$beta[2], 1, format = "f")`, respectively. The estimated semivariogram parameters are 1,623 (10^9^ kg ha^-1^)^2^, `r formatC(vgm_REML$sigmasq, 0, format = "f", big.mark = ",")` (10^9^ kg ha^-1^)^2^, and `r formatC(vgm_REML$phi, 0, format = "f")` km for the nugget, partial sill, and range, respectively. These model parameters are used to predict AGB for all units in the population, using function `krige` of package **gstat** [@peb04]. The REML estimates of the semivariogram parameters are passed to function `vgm` with arguments `nugget`, `psill`, and `range`. The coordinates of the sample are shifted to a random point within a 1 km $\times$ 1 km grid cell. This is done to avoid that a sampling point coincides with a prediction point, which leads to an error message when predicting AGB at the nodes of the grid.
 
 ```{r, eval = FALSE}
 mysample$x1 <- jitter(mysample$x1, amount = 0.5)
@@ -644,12 +644,12 @@ ggplot(data = df) +
 
 For four ecoregions the standard errors of the geostatistical model predictions are much smaller than those of the random intercept model predictions (Figure \@ref(fig:MBvsMBse)). These are ecoregions with small sample sizes.
 
-(ref:MBvsMBselabel) Scatter plot of the standard error of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions obtained with the random intercept model and the geostatistical model, using a simple random sample without replacement of size 200 from Eastern Amazonia. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line.
+(ref:MBvsMBselabel) Scatter plot of the estimated standard error of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions obtained with the random intercept model and the geostatistical model, using a simple random sample without replacement of size 200 from Eastern Amazonia. The numbers refer to the number of sampling units in an ecoregion. The solid line is the 1:1 line.
 
 ```{r MBvsMBse, echo = FALSE, fig.width = 5, fig.cap = "(ref:MBvsMBselabel)"}
 ggplot(data = df) +
         geom_point(mapping = aes(x = semb.rint, y = semb.geo), size = 2) +
-        geom_text(mapping = aes(x = semb.rint, y = semb.geo, label = n_eco), hjust = 1, vjust = 1) +
+        geom_text(mapping = aes(x = semb.rint, y = semb.geo, label = n_eco), nudge_x = 1) +
         geom_abline(intercept = 0, slope = 1) +
         scale_x_continuous(name = "Standard error random intercept model prediction ", limits = c(5, 40)) +
         scale_y_continuous(name = "Standard error geostatistical prediction", limits = c(5, 40)) +

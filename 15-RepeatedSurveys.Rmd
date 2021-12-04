@@ -415,7 +415,7 @@ ggplot(df_lf) +
   geom_raster(mapping = aes(x = x, y = y, fill = value)) +
   geom_point(mysample_SS, mapping = aes(x = x, y = y)) +
   scale_fill_viridis_c(name = "TAS") +
-  scale_x_continuous(name = "Easting (km)") +
+  scale_x_continuous(name = "Easting (km)", breaks = seq(from = 2700, to = 3700, by = 200) )+
   scale_y_continuous(name = "Northing (km)") +
   facet_wrap(~ name, ncol = 2, nrow = 2) +
   coord_fixed()
@@ -446,7 +446,7 @@ d_mz_SS <- t(w) %*% mz
 se_d_mz_SS <- sqrt(t(w) %*% C %*% w)
 ```
 
-<!--The estimated change equals `r round(d_mz_SS,3)` $^\circ$C, and the estimated standard error equals `r round(se_d_mz_SS,4)` $^\circ$C.-->
+<!--The estimated change equals `r formatC(d_mz_SS, 3, format = "f")` $^\circ$C, and the estimated standard error equals `r formatC(se_d_mz_SS, 4, format = "f")` $^\circ$C.-->
 
 The temporal trend of the spatial means can be estimated much in the same way, but using a different vector with weights (Equation \@ref(eq:weightsTrendofMean)). 
 
@@ -457,7 +457,7 @@ mz_trend_SS <- t(w) %*% mz
 se_mz_trend_SS <- sqrt(t(w) %*% C %*% w)
 ```
 
-The estimated temporal trend equals `r round(mz_trend_SS,4)` $^\circ$C $y^{-1}$, and the estimated standard error equals `r se_mz_trend_SS` $^\circ$C $y^{-1}$. Using `t = 1:4` yields the estimated average change in annual mean temperature *per five years*.
+The estimated temporal trend equals `r formatC(mz_trend_SS, 4, format = "f")` $^\circ$C $y^{-1}$, and the estimated standard error equals `r se_mz_trend_SS` $^\circ$C $y^{-1}$. Using `t = 1:4` yields the estimated average change in annual mean temperature *per five years*.
 
 ```{r}
 t <- 1:4
@@ -485,14 +485,16 @@ mysample_IS <- grd[units, ]
 mysample_IS$panel <- rep(c("a", "b", "c", "d"), each = n)
 ```
 
-```{r sampleSpainPortugalIS, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "Independent synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleSpainPortugalIS, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "Independent synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_IS[mysample_IS$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
@@ -500,7 +502,9 @@ plt2 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
@@ -508,7 +512,9 @@ plt3 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
@@ -516,9 +522,11 @@ plt4 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
 
-grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
+
+grid.arrange(plt1, plt2, plt3, plt4, nrow = 2, ncol = 2)
 ```
 
 The spatial means are estimated with the $\pi$ estimator as there is no partial overlap of the spatial samples. All covariances of the mean estimators are zero. Estimation of the space-time parameters is as before with the SS space-time sample. Four data frames of $n$ rows are first made with the data observed in a specific panel. The columns of these four data frames are then joined into a single data frame. The spatial means at the four times are then estimated by the sample means, computed with function `apply`.
@@ -559,7 +567,7 @@ mysample_SA <- grd[units, ]
 mysample_SA$panel <- rep(c("a", "b"), each = n)
 ```
 
-```{r sampleSpainPortugalSA, echo = FALSE, fig.asp = 0.6, out.width = '100%', fig.cap = "Serially alternating space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleSpainPortugalSA, echo = FALSE, fig.asp = 0.8, out.width = '100%', fig.cap = "Serially alternating space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
 
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
@@ -567,7 +575,9 @@ plt1 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
@@ -575,7 +585,9 @@ plt2 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
@@ -583,7 +595,9 @@ plt3 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
@@ -591,7 +605,9 @@ plt4 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
@@ -640,7 +656,7 @@ mysample_SP <- grd[units, ]
 mysample_SP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
-```{r sampleSpainPortugalSP, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "Supplemented panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
+```{r sampleSpainPortugalSP, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "Supplemented panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
@@ -648,7 +664,9 @@ plt1 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
@@ -657,7 +675,9 @@ plt2 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
@@ -666,7 +686,9 @@ plt3 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
@@ -675,7 +697,9 @@ plt4 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
@@ -719,7 +743,7 @@ C <- rbind(cbind(C_SS, zeroes), cbind(zeroes, C_IS))
 The design-based GLS estimates of the spatial means can be computed as follows, see Equation \@ref(eq:DBGLS).
 
 ```{r}
-XCXinv <- solve(crossprod(X, solve(C,X)))
+XCXinv <- solve(crossprod(X, solve(C, X)))
 XCz <- crossprod(X, solve(C, mz_el))
 mz_GLS <- XCXinv %*% XCz
 ```
@@ -754,7 +778,7 @@ mysample_RP <- grd[units, ]
 mysample_RP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
-```{r sampleSpainPortugalRP, echo = FALSE, fig.asp = 0.6, out.width = "100%", fig.cap = "In-for-two rotating panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
+```{r sampleSpainPortugalRP, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "In-for-two rotating panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
 
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
@@ -763,7 +787,9 @@ plt1 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
@@ -772,7 +798,8 @@ plt2 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
 
 plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
@@ -781,7 +808,9 @@ plt3 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
@@ -790,7 +819,9 @@ plt4 <- ggplot(grd) +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(legend.position = "none")
+
 
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
 ```
@@ -833,7 +864,7 @@ C[8, 8] <- var(mysample_RP[mysample_RP$panel == "e", "TAS2019"]) / (n / 2)
 The design-based GLS estimates of the spatial means for the four sampling times are computed as before, followed by computing the estimated space-time parameters.
 
 ```{r}
-XCXinv <- solve(crossprod(X, solve(C,X)))
+XCXinv <- solve(crossprod(X, solve(C, X)))
 XCz <- crossprod(X, solve(C, mz_el))
 mz_GLS <- XCXinv %*% XCz
 #current mean
@@ -867,7 +898,7 @@ mz_st <- mean(mz)
 
 The random sampling with the five space-time designs and estimation of the four space-time parameters is repeated 10,000 times. The standard deviations of the 10,000 estimates of a space-time parameter are shown in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters). Note that to determine the standard errors of the estimators of the space-time parameters for the SS, IS, and SA designs a sampling experiment is not really needed. These can be computed without error because we have exhaustive knowledge of the study variable at all sampling times. However, for the SP and RP designs a sampling experiment is needed to approximate the design-expectation of the standard error of the estimators of the space-time parameters. This is because the space-time parameters are derived from the GLS estimator of the spatial means, and the GLS estimator is a function of the *estimated* covariances of the elementary estimates (Equation \@ref(eq:DBGLS)). Using the true covariance of the elementary estimates in the GLS estimator, instead of the estimated covariance, leads to an underestimation of the standard error. Computing the true standard errors of the estimators of the space-time parameters for the various space-time designs is left as an exercise.
 
-As a reference for the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters): the current mean (spatial mean air temperature in 2019) equals `r round(mz_2019_pop,2)` $^\circ$C, the change of the mean from 2004 to 2019 equals `r round(d_mz_pop,3)` $^\circ$C, the temporal trend equals `r round(mz_trend_pop,3)` $^\circ$C *per five years*, and the space-time mean equals `r round(mz_st,2)` $^\circ$C.
+As a reference for the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters): the current mean (spatial mean air temperature in 2019) equals `r formatC(mz_2019_pop, 2, format = "f")` $^\circ$C, the change of the mean from 2004 to 2019 equals `r formatC(d_mz_pop, 3, format = "f")` $^\circ$C, the temporal trend equals `r formatC(mz_trend_pop, 3, format = "f")` $^\circ$C *per five years*, and the space-time mean equals `r formatC(mz_st, 2, format = "f")` $^\circ$C.
 
 ```{r, echo = FALSE, eval = FALSE}
 R <- 10000

@@ -1,16 +1,11 @@
 # Systematic random sampling {#SY}
 
-```{r, echo = FALSE}
-evalFT <- FALSE
-```
-
-A simple way of drawing probability samples whose units are spread uniformly over the study area, is systematic random sampling\index{Systematic random sampling} (SY). Systematic random sampling from a two-dimensional spatial population entails sampling on a regular grid\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type="regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. 
+A simple way of drawing probability samples whose units are spread uniformly over the study area, is systematic random sampling\index{Systematic random sampling} (SY). Systematic random sampling from a two-dimensional spatial population entails the selection of a regular grid randomly placed on the area\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type = "regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. First the class of  object `grdVoorst` is changed from a `data.frame` to a `SpatialPixelsdataframe` with function `gridded`.
 
 ```{r}
-set.seed(777)
-#change class of grdVoorst to SpatialPixelsDataFrame
-gridded(grdVoorst) <- ~s1 + s2
+gridded(grdVoorst) <- ~ s1 + s2
 n <- 40
+set.seed(777)
 mySYsample <- spsample(x = grdVoorst, n = n, type = "regular") %>%
   as(., "data.frame")
 ```
@@ -323,7 +318,7 @@ This yields the ratio estimator\index{Ratio estimator} of the population mean:
 (\#eq:RatioMeanSY)
 \end{equation}
 
-So, the ratio estimator of the population total is equal to the unweighted sample mean. In general, the variance of this ratio estimator is smaller than that of the $\pi$ estimator. On the other side the $\pi$ estimator is design-unbiased, whereas the ratio estimator is not, although its bias can be negligibly small. Only in the very special case where the sample size with systematic random sampling is fixed, the two estimators are equivalent.
+So, the ratio estimator of the population total is equal to the unweighted sample mean. In general the variance of this ratio estimator is smaller than that of the $\pi$ estimator. On the other side the $\pi$ estimator is design-unbiased, whereas the ratio estimator is not, although its bias can be negligibly small. Only in the very special case where the sample size with systematic random sampling is fixed, the two estimators are equivalent.
 
 Recall that for Voorst we have exhaustive knowledge of the study variable $z$: values of the soil orgaic matter concentration (SOM) were simulated for all grid cells. To determine the $z$-values at the selected sampling points an overlay of the systematic random sample and the `SpatialPixelsDataFrame` is made, using function `over` of package **sp**.
 
@@ -418,7 +413,7 @@ res <- kmeans_equal_size(s1 = mySYsample$x1 / 1000, s2 = mySYsample$x2 / 1000,
 mySYsample$cluster <- res$clusters
 ```
 
-Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. The weights are computed by $w_h=n_h/n$. With $n$ even the stratum weights are $1/H$ for all strata. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
+Figure \@ref(fig:varapproxSY) shows the clustering of the systematic random sample of Figure \@ref(fig:sampleSY). The two (or three) sampling units of a cluster are treated as a simple random sample from a stratum, and the variance estimator for stratified random sampling is used. The weights are computed by $w_h=n_h/n$. With $n$ even the stratum weight is  $1/H$ for all strata. For more details on variance estimation with stratified simple random sampling, I refer to Section \@ref(EstimatorsSTSI). 
 
 ```{r}
 S2z_h <- tapply(mySYsample$z, INDEX = mySYsample$cluster, FUN = var)
@@ -442,7 +437,7 @@ ggplot(as(grdVoorst, "data.frame")) +
 
 This method yields an approximated variance of `r round(av_STSI_mz,1)` (g kg^-1^)^2^, which is for the selected triangular grid  slightly larger than the simple random sample approximation. Hereafter we will see that on average the stratified simple random sample approximation of the variance is smaller than the simple random sample approximation. For an individual sample the reverse can be true.
 
-A similar approach for approximating the variance was proposed by Mat&eacute;rn [@Matern1947] a long time ago. In this approach the variance is approximated by computing the squared difference of two local means. A local mean is computed by linear interpolation of the observations at the two nodes on the diagonal of a square sampling grid cell. The four corners of a square sampling grid cell serve as a group. Every sampling grid node belongs to four groups, and so the observation at a sampling grid node is used four times in computing a local mean. Near the edges of the study area we have incomplete groups: one, two or even three observations are missing. To compute a squared difference these missing values are replaced by the sample mean. This results in as many squared differences as we have groups. Note that the number of groups is larger than the sample size. The squared differences are computed by
+A similar approach for approximating the variance was proposed by Mat&eacute;rn [@Matern1947] a long time ago. In this approach the variance is approximated by computing the squared difference of two local means. A local mean is computed by linear interpolation of the observations at the two nodes on the diagonal of a square sampling grid cell. The four corners of a square sampling grid cell serve as a group. Every sampling grid node belongs to four groups, and so the observation at a sampling grid node is used four times in computing a local mean. Near the edges of the study area we have incomplete groups: one, two, or even three observations are missing. To compute a squared difference these missing values are replaced by the sample mean. This results in as many squared differences as we have groups. Note that the number of groups is larger than the sample size. The squared differences are computed by
 
 \begin{equation}
 \begin{split}
@@ -468,7 +463,7 @@ matern <- function(s) {
   g_11 <- within(s, {gr <- i; gs <- j; z11 <- z})[, c("gr", "gs", "z11")]
   g_12 <- within(s, {gr <- i; gs <- j - 1; z12 <- z})[, c("gr", "gs", "z12")]
   g_21 <- within(s, {gr <- i - 1; gs <- j; z21 <- z})[, c("gr", "gs", "z21")]
-  g_22 <- within(s, {gr <- i - 1; gs <- j-1; z22 <- z})[, c("gr", "gs", "z22")]
+  g_22 <- within(s, {gr <- i - 1; gs <- j - 1; z22 <- z})[, c("gr", "gs", "z22")]
   g <- Reduce(function(x, y) merge(x = x, y = y, by = c("gr", "gs"), all = TRUE),
               list(g_11, g_12, g_21, g_22))
   g[is.na(g)] <- mean(s$z)
@@ -477,7 +472,7 @@ matern <- function(s) {
 }
 ```
 
-Before using this function the data frame with the sample data must be extended with two variables: an index $i$ for the column number and an index $j$ for the row number of the square grid.
+Before using this function the data frame with the sample data must be extended with two variables: an index $i$ for the column number and an index $j$ for the row number of the square grid. This is done with function `mutate` of the **dplyr** package [@dplyr].
 
 ```{r}
 mySYsample <- mySYsample %>%
@@ -504,13 +499,14 @@ ggplot(data = df) +
     scale_y_continuous(name = "Estimated mean SOM")
 
 grdVoorst <- as(grdVoorst, "data.frame")
+v_mz_ratio <- formatC(var(mz_SY_ratio), 1, format = "f")
 ```
 
-The boxplots of the estimated means indicate that systematic random sampling in combination with the ratio estimator is more precise than simple random sampling. The variance of the 10,000 ratio estimates equals `r round(var(mz_SY_ratio),1)` (g kg^-1^)^2^, whereas for simple random sampling this variance equals `r round(var(mz_SI),1)` (g kg^-1^)^2^. Systematic random sampling in combination with the $\pi$ estimator performs very poor: the variance equals `r round(var(mz_SY_HT),1)` (g kg^-1^)^2^. This can be explained by the strong variation in sample size (Figure \@ref(fig:samplesizeSY)), which is not accounted for in the $\pi$  estimator.
+The boxplots of the estimated means indicate that systematic random sampling in combination with the ratio estimator is more precise than simple random sampling. The variance of the 10,000 ratio estimates equals `r v_mz_ratio` (g kg^-1^)^2^, whereas for simple random sampling this variance equals `r formatC(var(mz_SI), 1, format = "f")` (g kg^-1^)^2^. Systematic random sampling in combination with the $\pi$ estimator performs very poor: the variance equals `r formatC(var(mz_SY_HT), 1, format = "f")` (g kg^-1^)^2^. This can be explained by the strong variation in sample size (Figure \@ref(fig:samplesizeSY)), which is not accounted for in the $\pi$  estimator.
 
-The mean of the 10,000 ratio estimates is `r round(mean(mz_SY_ratio),1)` g kg^-1^, which is about equal to the population mean `r round(mean(grdVoorst$z),1)` g kg^-1^, showing that in this case the design-bias of the ratio estimator is negligibly small indeed.
+The mean of the 10,000 ratio estimates is `r round(mean(mz_SY_ratio),1)` g kg^-1^, which is about equal to the population mean `r formatC(mean(grdVoorst$z), 1, format = "f")` g kg^-1^, showing that in this case the design-bias of the ratio estimator is negligibly small indeed.
 
-The average of the 10,000 approximated variances treating the systematic sample as a simple random sample equals `r round(mean(av_SI_mz),1)` (g kg^-1^)^2^. This is larger than the variance of the ratio estimator (`r round(var(mz_SY_ratio),1)` (g kg^-1^)^2^). The stratified simple random sample approximation of the variance somewhat underestimates the variance: the mean of this variance approximation equals `r round(mean(av_STSI_mz),1)` (g kg^-1^)^2^. Also with Mat&eacute;rn's method the variance is underestimated in this case: the mean of the 10,000 variances equals `r round(mean(av_Matern_mz),1)` (g kg^-1^)^2^. Figure \@ref(fig:SamplingDistributionApproxVarSY) shows boxplots of the approximated standard error of the ratio estimator of the population mean. The horizontal red line is at the standard deviation of the 10,000 ratio estimates of the population mean. Differences between the three approximation methods are small in this case. 
+The average of the 10,000 approximated variances treating the systematic sample as a simple random sample equals `r round(mean(av_SI_mz),1)` (g kg^-1^)^2^. This is larger than the variance of the ratio estimator (`r v_mz_ratio` (g kg^-1^)^2^). The stratified simple random sample approximation of the variance somewhat underestimates the variance: the mean of this variance approximation equals `r formatC(mean(av_STSI_mz), 1, format = "f")` (g kg^-1^)^2^. Also with Mat&eacute;rn's method the variance is underestimated in this case: the mean of the 10,000 variances equals `r formatC(mean(av_Matern_mz), 1, format = "f")` (g kg^-1^)^2^. Figure \@ref(fig:SamplingDistributionApproxVarSY) shows boxplots of the approximated standard error of the ratio estimator of the population mean. The horizontal red line is at the standard deviation of the 10,000 ratio estimates of the population mean. Differences between the three approximation methods are small in this case. 
 
 (ref:SamplingDistributionApproxVarSYlabel) Sampling distribution of the approximated standard error of the ratio estimator of the mean SOM concentration (g kg^-1^) in Voorst, with systematic random sampling (square grid) and an expected sample size of 40. Approximations are obtained by treating the systematic sample as a simple random sample (SI) or a stratified simple random sample (STSI), and with  Mat&eacute;rn's method (Mat).
 
@@ -526,7 +522,7 @@ ggplot(data = df) +
     scale_y_continuous(name = "Approximated standard error")
 ```
 
-The variance of the 10,000 ratio estimates of the population mean with the triangular grid and an expected sample size of 40 equals `r round(v_mz_SYtriangular,1)` (g kg^-1^)^2^. Treating the triangular grid as a simple random sample strongly overestimates the variance: the average approximated variance equals `r round(m_av_SI_mz_SYtri,1)` (g kg^-1^)^2^. The stratified simple random sample approximation performs much better in this case: the average of the 10,000 approximated variances equals `r round(m_av_STSI_mz_SYtri,1)` (g kg^-1^)^2^. Mat&eacute;rn's method cannot be used to approximate the variance with a triangular grid.
+The variance of the 10,000 ratio estimates of the population mean with the triangular grid and an expected sample size of 40 equals `r formatC(v_mz_SYtriangular, 1, format = "f")` (g kg^-1^)^2^. Treating the triangular grid as a simple random sample strongly overestimates the variance: the average approximated variance equals `r formatC(m_av_SI_mz_SYtri, 1, format = "f")` (g kg^-1^)^2^. The stratified simple random sample approximation performs much better in this case: the average of the 10,000 approximated variances equals `r formatC(m_av_STSI_mz_SYtri, 1, format = "f")` (g kg^-1^)^2^. Mat&eacute;rn's method cannot be used to approximate the variance with a triangular grid.
 
 ```{r, echo = FALSE}
 n <- nrow(mySYsample_tri)
@@ -558,7 +554,7 @@ The approximated variance for this clustering equals `round(av_STSI_mz_SYtri,1)`
     + Write an **R** script to select two systematic random samples (random square grids) both with an expected size of 20 from Voorst.
     + Use each sample to estimate the population mean, so that you obtain two estimated means. Overlay the points of each sample with `grdVoorst`, using function `over` and extract the $z$-values.
     + Use the two estimated means to estimate the sampling variance of the estimator of the mean for systematic random sampling *with an expected sample size of 20*.
-    + Use the two estimated means to compute a single, final estimate of the population mean, as estimated from *two systematic random samples, each with an expected sample size of 20*. 
+    + Use the two estimated means to compute a single, final estimate of the population mean, as estimated from *two systematic random samples, each with an expected sample size of 20*.
     + Estimate the sampling variance of the final estimate of the population mean.  
 2. Do you like this solution? What about the variance of the estimator of the mean, obtained by selecting two systematic random samples of half the expected size, as compared with the variance of the estimator of the mean, obtained with a single systematic random sample?  Hint: plot the two random square grids. What do you think of the spatial coverage of the two samples? 
   

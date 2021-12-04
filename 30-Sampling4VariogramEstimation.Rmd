@@ -4,7 +4,7 @@ For model-based sampling as described in Chapters \@ref(MBgridspacing) and \@ref
 
 The first question is how many observations we need for this. @web92 gave as a rule of thumb that 150 to 225 points are needed to obtain a reliable semivariogram when estimated by the method-of-moments (MoM). @lar00b showed that with maximum likelihood (ML) estimation two-third to only half of the observations are needed to achieve equal precision of the estimated semivariogram parameters.
 
-Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described, nested sampling (Section \@ref(NestedSampling)) and independent sampling of pairs of points (Section \@ref(IndependentSamplingPairs)). Section \@ref(samplingforvariogram) is devoted to model-based optimisation of the sampling pattern for semivariogram estimation. Section \@ref(SamplingEstimationandPrediction) is about how to design a single sample that can be used both for estimation of the semivariogram and prediction (mapping). In a final section a practical solution is described to design sample for semivariogram estimation and prediction.
+Once we have decided on the sample size, we must select the locations of the sampling units. Two random sampling designs for semivariogram estimation are described, nested sampling (Section \@ref(NestedSampling)) and independent sampling of pairs of points (Section \@ref(IndependentSamplingPairs)). Section \@ref(samplingforvariogram) is devoted to model-based optimisation of the sampling pattern for semivariogram estimation. Section \@ref(SamplingEstimationandPrediction) is about how to design a single sample that can be used both for estimation of the semivariogram and prediction (mapping). In a final section a practical solution is described for the problem of how to design a sample for semivariogram estimation and prediction.
 
 ## Nested sampling {#NestedSampling}
 
@@ -28,7 +28,7 @@ SelectPoint <- function(start, h, area) {
 }
 ```
 
-The first stage of the second version is equal to that of the first version. However, in the second stage each of the main stations serves as a starting point for randomly selecting a *pair of points* with a separation distance equal to the largest chosen separation distance. The main station is in the middle of the selected pair of points. In the third stage each of the substations is used to select in the same way a pair of points separated by the second largest chosen distance, and so on. Only the points selected in the final stage are used as sampling points. The **R** code below shows the function for random selection of two points separated by $h$ distance units with a starting point halfway the pair of points. The `while` loop continues until both points of a pair are inside the area.
+The first stage of the second version is equal to that of the first version. However, in the second stage each of the main stations serves as a starting point for randomly selecting a *pair of points* with a separation distance equal to the largest chosen separation distance. The main station is halfway the selected pair of points. In the third stage each of the substations is used to select in the same way a pair of points separated by the second largest chosen distance, and so on. Only the points selected in the final stage are used as sampling points. The **R** code below shows the function for random selection of two points separated by $h$ distance units with a starting point halfway the pair of points. The `while` loop continues until both points of a pair are inside the area.
 
 ```{r}
 SelectPair <- function(start, h, area) {
@@ -73,7 +73,8 @@ mynestedsample <- rbind(mainstation, newpnt)
 for (j in 2:length(lags)) {
   newpnts <- NULL
   for (i in seq_len(nrow(mynestedsample))) {
-    pnts <- SelectPoint(start = mynestedsample[i, ], h = lags[j], area = grdHunterValley)
+    pnts <- SelectPoint(
+      start = mynestedsample[i, ], h = lags[j], area = grdHunterValley)
     newpnts <- rbind(newpnts, pnts)
   }
   mynestedsample <- rbind(mynestedsample, newpnts)
@@ -91,7 +92,8 @@ allstations <-  rbind(mainstation, pnt)
 for (j in 2:length(lags)) {
   newstations <- NULL
   for (i in seq_len(nrow(stations))) {
-    pnts <- SelectPair(start = stations[i, ], h = lags[j], area = grdHunterValley)
+    pnts <- SelectPair(
+      start = stations[i, ], h = lags[j], area = grdHunterValley)
     newstations <- rbind(newstations, pnts)
     allstations <- rbind(allstations, pnts)
   }
@@ -102,12 +104,13 @@ mynestedsample_2 <- stations
 
 Figure \@ref(fig:BalancedNestedSample) shows the two selected nested samples. For the sample selected with the second version also the stations that served as starting points for the selection of the point-pairs are plotted.
 
-```{r BalancedNestedSample, echo = FALSE, fig.width=5, fig.cap = "Balanced nested samples from Hunter Valley, selected with the two versions of nested sampling. In the subfigure of the second version the selected sampling points (symbol x) are plotted together with the selected stations (halfway the two points of a pair)."}
+```{r BalancedNestedSample, echo = FALSE, out.width = "100%", fig.cap = "Balanced nested samples from Hunter Valley, selected with the two versions of nested sampling. In the subfigure of the second version the selected sampling points (symbol x) are plotted together with the selected stations (halfway the two points of a pair)."}
 mynestedsample$stage <- as.factor(c(1, 1, 2, 2, rep(3, 4), rep(4, 8)))
 
 plt1 <- ggplot(mynestedsample) +
   geom_tile(data = grid, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(aes(x = s1 / 1000, y = s2 / 1000, shape = stage), size = 1) +
+  scale_shape(name="Stage") +
   ggtitle("First version") +
   theme(plot.title = element_text(size = 10, hjust = 0.5)) +
   scale_x_continuous(name = "Easting (km)") +
@@ -122,6 +125,7 @@ plt2 <- ggplot(mynestedsample_2) +
   geom_tile(data = grid, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(data = allstations, aes(x = s1 / 1000, y = s2 / 1000, shape = station), size = 1) +
   geom_point(aes(x = s1 / 1000, y = s2 / 1000), shape = 4, size = 1) +
+  scale_shape(name="Station") +
   ggtitle("Second version") +
   theme(plot.title = element_text(size = 10, hjust = 0.5)) +
   scale_x_continuous(name = "Easting (km)") +
@@ -160,6 +164,8 @@ ggplot(df) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8)) +
   facet_wrap(~name)
 ```
 
@@ -180,6 +186,8 @@ ggplot(df) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
+  theme(axis.text=element_text(size=8),
+      axis.title=element_text(size=8)) +
   facet_wrap(~name)
 ```
 
@@ -229,7 +237,7 @@ SIpairs <- function(h, n, area) {
     angle <- runif(n = 1, min = 0, max = 2 * pi)
     dxy[1] <- h * sin(angle); dxy[2] <- h * cos(angle)
     xypnt2 <- as.data.frame(t(xypnt1 + dxy))
-    coordinates(xypnt2) <- ~s1 + s2
+    coordinates(xypnt2) <- ~ s1 + s2
     inArea <- as.numeric(over(x = xypnt2, y = area))[1]
     if (!is.na(inArea)) {
       xypnts1 <- rbind(xypnts1, xypnt1)
@@ -260,10 +268,10 @@ The `data.frame` `allpairs` has four columns: the spatial coordinates of the fir
 
 ```{r Allpairs}
 pnt1 <- allpairs[, c(1, 2)]
-coordinates(pnt1) <- ~s1 + s2
+coordinates(pnt1) <- ~ s1 + s2
 z1 <- over(x = pnt1, y = grdHunterValley)[4]
 pnt2 <- allpairs[, c(3, 4)]
-coordinates(pnt2) <- ~s1 + s2
+coordinates(pnt2) <- ~ s1 + s2
 z2 <- over(x = pnt2, y = grdHunterValley)[4]
 mysample <- data.frame(h = rep(h, each = n), z1, z2)
 names(mysample)[c(2, 3)] <- c("z1", "z2")
@@ -289,7 +297,7 @@ SphNug <- function(h, range, psill, nugget) {
   h <- h / range
   nugget + psill * ifelse(h < 1, (1.5 * h - 0.5 * h^3), 1)
 }
-fit.var <- nls(gammah~SphNug(h, range, psill, nugget),
+fit.var <- nls(gammah ~ SphNug(h, range, psill, nugget),
   data = samplevariogram, start = list(psill = 4, range = 200, nugget = 1),
   weights = 1 / vgammah, algorithm = "port", lower = c(0, 0, 0))
 print(pars <- signif(coef(fit.var), 3))
@@ -297,14 +305,14 @@ print(pars <- signif(coef(fit.var), 3))
 
 Figure \@ref(fig:variogramCTI) shows the sample semivariogram and the fitted model.
 
-```{r variogramCTI, echo = FALSE, fig.asp = 0.7, fig.cap = "Sample semivariogram, obtained by independent sampling of pairs of points, and fitted spherical model of compount topographic index in Hunter Valley."}
+```{r variogramCTI, echo = FALSE, fig.asp = 0.7, fig.width = 5, fig.cap = "Sample semivariogram, obtained by independent sampling of pairs of points, and fitted spherical model of compount topographic index in Hunter Valley."}
 #Compute fitted values
 dist <- seq(from = 0.1, to = 1000, by = 0.1)
 fitted <- SphNug(h = dist, range = pars["range"], psill = pars["psill"], nugget = pars["nugget"])
 #Plot sample semivariogram and fitted model
 df <- data.frame(h = dist, fitted = fitted)
 ggplot(data = samplevariogram) +
-  geom_point(mapping = aes(x = h, y = gammah), size = 3) +
+  geom_point(mapping = aes(x = h, y = gammah), size = 2) +
   geom_line(data = df, mapping = aes(x = dist, y = fitted), colour = "red") +
   scale_x_continuous(name = "Separation distance (m)") +
   scale_y_continuous(name = "Semivariance", limits = c(0, NA))
@@ -331,7 +339,7 @@ for (j in 1:R) {
   }
   samplevariogram <- data.frame(h, gammah, vgammah)
   tryCatch({
-    fittedvariogram <- nls(gammah~SphNug(h, range, psill, nugget),
+    fittedvariogram <- nls(gammah ~ SphNug(h, range, psill, nugget),
     data = samplevariogram, start = list(psill = 4, range = 200, nugget = 1),
     weights = 1 / vgammah, algorithm = "port", lower = c(0, 0, 0))
   pars <- coef(fittedvariogram)
@@ -343,16 +351,20 @@ signif(var(allpars), 3)
 
 Note the large variance for the range parameter (the standard deviation is 258 m) as well as the negative covariance of the nugget and the partial sill parameter (the Pearson correlation coefficient is -0.72). Histograms of the three estimated semivariogram parameters are shown in Figure \@ref(fig:histogramsvariogramparameters)\index{Simple random sampling of point-pairs|}.
 
-```{r histogramsvariogramparameters, echo = FALSE, out.width = "100%", fig.asp = 0.6, fig.cap = "Sampling distribution of estimators of the parameters of a spherical semivariogram with nugget of compound topographic index in Hunter Valley."}
+```{r histogramsvariogramparameters, echo = FALSE, out.width = "100%", fig.asp = 0.6, fig.cap = "Frequency distributions  of estimated parameters of a spherical semivariogram of compound topographic index in Hunter Valley."}
 df <- as.data.frame(allpars)
 names(df) <- c("PartialSill", "Range", "Nugget")
 
 plt1 <- ggplot(data = df) +
-  geom_histogram(aes(x = Nugget), fill = "black", alpha = 0.5, colour = "black", binwidth = 0.25)
+  geom_histogram(aes(x = Nugget), fill = "black", alpha = 0.5, colour = "black", binwidth = 0.25) +
+  scale_y_continuous(name="Count")
 plt2 <- ggplot(data = df) +
-  geom_histogram(aes(x = PartialSill), fill = "black", alpha = 0.5, colour = "black", binwidth = 0.5)
+  geom_histogram(aes(x = PartialSill), fill = "black", alpha = 0.5, colour = "black", binwidth = 0.5) +
+  scale_x_continuous(name="Partial sill ") +
+  scale_y_continuous(name="Count")
 plt3 <- ggplot(data = df) +
-  geom_histogram(aes(x = Range), fill = "black", alpha = 0.5, colour = "black", binwidth = 150)
+  geom_histogram(aes(x = Range), fill = "black", alpha = 0.5, colour = "black", binwidth = 150) +
+  scale_y_continuous(name="Count")
 
 grid.arrange(plt1, plt2, plt3, nrow = 2)
 ```
@@ -428,7 +440,6 @@ for (i in seq_len(length(thetas))) {
 Finally, the Fisher information matrix is computed using Equation \@ref(eq:FisherInformation). We do not need to compute the inverse of the Fisher information matrix, because the determinant of the inverse of a matrix is equal to the inverse of the determinant of the (not inverted) matrix. The determinant is computed with function `determinant`.
 
 ```{r, echo = FALSE, eval = FALSE}
-library(matrixcalc)
 invA <- solve(A)
 I <- matrix(0, length(thetas), length(thetas))
 for (i in seq_len(length(thetas))) {
@@ -454,7 +465,7 @@ for (i in seq_len(length(thetas))) {
 logdet0 <- -determinant(I, logarithm = TRUE)$modulus
 ```
 
-The joint uncertainty about the semivariogram parameters, as quantified by the log of the determinant of the inverse of the information matrix, equals `r round(logdet0,3)`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the spatial pattern of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note that a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
+The joint uncertainty about the semivariogram parameters, as quantified by the log of the determinant of the inverse of the information matrix, equals `r formatC(logdet0, 3, format = "f")`. Hereafter we will see how much this joint uncertainty can be reduced by optimising the spatial pattern of the sample used for semivariogram estimation, compared to the simple random sample used in the above calculation. Note that a preliminary semivariogram is needed to compute an optimised sampling pattern for semivariogram estimation. 
 
 Function `optimUSER` of package **spsann** can be used to search for the sampling locations with the minimum value of logdet. This function has been used before in Section \@ref(SamplePatternOK). Package **spsann** cannot deal with the 22,124 candidate grid nodes of Hunter Valley; these are too many. I therefore selected a subgrid of 50 m $\times$ 50 m. 
 
@@ -492,7 +503,7 @@ res <- readRDS(file = "results/MBSample_logdet_phi200nug02_HunterValley.rds")
 logdetopt <- tail(res$objective$energy$obj, 1)
 ```
 
-Figure \@ref(fig:MBVariogram) shows the optimised sampling pattern of 100 points.  The logdet of the optimised sample equals `r round(logdetopt,3)` which is `r round(100*logdetopt/logdet0,0)`\% of the value of the simple random sample used above to illustrate the computations. The optimised sample shows strong spatial clustering. Connecting neighbouring points of the sample by lines yields a sort of mycelium. remarkably, there is one isolated point. Besides, there are quite a few pairs of points at very short distance.
+Figure \@ref(fig:MBVariogram) shows the optimised sampling pattern of 100 points.  The logdet of the optimised sample equals `r formatC(logdetopt, 3, format = "f")` which is `r formatC(100*logdetopt/logdet0, 0, format = "f")`\% of the value of the simple random sample used above to illustrate the computations. The optimised sample shows strong spatial clustering. Connecting neighbouring points of the sample by lines yields a sort of mycelium. Remarkably, there is one isolated point. Besides, there are quite a few pairs of points at very short distance.
 
 ### Uncertainty about the kriging variance {#UncertainKrigingVariance}
 
@@ -503,11 +514,11 @@ VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \f
 (\#eq:varkrigingvar)
 \end{equation}
 
-with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\pmb{\theta})$, Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0)$.
+with $p$ the number of semivariogram parameters, $\mathrm{Cov}(\theta_i,\theta_j)$ the covariances of the semivariogram parameters $\theta_i$ and $\theta_j$ (elements of the inverse of the Fisher information matrix $\mathbf{I}^{-1}(\pmb{\theta})$, Equation \@ref(eq:FisherInformation)), and $\frac{\partial V_{\mathrm{OK}}(\mathbf{s}_0)} {\partial \theta_i}$ the partial derivative of the kriging variance to the $i$th semivariogram parameter at prediction location $\mathbf{s}_0$.
 
 The first step in designing a sample for semivariogram estimation using VKV as a minimisation criterion is to select a sample for the second sampling round. In the code chunk below a spatial coverage sample is selected, using function `stratify` of package **spcosa**, see Section \@ref(SpatialCoverage). Once the observations of this sample are collected in the second sampling round, these data are used for mapping by ordinary kriging.
 
-To optimise the sampling pattern of the first sampling round for variogram estimation, the population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred, square grid of 101 points, the evaluation sample. (In the code chunk below `n=100` is used in function `spsample`, but actually 101 locations are selected.) 
+To optimise the sampling pattern of the first sampling round for variogram estimation, the population mean of VKV (MVKV) is used as a minimisation criterion. This population mean is estimated from a centred, square grid of 101 points, the evaluation sample. (In the code chunk below `n = 100` is used in function `spsample`, but actually 101 locations are selected.) 
 
 ```{r, echo=FALSE}
 grdHunterValley <- as (grdHunterValley, "data.frame")
@@ -520,10 +531,11 @@ n <- 100
 set.seed(314)
 myStrata <- stratify(grdHunterValley, nStrata = n, equalArea = FALSE, nTry = 10)
 mySCsample <- as(spsample(myStrata), "SpatialPoints")
-myevalsample <- spsample(x = grdHunterValley, n = 100, type = "regular", offset = c(0.5, 0.5))
+myevalsample <- spsample(
+  x = grdHunterValley, n = 100, type = "regular", offset = c(0.5, 0.5))
 ```
 
-The following code chunks show how the VKV at the evaluation point is computed. First, the correlation matrix of the spatial coverage sample (`A`) is computed as well as the correlation matrix of the spatial coverage sample and the evaluation points (`A0`). Correlation matrix `A` is extended with a column and a row with ones, see Equation \@ref(eq:krigingeqsmatrix).
+The following code chunks show how VKV at the evaluation point is computed. First, the correlation matrix of the spatial coverage sample (`A`) is computed as well as the correlation matrix of the spatial coverage sample and the evaluation points (`A0`). Correlation matrix `A` is extended with a column and a row with ones, see Equation \@ref(eq:krigingeqsmatrix).
 
 ```{r}
 D <- spDists(mySCsample)
@@ -596,7 +608,7 @@ for (i in seq_len(length(thetas))) {
 MVKV0 <- mean(VKV)
 ```
 
-For the simple random sample the square root of MVKV equals `r round(sqrt(MVKV0),3)`. The mean kriging variance (MKV) at these points equals `r round(mean(var),3)`, so the uncertainty about the kriging variance is substantial. Hereafter we will see how much the VKV can be reduced by optimising the sampling pattern with spatial simulated annealing.
+For the simple random sample the square root of MVKV equals `r formatC(sqrt(MVKV0), 3, format = "f")`. The mean kriging variance (MKV) at these points equals `r formatC(mean(var), 3, format = "f")`, so the uncertainty about the kriging variance is substantial. Hereafter we will see how much MVKV can be reduced by optimising the sampling pattern with spatial simulated annealing.
 
  <!-- **R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R).-->
  
@@ -630,7 +642,7 @@ res <- readRDS(file = "results/MBSample_MVKV_phi200nug02_HunterValley.rds")
 MVKVopt <- tail(res$objective$energy$obj, 1)
 ```
 
-Figure \@ref(fig:MBVariogram) shows the optimised sample. The minimised value of MVKV is `r round(100*MVKVopt/MVKV0,0)`\% of the value of the simple random sample used to illustrate the computations. As for logdet the optimised sample shows strong spatial clustering. However, the shape is quite different. The points are clustered in a circle.
+Figure \@ref(fig:MBVariogram) shows the optimised sample. The minimised value of MVKV is `r formatC(100*MVKVopt/MVKV0, 0, format = "f")`\% of the value of the simple random sample used to illustrate the computations. As for logdet the optimised sample shows strong spatial clustering. However, the shape is quite different. The points are clustered in a circle.
 
 ```{r MBVariogram, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern of 100 points for semivariogram estimation, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean estimation variance of the kriging variance (MVKV) as a minimisation criterion."}
 res <- readRDS(file = "results/MBSample_logdet_phi200nug02_HunterValley.rds")
@@ -652,7 +664,7 @@ ggplot(mysamples) +
 ```
 
 ```{block2, type = 'rmdnote'}
-Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\pmb{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\pmb{\theta}}$, leads to a locally optimal design at $\hat{\pmb{\theta}}$. For this reason @bog99 and @zhu05 proposed a Bayesian approach, in which a multivariate prior distribution for the semivariogram parameters is postulated. The expected value over this distribution of the criterion is minimised. @lar02 computed the average of the VKV over a number of semivariograms.
+Both minimisation criteria, logdet and MVKV, are a function of the semivariogram parameters $\pmb{\theta}$, showing that the problem is circular. Using a preliminary estimate of the semivariogram parameters, $\hat{\pmb{\theta}}$, leads to a locally optimal design at $\hat{\pmb{\theta}}$. For this reason @bog99 and @zhu05 proposed a Bayesian approach, in which a multivariate prior distribution for the semivariogram parameters is postulated. The expected value over this distribution of the criterion is minimised. @lar02 computed the average of VKV over a number of semivariograms.
 ```
 
 Both methods for sample optimisation rely, amongst others, on the assumption that the mean and the variance are constant throughout the area. Under this assumption it is no problem that the sampling units are spatially clustered. So, we assume that the semivariogram estimated from the data collected in a small portion of the study area is representative for the whole study area. If we do not feel comfortable with this assumption, spreading out the sampling units by the sampling methods described in the next two sections can be a good option.   
@@ -684,10 +696,10 @@ with $V_\mathrm{OK}(\mathbf{s}_0)$ the ordinary kriging variance, see Equation \
 
 with $\frac{\partial \lambda} {\partial \theta_j}$ the vector of partial derivatives of the kriging weights with respect to the $j$th semivariogram parameter. I use the mean of the AKV over the nodes of a prediction grid (evaluation grid) as a minimisation criterion (MAKV). The same criterion can also be used in situations where we have maps of covariates that we want to use in prediction. In that case the aim is to design a single sample that is used both for estimation of the *residual* semivariogram and for prediction by kriging with an external drift. The ordinary kriging variance $V_\mathrm{OK}(\mathbf{s}_0)$ in Equation \@ref(eq:augmentedvar) is then replaced by the prediction error variance with kriging with an external drift $V_\mathrm{KED}(\mathbf{s}_0)$, see Equation \@ref(eq:KEDvariance).
 
-@zhu06 proposed as a minimisation criterion a linear combination of AKV (Equation \@ref(eq:augmentedvar) and VKV (Equation \@ref(eq:varkrigingvar), referred to as the estimation adjusted criterion\index{Estimation adjusted criterion} (EAC):
+@zhu06 proposed as a minimisation criterion a linear combination of AKV (Equation \@ref(eq:augmentedvar)) and VKV (Equation \@ref(eq:varkrigingvar)), referred to as the estimation adjusted criterion\index{Estimation adjusted criterion} (EAC):
 
 \begin{equation}
-EAC(\mathbf{s}_0) = AKV(\mathbf{s}_0) + \frac{1}{2V_{\mathrm{OK}}(\mathbf{s}_0)} VKV(\mathbf{s}_0))\;.
+EAC(\mathbf{s}_0) = AKV(\mathbf{s}_0) + \frac{1}{2V_{\mathrm{OK}}(\mathbf{s}_0)} VKV(\mathbf{s}_0)\;.
 (\#eq:EAC)
 \end{equation}
 
@@ -708,7 +720,8 @@ mySCsample <- as(spsample(myStrata), "SpatialPoints")
 nsup <- 10
 units <- sample(nrow(grdHunterValley), nsup)
 mysupsample0 <- as(grdHunterValley[units, ], "SpatialPoints")
-myevalsample <- spsample(x = grdHunterValley, n = 100, type = "regular", offset = c(0.5, 0.5))
+myevalsample <- spsample(
+  x = grdHunterValley, n = 100, type = "regular", offset = c(0.5, 0.5))
 ```
 
 The next step is to compute the inverse of the Fisher information matrix, given a preliminary semivariogram model, which is used as the variance-covariance matrix of the estimated semivariogram parameters. Contrary to Section \@ref(samplingforvariogram) now *all* sampling locations are used to compute this matrix. The locations of the spatial coverage sample and the supplemental sample are merged into one `SpatialPoints` object.  
@@ -815,7 +828,7 @@ for (k in seq_len(length(myevalsample))) {
 }
 ```
 
-The AKVs are computed by adding the kriging variances and the extra variances due to semivariogram uncertainty (Equation \@ref(eq:augmentedvar)). The VKV values and the EAC values are computed. Both the AKV and EAC differ among the evaluation points. As a summary, the mean of the two variables is computed.
+The AKVs are computed by adding the kriging variances and the extra variances due to semivariogram uncertainty (Equation \@ref(eq:augmentedvar)). The VKV values and the EAC values are computed. Both the AKV and the EAC differ among the evaluation points. As a summary, the mean of the two variables is computed.
 
 ```{r}
 augmentedvar <- var + tausq
@@ -831,11 +844,11 @@ EAC <- augmentedvar + (VKV / (2 * var))
 MEAC0 <- mean(EAC)
 ```
 
-For the spatial coverage sample of 90 points supplemented by a simple random sample of 10 points, MAKV equals `r round(MAKV0,3)` and MEAC equals `r round(MEAC0,3)`.
+For the spatial coverage sample of 90 points supplemented by a simple random sample of 10 points, MAKV equals `r formatC(MAKV0, 3, format = "f")` and MEAC equals `r formatC(MEAC0, 3, format = "f")`.
 
 <!--**R** script [`ObjectiveFunctions4MBSamplingVariogram.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/ObjectiveFunctions4MBSamplingVariogram.R).-->
 
-The sample can be optimised with **spsann** function `optimUSER`. Argument `points` is a list containing a data frame (or matrix) with the coordinates of the fixed points (passed to sub-argument `fixed`) and an integer of the number of supplemental points of which the locations are optimised (passed to sub-argument `free`). As already stressed above an important difference with Section \@ref(samplingforvariogram) is that the free and the fixed sample are merged and used together both for estimation of the semivariogram and for  prediction. The objective functions `MAKV` and `MEAC` are defined in package **sswr**.
+The sample can be optimised with **spsann** function `optimUSER`. Argument `points` is a list containing a data frame (or matrix) with the coordinates of the fixed points (assigned to sub-argument `fixed`) and an integer of the number of supplemental points of which the locations are optimised (assigned to sub-argument `free`). As already stressed above an important difference with Section \@ref(samplingforvariogram) is that the free and the fixed sample are merged and used together both for estimation of the semivariogram and for  prediction. The objective functions `MAKV` and `MEAC` are defined in package **sswr**.
 
 ```{r, echo = FALSE}
 source("Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
@@ -927,7 +940,7 @@ myscsamples <- rbind(myscsample_AKV, myscsample_EAC)
 myscsamples$criterion <-  rep(c("MAKV", "MEAC"), each = 90)
 
 plot(myStrata) +
-  geom_point(data = myscsamples, mapping = aes(x = x, y = y), shape = 1, size = 1.5) +
+  geom_point(data = myscsamples, mapping = aes(x = x, y = y), shape = 1, size = 1.3) +
   geom_point(data = mysupsamples, mapping = aes(x = x, y = y), shape = 3, size = 1.5, colour = "red") +
   coord_fixed() +
   facet_wrap(~ criterion)
@@ -935,27 +948,28 @@ plot(myStrata) +
 
 With MAKV as a minimisation criterion there are two pairs of supplemental points at very short distance (< 5 m), and with MEAC there is one such pair of supplemental points.
 
-A histogram of the shortest distance to the spatial coverage sample is shown in Figure \@ref(fig:HistogramShortestDistance). With MEAC three supplemental points are at very short distance of the spatial coverage sample ($<3$ m). The average distance between neighbouring spatial coverage sampling points equals `r round(mDSCmin,0)` m. 
+A histogram of the shortest distance to the spatial coverage sample is shown in Figure \@ref(fig:HistogramShortestDistance). With MEAC three supplemental points are at very short distance of the spatial coverage sample ($<3$ m). The average distance between neighbouring spatial coverage sampling points equals `r formatC(mDSCmin, 0, format = "f")` m. 
 
-```{r HistogramShortestDistance, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Shortest distance to the spatial coverage sample of the supplemental sample, optimised with the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC)."}
+```{r HistogramShortestDistance, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Frequency distributions of the shortest distance to the spatial coverage sample of the supplemental sample, optimised with the mean augmented kriging variance (MAKV) and the mean estimation adjusted criterion (MEAC)."}
 
 df <- data.frame(MAKV = DminAV, MEAC = DminEAC)
 
 dflf <- df %>% pivot_longer(cols = c("MAKV", "MEAC"))
 ggplot(data = dflf) +
   geom_histogram(aes(x = value), fill = "black", alpha = 0.5, colour = "black", binwidth = 25) +
+  scale_y_continuous(name = "Count") +
   xlab("Minimum distance (m)") +
   facet_grid(~ name)
 ```
 
-MAKV of the optimised sample equals `r round(MAKVopt,3)` which is `r round(MAKVopt/MAKV0*100,0)`\% of MAKV of the initial sample. MEAC of the optimised sample equals `r round(MEACopt,3)` which is `r round(MEACopt/MEAC0*100,0)`\% of MEAC of the initial sample. The reduction of these two criteria through the optimisation is much smaller than for logdet and MVKV in Section \@ref(samplingforvariogram). This can be explained by the small number of sampling units that is optimised: only the locations of 10 points are optimised, 90 are fixed. In Section \@ref(samplingforvariogram) all 100 locations were optimised.
+MAKV of the optimised sample equals `r formatC(MAKVopt, 3, format = "f")` which is `r formatC(MAKVopt/MAKV0*100, 0, format = "f")`\% of MAKV of the initial sample. MEAC of the optimised sample equals `r formatC(MEACopt, 3, format = "f")` which is `r formatC(MEACopt/MEAC0*100, 0, format = "f")`\% of MEAC of the initial sample. The reduction of these two criteria through the optimisation is much smaller than for logdet and MVKV in Section \@ref(samplingforvariogram). This can be explained by the small number of sampling units that is optimised: only the locations of 10 points are optimised, 90 are fixed. In Section \@ref(samplingforvariogram) all 100 locations were optimised.
 
 #### Exercises {-}
 5. Write an **R** script to select from Hunter Valley a spatial coverage sample of 80 points supplemented by 20 points. Use MEAC as a minimisation criterion, an exponential semivariogram with a distance parameter of 200 m and a ratio of spatial dependence of 0.8. Compare the minimised MEAC with MEAC reported above, obtained by supplementing a spatial coverage sample of 90 points by 10 points. 
 
 ## A practical solution
 
-Based on the optimised samples shown above, a straightforward, simple sampling design for estimation of the model parameters and for prediction is a spatial coverage sample supplemented with randomly selected points between the points of the spatial coverage sample at some chosen fixed distances. Figure \@ref(fig:SpatialCoveragePlus) shows an example. A simple random subsample without replacement of size 10  is selected from the 90 points of the spatial coverage sample. These points are used as a starting points to select a point at a distance of 20 m in a random direction.
+Based on the optimised samples shown above, a straightforward, simple sampling design for estimation of the model parameters and for prediction is a spatial coverage sample supplemented with randomly selected points between the points of the spatial coverage sample at some chosen fixed distances. Figure \@ref(fig:SpatialCoveragePlus) shows an example. A simple random subsample without replacement of size 10  is selected from the 90 points of the spatial coverage sample. These points are used as starting points to select a point at a distance of 20 m in a random direction.
 
 ```{r, echo = FALSE}
 mySCsample <- myscsample_AKV
@@ -973,11 +987,11 @@ dxy[, 1] <- h * sin(angle); dxy[, 2] <- h * cos(angle)
 mysupsample <- mySCsubsample + dxy
 ```
 
-```{r SpatialCoveragePlus, echo = FALSE, out.width = '70%', fig.cap = "Spatial coverage sample of 90 points supplemented by 10 points at short distance (20 m) from randomly selected spatial coverage points."}
+```{r SpatialCoveragePlus, echo = FALSE, fig.width = 5, fig.cap = "Spatial coverage sample of 90 points supplemented by 10 points at short distance (20 m) from randomly selected spatial coverage points."}
 #pdf(file = "SpatialCoveragePlusSample.pdf", width = 5, height = 5)
 plot(myStrata) +
-    geom_point(data = mySCsample, mapping = aes(x = x, y = y), shape = 1, size = 1.5) +
-    geom_point(data = mysupsample, mapping = aes(x = x, y = y), shape = 3, size = 1.5, colour = "red")
+    geom_point(data = mySCsample, mapping = aes(x = x, y = y), shape = 1, size = 2) +
+    geom_point(data = mysupsample, mapping = aes(x = x, y = y), shape = 3, size = 2, colour = "red")
 #dev.off()
 ```
 
@@ -1078,7 +1092,7 @@ EAC <- augmentedvar + (VKV / (2 * var))
 MEACpract <- mean(EAC)
 ```
 
-MAKV of this sample equals `r round(MAKVpract,3)`, and MEAC equals `r round(MEACpract,3)`. For MAKV `r round(100*(MAKVpract-MAKVopt)/(MAKV0-MAKVopt),0)`\% of the maximal reduction is realised by this practical solution; for MEAC this is `r round(100*(MEACpract-MEACopt)/(MEAC0-MEACopt),0)`\%.
+MAKV of this sample equals `r formatC(MAKVpract, 3, format = "f")`, and MEAC equals `r formatC(MEACpract, 3, format = "f")`. For MAKV `r formatC(100*(MAKVpract-MAKVopt)/(MAKV0-MAKVopt), 0, format = "f")`\% of the maximal reduction is realised by this practical solution; for MEAC this is `r formatC(100*(MEACpract-MEACopt)/(MEAC0-MEACopt), 0, format = "f")`\%.
 
 
 ```{r, echo = FALSE}

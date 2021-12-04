@@ -1,9 +1,5 @@
 # Model-based optimisation of probability sampling designs {#MBpredictionofDesignVariance}
 
-```{r, echo = FALSE}
-evalFT <- FALSE
-```
-
 In Chapter \@ref(Modelassisted) on model-assisted estimation I explained how a linear regression model or a non-linear model obtained with a  machine learning algorithm can be used to increase the precision of design-based estimates of the population mean or total using the data collected by a given probability sampling design. In this chapter I will explain how a model of the study variable can be used at an earlier stage to optimise probability sampling designs. I will show how a model can help to choose between alternative sampling design types, for instance between systematic random sampling, spreading out the sampling units throughout the study area, and two-stage cluster random sampling, resulting in spatial clusters of sampling units. Besides I will explain  how to use a model to optimise the sample size of a given sampling design type, for instance, the number of primary and secondary sampling units with two-stage cluster random sampling. The final section of this chapter is about how a model can be used to optimise spatial strata for stratified simple random sampling.
 
 The models used in this chapter are all geostatistical models of the spatial variation. Chapter \@ref(Introkriging) is an introduction to geostatistical modelling. Several geostatistical concepts explained in that chapter are needed here to predict the sampling variance.
@@ -97,19 +93,31 @@ with $E_{\mathrm{SY}}(\bar{\gamma}_{\mathrm{SY}})$ the design-expectation, i.e. 
 
 The analytical approach is illustrated with the data of agricultural field Leest [@HofmanBrus2021]. Nitrate-N (NO$_3$-N) in kg ha^-1^ in the layer $0-90$ cm, using a standard soil density of 1,500 kg m$^{-3}$, is measured at 30 points. In the next code chunk these data are used to compute a sample semivariogram using the method-of-moments with function `variogram`, see Chapter \@ref(Introkriging). A spherical model without nugget is fitted to the sample semivariogram using function `fit.variogram`. The numbers in this plot are the numbers of pairs of points used to compute the semivariances.
 
-(ref:VariogramLeestlabel) Sample semivariogram and fitted spherical model for NO~3~-N in field Leest. Numbers are numbers of point pairs used in computing semivariances.
+(ref:VariogramLeestlabel) Sample semivariogram and fitted spherical model for NO~3~-N in field Leest. Numbers are numbers of point-pairs used in computing semivariances.
 
-```{r VariogramLeest, fig.asp=0.7, fig.cap="(ref:VariogramLeestlabel)"}
-library(gstat)
-mydata <- read.csv("data/Sample_Leest.csv")
-coordinates(mydata) <- ~ s1 + s2
-vg <- variogram(N ~ 1, data = mydata)
-vgm_MoM <- fit.variogram(
-  vg, model = vgm(model = "Sph", psill = 2000, range = 20))
-plot(vg, vgm_MoM, plot.numbers = TRUE)
+```{r, echo = FALSE}
+sampleLeest <- read.csv("data/Sample_Leest.csv")
 ```
 
-The few data make that the sample semivariogram is very noisy. For the moment I ignore my uncertainty about the semivariogram parameters; in Subsection \@ref(MBpredSamplingVarBayes) I will show how we can account for our uncertainty about the semivariogram parameters in model-based prediction of the sampling variance. A spherical semivariogram model\index{Semivariogram model} without nugget is fitted to the sample semivariogram, i.e. the intercept is 0. The fitted range of the model is `r round(vgm_MoM$range,0)` m, and the fitted sill equals `r round(vgm_MoM$psill,0)` (kg ha^-1^)^2^. The fitted semivariogram is used to predict the sampling variance for three sampling designs: simple random sampling, stratified simple random sampling, and systematic random sampling. The costs for these three design types will be about equal, as the study area is small, so that the access time of the sampling points selected with the three designs is about equal. The sample size of the evaluated sampling designs is 25 points. As for systematic random sampling the number of points varies among the samples, this sampling design has an *expected* sample size of 25 points.
+
+```{r, fig.asp=0.7, fig.cap="(ref:VariogramLeestlabel)"}
+library(gstat)
+coordinates(sampleLeest) <- ~ s1 + s2
+vg <- variogram(N ~ 1, data = sampleLeest)
+vgm_MoM <- fit.variogram(
+  vg, model = vgm(model = "Sph", psill = 2000, range = 20))
+```
+
+```{r VariogramLeest, fig.asp=0.7, fig.cap="(ref:VariogramLeestlabel)"}
+fitted <- variogramLine(vgm_MoM, maxdist = 50, n = 1000)
+ggplot(data = vg) +
+  geom_point(mapping = aes(x = dist, y = gamma), size = 2) +
+  geom_text(mapping = aes(x = dist, y = gamma, label = np), nudge_x = 1.2) +
+  geom_smooth(data = fitted, mapping = aes(x = dist, y = gamma), colour = "red") +
+  scale_x_continuous(name = "Distance (m)") +
+  scale_y_continuous(name = "Semivariance", limits = c(0, 1200))
+```
+The few data make that the sample semivariogram is very noisy. For the moment I ignore my uncertainty about the semivariogram parameters; in Subsection \@ref(MBpredSamplingVarBayes) I will show how we can account for our uncertainty about the semivariogram parameters in model-based prediction of the sampling variance. A spherical semivariogram model\index{Semivariogram model} without nugget is fitted to the sample semivariogram, i.e. the intercept is 0. The fitted range of the model is `r formatC(vgm_MoM$range, 0, format = "f")` m, and the fitted sill equals `r formatC(vgm_MoM$psill, 0, format = "f")` (kg ha^-1^)^2^. The fitted semivariogram is used to predict the sampling variance for three sampling designs: simple random sampling, stratified simple random sampling, and systematic random sampling. The costs for these three design types will be about equal, as the study area is small, so that the access time of the sampling points selected with the three designs is about equal. The sample size of the evaluated sampling designs is 25 points. As for systematic random sampling the number of points varies among the samples, this sampling design has an *expected* sample size of 25 points.
 
 #### Simple random sampling {-}
 
@@ -129,7 +137,7 @@ n <- 25
 Exi_V_SI <- m_semivar_field / n
 ```
 
-The model-based prediction of the sampling variance of the estimator of the mean with this design equals 35.0.
+The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r formatC(Exi_V_SI, 1, format = "f")`.
 
 #### Stratified simple random sampling {-}
 
@@ -158,7 +166,7 @@ for (i in 1:n) {
 Exi_V_STSI <- sum(m_semivar_geostrata) / n^2
 ```
 
-The model-based prediction of the sampling variance with this design equals `r round(Exi_V_STSI,1)` (kg ha^-1^)^2^, which is much smaller than with simple random sampling. The large stratification effect\index{Stratification effect} can be explained by the assumed strong spatial structure of NO$_3$-N in the agricultural field and the improved geographical spreading of the sampling points, see Figure \@ref(fig:VariogramLeest).
+The model-based prediction of the sampling variance with this design equals `r formatC(Exi_V_STSI, 1, format = "f")` (kg ha^-1^)^2^, which is much smaller than with simple random sampling. The large stratification effect\index{Stratification effect} can be explained by the assumed strong spatial structure of NO$_3$-N in the agricultural field and the improved geographical spreading of the sampling points, see Figure \@ref(fig:VariogramLeest).
 
 #### Systematic random sampling {-}
 
@@ -177,7 +185,7 @@ for (i in 1:100) {
 Exi_V_SY <- m_semivar_field - mean(m_semivar_SY)
 ```
 
-The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r as.character(round(Exi_V_SY,1))` (kg ha^-1^)^2^, which is smaller than that of stratified simple random sampling. This can be explained by the improved geographical spreading of the sampling points with systematic random sampling as compared to stratified simple random sampling with compact geographical strata.
+The model-based prediction of the sampling variance of the estimator of the mean with this design equals `r formatC(Exi_V_SY, 1, format = "f")` (kg ha^-1^)^2^, which is smaller than that of stratified simple random sampling. This can be explained by the improved geographical spreading of the sampling points with systematic random sampling as compared to stratified simple random sampling with compact geographical strata.
 
 #### Bulking soil aliquots into a composite sample
 
@@ -215,7 +223,7 @@ vgm_REML <- likfit(geodata = dGeoR,
   lik.method = "REML", messages = FALSE)
 ```
 
-The estimated parameters of the residual semivariogram of the SOM concentration are shown in Table \@ref(tab:VariogramREMLEthiopia). The estimated regression coefficients are `r round(vgm_REML$beta[1],1)` for the intercept, `r round(vgm_REML$beta[2],3)` for elevation (dem), `r round(vgm_REML$beta[3],2)` for NIR reflectance, `r round(vgm_REML$beta[4],2)` for red reflectance, and `r round(vgm_REML$beta[5],3)` for land surface temperature. 
+The estimated parameters of the residual semivariogram of the SOM concentration are shown in Table \@ref(tab:VariogramREMLEthiopia). The estimated regression coefficients are `r formatC(vgm_REML$beta[1],1)` for the intercept, `r formatC(vgm_REML$beta[2], 3, format = "f")` for elevation (dem), `r formatC(vgm_REML$beta[3], 2, format = "f")` for NIR reflectance, `r formatC(vgm_REML$beta[4],2, format = "f")` for red reflectance, and `r formatC(vgm_REML$beta[5], 3, format = "f")` for land surface temperature. 
 
 Package **gstat** is used for geostatistical simulation, and therefore first the REML estimates of the semivariogram parameters are passed to function `vgm` using arguments `nugget`, `psill`, and `range` of function `vgm` of this package. 
 
@@ -228,7 +236,7 @@ The fitted model of the spatial variation of the SOM concentration is used to co
 
 #### Systematic random sampling {-}
 
-One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grdAmhara` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim=1` of package **gstat**. Argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}.
+One hundred systematic random samples ($S=100$) with an expected sample size of 50 points ($E[n]=50$) are selected. The four covariates at the selected sampling points are extracted by overlaying the `SpatialPointsDataFrame`  `mySYsamples` and the `SpatialPixelsDataFrame` `grdAmhara` with function `over` of package **sp** [@Pebesma2005]. Values at the sampling points are simulated by sequential Gaussian simulation\index{Sequential Gaussian simulation} [@goo97], using function `krige`  with argument `nsim = 1` of package **gstat**. Argument `dummy` is set to `TRUE` to enforce unconditional simulation\index{Geostatistical simulation!unconditional}.
 
 ```{block2, type='rmdnote'}
 The alternative is conditional simulation\index{Geostatistical simulation!conditional}, using the data of the convenience sample as conditioning data. Conditional simulation is only recommended if the quality of these legacy data is sufficient, and we may trust that the study variable at the legacy points has not changed since these legacy data have been collected.
@@ -282,7 +290,7 @@ v_mzsim_SY <- readRDS(file = "results/MBpredVariance_SY_Amhara.rds")
 Exi_vmz_SY <- mean(v_mzsim_SY)
 ```
 
-The mean of the 100 conditional variances equals `r round(Exi_vmz_SY,3)` (dag kg^-1^)^2^. This is a Monte Carlo approximation of the model-based prediction of the sampling variance of the ratio estimator of the mean for systematic random sampling with an expected sample size of 50.
+The mean of the 100 conditional variances equals `r formatC(Exi_vmz_SY, 3, format = "f")` (dag kg^-1^)^2^. This is a Monte Carlo approximation of the model-based prediction of the sampling variance of the ratio estimator of the mean for systematic random sampling with an expected sample size of 50.
 
 #### Two-stage cluster random sampling {-}
 
@@ -351,7 +359,7 @@ nopt <- 1 / Exi_vmz_SY * (sqrt(Exi_S2w * Exi_S2b) * sqrt(c2 / c1) + Exi_S2b)
 mopt <- sqrt(Exi_S2w / Exi_S2b) * sqrt(c1 / c2)
 ```
 
-The optimal number of PSU draws is `r ceiling(nopt)`, and the optimal number of points per PSU draw equals `r ceiling(mopt)`. The total number of sampling points is `r ceiling(nopt)` $\times$ `r ceiling(mopt)` `r ceiling(nopt)*ceiling(mopt)`. This is much larger than the sample size of 50 obtained with systematic random sampling. The total observation costs therefore are substantially larger. However, the access time can be substantially smaller due to the spatial clustering of sampling points. To answer the question whether the costs saved by this reduced access time outweigh the extra costs of observation, the model for the access costs and observation costs must be further developed.
+The optimal number of PSU draws is `r ceiling(nopt)`, and the optimal number of points per PSU draw equals `r ceiling(mopt)`. The total number of sampling points is `r ceiling(nopt)` $\times$ `r ceiling(mopt)` = `r ceiling(nopt)*ceiling(mopt)`. This is much larger than the sample size of 50 obtained with systematic random sampling. The total observation costs therefore are substantially larger. However, the access time can be substantially smaller due to the spatial clustering of sampling points. To answer the question whether the costs saved by this reduced access time outweigh the extra costs of observation, the model for the access costs and observation costs must be further developed.
 
 ### Bayesian approach {#MBpredSamplingVarBayes}
 
@@ -361,25 +369,29 @@ The Bayesian approach is illustrated with a case study on predicting the samplin
 
 (ref:qqplotMellelabel) Q-Q plot of NO~3~-N of field Melle.
 
+```{r, echo = FALSE}
+sampleMelle <- read.csv("data/Sample_Melle.csv", header = TRUE)
+```
+
+
 ```{r qqplotMelle, fig.asp=0.7, fig.width = 5, fig.cap="(ref:qqplotMellelabel)"}
-mydata <- read.csv("data/Sample_Melle.csv", header = TRUE)
-ggplot(mydata, aes(sample = N)) +
+ggplot(sampleMelle, aes(sample = N)) +
   geom_qq() +
   geom_qq_line()
-pvalue <- shapiro.test(mydata$N)$p.value
+pvalue <- shapiro.test(sampleMelle$N)$p.value
 ```
 
 The Q-Q plot\index{Q-Q plot} (Figure \@ref(fig:qqplotMelle)) shows that a normal distribution is not very likely: there are too many large values, the distribution is skewed to the right. Also the *p*-value\index{Significance level}\index{\emph{p}-value of a test} of the Shapiro-Wilk test\index{Shapiro-Wilk test} shows that we should reject the null hypothesis of a normal distribution for the data: $p=0.0028$. I therefore proceed with the natural log of NO$_3$-N, in short lnN.
 
 ```{r}
-mydata$lnN <- log(mydata$N)
+sampleMelle$lnN <- log(sampleMelle$N)
 ```
 
 ```{r, echo=FALSE}
-min_s1 <- min(mydata$s1)
-min_s2 <- min(mydata$s2)
-mydata$s1 <- mydata$s1 - min_s1
-mydata$s2 <- mydata$s2 - min_s2
+min_s1 <- min(sampleMelle$s1)
+min_s2 <- min(sampleMelle$s2)
+sampleMelle$s1 <- sampleMelle$s1 - min_s1
+sampleMelle$s2 <- sampleMelle$s2 - min_s2
 ```
 
 As a first step the semivariogram of lnN is estimated by maximum likelihood\index{Maximum likelihood estimation} (Subsection \@ref(MLestimationVariogram)). An exponential semivariogram model is assumed, see Equation \@ref(eq:exponential). 
@@ -388,7 +400,7 @@ As a first step the semivariogram of lnN is estimated by maximum likelihood\inde
 The parameters that are estimated are the reciprocal of the sill $\lambda$, the ratio of spatial dependence\index{Ratio of spatial dependence} $\xi$, defined as the partial sill divided by the sill, and the distance parameter $\phi$. This parameterisation of the semivariogram is chosen because hereafter in the Bayesian approach prior distributions are chosen for these parameters.
 ```
 
-The likelihood function is defined, using a somewhat unusual parameterisation, tailored to the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, Chapter 11). In MCMC sampling the probability of accepting a proposed sampling unit $\pmb{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\pmb{\theta}^*|\mathbf{z})/f(\pmb{\theta}_{t-1}|\mathbf{z})$, so that the normalising constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels. In the code chunk below `crossprod(X, Cinv)` is the same as `t(X) %*% Cinv`.
+The likelihood function is defined, using a somewhat unusual parameterisation, tailored to the Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling} from the posterior distribution of the semivariogram parameters. In MCMC a Markov chain of sampling units (vectors with semivariogram parameters) is generated using the previous sampling unit to randomly generate the next sampling unit (@Gelman2013, Chapter 11). In MCMC sampling the probability of accepting a proposed sampling unit $\pmb{\theta}^*$  is a function of the ratio of the posterior density of the proposed sampling unit and that of the current sampling unit, $f(\pmb{\theta}^*|\mathbf{z})/f(\pmb{\theta}_{t-1}|\mathbf{z})$, so that the normalising constant, the denominator of Equation \@ref(eq:BayesTheorem), cancels.
 
 ```{r}
 library(mvtnorm)
@@ -401,7 +413,7 @@ ll <- function(thetas) {
   C <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
   XCX <- crossprod(X, solve(C, X))
   XCz <- crossprod(X, solve(C, z))
-  betaGLS <- solve(XCX,XCz)
+  betaGLS <- solve(XCX, XCz)
   mu <- as.numeric(X %*% betaGLS)
   logLik <- dmvnorm(x = z, mean = mu, sigma = C, log = TRUE)
   logLik
@@ -411,13 +423,13 @@ ll <- function(thetas) {
 Next, initial estimates of the semivariogram parameters are computed by maximising the likelihood, using function `optim`. 
 
 ```{r}
-lambda.ini <- 1 / var(mydata$lnN)
+lambda.ini <- 1 / var(sampleMelle$lnN)
 xi.ini <- 0.5
 phi.ini <- 20
 pars <- c(lambda.ini, xi.ini, phi.ini)
-D <- as.matrix(dist(mydata[, c("s1", "s2")]))
-X <- matrix(1, nrow(mydata), 1)
-z <- mydata$lnN
+D <- as.matrix(dist(sampleMelle[, c("s1", "s2")]))
+X <- matrix(1, nrow(sampleMelle), 1)
+z <- sampleMelle$lnN
 model <- "Exp"
 vgML <- optim(pars, ll, control = list(fnscale = -1),
   lower = c(1e-6, 0, 1e-6), upper = c(1000, 1, 150), method = "L-BFGS-B")
@@ -498,7 +510,7 @@ mygeostrata <- as(mygeostrata, "data.frame")
 
 ```{r simulatevariances, eval = FALSE}
 V <- matrix(data = NA, nrow = 100, ncol = 100)
-coordinates(mydata) <- ~ s1 + s2
+coordinates(sampleMelle) <- ~ s1 + s2
 set.seed(314)
 for (i in 1:100) {
   sill <- 1 / MCMCsample$lambda[i]
@@ -507,7 +519,7 @@ for (i in 1:100) {
   range <- MCMCsample$phi[i]
   vgmdl <- vgm(model = "Exp", nugget = nug, psill = psill, range = range)
   ysim <- krige(
-    lnN ~ 1, locations = mydata, newdata = mygrid,
+    lnN ~ 1, locations = sampleMelle, newdata = mygrid,
     model = vgmdl,
     nmax = 20, nsim = 100,
     debug.level = 0) %>% as(., "data.frame")
@@ -525,7 +537,7 @@ saveRDS(V, file = "results/SimulatedVariances_Melle.rds")
 Figure \@ref(fig:plotsimulatedmapsMelle) shows sixteen maps simulated with the first four semivariograms. The four maps in a row (a to d) are simulated with the same semivariogram. All maps show that the simulated data have positive skew, which is in agreement with the prior data. The data obtained by simulating from a lognormal distribution are always strictly positive. This is not guaranteed when simulating from a normal distribution.
 
 ```{r, echo = FALSE, eval = FALSE}
-#coordinates(mydata) <- ~ s1 + s2
+#coordinates(sampleMelle) <- ~ s1 + s2
 v <- matrix(data = NA, nrow = 4, ncol = 4)
 Zsim <- NULL
 set.seed(314)
@@ -537,7 +549,7 @@ for (i in 1:4) {
   for (j in 1:4) {
     ysim <- krige(
       lnN ~ 1,
-      locations = mydata,
+      locations = sampleMelle,
       newdata = mygrid,
       model = vgm(model = "Exp", nugget = nugget, psill = psill, range = range),
       nmax = 20,
@@ -575,15 +587,15 @@ rownames(v) <- 1:4
 round(v, 3)
 ```
 
-The sampling variance shows quite strong variation among the maps. The histogram of Figure \@ref(fig:histogramNMelle) shows our uncertainty about the sampling variance, due to uncertainty about the semivariogram, as well as due to uncertainty about the spatial distribution of NO$_3$-N within the agricultural field given the semivariogram and the available data from that field.
+The sampling variance shows quite strong variation among the maps. The frequency distribution of Figure \@ref(fig:histogramNMelle) shows our uncertainty about the sampling variance, due to uncertainty about the semivariogram, as well as due to uncertainty about the spatial distribution of NO$_3$-N within the agricultural field given the semivariogram and the available data from that field.
 
-(ref:histogramNMellelabel) Histogram of simulated sampling variances of the $\pi$ estimator of the mean of NO~3~-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum.
+(ref:histogramNMellelabel) Frequency distribution of simulated sampling variances of the $\pi$ estimator of the mean of NO~3~-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum.
 
 ```{r histogramNMelle, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:histogramNMellelabel)"}
 V <- readRDS(file = "results/SimulatedVariances_Melle.rds")
 ggplot() +
   geom_histogram(aes(x = V), binwidth = 0.2, fill = "black", alpha = 0.5, colour = "black") +
-  scale_y_continuous(name = "Frequency") +
+  scale_y_continuous(name = "Count") +
   scale_x_continuous(name = "Variance of estimator of mean")
 ```
 
@@ -593,16 +605,9 @@ P50_V_STSI <- quantile(V, 0.5)
 P90_V_STSI <- quantile(V, 0.9)
 ```
 
-As a model-based prediction of the sampling variance we can take the mean or the median of the sampling variances over all 100 $\times$ 100 simulated maps, which are equal to `r round(Exi_V_STSI,3)` (dag kg^-1^) and `r round(P50_V_STSI,3)` (dag kg^-1^), respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r round(P90_V_STSI,3)` (dag kg^-1^).
+As a model-based prediction of the sampling variance we can take the mean or the median of the sampling variances over all 100 $\times$ 100 simulated maps, which are equal to `r formatC(Exi_V_STSI, 3, format = "f")` (dag kg^-1^) and `r formatC(P50_V_STSI, 3, format = "f")` (dag kg^-1^), respectively.  If we want to be more safe, we can take a high quantile, e.g. the P90 of this distribution as the predicted sampling variance, which is equal to `r formatC(P90_V_STSI, 3, format = "f")` (dag kg^-1^).
 
-I used the 30 available NO$_3$-N data as conditioning data in geostatistical simulation. Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data have been observed. For NO$_3$-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model-mean $\mu$ to argument `beta` of function `krige`. The estimated model-mean depends on the semivariogram parameters. The next code chunk shows how this model-mean can be estimated (see also function `ll` above).
-
-```{r, eval = FALSE}
-C <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
-XCX <- crossprod(X, solve(C, X))
-XCz <- crossprod(X, solve(C, z))
-betaGLS <- solve(XCX,XCz)
-```
+I used the 30 available NO$_3$-N data as conditioning data in geostatistical simulation. Unconditional simulation is recommended if we cannot rely on the quality of the legacy data, for instance due to a temporal change in lnN since the time the legacy data have been observed. For NO$_3$-N this might well be the case. I believe that, although the effect of 30 observations on the simulated fields and on the uncertainty distribution of the sampling variance will be very small, one still may prefer unconditional simulation. With unconditional simulation we must assign the model-mean $\mu$ to argument `beta` of function `krige`. The estimated model-mean can be estimated by generalised least squares, see function `ll` above.
 
 ## Model-based optimisation of spatial strata {#Ospats}
 
@@ -683,9 +688,13 @@ Optimal spatial stratification with package **SamplingStrata** is illustrated wi
 
 <!-- projection attributes of Xuancheng: wgs_1984_UTM_Zone_50N  -->
 
+```{r, echo = FALSE}
+sampleXuancheng <- read.csv("data/Sample_Xuancheng.csv")
+```
+
+
 ```{r}
-mysample <- read.csv("data/Sample_Xuancheng.csv")
-lm_SOM <- lm(SOM_A_hori ~ dem, data = mysample)
+lm_SOM <- lm(SOM_A_hori ~ dem, data = sampleXuancheng)
 ```
 
 In fitting a linear regression model we assume that the relation is linear, the residual variance is constant (independent of the fitted value), and the residuals have a normal distribution. These assumptions are checked with a scatter plot of the residuals against the fitted value and a Q-Q plot\index{Q-Q plot}, respectively (Figure \@ref(fig:checkassumptions)).
@@ -710,8 +719,8 @@ grid.arrange(plt1, plt2, nrow = 1)
 The scatter plot shows that the first assumption is realistic. No pattern can be seen: at all fitted values the residuals are scattered around the horizontal line. However, the second and third assumption are questionable: the residual variance clearly increases with the fitted value, and the distribution of the residuals has positive skew, i.e. it has a long upper tail. There clearly is some evidence that these two assumptions are violated. Possibly these problems can be solved by fitting a model for the natural log of the SOM concentration.
 
 ```{r checkassumptions2, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Scatter plot of residuals against fitted value and Q-Q plot of residuals, for a simple linear regression model of the natural log of the SOM concentration in Xuancheng, using elevation as a predictor."}
-mysample$lnSOM <- log(mysample$SOM_A_hori)
-lm_lnSOM <- lm(lnSOM ~ dem, data = mysample)
+sampleXuancheng$lnSOM <- log(sampleXuancheng$SOM_A_hori)
+lm_lnSOM <- lm(lnSOM ~ dem, data = sampleXuancheng)
 e <- residuals(lm_lnSOM)
 fit <- fitted(lm_lnSOM)
 df <- data.frame(fit, e)
@@ -738,7 +747,7 @@ grdXuancheng <- within(grdXuancheng, {
 
 The predictions and their standard errors are shown in Figure \@ref(fig:predictedlnSOM).
 
-(ref:predictedlnSOMlabel) Predicted natural log of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng and its standard error (se), obtained with a linear regression model with elevation as a predictor.
+(ref:predictedlnSOMlabel) Predicted natural log of the SOM concentration (g kg^-1^) in the topsoil of Xuancheng and the standard error (se) of the predictor, obtained with a linear regression model with elevation as a predictor.
 
 ```{r predictedlnSOM, echo = FALSE, out.width = "100%", fig.cap = "(ref:predictedlnSOMlabel)"}
 plt1 <- ggplot(grdXuancheng) +
@@ -759,21 +768,29 @@ grid.arrange(plt1, plt2, ncol = 1)
 
 Let us check now whether the spatial structure of the study variable lnSOM is fully captured by the mean, modelled as a linear function of elevation. This can be checked by estimating the semivariogram of the model residuals. If the semivariogram of the residuals is pure nugget (the semivariance does not increase with distance), then we can assume that the prediction errors are independent. In that case we do not need to account for a covariance of the prediction errors in optimisation of the spatial strata. However, if the semivariogram does show spatial structure, we must account for a covariance of the prediction errors. Figure \@ref(fig:residualvariogramSOM) shows the sample semivariogram of the residuals computed with function `variogram` of package **gstat**.
 
-```{r residualvariogramSOM, echo = FALSE, fig.asp = 0.7, fig.cap = "Sample semivariogram of the residuals of a simple linear regression model for the natural log of the SOM concentration in Xuancheng."}
+```{r}
 library(gstat)
-mysample <- mysample %>%
+sampleXuancheng <- sampleXuancheng %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
-coordinates(mysample) <- ~ s1 + s2
-vg <- variogram(lnSOM ~ dem, data = mysample)
-plot(vg, plot.numbers = TRUE)
+coordinates(sampleXuancheng) <- ~ s1 + s2
+vg <- variogram(lnSOM ~ dem, data = sampleXuancheng)
+```
+
+
+```{r residualvariogramSOM, echo = FALSE, fig.asp = 0.7, fig.cap = "Sample semivariogram of the residuals of a simple linear regression model for the natural log of the SOM concentration in Xuancheng. Numbers are numbers of point-pairs used in computing semivariances."}
+ggplot(data = vg) +
+  geom_point(mapping = aes(x = dist, y = gamma), size = 2) +
+  geom_text(mapping = aes(x = dist, y = gamma, label = np), nudge_x = 1.2) +
+  scale_x_continuous(name = "Distance (km)") +
+  scale_y_continuous(name = "Semivariance", limits = c(0, 0.20))
 ```
 
 The sample semivariogram does not show much spatial structure, but the first two points in the semivariogram have somewhat smaller values. This indicates that the residuals at two close points, say $< \pm 5$ km are not independent, whereas if the distance between the two points $> \pm 5$ km, they are independent. This spatial dependency of the residuals can be modelled, e.g. by an exponential function. The exponential semivariogram has three parameters, the nugget\index{Nugget} variance $c_0$, the partial sill\index{Partial sill} $c_1$, and the distance parameter\index{Distance parameter} $\phi$. The total number of model parameters now is five: two regression coefficients (intercept and slope for elevation) and three semivariogram parameters. All five parameters can best be estimated by restricted maximum likelihood\index{Restricted maximum likelihood estimation}, see Subsection \@ref(REML). Table \@ref(tab:TableModelXuancheng) shows the estimated regression coefficients and semivariogram parameters. Up to a distance of about three times the estimated distance parameter $\phi$, which is about 8 km, the residuals are spatially correlated; beyond that distance, they are hardly correlated anymore.
 
 ```{r, echo = FALSE}
 library(geoR)
-mysample <- as(mysample, "data.frame")
-dGeoR <- as.geodata(obj = mysample, header = TRUE,
+sampleXuancheng <- as(sampleXuancheng, "data.frame")
+dGeoR <- as.geodata(obj = sampleXuancheng, header = TRUE,
    coords.col = c("s1", "s2"), data.col = "lnSOM", covar.col = "dem"
  )
 vgm_REML <- likfit(

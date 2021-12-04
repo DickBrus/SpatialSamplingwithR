@@ -8,7 +8,7 @@ Sampling on a regular grid\index{Regular grid} is an attractive option for mappi
 
 Besides the shape of the sampling grid cells, we must decide on the grid spacing\index{Grid spacing}. The grid spacing determines the number of sampling units in the study area, i.e. the sample size. There are two options to decide on this spacing, either starting from the available budget or from a requirement on the quality of the map. The latter is explained in Chapter \@ref(MBgridspacing), as this requires a model of the spatial variation, and as a consequence this is an example of model-based sampling. Starting from the available budget and an estimate of the costs per sampling unit, we first compute the affordable sample size. Then we may derive from this number the grid spacing. For square grids, the grid spacing in meters is calculated as $\sqrt{A/n}$, where $A$ is the area in m^2^ and $n$ is the number of sampling units (sample size).
 
-Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. Argument `offset` is used to select a grid non-randomly. Either a sample size can be specified, using argument `n`, or a grid spacing using argument `cellsize`. In the next code chunk a square grid is selected with a spacing of 200 m.
+Grids can be selected with function `spsample` of package **sp** [@Pebesma2005]. Argument `offset` is used to select a grid non-randomly. Either a sample size can be specified, using argument `n`, or a grid spacing, using argument `cellsize`. In the next code chunk a square grid is selected with a spacing of 200 m.
 
 ```{r grid}
 library(sp)
@@ -161,8 +161,8 @@ When function `kmeans` is used to compute the spatial coverage sample, there is 
 (ref:kmeanscenters) Centres of spatial clusters computed with function `kmeans`.
 
 ```{r kmeanscenters, echo = FALSE, out.width = '100%', fig.cap = "(ref:kmeanscenters)"}
-gridded(grdVoorst) <- ~s1 + s2
-coordinates(mysample_kmeans) <- ~s1 + s2
+gridded(grdVoorst) <- ~ s1 + s2
+coordinates(mysample_kmeans) <- ~ s1 + s2
 res <- over(mysample_kmeans, grdVoorst)
 inside <- as.factor(!is.na(res$z))
 levels(inside) <- (c("Outside", "Inside"))
@@ -200,12 +200,12 @@ mysample_kmeans[units_out, ] <- grdVoorst[units_close, c("s1", "s2")]
 
 If georeferenced data are available that can be used for mapping the study variable, but we need more data for mapping, it is attractive to account for these existing sampling units when selecting the additional units. The aim now is to fill in the empty spaces, i.e. the parts of the study area not covered by the existing sampling units. This is referred to as *spatial infill sampling*. Existing sampling units can easily be accommodated in the k-means algorithm, using them as fixed cluster centres\index{Fixed cluster centre}.
 
-Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for West-Amhara. A large set of legacy data on soil organic matter (SOM) in mass percentage (dag kg^-1^) is available, but these data come from strongly spatially clustered units along roads (the prior points in Figure \@ref(fig:spatialinfillEthiopia)). This is a nice example of a convenience sample. The legacy data are not ideal for mapping the SOM concentration throughout West-Amhara. Clearly, it is desirable to collect additional data in the off-road parts of the study area, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are passed as a `SpatialPoints` object to the `priorPoints` argument of **spcosa**. This optional argument fixes these points as cluster centres. A spatial infill sample of 100 points is selected, taking into account these fixed points.
+Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for West-Amhara. A large set of legacy data on soil organic matter (SOM) in mass percentage (dag kg^-1^) is available, but these data come from strongly spatially clustered units along roads (the prior points in Figure \@ref(fig:spatialinfillEthiopia)). This is a nice example of a convenience sample. The legacy data are not ideal for mapping the SOM concentration throughout West-Amhara. Clearly, it is desirable to collect additional data in the off-road parts of the study area, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are passed to function `stratify` of package **spcosa** with argument `priorPoints`. The object assigned to this argument must be of class `SpatialPoints` or `SpatialPointsDataFrame`. This optional argument fixes these points as cluster centres. A spatial infill sample of 100 points is selected, taking into account these fixed points.
 
 <!--Projection attributes of the file with legacy sample: crs <- st_crs("+proj=laea +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")-->
 
 ```{r spatialinfillEthiopia, out.width="100%", fig.cap = "Spatial infill sample of 100 points from West-Amhara."}
-gridded(grdAmhara) <- ~s1 + s2
+gridded(grdAmhara) <- ~ s1 + s2
 n <- 100
 ntot <- n + nrow(sampleAmhara)
 coordinates(sampleAmhara) <- ~ s1 + s2
@@ -226,8 +226,9 @@ mysample_new <- mysample[units, ]
 ```
 
 #### Exercises {-}
-6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Use the iPSM sample in `data.frame` `sampleXuancheng` of package **sswr** as a legacy sample. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. Use the raster file `elevation.tif` as a discretisation of the study area. This file can be read with `rmap <- rast(system.file("extdata", "Xuancheng", "elevation.tif", package = "sswr"))`. 
-    +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the raster file to a `SpatialPixelsDataFrame`. Then use function `spsample` with argument `type = "regular"`.
+6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Use the iPSM sample in `data.frame` `sampleXuancheng` of package **sswr** as a legacy sample. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. 
+    +  Read the file `data/Elevation_Xuancheng.rds` with function `rast` of package **terra**, and use this file as a discretisation of the study area.
+    +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First change the class of the `SpatRaster` object into a `data.frame`, and then change it to a `SpatialPixelsDataFrame` using function `gridded`. Then use function `spsample` with argument `type = "regular"`.
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  
   
 ```{r, echo = FALSE}
