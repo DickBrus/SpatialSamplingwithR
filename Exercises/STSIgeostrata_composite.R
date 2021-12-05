@@ -5,7 +5,7 @@ library(spcosa)
 # compute compact geographical strata
 # set random seed (for reproduction of results)
 set.seed(314)
-#change class of grdVoorst to SpatialPixelsDataFrame
+#convert grdVoorst to SpatialPixelsDataFrame
 gridded(grdVoorst) <- ~ s1 + s2
 myStrata <- stratify(grdVoorst, nStrata = 20, equalArea = TRUE, nTry = 1)
 plot(myStrata)

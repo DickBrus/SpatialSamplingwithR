@@ -1,7 +1,7 @@
 
 library(sp)
 
-#change class into SpatialPixelsDataFrame
+#convert to SpatialPixelsDataFrame
 gridded(grdAmhara) <- ~s1 + s2
 
 #select a square grid, either by specifying the number of grid points or the spacing.
@@ -46,6 +46,6 @@ for (i in 1:50) {
 }
 length(mysample)
 
-#Change the class of the selected grid (SpatialPoints) into a data frame and print the coordinates.
+#convert SpatialPoints to data.frame, and print the coordinates.
 
 (mysample <- as(mysample, "data.frame"))

@@ -25,7 +25,7 @@ ggplot(rmap) +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed(ratio = 1)
 
-#change class of subgrid from data frame to SpatialPixelsDataFrame
+#convert data.frame subgrid to SpatialPixelsDataFrame
 gridded(subgrid) <- ~ x1 + x2
 
 #set number of new sampling points to be selected
@@ -34,7 +34,7 @@ n <- 100
 #compute total sample size (existing points + new points)
 ntot <- n + nrow(legacy)
 
-#change class of legacy (existing points) to SpatialPoints
+#convert data.frame legacy (existing points) to SpatialPoints
 legacy <- SpatialPoints(coords = cbind(legacy$s1, legacy$s2))
 
 #compute geostrata with argument priorPoints
@@ -50,6 +50,6 @@ plot(mystrata, mysample)
 #select the new points from mysample
 units <- which(mysample@isPriorPoint == FALSE)
 
-#change class of mysample to data.frame
+#convert mysample to data.frame
 mysample <- as(mysample, "data.frame")
 mysamplenew <- mysample[units, ]

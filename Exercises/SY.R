@@ -1,7 +1,7 @@
 library(sp)
 library(ggplot2)
 
-#change class to SpatialPixelsDataFrame
+#convert to SpatialPixelsDataFrame
 gridded(grdVoorst) <- ~s1 + s2
 
 #specify expected sample size

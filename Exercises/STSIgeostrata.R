@@ -24,5 +24,5 @@ print(A_h <- getArea(myStrata))
 mySample <- spsample(myStrata, n = 2)
 plot(myStrata, mySample)
 
-# change class of mySample
+# convert mySample to SpatialPoints
 samplingPoints <- as(mySample, "SpatialPoints")

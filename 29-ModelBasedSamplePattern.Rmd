@@ -73,27 +73,24 @@ The semivariogram parameters as estimated by `nls` are then used to define a sem
 
 ```{r variogramlnECe, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted exponential model of lnECe at the Cotton Research Farm."}
 library(gstat)
-#read calibration data
-clbdat <- read.csv(file = "data/Sample_ECEM_CRF_Uzbekistan.csv", header = TRUE)
-
 #estimate semivariogram of ln(ECe)
-clbdat$lnECe <- log(clbdat$ECe150)
-coordinates(clbdat) <- ~ x + y
-proj4string(clbdat) <- CRS("+proj=longlat +datum=WGS84")
-clbdat <- spTransform(clbdat, CRS = CRS("+proj=tmerc +lat_0=0.000000000 +lon_0=63.000000000  +k=1.000000 +x_0=500000.000 +y_0=0.000 +ellps=krass +units=m"))
-clbdat <- as.data.frame(clbdat)
-minx <- min(clbdat$x)
-miny <- min(clbdat$y)
-clbdat$x <- clbdat$x - minx
-clbdat$y <- clbdat$y - miny
+sampleCRF$lnECe <- log(sampleCRF$ECe150)
+coordinates(sampleCRF) <- ~ x + y
+proj4string(sampleCRF) <- CRS("+proj=longlat +datum=WGS84")
+sampleCRF <- spTransform(sampleCRF, CRS = CRS("+proj=tmerc +lat_0=0.000000000 +lon_0=63.000000000  +k=1.000000 +x_0=500000.000 +y_0=0.000 +ellps=krass +units=m"))
+sampleCRF <- as.data.frame(sampleCRF)
+minx <- min(sampleCRF$x)
+miny <- min(sampleCRF$y)
+sampleCRF$x <- sampleCRF$x - minx
+sampleCRF$y <- sampleCRF$y - miny
 
-surveys <- unique(clbdat$survey)
+surveys <- unique(sampleCRF$survey)
 boundaries <- seq(from = 0, to = 500, by = 50)
 
 np <- d <- gamma <- matrix(nrow = length(boundaries) - 1, ncol = length(surveys))
 for (i in seq_len(length(surveys))) {
     # take subset
-    sdat <- clbdat[clbdat$survey == surveys[i], ]
+    sdat <- sampleCRF[sampleCRF$survey == surveys[i], ]
     coordinates(sdat) <- ~ x + y
     variogram <- variogram(sdat$lnECe ~ 1, data = sdat, boundaries = boundaries)
 
@@ -259,7 +256,7 @@ If we have one or more covariates that are linearly related to the study variabl
 
 Optimisation of the sampling pattern for KED requires as input the semivariogram of the residuals. Besides, we must decide on the covariates for the model-mean. Note that we do not need estimates of the regression coefficients associated with the covariates as input, but just which combination of covariates we want to use for modelling the model-mean of the study variable.
 
-Optimisation of the sampling pattern for KED is illustrated with the Cotton Research Farm. The interpolated natural log of the EM data (with transmitter at 1 m) is used as a covariate, see Figure \@ref(fig:EMdataUzbekistan). The data for fitting the model are in data file `clbdat`. The parameters of the residual semivariogram are estimated by restricted maximum likelihood (REML), see Subsection \@ref(REML). 
+Optimisation of the sampling pattern for KED is illustrated with the Cotton Research Farm. The interpolated natural log of the EM data (with transmitter at 1 m) is used as a covariate, see Figure \@ref(fig:EMdataUzbekistan). The data for fitting the model are in data file `sampleCRF`. The parameters of the residual semivariogram are estimated by restricted maximum likelihood (REML), see Subsection \@ref(REML). 
 
 At several points multiple pairs of observations of the study variable ECe and the covariate EM have been made. These calibration data have exactly the same spatial coordinates. This leads to problems with REML estimation. The covariance matrix is not positive definite, so that it cannot be inverted. To solve this problem I jittered the coordinates of the sampling points by a small amount.
 
@@ -267,10 +264,10 @@ At several points multiple pairs of observations of the study variable ECe and t
 
 ```{r}
 library(geoR)
-clbdat$lnEM100 <- log(clbdat$EMv1m)
-clbdat$x <- jitter(clbdat$x, amount = 0.001)
-clbdat$y <- jitter(clbdat$y, amount = 0.001)
-dGeoR <- as.geodata(obj = clbdat, header = TRUE,
+sampleCRF$lnEM100 <- log(sampleCRF$EMv1m)
+sampleCRF$x <- jitter(sampleCRF$x, amount = 0.001)
+sampleCRF$y <- jitter(sampleCRF$y, amount = 0.001)
+dGeoR <- as.geodata(obj = sampleCRF, header = TRUE,
   coords.col = c("x", "y"), data.col = "lnECe", covar.col = "lnEM100")
 vgm_REML <- likfit(geodata = dGeoR, trend = ~ lnEM100,
   cov.model = "exponential", ini.cov.pars = c(0.1, 200),

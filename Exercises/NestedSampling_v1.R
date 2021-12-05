@@ -25,7 +25,8 @@ SelectPoint <- function(start, h, area) {
   xypoint
 }
 
-#Make a copy of grdHunterValley. The copy is used later to select a main station. The data frame grdHunterValley is coerced to a SpatialPixelsDataFrame
+#Make a copy of grdHunterValley. The copy is used later to select a main station.
+#The data.frame grdHunterValley is converted to a SpatialPixelsDataFrame
 
 grid <- grdHunterValley
 gridded(grdHunterValley) <- c("s1", "s2")
