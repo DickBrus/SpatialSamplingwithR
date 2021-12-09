@@ -1,3 +1,5 @@
+library(sswr)
+
 n <- 40
 N <- nrow(grdVoorst)
 set.seed(314)

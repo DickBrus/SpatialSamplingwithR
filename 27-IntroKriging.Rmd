@@ -28,9 +28,9 @@ Z(\mathbf{s}) = \mu + \epsilon(\mathbf{s}) \;,
 (\#eq:OKmodel)
 \end{equation}
 
-with $\mu$ the constant mean, independent of the location $\mathbf{s}$.
+with $\mu$ the constant mean, independent of the location $\mathbf{s}$. Stated otherwise, in OK we assume *stationarity in the mean*\index{Stationarity in the mean} over the area to be mapped.
 
-$C(\cdot)$ is the covariance function\index{Covariance function}, also referred to as the covariogram\index{Covariogram}, and a scaled version of it, obtained by dividing $C(\cdot)$ by the variance $C(0)$, is the correlation function\index{Correlation function} or correlogram\index{Correlogram}. Stated otherwise, in OK we assume *stationarity in the mean*\index{Stationarity in the mean} over the area to be mapped. The residuals are not independent but spatially correlated. If we have, for instance, a large positive residual at some location $\mathbf{s}$, then in many cases we also have a positive residual at a nearby location $\mathbf{s}^{\prime}$.
+$C(\cdot)$ is the covariance function\index{Covariance function}, also referred to as the covariogram\index{Covariogram}, and a scaled version of it, obtained by dividing $C(\cdot)$ by the variance $C(0)$, is the correlation function\index{Correlation function} or correlogram\index{Correlogram}.
 
 If the data set is of substantial size, it is possible to define a neighbourhood: not all sample data are used to predict the study variable at a prediction location but only the sample data in this neighbourhood. This implies that the stationarity assumption is relaxed to the often more realistic assumption of a constant mean within neighbourhoods.
 
@@ -162,7 +162,6 @@ A covariance function and semivariogram are related by (see Figure \@ref(fig:Cov
 \end{equation}
 
 ```{r CovFunctionVariogram, echo=FALSE, fig.width = 5, fig.asp=0.7, fig.cap="Spherical covariance function (red line and dot) and semivariogram (black line and dot)."}
-library(gstat)
 nugget <- 25
 psill <- 75
 range <- 250
@@ -177,12 +176,12 @@ ycov  <- c(psill, psill + nugget)
 ysemi  <- c(0, nugget)
 xydf  <- data.frame(x, ycov, ysemi)
 ggplot() +
-  geom_line(data = d, aes(x = dist, y = cov), colour = "red", size = 1) +
-  geom_point(data = xydf, aes(x = x[1], y = ycov[1]), shape = 1, size = 3, colour = "red") +
-  geom_point(data = xydf, aes(x = x[2], y = ycov[2]), shape = 16, size = 3, colour = "red") +
-  geom_line(data = d, aes(x = dist, y = gamma), colour = "black", size = 1) +
-  geom_point(data = xydf, aes(x = x[1], y = ysemi[1]), shape = 16, size = 3, colour = "black") +
-  geom_point(data = xydf, aes(x = x[2], y = ysemi[2]), shape = 1, size = 3, colour = "black") +
+  geom_line(data = d, aes(x = dist, y = cov), colour = "red", size = 0.8) +
+  geom_point(data = xydf, aes(x = x[1], y = ycov[1]), shape = 1, size = 2, colour = "red") +
+  geom_point(data = xydf, aes(x = x[2], y = ycov[2]), shape = 16, size = 2, colour = "red") +
+  geom_line(data = d, aes(x = dist, y = gamma), colour = "black", size = 0.8) +
+  geom_point(data = xydf, aes(x = x[1], y = ysemi[1]), shape = 16, size = 2, colour = "black") +
+  geom_point(data = xydf, aes(x = x[2], y = ysemi[2]), shape = 1, size = 2, colour = "black") +
   scale_x_continuous(name = "Distance (m)", breaks = c(100, 200, 300, 400, 500, 600, 700)) +
   scale_y_continuous(name = "Covariance, Semivariance\n")
 ```
@@ -322,7 +321,8 @@ tbl <- data.frame(zpred_OK, v_zpred_OK)
 knitr::kable(
   tbl, caption = "Ordinary kriging predictions and kriging variance at a fixed prediction location for ten data sets with simulated values at a square sampling grid.",
   col.names = c("Kriging prediction", "Kriging variance"),
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -531,7 +531,7 @@ The variance with SK is constant. This is because with SK we assume that the reg
 df <- data.frame(x0, KED = v_zpred_KED, SK = v_zpred_SK)
 df_lf <- df %>% pivot_longer(., cols = c("KED", "SK"))
 ggplot(df_lf) +
-    geom_point(mapping = aes(x = x0, y = value, shape = name), size = 3) +
+    geom_point(mapping = aes(x = x0, y = value, shape = name), size = 2.5) +
     scale_shape_manual(values = c(1, 2), name = "Prediction") +
     scale_x_continuous(name = "Covariate value at prediction location") +
     scale_y_continuous(name = "Variance", limits = c(0, 5))
@@ -566,14 +566,22 @@ vg <- variogram(z ~ 1, data = mysample)
 head(vg[, c(1, 2, 3)])
 ```
 
-The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range, and 75 for the partial sill. These are passed to function `vgm`. The sample semivariogram and the fitted model can simply be plotted with function `plot`. The result is shown in Figure \@ref(fig:semivariogramSimulatedField1).
+The next step is to fit a model. This can be done with function `fit.variogram` of the **gstat**  package. Many models can be fitted with this function (type `vgm()` to see all models). I chose a spherical model. Function `fit.variogram` requires initial values of the semivariogram parameters. From the sample semivariogram my eyeball estimates are 25 for the nugget, 250 for the range, and 75 for the partial sill. These are passed to function `vgm`. Figure \@ref(fig:semivariogramSimulatedField1) shows the sample semivariogram along with the fitted spherical model.^[The figure is plotted with package **ggplot2**. The sample semivariogram and the fitted model can also be plotted with `plot(vg, vg_MoM, plot.numbers = TRUE)`.].
 
 (ref:semivariogramSimulatedField1label) Sample semivariogram and fitted spherical model estimated from a simple random sample of 150 units selected from the first simulated field shown in Figure \@ref(fig:Twokrigingsimulations). Numbers are numbers of point-pairs used in computing semivariances.
 
 ```{r semivariogramSimulatedField1, fig.asp = 0.7, fig.cap = "(ref:semivariogramSimulatedField1label)"}
 model_eye <- vgm(model = "Sph", psill = 75, range = 250, nugget = 25)
 vgm_MoM <- fit.variogram(vg, model = model_eye)
-plot(vg, vgm_MoM, plot.numbers = TRUE)
+#plot(vg, vgm_MoM, plot.numbers = TRUE)
+fitted <- variogramLine(vgm_MoM, maxdist = 450, n = 1000)
+ggplot(data = vg) +
+  geom_point(mapping = aes(x = dist, y = gamma), size = 2) +
+  geom_text(mapping = aes(x = dist, y = gamma, label = np), nudge_x = 15) +
+  geom_smooth(data = fitted, mapping = aes(x = dist, y = gamma), colour = "red") +
+  scale_x_continuous(name = "Distance") +
+  scale_y_continuous(name = "Semivariance", limits = c(0, 110))
+
 ```
 
 ```{r}
@@ -630,7 +638,8 @@ ML = c(round(vgm_ML$nugget, 1), round(vgm_ML$sigmasq, 1), round(vgm_ML$phi, 1)))
 
 knitr::kable(
   tbl, caption = "Estimated parameters of a spherical semivariogram obtained with method-of-moments (MoM) and maximum likelihood (ML) estimation.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -655,8 +664,8 @@ set.seed(314)
 units <- sample(nrow(mypop), size = 150)
 mysample <- mypop[units, ]
 vg_resi <- variogram(z ~ x, data = mysample)
-vgmdl <- vgm(model = "Sph", psill = 10, range = 150, nugget = 0)
-vgmresi_MoM <- fit.variogram(vg_resi, model = vgmdl)
+model_eye <- vgm(model = "Sph", psill = 10, range = 150, nugget = 0)
+vgmresi_MoM <- fit.variogram(vg_resi, model = model_eye)
 ```
 
 Given these estimates of the semivariogram parameters, the regression coefficients are re-estimated by accounting for spatial dependency of the residuals. This can be done by generalised least squares\index{Generalised least squares} (GLS):
@@ -697,7 +706,7 @@ repeat {
   mu <- X %*% betaGLS
   mysample$e <- z - mu
   vg_resi <- variogram(e ~ 1, data = mysample)
-  vgmresi_MoM <- fit.variogram(vg_resi, model = vgmdl)
+  vgmresi_MoM <- fit.variogram(vg_resi, model = model_eye)
   C <- variogramLine(vgmresi_MoM, dist_vector = D, covariance = TRUE)
   XCX <- crossprod(X, solve(C, X))
   XCz <- crossprod(X, solve(C, z))
@@ -745,7 +754,6 @@ with $\mathbf{Q} = \mathbf{X}(\mathbf{X}^{\mathrm{T}}\mathbf{C}^{-1}\mathbf{X})^
 REML estimates of the semivariogram can be obtained with function `likfit` of package **geoR**, used above in ML estimation of the variogram [@geoR].
 
 ```{r, echo=FALSE}
-library(geoR)
 mysample <- as(mysample, "data.frame")
 dGeoR <- as.geodata(
    obj = mysample,
@@ -770,7 +778,8 @@ REML = c(round(vgm_REML$nugget, 3), round(vgm_REML$sigmasq, 3), round(vgm_REML$p
 
 knitr::kable(
   tbl, caption = "Estimated parameters of a spherical semivariogram for the residuals and estimated regression coefficients, obtained with iterative method-of-moments (iMoM) and restricted maximum likelihood (REML) estimation.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```

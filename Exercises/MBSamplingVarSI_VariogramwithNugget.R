@@ -1,4 +1,6 @@
 library(gstat)
+library(sswr)
+
 nugget <- 483
 psill <- 966 - nugget #966 is the sill of the variogram without nugget
 vgm_SphNug <- vgm(model = "Sph", nugget = nugget, psill = psill, range = 44.6)

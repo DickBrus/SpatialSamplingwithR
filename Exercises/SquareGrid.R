@@ -1,5 +1,5 @@
-
 library(sp)
+library(sswr)
 
 #convert to SpatialPixelsDataFrame
 gridded(grdAmhara) <- ~s1 + s2

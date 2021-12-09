@@ -1,7 +1,6 @@
 library(clhs)
 library(ggplot2)
-
-names(grdHunterValley)
+library(sswr)
 
 n <- 50
 set.seed(314)

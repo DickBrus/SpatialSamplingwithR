@@ -1,3 +1,5 @@
+library(sswr)
+
 # compute totals of poppy and agricultural area, and compute ratio of totals
 tz <- sum(grdKandahar$poppy)
 tx <- sum(grdKandahar$agri)

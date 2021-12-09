@@ -46,14 +46,19 @@ Figure \@ref(fig:SampleSTSI) shows the selected sample.
 ```{r SampleSTSI, echo = FALSE, out.width = '100%', fig.cap = "Stratified simple random sample of size 40 from Voorst. Strata are combinations of soil class and land use."}
 ggplot() +
   geom_raster(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = stratum)) +
-  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 2) +
+  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1.5) +
     scale_fill_manual(
       name = "",
       values = c(BA = "darkgreen", EA = "brown", PA = "orange", RA = "green", XF = "grey")
     ) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 ## Estimation of population parameters {#EstimatorsSTSI}
@@ -125,12 +130,13 @@ names(mz_h) <- NULL
 names(S2z_h) <- NULL
 names(v_mz_h) <- NULL
 
-df <- data.frame(nms, Nh = N_h, nh = n_h_copy, Mean = round(mz_h, 1), Var = round(S2z_h, 1), se = round(sqrt(v_mz_h), 1))
+df <- data.frame(nms, Nh = formatC(N_h, 0, format = "f", big.mark = ","), nh = n_h_copy, Mean = round(mz_h, 1), Var = formatC(S2z_h, 1, format = "f", big.mark = ","), se = round(sqrt(v_mz_h), 1))
 
 knitr::kable(
   df, caption = "Size (Nh), sample size (nh), estimated mean (Mean), estimated variance (Variance), and estimated standard error of estimator of mean (se) of the five strata in Voorst.",
   col.names = c("Stratum", "Nh", "nh", "Mean", "Variance", "se"),
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -447,11 +453,12 @@ Table \@ref(tab:tableallocation) shows the proportional and optimal sample sizes
 
 ```{r tableallocation, echo = FALSE}
 strata <- sort(unique(grdVoorst$stratum))
-taballoc <- data.frame(Stratum = strata, Nh = as.numeric(N_h), Sh = as.numeric(round(sqrt(S2z_h), 1)), nhprop = as.numeric(n_h), nhNeyman = as.numeric(n_h_Neyman))
+taballoc <- data.frame(Stratum = strata, Nh = formatC(as.numeric(N_h), 0, format = "f", big.mark = ","), Sh = as.numeric(round(sqrt(S2z_h), 1)), nhprop = as.numeric(n_h), nhNeyman = as.numeric(n_h_Neyman))
 
 knitr::kable(
   taballoc, caption = "Proportional and Neyman sample sizes in stratified simple random sampling of Voorst with a total sample size of 40. Nh: stratum size; Sh: stratum standard deviation.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -477,7 +484,7 @@ Figure \@ref(fig:plotsdmeanallocation) shows the standard error of the $\pi$ est
 ```{r plotsdmeanallocation, echo = FALSE, out.width = "100%", fig.asp = 0.7, fig.cap = "(ref:plotsdmeanallocationlabel)"}
 df_lf <- df %>% pivot_longer(., cols = c("SI", "STSIpro", "STSIopt"))
 ggplot(df_lf) +
-  geom_point(mapping = aes(x = n, y = value, shape = name), size = 3) +
+  geom_point(mapping = aes(x = n, y = value, shape = name), size = 2.5) +
   scale_shape_manual(values = c(1, 0, 2), name = "Design", labels = c("SI",  "STSI(Neyman)", "STSI(prop)")) +
   scale_x_continuous(name = "Sample size") +
   scale_y_continuous(name = "Standard error")
@@ -618,10 +625,11 @@ mean.slope <- tapply(subgrd$slope, INDEX = list(subgrd$cluster), FUN = mean)
 mean.pc <- tapply(subgrd$profile.curvature, INDEX = list(subgrd$cluster), FUN = mean)
 mean.twi <- tapply(subgrd$twi, INDEX = list(subgrd$cluster), FUN = mean)
 
-df <- data.frame(Stratum = seq(1:5), Nh = N_h, Elevation = round(mean.dem, 0), Temperature = round(mean.temp, 2), Slope = round(mean.slope, 2), Profilecurv = round(mean.pc, 5), Twi = round(mean.twi, 2))
+df <- data.frame(Stratum = seq(1:5), Nh = formatC(N_h, 0, format = "f", big.mark = ","), Elevation = round(mean.dem, 0), Temperature = round(mean.temp, 2), Slope = round(mean.slope, 2), Profilecurv = round(mean.pc, 5), Twi = round(mean.twi, 2))
 knitr::kable(
   df, caption = "Size (Nh) and means of clustering variables of the five strata of Xuancheng obtained with k-means clustering of raster cells.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -665,16 +673,16 @@ Function `spsample`  of package **spcosa** is used to select from each geostratu
 
 ```{r}
 set.seed(314)
-mysample <- spcosa::spsample(mygeostrata, n = 2)  %>% as(., "data.frame")
+mysample <- spcosa::spsample(mygeostrata, n = 2)
 ```
 
-Figure \@ref(fig:GeoStrata) shows fifty compact geostrata of equal size for Xuancheng with the selected sampling points.  Note that the sampling points are reasonably well spread throughout the study area.
+Figure \@ref(fig:GeoStrata) shows fifty compact geostrata of equal size for Xuancheng with the selected sampling points. Note that the sampling points are reasonably well spread throughout the study area.^[The compact geostrata and the sample are plotted with package **ggplot2**. A simple alternative is to use method `plot` of **spcosa**: `plot(mygeostrata, mysample)`.]
 
 ```{r GeoStrata, echo = FALSE, out.width = "100%", fig.cap = "Compact geostrata of equal size for Xuancheng and stratified simple random sample of two points per stratum."}
 ggplot(as(mygeostrata, "data.frame")) +
     geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = factor(stratumId))) +
     scale_fill_viridis_d(name = "geostratum") +
-    geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+    geom_point(data = as(mysample, "data.frame"), mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2, colour = "orange") +
     coord_fixed() +
     scale_x_continuous(name = "Easting (km)") +
     scale_y_continuous(name = "Northing (km)") +

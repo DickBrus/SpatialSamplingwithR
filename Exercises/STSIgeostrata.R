@@ -1,6 +1,7 @@
 # load packages
 library(spcosa)
 library(rgdal)
+library(sswr)
 
 # set random seed (for reproduction of results)
 set.seed(31415)

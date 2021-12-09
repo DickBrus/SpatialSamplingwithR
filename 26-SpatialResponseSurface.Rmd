@@ -1,23 +1,19 @@
 # Spatial response surface sampling {#SpatialResponseSurface}
 
-```{r, echo = FALSE}
-evalFT <- FALSE
-```
+As with conditioned Latin hypercube sampling, spatial response surface sampling\index{Spatial response surface sampling} is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum of the response within specified ranges of the factors. There are many types of response surface designs, see @myers2002.  With response surface sampling one assumes that some type of low order regression model can be used to accurately approximate the relationship between the study variable and the covariates.  A commonly used design is the central composite design\index{Central composite design}. The data obtained with this design are used to fit a multiple linear regression model with quadratic terms, yielding a curved, quadratic surface of the response.
 
-As with conditioned Latin hypercube sampling, spatial response surface sampling\index{Spatial response surface sampling} is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum of the response within specified ranges of the factors. There are many types of response surface designs, see @myers2002.  With response surface sampling one assumes that some type of low order (linear or quadratic) regression model can be used to accurately approximate the relationship between the study variable and the covariates.  A commonly used design is the central composite design\index{Central composite design}. The data produced as a result of this design are used to fit a multiple linear regression model with quadratic terms, yielding a curved, quadratic surface of the response.
-
-The response surface sampling approach is an adaptation of an experimental design, but at the same time it is an example of a model-based sampling design. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see Figure \@ref(fig:twosamples)(b). The assumption of independent data might be violated when the sampling units are spatially clustered.  For this reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
+The response surface sampling approach is an adaptation of an experimental design, but at the same time it is an example of a model-based sampling design. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see the optimal sample in Figure \@ref(fig:twosamples). The assumption of independent data might be violated when the sampling units are spatially clustered.  For this reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
 
 @lesch95 adapted the response surface methodology for observational studies. Several problems needed to be tackled. First, when multiple covariates are used, the covariates must be decorrelated. Second, when sampling units are spatially clustered, the assumption in linear regression modelling of spatially uncorrelated model residuals can be violated. To address these two problems @lesch95 proposed the following procedure; see also @lesch2005:   
 
 1. Transform the covariate matrix into a scaled, centred, decorrelated matrix by principal components analysis (PCA).   
 2. Choose the response surface design type.   
-3. Select candidate sampling units based on the distance from the design points in the space spanned by the principal components, and then select multiple units per design point.   
+3. Select candidate sampling units based on the distance from the design points in the space spanned by the principal components. Select multiple sampling units per design point.   
 4. Select the combination of candidate sampling units with the highest value for a criterion that quantifies how uniform the sample is spread across the study area.   
 
 This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010, and @Fitzgerald2010.
 
-Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). The GPS latitude-longitude coordinates are transformed using the transverse Mercator projection. As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
+Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
 ```{r EMdataUzbekistan, echo = FALSE, out.width = "100%", fig.cap = "Natural log of EM measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
 dat <- read.csv(file = "data/TransectsData_EM_CRF_Uzbekistan.csv")
@@ -263,14 +259,6 @@ The initial value of the model-based criterion is `r formatC(criterion_mb, 3, fo
 The objective function defining the minimisation criterion is minimised with simulated annealing\index{Simulated annealing} (@Kirkpatrick1983, @Aarts1987). One sampling point is randomly selected and replaced by another candidate sampling point from the same cluster. If the criterion of the new sample is smaller than that of the current sample, the new sample is accepted, if it is larger it is accepted with a probability that is a function of the change in the criterion (the larger the increase, the smaller the acceptance probability) and of an annealing parameter named the temperature (the higher the temperature, the larger the probability of accepting a new, poorer sample, given an increase of the criterion). See Section \@ref(SSA) for a more detailed introduction to simulated annealing. 
 
 The sampling pattern can be optimised with function `anneal` of  package **sswr**. The arguments of this function will be clear from the description of the sampling procedure above.
-
-<!--The annealing functions for spatial response surface sampling are defined in **R** script
-[`AnnealingFunctions4SpatialResponseSurfaceSampling.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R).-->
-
-```{r, echo = FALSE}
-source("Rscripts/AnnealingFunctions4SpatialResponseSurfaceSampling.R")
-```
-
 
 ```{r, eval = FALSE}
 set.seed(314)

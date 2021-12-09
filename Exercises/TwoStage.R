@@ -1,3 +1,4 @@
+library(sswr)
 
 #construct PSUs
 w <- 500 #width of PSUs

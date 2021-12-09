@@ -1,6 +1,7 @@
 # load packages
 library(sp)
 library(spcosa)
+library(sswr)
 
 # compute compact geographical strata
 # set random seed (for reproduction of results)

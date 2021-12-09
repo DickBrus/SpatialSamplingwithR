@@ -85,11 +85,13 @@ library(rgdal)
 library(ggplot2)
 
 Field <- readOGR(dsn = "data", layer = "Melle", verbose = FALSE)
+#Field <- read_sf(dsn = "data", layer = "Melle")
 # remove projection attributes
 proj4string(Field) <- NA_character_
 Field@data$id <- rownames(Field@data)
 
 #select centred square grid from Field
+#mygrid <- st_make_grid(Field, cellsize = c(2,2))
 mygrid <- spsample(Field, type = "regular", cellsize = c(2, 2), offset = c(0.5, 0.5))
 xygrid <- data.frame(coordinates(mygrid))
 
@@ -192,7 +194,8 @@ approach <- data.frame(Approach = c("Design-based", "", "Model-based"), Sampling
 
 knitr::kable(
   approach, caption = "Statistical approaches for sampling and inference.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -246,11 +249,16 @@ The study area of Voorst is located in the eastern part of the Netherlands. The 
 
 ```{r mapVoorst, echo = FALSE,  out.width = '100%', fig.cap = "(ref:mapVoorstlabel)"}
 ggplot(data = grdVoorst) +
-        geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = z)) +
-        scale_x_continuous(name = "Easting (km)") +
-        scale_y_continuous(name = "Northing  (km)") +
-        scale_fill_viridis_c(name = "SOM") +
-        coord_fixed()
+  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = z)) +
+  scale_x_continuous(name = "Easting (km)") +
+  scale_y_continuous(name = "Northing  (km)") +
+  scale_fill_viridis_c(name = "SOM") +
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 The frequency distribution of the simulated values at all 7,528 grid cells shows that the SOM concentration is skewed to the right (Figure \@ref(fig:histogramVoorst)).
@@ -281,7 +289,12 @@ ggplot() +
     ) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 ### Poppy fields in Kandahar (Afghanistan) {#Poppy}

@@ -1,5 +1,6 @@
 library(sp)
 library(ggplot2)
+library(sswr)
 
 #convert to SpatialPixelsDataFrame
 gridded(grdVoorst) <- ~s1 + s2

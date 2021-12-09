@@ -2,6 +2,7 @@
 
 library(sp)
 library(ggplot2)
+library(sswr)
 
 #Define function for simple random sampling of pairs of points with separation distance h
 

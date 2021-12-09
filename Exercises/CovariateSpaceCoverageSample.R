@@ -1,5 +1,6 @@
 library(fields)
 library(ggplot2)
+library(sswr)
 
 n <- 20
 set.seed(314)

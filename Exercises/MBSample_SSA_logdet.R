@@ -2,11 +2,11 @@ library(spsann)
 library(sp)
 library(matrixcalc)
 library(ggplot2)
-
-source("../Rscripts/ObjectiveFunctions4MBSamplingVariogram.R")
+library(sswr)
 
 gridded(grdHunterValley) <- ~ s1 + s2
-candi <- spsample(grdHunterValley, type = "regular", cellsize = c(50, 50))
+candi <- spsample(grdHunterValley, type = "regular",
+                  cellsize = c(50, 50), offset = c(0.5, 0.5))
 candi <- as.data.frame(candi)
 names(candi) <- c("x", "y")
 

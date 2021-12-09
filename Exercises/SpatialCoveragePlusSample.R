@@ -1,5 +1,6 @@
 library(spcosa)
 library(sp)
+library(sswr)
 
 head(grdHunterValley)
 N <- nrow(grdHunterValley)

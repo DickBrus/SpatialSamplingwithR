@@ -2,7 +2,7 @@
 
 In Chapter \@ref(MBgridspacing) a model of the spatial variation is used to optimise the spacing of a regular grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size of a square grid.
 
-This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Section \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD) which is minimised by k-means. In this chapter the minimisation criterion is the mean kriging variance (MKV). Algorithm k-means cannot be used for minimising MKV as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} is used which is explained in the next subsection. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
+This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Section \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD) which is minimised by k-means. In this chapter the minimisation criterion is the mean kriging variance (MKV) or a quantile of the kriging variance. Algorithm k-means cannot be used for minimising this criterion as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} is used which is explained in the next subsection. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
 
 ## Spatial simulated annealing {#SSA}
 
@@ -287,7 +287,9 @@ rownames(coefs) <- c()
 
 knitr::kable(
   coefs, caption = "Estimated parameters of an exponential semivariogram for lnECe (estimated by method-of-moments) and for the residuals of a linear regression model for lnECe using lnEM100cm as a predictor (estimated by REML).",
-  booktabs = TRUE, col.names = c("Variable", "Nugget", "Partial sill", "Distance parameter (m)")
+  booktabs = TRUE,
+  col.names = c("Variable", "Nugget", "Partial sill", "Distance parameter (m)"),
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -339,7 +341,7 @@ covars <- grdCRF
 #pdf(file = "Sample_KED_CRFUzbekistan.pdf", width = 7, height = 4)
 ggplot(data = covars) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = lnEM100cm)) +
-  geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), size = 2, colour = "black") +
+  geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), size = 1.5, colour = "orange") +
   scale_fill_continuous(name = "lnEM100cm", type = "viridis") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -433,7 +435,7 @@ infillSample <- res$points[ids, ]
 save(res, file = "results/MBInfillSample_OK_Amhara.RData")
 ```
 
-Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the soil organic matter (SOM) concentration (dag kg^-1^) throughout West-Amhara. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range, `r round(vgm_ML$phi,1)` km, of the semivariogram.
+Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the soil organic matter (SOM) concentration (dag kg^-1^) throughout West-Amhara. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range, `r formatC(vgm_ML$phi, 1, format = "f")` km, of the semivariogram.
 
 ```{r ModelBasedInfill, echo = FALSE, out.width="100%", fig.cap = "Model-based infill sample for OK of the SOM concentration throughout West-Amhara. Legacy units have free-value 0, infill units have free-value 1."}
 load("results/MBInfillSample_OK_Amhara.RData")

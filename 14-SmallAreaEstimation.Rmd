@@ -81,7 +81,8 @@ rownames(res) <- NULL
 res[, c(2, 3)] <- round(res[, c(2, 3)], 1)
 knitr::kable(
   res, caption = "(ref:TableRatioEstimatesEcoregionslabel)",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -165,7 +166,8 @@ rownames(res) <- NULL
 knitr::kable(
   res, caption = "(ref:TableRatiovsHTEstimatesEcoregions)",
   col.names = c("Ecoregion", "HT", "Ratio", "n"),
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -269,12 +271,15 @@ regr <- res$estimation
 
 ```{r TableRegressionEstimatesEcoregions, echo = FALSE}
 df <- regr[c("area", "estimate", "ext_variance", "g_variance", "n2G")]
-df[, c(2, 3, 4)] <- round(df[, c(2, 3, 4)], 1)
+df$estimate <- round(df$estimate, 1)
+df$ext_variance <- formatC(df$ext_variance, 1, format = "f", big.mark = ",")
+df$g_variance <- formatC(df$g_variance, 1, format = "f", big.mark = ",")
 
 knitr::kable(
   df, caption = "(ref:TableRegressionEstimatesEcoregionslabel)",
   booktabs = TRUE,
-  col.names = c("Ecoregion", "AGB", "ext_var", "g_var", "n2G")
+  col.names = c("Ecoregion", "AGB", "ext_var", "g_var", "n2G"),
+  linesep = "",
 ) %>%
   kable_classic()
 ```
@@ -318,7 +323,8 @@ rownames(df) <- NULL
 knitr::kable(
   df, caption = "Estimated gain in precision of the estimated mean AGB of ecoregions in Eastern Amazonia, as quantified by the ratio of the estimated variance of the ratio estimator (no covariate used) to the estimated variance of the regression estimator (using lnSWIR2 as a predictor), for simple random sampling without replacement of size 200.",
   booktabs = TRUE,
-  col.names = c("Ecoregion", "Gain")
+  col.names = c("Ecoregion", "Gain"),
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -358,7 +364,9 @@ df[, c(2, 3)] <- round(df[, c(2, 3)], 1)
 
 knitr::kable(
   df, caption = "(ref:TableSyntheticEstimateslabel)",
-  booktabs = TRUE, col.names = c("Ecoregion", "AGB", "g_var", "n2G")
+  booktabs = TRUE,
+  col.names = c("Ecoregion", "AGB", "g_var", "n2G"),
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -393,7 +401,8 @@ rownames(df) <- NULL
 knitr::kable(
   df, caption = "Estimated standard error (se), bias, and root mean squared error (RMSE) of the regression estimator (reg) and the synthetic estimator (syn) of the mean AGB of ecoregions in Eastern Amazonia. The regression estimator is design-unbiased, so the RMSE of the regression estimator is equal to its standard error.",
   booktabs = TRUE,
-  col.names = c("Ecoregion", "RMSE reg", "se syn", "bias syn", "RMSE syn")
+  col.names = c("Ecoregion", "RMSE reg", "se syn", "bias syn", "RMSE syn"),
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -503,7 +512,8 @@ df[, c(2, 3, 4)] <- round(df[, c(2, 3, 4)], 1)
 knitr::kable(
   df, caption = "(ref:TableRandomInterceptModelEstimateslabel)",
   booktabs = TRUE,
-  col.names = c("Ecoregion", "AGB", "se.1", "se.2")
+  col.names = c("Ecoregion", "AGB", "se.1", "se.2"),
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -527,6 +537,7 @@ vgm_REML <- likfit(geodata = dGeoR, trend = ~ lnSWIR2, cov.model = "spherical",
 The estimated intercept and slope are 1,744 and `r formatC(vgm_REML$beta[2], 1, format = "f")`, respectively. The estimated semivariogram parameters are 1,623 (10^9^ kg ha^-1^)^2^, `r formatC(vgm_REML$sigmasq, 0, format = "f", big.mark = ",")` (10^9^ kg ha^-1^)^2^, and `r formatC(vgm_REML$phi, 0, format = "f")` km for the nugget, partial sill, and range, respectively. These model parameters are used to predict AGB for all units in the population, using function `krige` of package **gstat** [@peb04]. The REML estimates of the semivariogram parameters are passed to function `vgm` with arguments `nugget`, `psill`, and `range`. The coordinates of the sample are shifted to a random point within a 1 km $\times$ 1 km grid cell. This is done to avoid that a sampling point coincides with a prediction point, which leads to an error message when predicting AGB at the nodes of the grid.
 
 ```{r, eval = FALSE}
+library(gstat)
 mysample$x1 <- jitter(mysample$x1, amount = 0.5)
 mysample$x2 <- jitter(mysample$x2, amount = 0.5)
 coordinates(mysample) <- ~ x1 + x2
@@ -604,7 +615,8 @@ rownames(df) <- NULL
 knitr::kable(
   df, caption = "(ref:TableGeostatisticalModelEstimateslabel)",
   booktabs = TRUE,
-  col.names = c("Ecoregion", "AGB", "se")
+  col.names = c("Ecoregion", "AGB", "se"),
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -804,7 +816,8 @@ knitr::kable(
   dom, caption = "(ref:SmalldomainEstimateslabel)",
   col.names = c("Mangrove", "Dry forest", "Grassland"),
   row.names = TRUE,
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```

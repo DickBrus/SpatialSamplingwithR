@@ -1,5 +1,6 @@
 library(gstat)
 library(rgdal)
+library(sswr)
 
 vgmodel <- vgm(model = "Sph", psill = 966, range = 44.6)
 

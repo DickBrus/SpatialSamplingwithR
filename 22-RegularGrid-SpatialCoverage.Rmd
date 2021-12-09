@@ -24,10 +24,16 @@ Figure \@ref(fig:gridVoorst) shows the selected square grid.
 grdVoorst <- as(grdVoorst, "data.frame")
 ggplot() +
   geom_raster(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
-  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 1.5) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
+
 n <- nrow(mysample)
 ```
 
@@ -75,7 +81,7 @@ if (i %in% c(1, 2, 8)) {
   print(ggplot() +
     geom_tile(data = xy, mapping = aes(x = x, y = y, fill = cluster, alpha = 0.5), colour = "black") +
     scale_fill_viridis_d() +
-    geom_point(data = xysam, mapping = aes(x = x, y = y), shape = 16, size = 4) +
+    geom_point(data = xysam, mapping = aes(x = x, y = y), shape = 16, size = 5) +
     scale_x_continuous(name = "", limits = c(0, 1), breaks = c(0.2, 0.4, 0.6, 0.8)) +
     scale_y_continuous(name = "", limits = c(0, 1), breaks = c(0.2, 0.4, 0.6, 0.8)) +
     coord_fixed() +
@@ -140,11 +146,15 @@ mystrata <- as(mystrata,  "data.frame")
 ggplot(mystrata) +
     geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = factor(stratumId))) +
     scale_fill_viridis_d(name = "geostratum") +
-    geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1) +
+    geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1, colour = "orange") +
     coord_fixed() +
     scale_x_continuous(name = "Easting (km)") +
     scale_y_continuous(name = "Northing (km)") +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 If the clusters need not be of equal size, we may also use function `kmeans` of the **stats** package, using the spatial coordinates as clustering variables. This requires less computing time, especially with large data sets.
@@ -175,7 +185,12 @@ ggplot() +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   theme_minimal() +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 This problem can easily be solved by selecting points inside the study area closest to the centres that are outside the study area. Function `rdist` of package **fields** is used to compute a matrix with distances between the centres outside the study area and the nodes of the discretisation grid. Then function `apply` is used with argument `FUN = which.min` to compute the discretisation nodes closest to the centres outside the study area. A similar procedure is implemented in function `spsample` of package **spcosa** when the centres of the clusters are selected as sampling points (so, when argument `n` of function `spsample` is not used).

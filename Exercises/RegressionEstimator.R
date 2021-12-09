@@ -1,3 +1,5 @@
+library(sswr)
+
 grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
 
 library(survey)

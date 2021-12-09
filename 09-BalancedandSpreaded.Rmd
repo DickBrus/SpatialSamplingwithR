@@ -13,8 +13,6 @@ Balanced sampling is a sampling method that exploits one or more quantitative co
 Let me illustrate balanced sampling with a small simulation study. The simulated population shown in Figure \@ref(fig:simpleexample) shows a linear trend from West to East and besides a trend from South to North. Due to the West-East trend the simulated study variable $z$ is correlated with the covariate Easting and, due to the South-North trend, also with the covariate Northing. To estimate the population mean of the simulated study variable, intuitively  it is attractive to select a sample with an average of the Easting coordinate that is equal to the population mean of Easting (which is 10). Figure \@ref(fig:simpleexample) (subfigure on the left) shows such a sample of size four; we say that the sample is `balanced' on the covariate Easting. The sample in the subfigure on the right is balanced on Easting as well as on Northing.  
 
 ```{r simpleexample, echo = FALSE, out.width = "100%", fig.cap = "Sample balanced on Easting (E) and on Easting and Northing (E and N)."}
-library(sampling)
-library(gstat)
 #define residual variogram for simulation
 vgmodel <- vgm(model = "Exp", psill = 10, range = 4, nugget = 0)
 
@@ -135,7 +133,8 @@ tbl <- data.frame(x = c("SI", "Balanced", "Balanced"), y = c("-", "Easting", "Ea
 knitr::kable(
   tbl, caption = "Sampling variance of the $\\pi$ estimator of the mean for simple random sampling (SI) and balanced sampling of four units.",
   col.names = c("Sampling design", "Balancing variables", "Sampling variance"),
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -445,7 +444,6 @@ s1 <- s2 <- 1:20 - 0.5
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
 
-library(gstat)
 vgmodel <- vgm(model = "Exp", psill = 4, range = 4, nugget = 0)
 
 dists1 <- outer(mypop$s1, mypop$s1, FUN = "-")
@@ -845,10 +843,6 @@ with $p$ the number of balancing variables, $e_k$ the regression model residual 
 
 The variance estimator can be computed with functions `localmean_weight` and `localmean_var` of package **spsurvey** [@spsurvey].^[In the current version of **spsurvey** (version 5.0.1) these functions are not available, but they will be included in the next version. For the moment the two functions are included in the package **sswr**.]
 
-```{r, echo=FALSE}
-source("Rscripts/localmean_weight.R")
-source("Rscripts/localmean_var.R")
-```
 
 ```{r}
 library(spsurvey)

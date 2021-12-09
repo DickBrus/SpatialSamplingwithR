@@ -10,7 +10,7 @@ Suppose that we require the  population mean of the kriging variance not to exce
 
 There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean OK variance for a range of grid spacings, plot the mean ordinary kriging variances against the grid spacings, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean OK variance.
 
-In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of the SOM concentration (dag kg^-1^), used before to design a spatial infill sample (Section \@ref(SpatialInfill)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments (MoM), and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget, passed to function `fit.variogram` with argument `model`, are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates. First, the projected coordinates of the sampling points are changed from m into km using function `mutate`.
+In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of the SOM concentration (dag kg^-1^), used before to design a spatial infill sample (Section \@ref(SpatialInfill)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments (MoM), and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget, passed to function `fit.variogram` with argument `model`, are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates. First, the projected coordinates of the sampling points are changed from m into km using function `mutate`^[This is mainly done to avoid problems in (restricted) maximum likelihood estimation of the (residual) semivariogram with function `likfit` of package **geoR**].
 
 
 ```{r}
@@ -21,8 +21,8 @@ sampleAmhara <- sampleAmhara %>%
   mutate(s1 = s1 / 1000, s2 = s2 / 1000)
 coordinates(sampleAmhara) <- ~ s1 + s2
 vg <- variogram(SOM ~ 1, data = sampleAmhara)
-vgmdl <- vgm(model = "Sph", psill = 0.6, range = 40, nugget = 0.6)
-vgm_MoM <- fit.variogram(vg, model = vgmdl)
+model_eye <- vgm(model = "Sph", psill = 0.6, range = 40, nugget = 0.6)
+vgm_MoM <- fit.variogram(vg, model = model_eye)
 ```
 
 ```{r variogramSOMEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Sample semivariogram and fitted spherical model of the SOM concentration in West-Amhara, estimated from the legacy data."}
@@ -43,7 +43,7 @@ dGeoR <- as.geodata(
   obj = sampleAmhara, header = TRUE, coords.col = c("s1", "s2"),
   data.col = "SOM")
 vgm_ML <- likfit(geodata = dGeoR, trend = "cte",
-  cov.model = "spherical", ini.cov.pars = c(0.4, 40),
+  cov.model = "spherical", ini.cov.pars = c(0.6, 40),
   nugget = 0.6, lik.method = "ML", messages = FALSE)
 ```
 
@@ -54,7 +54,8 @@ tbl <- data.frame(Parameter = c("nugget", "partial sill", "range"), MoM = c(roun
 
 knitr::kable(
   tbl, caption = "Method-of-moments (MoM) and maximum likelihood (ML) estimates of the parameters of a spherical semivariogram of the SOM concentration in West-Amhara.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -208,7 +209,8 @@ tbl <- data.frame(Parameter = c("nugget", "partial sill", "range (km)"), ML = c(
 
 knitr::kable(
   tbl, caption = "Maximum likelihood (ML) estimates of the parameters of a spherical semivariogram for the SOM concentration and restricted maximum likelihood (REML) estimates of the parameters of a spherical semivariogram for the residuals of a multiple linear regression model, for West-Amhara.",
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -262,7 +264,7 @@ ggplot(data = df) +
   scale_y_continuous(name = "Mean kriging variance", limits = c(0.7, 0.9))
 ```
 
-Figure \@ref(fig:MKEDVvsSpacingEthiopia) shows the mean kriging variances, obtained with OK and KED, as a function of the grid spacing. Interestingly, for grid spacings smaller than about nine km, the mean kriging variance with KED is larger than with OK. In this case only for larger grid spacings KED outperforms OK in terms of the mean kriging variance. Only for mean kriging variances larger than about 0.8 (dag kg^-1^)^2^ we can afford with KED a larger grid spacing (smaller sample size) than with OK. Only with large spacings (small sample sizes) we profit from modelling the mean as a linear function of covariates. 
+Figure \@ref(fig:MKEDVvsSpacingEthiopia) shows the mean kriging variances, obtained with OK and KED, as a function of the grid spacing. Interestingly, for grid spacings smaller than about nine km, the mean kriging variance with KED is larger than with OK. In this case only for larger grid spacings KED outperforms OK in terms of the mean kriging variance. Only for mean kriging variances larger than about 0.82 (dag kg^-1^)^2^ we can afford with KED a larger grid spacing (smaller sample size) than with OK. Only with large spacings (small sample sizes) we profit from modelling the mean as a linear function of covariates. 
 
 ```{r}
 MMKV_KED <- apply(dfKV_KED[, -1], MARGIN = 1, FUN = mean)
@@ -354,7 +356,8 @@ tbl$range <- round(tbl$range, 1)
 knitr::kable(
   tbl, caption = "First ten units of a MCMC sample from the posterior distribution of the parameters of a spherical semivariogram for the SOM concentration in West-Amhara.",
   col.names = c("Inverse of sill", "Ratio of spatial dependence", "Range (km)"),
-  booktabs = TRUE
+  booktabs = TRUE,
+  linesep = ""
 ) %>%
   kable_classic()
 ```
@@ -400,7 +403,7 @@ for (i in seq_len(ncol(MKV))) {
 }
 ```
 
-For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that for most sampled semivariograms (MCMC sample units) the tolerable grid spacing equals 8 km, which corresponds with the tolerable grid spacing derived above for OK. For `r sum(is.na(spacing_tol))` sampled semivariograms the tolerable grid spacing exceeds 12 km. However, this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
+For each unit in the MCMC sample the tolerable grid spacing is computed for a target MKV of 0.8. Figure \@ref(fig:HistogramTolerableSpacing) shows that for most sampled semivariograms (MCMC sample units) the tolerable grid spacing equals 8 km, which roughly corresponds with the tolerable grid spacing derived above for OK. For `r sum(is.na(spacing_tol))` sampled semivariograms the tolerable grid spacing exceeds 12 km. However, this grid spacing leads to a sample size that is too small for estimating the semivariogram and kriging.
 
 ```{r HistogramTolerableSpacing, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Frequency distribution of tolerable grid spacings for a target MKV of 0.8."}
 spacing_tol <- spacing_tol[!is.na(spacing_tol)]
@@ -411,9 +414,8 @@ ggplot() +
    scale_y_continuous(name = "Count")
 ```
 
-Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller than or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if we require a probability of 80\% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is about 6.25 km. With a grid spacing of 8 km, as determined before, the probability that the MKV exceeds 0.8 is about 57\%.
 
-```{r ProportionMCMCSamples, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Proportion of MCMC sample units with a MKV smaller than or equal to a target MKV of 0.8."}
+```{r ProportionMCMCSamples, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Proportion of sampled semivariograms with a MKV smaller than or equal to a target MKV of 0.8."}
 CF <- numeric(length = length(spacing))
 for (i in seq_len(length(spacing))) {
   CF[i] <- sum(MKV[i, ] < MKV_target)
@@ -424,7 +426,12 @@ ggplot(df) +
   geom_line(mapping = aes(x = spacing, y = CF), colour = "red") +
   scale_x_continuous(breaks = spacing, name = "Grid spacing") +
   scale_y_continuous(limits = c(0, 1), breaks = seq(from = 0, to = 1, by = 0.2), name = "Proportion")
+
+spac_tol <- approx(x = df$CF, y = df$spacing, xout = 0.8)$y
+prb <- approx(x = df$spacing, y = df$CF, xout = spacing_tol_Mean)$y
 ```
+
+Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller than or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if we require a probability of 80\% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is `r formatC(spac_tol, 1, format = "f")` km. With a grid spacing of `r formatC(spacing_tol_Mean, 1, format = "f")` km, as determined before, the probability that the MKV exceeds 0.8 is `r formatC(prb*100, 0, format = "f")`\%.
 
 ```{r, echo = FALSE}
 rm(list = ls())

@@ -1,5 +1,6 @@
 library(stratification)
 library(forcats)
+library(sswr)
 
 grdVoorst$newstratum <- fct_collapse(grdVoorst$stratum, SA = c("EA", "PA"))
 

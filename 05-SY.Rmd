@@ -3,6 +3,7 @@
 A simple way of drawing probability samples whose units are spread uniformly over the study area, is systematic random sampling\index{Systematic random sampling} (SY). Systematic random sampling from a two-dimensional spatial population entails the selection of a regular grid randomly placed on the area\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type = "regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. First ` data.frame` `grdVoorst` is converted to  `SpatialPixelsDataFrame` with function `gridded`.
 
 ```{r}
+library(sp)
 gridded(grdVoorst) <- ~ s1 + s2
 n <- 40
 set.seed(777)
@@ -15,10 +16,15 @@ Figure \@ref(fig:sampleSY) shows the randomly selected systematic sample. The sh
 ```{r sampleSY, echo=FALSE, out.width='100%', fig.cap="Systematic random sample (square grid) from Voorst."}
 ggplot() +
   geom_raster(data = as(grdVoorst, "data.frame"), mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
-  geom_point(data = mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  geom_point(data = mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 1.5) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 Argument `n` in function `spsample` is used to set the sample size. Note that this is the *expected* sample size\index{Expected sample size}, i.e. on average over repeated sampling the sample size is 40. In Figure \@ref(fig:sampleSY) the number of selected sampling points equals `r nrow(mySYsample)`. Given the expected sample size, the spacing\index{Grid spacing} of the square grid can be computed with $\sqrt{A/n}$, with $A$ the area of the study area. This area $A$ can be computed by the total number of cells of the discretisation grid multiplied by the area of a grid cell. Function `getGridTopology` is used to retrieve the cell size of the grid cells of the `SpatialPixelsDataFrame`. Note that this area is smaller than the number of grid cells in the horizontal direction multiplied by the number of grid cells in the vertical direction multiplied by the grid cell area, as we have non-availables (built-up areas, roads, etc.).   
@@ -250,11 +256,16 @@ Figure \@ref(fig:Triangulargrid) shows a triangular grid, selected randomly from
 ```{r Triangulargrid, echo = FALSE, out.width = '100%', fig.cap = "Systematic random sample (triangular grid) from Voorst."}
 ggplot(as(grdVoorst, "data.frame")) +
   geom_raster(mapping = aes(x = s1  / 1000, y = s2 / 1000), fill = "grey") +
-  geom_point(mySYsample_tri, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
+  geom_point(mySYsample_tri, mapping = aes(x = x / 1000, y = y / 1000), size = 1.5) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   theme(legend.position = "none") +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
@@ -427,12 +438,17 @@ av_STSI_mz <- sum(w_h^2 * v_mz_h)
 ```{r varapproxSY, echo = FALSE, out.width = '100%', fig.asp = .2, fig.cap = "Clustering of grid points for approximating the variance of the ratio estimator of the mean SOM concentration in Voorst."}
 ggplot(as(grdVoorst, "data.frame")) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
-  geom_point(mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = as.factor(cluster)), size = 2) +
+  geom_point(mySYsample, mapping = aes(x = x1 / 1000, y = x2 / 1000, colour = as.factor(cluster)), size = 1.5) +
   scale_colour_viridis_d() +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   theme(legend.position = "none") +
-  coord_fixed()
+  coord_fixed() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
 ```
 
 This method yields an approximated variance of `r round(av_STSI_mz,1)` (g kg^-1^)^2^, which is for the selected triangular grid  slightly larger than the simple random sample approximation. Hereafter we will see that on average the stratified simple random sample approximation of the variance is smaller than the simple random sample approximation. For an individual sample the reverse can be true.
