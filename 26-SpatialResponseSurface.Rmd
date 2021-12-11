@@ -16,23 +16,103 @@ This design has been applied, among others, for mapping soil salinity (ECe), usi
 Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
 ```{r EMdataUzbekistan, echo = FALSE, out.width = "100%", fig.cap = "Natural log of EM measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
-dat <- read.csv(file = "data/TransectsData_EM_CRF_Uzbekistan.csv")
-dat$lnEM100cm <- log(dat$EMv1mt)
-dat$lnEM50cm <- log(dat$EMv05mt)
-coordinates(dat) <- ~ x + y
-proj4string(dat) <- CRS("+proj=longlat + datum=WGS84") #=  +init=epsg:4326
-dat <- spTransform(dat, CRS = CRS("+proj=tmerc +lat_0=0.000000000 +lon_0=63.000000000 +k=1.000000 +x_0=500000.000 +y_0=0.000 +ellps=krass +units=m"))
-dat <- as(dat, "data.frame")
-df <- dat %>% pivot_longer(cols = c("lnEM100cm", "lnEM50cm"))
+v_dat <- read_csv("data/TransectsData_EM_CRF_Uzbekistan.csv") %>%
+    mutate(
+        lnEM100cm = log(EMv1mt),
+        lnEM50cm = log(EMv05mt)) %>%
+    st_as_sf(coords = c("x", "y"), crs = st_crs(4326)) %>%
+    st_transform(crs = 9001) %>%
+    st_zm
 
-ggplot(data = df) +
-  geom_point(mapping = aes(x = x / 1000, y = y / 1000, colour = value), size = 0.3) +
-  scale_colour_viridis_c(name = "lnEM") +
-  scale_x_continuous(name = "Easting (km)", limits = c(305.5, 308)) +
-  scale_y_continuous(name = "Northing (km)", limits = c(4602, 4603.5)) +
-  coord_fixed() +
-  facet_grid(~ name)
+
+v_dat %>%
+    pivot_longer(cols = c("lnEM100cm", "lnEM50cm")) %>%
+#    st_set_crs(NA_crs_) %>%
+    ggplot() +
+        geom_sf(mapping = aes(colour = value), size = 0.3) +
+        scale_colour_viridis_c(name = "lnEM") +
+    scale_x_continuous(
+        name = "Easting (km)",
+        labels = function(x) {1.0e-3 * x}) +
+    scale_y_continuous(
+        name = "Northing (km)",
+        labels = function(x) {1.0e-3 * x}) +
+#    coord_sf(crs=9001) +
+    facet_grid(~ name)
 ```
+
+
+```{r, echo = FALSE, eval = FALSE}
+#R code van Dennis
+v_crf <- read_sf("data", "CottonResearchFarm_Uzbekistan") %>%
+    st_set_agr("constant") %>%
+    st_transform(crs = 9001)
+
+
+# create grid points
+g_crf <- st_make_grid(v_crf, cellsize = 25, what = "centers")
+g_crf <- g_crf[v_crf]
+g_crf <- st_intersection(v_crf, g_crf)
+
+
+# estimate sample semivariogram
+variogram1m <- variogram(lnEM100cm ~ 1, data = v_dat)
+variogram05m <- variogram(lnEM50cm ~ 1, data = v_dat)
+
+# fit semivariogram model
+vgm1m <- fit.variogram(variogram1m, model = vgm(psill = 0.15, model = "Exp", range = 200, nugget = 0.05))
+vgm05m <- fit.variogram(variogram05m, model = vgm(psill = 0.02, model = "Exp", range = 200, nugget = 0.01))
+
+#plot(variogram1m, vgm1m)
+#plot(variogram05m, vgm05m)
+
+# subsample EM data, too many for prediction
+# @DICK: subsampling is hier niet nodig, eventueel wel bij het berekenen van 
+# de sample semivariogrammen (zie boven)
+# @DICK: strippen van projectieattributen is ook niet nodig (wil je dat toch, dan 
+# kun je onderstaande commentaar tekens weghalen)
+#v_dat <- v_dat %>%
+#    slice(seq(from = 1, to = n(), by = 10)) %>%
+#    st_set_crs(NA_crs_)
+
+#g_crf <- g_crf %>%
+#    st_set_crs(NA_crs_)
+
+#ordinary kriging
+EMpred <- krige(
+    lnEM100cm ~ 1,
+    v_dat,
+    newdata = g_crf,
+    model = vgm1m,
+    nmax = 20,
+    debug.level = 0
+)
+
+
+grdCRF <- EMpred %>%
+    select(lnEM100cm = var1.pred) # %>%
+#    as_tibble(EMpred) # het is de vraag of je dit nog wilt (een sf is ook een tibble)
+
+EMpred  <- krige(
+    lnEM50cm ~ 1,
+    v_dat,
+    newdata = g_crf,
+    model = vgm05m,
+    nmax = 20,
+    debug.level = 0
+)
+
+grdCRF <- grdCRF %>%
+    mutate(
+        lnEM50cm = EMpred$var1.pred,
+        subarea = g_crf$id)
+
+plot(grdCRF)
+
+write_rds(grdCRF, "data/CottonResearchFarm_Uzbekistan.rds")
+
+```
+
 
 ```{r, echo = FALSE, eval = FALSE}
 #read shape file with polygon of study area

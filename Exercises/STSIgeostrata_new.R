@@ -1,20 +1,22 @@
-# load packages
+library(tidyverse)
+library(sf)
 library(spcosa)
-library(rgdal)
-library(sswr)
 
 # set random seed (for reproduction of results)
 set.seed(31415)
 
-# read field of interest
-shpField <- readOGR(dsn = "data", layer = "Leest", verbose = FALSE)
+# read field of interest 
+shpField <- read_sf("dat", "Leest") %>%
+  st_set_crs(NA_crs_)
 
-proj4string(shpField) <- NA_character_
+#shpField <- read_sf("dat", "Leest") %>%
+#  st_set_crs(32631)
 
 # compute compact geographical strata; either use argument cellSize or nGridCells
-myStrata <- spcosa::stratify(
-  shpField, nStrata = 10, cellSize = 2, equalArea = TRUE, nTry = 3)
-#myStrata <- stratify(shpField, nStrata = 10, nGridCells = 2500, equalArea = TRUE, nTry = 3)
+myStrata <- shpField %>%
+  as_Spatial %>%
+  stratify(nStrata = 10, cellSize = 2, equalArea = TRUE, nTry = 3)
+
 plot(myStrata)
 
 # obtain the areas of the strata
@@ -26,3 +28,9 @@ plot(myStrata, mySample)
 
 # convert mySample to SpatialPoints
 samplingPoints <- as(mySample, "SpatialPoints")
+
+
+# of naar sf
+# samplingPoints <- mySample %>%
+#     as("SpatialPoints") %>%
+#     st_as_sf

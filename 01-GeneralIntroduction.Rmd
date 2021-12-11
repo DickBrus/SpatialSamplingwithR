@@ -81,44 +81,45 @@ cells of a fine discretisation grid. The grid cells are listed in the sampling f
 If the elementary sampling units are points (sample support is a point), the population is infinite. In this case sampling of points can be implemented by a two-step approach. In the first step cells of the discretisation grid are selected with or without replacement, and in the second step one or more points are selected within the selected grid cells. Figure \@ref(fig:SamplingFromInfinitePopulation) is an illustration of this two-step approach for simple random sampling of points from a discretised infinite population. Ten grid cells are selected by simple random sampling with replacement. Every time a grid cell is selected one point is randomly selected from that grid cell. Note that a grid cell can be selected more than once, so that more than one point will be selected from that grid cell. Note also that we may select a point that falls outside the boundary of the study area. This is actually the case with one grid cell in Figure \@ref(fig:SamplingFromInfinitePopulation). The points outside the study area are discarded and replaced by a randomly selected new point inside the study area. Finally, note that near the boundary there are small areas not covered by a grid cell, so that no points can be selected in these areas. It is important that the discretisation grid is fine enough to keep the discretisation error\index{Discretisation error} so small that it can be ignored. The alternative is to extend the discretisation grid beyond the boundaries of the study area so that the full study area is covered by grid cells.
 
 ```{r SamplingFromInfinitePopulation, echo = FALSE, fig.width=5, fig.cap = "Sampling of points from discretised infinite population. The grid cells are randomly selected with replacement. Each time a grid cell is selected a point is randomly selected from that grid cell."}
-library(rgdal)
-library(ggplot2)
-
-Field <- readOGR(dsn = "data", layer = "Melle", verbose = FALSE)
-#Field <- read_sf(dsn = "data", layer = "Melle")
-# remove projection attributes
-proj4string(Field) <- NA_character_
-Field@data$id <- rownames(Field@data)
-
-#select centred square grid from Field
-#mygrid <- st_make_grid(Field, cellsize = c(2,2))
-mygrid <- spsample(Field, type = "regular", cellsize = c(2, 2), offset = c(0.5, 0.5))
-xygrid <- data.frame(coordinates(mygrid))
-
+# initialize pseudo random number generator
 set.seed(314)
-units <- sample(nrow(xygrid), size = 10)
-mysample <- xygrid[units, ]
 
-mysample.pnts <- mysample
+# set cell size
 cellsize <- 2
-mysample.pnts$x1 <- jitter(mysample.pnts$x1, amount = cellsize / 2)
-mysample.pnts$x2 <- jitter(mysample.pnts$x2, amount = cellsize / 2)
 
-FieldPoints <- fortify(Field, region = "id")
+# read field
+field <- read_sf("data/Melle.shp") %>%
+    st_set_crs(value = NA_crs_)
 
-# merge the "fortified" data with the data from our spatial object
-FieldDF <- merge(FieldPoints, Field@data, by = "id")
+# select grid cells within the field
+grid <- st_make_grid(field, cellsize = cellsize, what = "polygons")
+grid <- grid[field] #  alternative to 'sp::over'
 
-ggField <- ggplot() +
-  geom_path(data = FieldDF, aes(x = long / 1000, y = lat / 1000), color = "black") +
-  geom_tile(data = xygrid, mapping = aes(x = x1 / 1000, y = x2 / 1000), width = 2 / 1000, height = 2 / 1000, size = 0.6, colour = "black", fill = NA) +
-  geom_tile(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), width = 2 / 1000, height = 2 / 1000, size = 0.8, colour = "red", fill = NA) +
-  geom_point(data = mysample.pnts, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 1, colour = "red") +
-  scale_x_continuous(name = "Easting (km)") +
-  scale_y_continuous(name = "Northing (km)") +
-  coord_fixed() +
-  theme(legend.position = "none")
-print(ggField)
+# select centers of grid cells within the field
+gridcenters <- st_make_grid(field, cellsize = cellsize, what = "centers")
+gridcentres <- gridcenters[field]
+
+# randomly select grid cells and a location within each selected grid cell
+sample <- gridcentres %>%
+    st_coordinates %>%
+    as_tibble %>%
+    slice_sample(n = 10, replace = FALSE) %>%
+    mutate(
+        X = jitter(X, amount = 0.5 * cellsize),
+        Y = jitter(Y, amount = 0.5 * cellsize)) %>%
+    st_as_sf(coords = c("X", "Y"))
+
+# plot result
+ggplot() +
+    geom_sf(data = field, fill = rgb(0.4, 0.9, 0.4)) +
+    geom_sf(data = grid, fill = NA) +
+    geom_sf(data = sample, alpha = 0.5) +
+    scale_x_continuous(
+        name = "Easting (km)",
+        labels = function(x) {1.0e-3 * x}) +
+    scale_y_continuous(
+        name = "Northing (km)",
+        labels = function(x) {1.0e-3 * x})
 ```
 
 ### Population parameters {#PopulationParameters}
