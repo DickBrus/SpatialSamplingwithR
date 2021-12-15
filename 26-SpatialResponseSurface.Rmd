@@ -1,4 +1,13 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Spatial response surface sampling {#SpatialResponseSurface}
+
+```{r, echo = FALSE}
+grdCRF <- read_rds(file = "data/CottonResearchFarm_Uzbekistan.rds")
+```
 
 As with conditioned Latin hypercube sampling, spatial response surface sampling\index{Spatial response surface sampling} is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum of the response within specified ranges of the factors. There are many types of response surface designs, see @myers2002.  With response surface sampling one assumes that some type of low order regression model can be used to accurately approximate the relationship between the study variable and the covariates.  A commonly used design is the central composite design\index{Central composite design}. The data obtained with this design are used to fit a multiple linear regression model with quadratic terms, yielding a curved, quadratic surface of the response.
 
@@ -16,44 +25,43 @@ This design has been applied, among others, for mapping soil salinity (ECe), usi
 Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
 ```{r EMdataUzbekistan, echo = FALSE, out.width = "100%", fig.cap = "Natural log of EM measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
+#Krassovsky datum: epsg:4024
 v_dat <- read_csv("data/TransectsData_EM_CRF_Uzbekistan.csv") %>%
     mutate(
         lnEM100cm = log(EMv1mt),
         lnEM50cm = log(EMv05mt)) %>%
-    st_as_sf(coords = c("x", "y"), crs = st_crs(4326)) %>%
-    st_transform(crs = 9001) %>%
+    st_as_sf(coords = c("x", "y"), crs = st_crs(4024)) %>%
+    st_transform(crs = 32641) %>%
     st_zm
-
 
 v_dat %>%
     pivot_longer(cols = c("lnEM100cm", "lnEM50cm")) %>%
-#    st_set_crs(NA_crs_) %>%
+    st_set_crs(NA_crs_) %>%
     ggplot() +
         geom_sf(mapping = aes(colour = value), size = 0.3) +
         scale_colour_viridis_c(name = "lnEM") +
     scale_x_continuous(
         name = "Easting (km)",
-        labels = function(x) {1.0e-3 * x}) +
+        labels = function(x) {1.0e-3 * x},
+        limits = c(305750, 308000)) +
     scale_y_continuous(
         name = "Northing (km)",
-        labels = function(x) {1.0e-3 * x}) +
-#    coord_sf(crs=9001) +
+        labels = function(x) {1.0e-3 * x},
+        limits = c(4600200, 4601400),
+        breaks = seq(from = 4600400, to = 4601200, by = 200)) +
     facet_grid(~ name)
 ```
 
 
 ```{r, echo = FALSE, eval = FALSE}
-#R code van Dennis
 v_crf <- read_sf("data", "CottonResearchFarm_Uzbekistan") %>%
     st_set_agr("constant") %>%
-    st_transform(crs = 9001)
-
+    st_transform(crs = 32641)
 
 # create grid points
 g_crf <- st_make_grid(v_crf, cellsize = 25, what = "centers")
 g_crf <- g_crf[v_crf]
-g_crf <- st_intersection(v_crf, g_crf)
-
+g_crf <- st_intersection(v_crf, g_crf) #add id of polygons
 
 # estimate sample semivariogram
 variogram1m <- variogram(lnEM100cm ~ 1, data = v_dat)
@@ -63,124 +71,56 @@ variogram05m <- variogram(lnEM50cm ~ 1, data = v_dat)
 vgm1m <- fit.variogram(variogram1m, model = vgm(psill = 0.15, model = "Exp", range = 200, nugget = 0.05))
 vgm05m <- fit.variogram(variogram05m, model = vgm(psill = 0.02, model = "Exp", range = 200, nugget = 0.01))
 
-#plot(variogram1m, vgm1m)
-#plot(variogram05m, vgm05m)
-
-# subsample EM data, too many for prediction
-# @DICK: subsampling is hier niet nodig, eventueel wel bij het berekenen van 
-# de sample semivariogrammen (zie boven)
-# @DICK: strippen van projectieattributen is ook niet nodig (wil je dat toch, dan 
-# kun je onderstaande commentaar tekens weghalen)
-#v_dat <- v_dat %>%
-#    slice(seq(from = 1, to = n(), by = 10)) %>%
-#    st_set_crs(NA_crs_)
-
-#g_crf <- g_crf %>%
-#    st_set_crs(NA_crs_)
-
 #ordinary kriging
+library(stars)
 EMpred <- krige(
     lnEM100cm ~ 1,
     v_dat,
     newdata = g_crf,
     model = vgm1m,
-    nmax = 20,
+    nmax = 100,
     debug.level = 0
 )
 
-
 grdCRF <- EMpred %>%
-    select(lnEM100cm = var1.pred) # %>%
-#    as_tibble(EMpred) # het is de vraag of je dit nog wilt (een sf is ook een tibble)
+    select(lnEM100cm = var1.pred)
 
 EMpred  <- krige(
     lnEM50cm ~ 1,
     v_dat,
     newdata = g_crf,
     model = vgm05m,
-    nmax = 20,
+    nmax = 100,
     debug.level = 0
 )
+
+library(sfheaders)
 
 grdCRF <- grdCRF %>%
     mutate(
         lnEM50cm = EMpred$var1.pred,
-        subarea = g_crf$id)
+        subarea = g_crf$id) %>%
+    sf_to_df(fill = TRUE)
 
-plot(grdCRF)
-
-write_rds(grdCRF, "data/CottonResearchFarm_Uzbekistan.rds")
-
-```
-
-
-```{r, echo = FALSE, eval = FALSE}
-#read shape file with polygon of study area
-shpCRF <- readOGR(dsn = "data", layer = "CottonResearchFarm_Uzbekistan", verbose = FALSE)
-prj <- proj4string(shpCRF)
-shpCRF <- spTransform(shpCRF, CRS = CRS(" +proj=tmerc +lat_0=0.000000000 +lon_0=63.000000000 +k=1.000000 +x_0=500000.000 +y_0=0.000 +ellps=krass +units=m"))
-
-#make grid with prediction nodes
-mygrid <- spsample(x = shpCRF, type = "regular", offset = c(0.5, 0.5), cellsize = 25)
-gridded(mygrid) <- TRUE
-out <- over(mygrid, shpCRF)
-mygrid$subarea <- out$id
-
-#convert dat to SpatialPointsDataFrame of package sp
-coordinates(dat) <- c("x", "y")
-
-#estimate sample semivariogram
-variogram1m <- variogram(lnEM100cm ~ 1, data = dat)
-variogram05m <- variogram(lnEM50cm ~ 1, data = dat)
-
-#fit semivariogram model
-vgm1m <- fit.variogram(variogram1m, model = vgm(psill = 0.15, model = "Exp", range = 200, nugget = 0.05))
-vgm05m <- fit.variogram(variogram05m, model = vgm(psill = 0.02, model = "Exp", range = 200, nugget = 0.01))
-
-#subsample EM data, too many for prediction
-dat <- dat[seq(from = 1, to = nrow(dat), by = 10), ]
-
-proj4string(mygrid) <- NA_character_
-#ordinary kriging
-EMpred <- krige(
-  lnEM100cm~1,
-  dat,
-  newdata = mygrid,
-  model = vgm1m,
-  nmax = 20,
-  debug.level = 0
-)
-grdCRF <- as(EMpred, "data.frame")
-grdCRF <- grdCRF[, -4]
-names(grdCRF)[3] <- "lnEM100cm"
-
-EMpred  <- krige(
-  lnEM50cm~1,
-  dat,
-  newdata = mygrid,
-  model = vgm05m,
-  nmax = 20,
-  debug.level = 0
-)
-df <- as(EMpred, "data.frame")
-grdCRF$lnEM50cm <- df[, 3]
-grdCRF$subarea <- mygrid$subarea
-
-saveRDS(grdCRF, file = "data/CottonResearchFarm_Uzbekistan.rds")
-```
-
-```{r, echo = FALSE}
-grdCRF <- readRDS(file = "data/CottonResearchFarm_Uzbekistan.rds")
+#write_rds(grdCRF, "data/CottonResearchFarm_Uzbekistan.rds")
 ```
 
 ```{r EMdataUzbekistan2, echo = FALSE, out.width = "100%", fig.cap = "Interpolated surfaces of natural log of EM measurements on the Cotton Research Farm, used as covariates in spatial response surface sampling."}
-df <- grdCRF %>% pivot_longer(cols = c("lnEM100cm", "lnEM50cm"))
+grdCRF_lf <- grdCRF %>% pivot_longer(cols = c("lnEM100cm", "lnEM50cm"))
 
-ggplot(data = df) +
-  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = value)) +
+ggplot(data = grdCRF_lf) +
+#  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = value)) +
+  geom_raster(mapping = aes(x = x , y = y , fill = value)) +
   scale_fill_viridis_c(name = "lnEM") +
-  scale_x_continuous(name = "Easting (km)", limits = c(305.5, 308)) +
-  scale_y_continuous(name = "Northing (km)", limits = c(4602, 4603.5)) +
+  scale_x_continuous(
+    name = "Easting (km)",
+    labels = function(x) {1.0e-3 * x},
+    limits = c(305750, 308000)) +
+  scale_y_continuous(
+    name = "Northing (km)",
+    labels = function(x) {1.0e-3 * x},
+    limits = c(4600200, 4601400),
+    breaks = seq(from = 4600400, to = 4601200, by = 200)) +
   coord_fixed() +
   facet_grid(~ name)
 ```
@@ -188,15 +128,18 @@ ggplot(data = df) +
 Function `prcomp` of the **stats** package [@R2020] is used to compute the principal component scores\index{Principal component score} for all units in the population (grid cells). The two covariates are centred and scaled, i.e. standardised principal components are computed. 
 
 ```{r}
-grdsub <- subset(grdCRF, select = c(lnEM100cm, lnEM50cm))
-pc <- prcomp(grdsub, center = TRUE, scale = TRUE)
+pc <- grdCRF %>%
+  select(lnEM100cm, lnEM50cm) %>%
+  prcomp(center = TRUE, scale = TRUE)
 ```
 
-The means of the two principal component scores are 0, their standard deviations are `r formatC(pc$sdev[1], 3, format = "f")` and `r formatC(pc$sdev[2], 3, format = "f")`. The principal component scores are then scaled so that their standard deviations become 1. They then will have the same weight in the following steps. 
+The means of the two principal component scores are 0, but their standard deviations are not zero but `r formatC(pc$sdev[1], 3, format = "f")` and `r formatC(pc$sdev[2], 3, format = "f")`. Therefore the principal component scores are divided by these standard deviations. They then will have the same weight in the following steps. 
 
 ```{r}
-grdCRF$PC1 <- pc$x[, 1] * 1 / pc$sdev[1]
-grdCRF$PC2 <- pc$x[, 2] * 1 / pc$sdev[2]
+grdCRF <- grdCRF %>%
+  mutate(
+    PC1 = pc$x[, 1] / pc$sdev[1],
+    PC2 = pc$x[, 2] / pc$sdev[2])
 ```
 
 Function `ccd` of package **rsm** [@Lenth2009] is now used to generate a central composite response surface design\index{Central composite response surface design} (CCRSD). Argument `basis` specifies the number of factors, which is two in our case. Argument `n0` is the number of centre points, and argument `alpha` determines the position of the star points (explained hereafter).
@@ -241,13 +184,13 @@ ccd_df <- transform(ccd_df, x1 = x1 * fct, x2 = x2 * fct)
 The next step is to select for each design point several candidate sampling points. For each of the nine design points\index{Design point} eight points are selected that are closest to that design point. This results in 9 $\times$ 8 candidate sampling points.
 
 ```{r}
-grdCRF$unit <- seq_len(nrow(grdCRF))
+#grdCRF$unit <- seq_len(nrow(grdCRF))
 candi_all <- NULL
 for (i in seq_len(nrow(ccd_df))) {
     d2dpnt <- sqrt((grdCRF$PC1 - ccd_df$x1[i])^2 +
       (grdCRF$PC2 - ccd_df$x2[i])^2)
     grdCRF <- grdCRF[order(d2dpnt), ]
-    candi <- grdCRF[c(1:8), c("unit", "x1", "x2", "PC1", "PC2")]
+    candi <- grdCRF[c(1:8), c("point_id", "x", "y", "PC1", "PC2")]
     candi$dpnt <- i
     candi_all <- rbind(candi_all, candi)
 }
@@ -256,22 +199,22 @@ for (i in seq_len(nrow(ccd_df))) {
 Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate sampling points associated with the design points with coordinates  (-1.51,-1.51), (0,-2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample the value of one of the principal component scores will be less extreme than the ideal values according to the CCRSD design.   
 
 ```{r candidatelocations, echo = FALSE, fig.width = 5, fig.cap = "Clusters of points (red points) around the design points (triangles) of a CCRSD (two covariates), serving as candidate sampling points."}
-notcandidates <- grdCRF[-candi_all$unit, ]
+notcandidates <- grdCRF[-candi_all$point_id, ]
 ggplot(notcandidates) +
   geom_point(mapping = aes(x = PC1, y = PC2), alpha = 0.5) +
   geom_point(data = candi_all, mapping = aes(x = PC1, y = PC2), colour = "red") +
   geom_point(data = ccd_df, aes(x = x1, y = x2), shape = 2) +
-  scale_x_continuous(name = "PC1", limits = c(-4, 3)) +
-  scale_y_continuous(name = "PC2", limits = c(-3, 3)) +
+  scale_x_continuous(name = "PC1") +
+  scale_y_continuous(name = "PC2") +
   coord_fixed()
 ```
 Figure \@ref(fig:candidatesingeospace) shows that in geographical space for most design points there are multiple spatial clusters of candidate units. For instance, for design point nine there are three clusters of candidate sampling units. Due to this, there is scope to optimise the sample computationally. 
 
 ```{r candidatesingeospace, echo = FALSE, out.width = "100%", fig.cap = "Candidate sampling points plotted on a map of the first standardised principal component (PC1)."}
-library(ggpubr)
+#library(ggpubr)
 ggplot(grdCRF) +
-  geom_raster(aes(x = x1 / 1000, y = x2 / 1000, fill = PC1)) +
-  geom_point(data = candi_all, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = as.factor(dpnt)), size = 2) +
+  geom_raster(aes(x = x / 1000, y = y / 1000, fill = PC1)) +
+  geom_point(data = candi_all, mapping = aes(x = x / 1000, y = y / 1000, shape = as.factor(dpnt)), size = 2) +
   scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8), name = "Design pnt") +
   scale_fill_viridis_c(name = "PC1") +
   scale_x_continuous(name = "Easting (km)") +
@@ -287,7 +230,7 @@ set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 9))
 mysample0 <- getdata(candi_all, units_stsi)
-mysample0 <- mysample0[, c("unit", "x1", "x2", "PC1", "PC2", "dpnt")]
+mysample0 <- mysample0[, c("point_id", "x", "y", "PC1", "PC2", "dpnt")]
 ```
 
 The locations of the nine sampling units are now optimised by minimising a criterion that is a function of the distance between the nine sampling points. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion. 
@@ -303,7 +246,7 @@ In the next code chunk a function is defined for computing the minimisation crit
 ```{r}
 getCriterion <- function(mysample, dpnt, weight = 0, phi = NULL) {
   D2dpnt <- sqrt((mysample$PC1 - dpnt$x1)^2 + (mysample$PC2 - dpnt$x2)^2)
-  D <- as.matrix(dist(mysample[, c("x1", "x2")]))
+  D <- as.matrix(dist(mysample[, c("x", "y")]))
   if (is.null(phi)) {
     diag(D) <- NA
     logdmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE) %>% log
@@ -343,24 +286,24 @@ The sampling pattern can be optimised with function `anneal` of  package **sswr*
 ```{r, eval = FALSE}
 set.seed(314)
 mySRSsample <- anneal(
-  mysample0 = mysample0, candidates = candi_all, dpnt = ccd_df,
-  phi = 50, T_ini = 1, coolingRate = 0.9, maxPermuted = 25 * nrow(mysample0),
+  mysample = mysample0, candidates = candi_all, dpnt = ccd_df, phi = 50,
+  T_ini = 1, coolingRate = 0.9, maxPermuted = 25 * nrow(mysample0),
   maxNoChange = 20, verbose = TRUE)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_geo.rds")
-saveRDS(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_mb.rds")
+write_rds(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_geo.rds")
+write_rds(mySRSsample, file = "results/SpatialResponseSurfaceSample_CRF_mb.rds")
 ```
 
 Figure \@ref(fig:CCRSDinPCspace) shows the optimised CCRSD samples plotted in the space spanned by the two principal components, obtained with the geometric and the model-based criterion, plotted together with the design points. The two optimised samples are very similar.
 
 ```{r CCRSDinPCspace, echo = FALSE, out.width = "100%", fig.cap = "Principal component scores of the spatial CCRSD sample (triangles), optimised with the geometric and the model-based criterion. Dots: design points of CCRSD."}
-mySRSsample <- readRDS(file = "results/SpatialResponseSurfaceSample_CRF_geo.rds")
+mySRSsample <- read_rds(file = "results/SpatialResponseSurfaceSample_CRF_geo.rds")
 mysample_geo <- mySRSsample$mysample
 critmin_geo <- tail(mySRSsample$trace, 1)
 
-mySRSsample <- readRDS(file = "results/SpatialResponseSurfaceSample_CRF_mb.rds")
+mySRSsample <- read_rds(file = "results/SpatialResponseSurfaceSample_CRF_mb.rds")
 mysample_mb <- mySRSsample$mysample
 critmin_mb <- tail(mySRSsample$trace, 1)
 
@@ -381,8 +324,8 @@ Figure \@ref(fig:CCRSDSample) shows the two optimised CCRSD samples plotted in g
 ```{r CCRSDSample, echo = FALSE, out.width = "100%", fig.cap = "CCRSD sample from the Cotton Research Farm, optimised with the geometric and the model-based criterion, plotted on a map of the first standardised principal component (PC1)."}
 
 ggplot(mysamples) +
-  geom_raster(data = grdCRF, mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = PC1)) +
-  geom_point(data = mysamples, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  geom_raster(data = grdCRF, mapping = aes(x = x / 1000, y = y / 1000, fill = PC1)) +
+  geom_point(data = mysamples, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
   scale_fill_viridis_c(name = "PC1") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -400,7 +343,7 @@ for (i in seq_len(nrow(ccd_df))) {
     d2dpnt <- sqrt((grdCRF$PC1 - ccd_df$x1[i])^2 +
       (grdCRF$PC2 - ccd_df$x2[i])^2)
     grdCRF <- grdCRF[order(d2dpnt), ]
-    candi <- grdCRF[c(1:16), c("unit", "x1", "x2", "PC1", "PC2")]
+    candi <- grdCRF[c(1:16), c("point_id", "x", "y", "PC1", "PC2")]
     candi$dpnt <- i
     candi_all <- rbind(candi_all, candi)
 }
@@ -413,15 +356,15 @@ set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(2, 9))
 mysample0 <- getdata(candi_all, units_stsi)
-mysample0 <- mysample0[, c("unit", "x1", "x2", "PC1", "PC2", "dpnt")]
+mysample0 <- mysample0[, c("point_id", "x", "y", "PC1", "PC2", "dpnt")]
 ```
 
 The data frame with the design points must be doubled. Note that the order of the design points must be equal to the order in the stratified subsample.
 
 ```{r}
 tmp <- data.frame(ccd_df, dpnt = 1:9)
-dpnt <- rbind(tmp, tmp)
-ccd_df2 <- dpnt[order(dpnt$dpnt), ]
+ccd_df2 <- rbind(tmp, tmp)
+ccd_df2 <- ccd_df2[order(ccd_df2$dpnt), ]
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
@@ -437,17 +380,17 @@ mySRSsample <- anneal(
   maxNoChange = 20,
   verbose = TRUE
 )
-saveRDS(mySRSsample, file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
+write_rds(mySRSsample, file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
 ```
 
 Figures \@ref(fig:CCRSDUzbekistan2n) and \@ref(fig:CCRSDinPCSpace2n) show the optimised CCRSD sample of eighteen points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 150 m, and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.
 
 ```{r CCRSDUzbekistan2n, echo = FALSE, out.width = "100%", fig.cap = "CCRSD sample with two points per design point, from the Cotton Research Farm, plotted on a map of the first standardised principal component (PC1)."}
-mySRSsample <- readRDS(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
+mySRSsample <- read_rds(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
 mysample <- mySRSsample$mysample
 ggplot(grdCRF) +
-  geom_raster(aes(x = x1 / 1000, y = x2 / 1000, fill = PC1)) +
-  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  geom_raster(aes(x = x / 1000, y = y / 1000, fill = PC1)) +
+  geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
   scale_fill_continuous(name = "PC1", type = "viridis") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -455,7 +398,7 @@ ggplot(grdCRF) +
 ```
 
 ```{r CCRSDinPCSpace2n, echo = FALSE, fig.width = 5, fig.cap = "CCRSD sample (triangles) with two points per design point (dots), optimised with model-based criterion, plotted in the space spanned by the two standardised principal components."}
-mySRSsample <- readRDS(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
+mySRSsample <- read_rds(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
 mysample <- mySRSsample$mysample
 ggplot(mysample) +
  geom_point(data = ccd_df, aes(x = x1, y = x2), size = 3) +
@@ -477,7 +420,7 @@ Figure \@ref(fig:StrataCRF4CCRSD) shows two subareas used as strata in stratifie
 
 ```{r StrataCRF4CCRSD, echo = FALSE, out.width = "100%", fig.cap = "Two subareas of the Cotton Research Farm used as strata in stratified CCRSD sampling."}
 ggplot(grdCRF) +
-  geom_raster(aes(x = x1 / 1000, y = x2 / 1000, fill = as.factor(subarea))) +
+  geom_raster(aes(x = x / 1000, y = y / 1000, fill = as.factor(subarea))) +
   scale_fill_grey(name = "Stratum") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -496,7 +439,8 @@ for (h in c(1, 2)) {
       d2dpnt <- sqrt((data_stratum$PC1 - ccd_df$x1[i])^2 +
                      (data_stratum$PC2 - ccd_df$x2[i])^2)
       data_stratum <- data_stratum[order(d2dpnt), ]
-      candi <- data_stratum[c(1:8), c("unit", "x1", "x2", "PC1", "PC2")]
+      candi <- data_stratum[c(1:8),
+          c("point_id", "x", "y", "PC1", "PC2", "subarea")]
       candi$dpnt <- i + (h - 1) * nrow(ccd_df)
       candi_stratum <- rbind(candi_stratum, candi)
   }
@@ -508,8 +452,8 @@ for (h in c(1, 2)) {
 subarea <- as.factor(c(rep(1, nrow(candi_all) / 2), rep(2, nrow(candi_all) / 2)))
 dpnt9 <- c(rep(1:9, each = 8), rep(1:9, each = 8))
 ggplot(grdCRF) +
-  geom_raster(aes(x = x1 / 1000, y = x2 / 1000, fill = PC1)) +
-  geom_point(data = candi_all, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = as.factor(dpnt9)), size = 1.5) +
+  geom_raster(aes(x = x / 1000, y = y / 1000, fill = PC1)) +
+  geom_point(data = candi_all, mapping = aes(x = x / 1000, y = y / 1000, shape = as.factor(dpnt9)), size = 1.5) +
   scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8), name = "Design pnt") +
   scale_fill_continuous(name = "PC1", type = "viridis") +
   scale_x_continuous(name = "Easting (km)") +
@@ -523,8 +467,8 @@ As before, `dpnt` is used as a stratum identifier to subsample the candidate sam
 set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 18))
-mysample0 <- getdata(candi_all, units_stsi)
-mysample0 <- mysample0[, c("unit", "x1", "x2", "PC1", "PC2", "dpnt")]
+mysample0tst <- getdata(candi_all, units_stsi) %>%
+  select(c("point_id", "x", "y", "PC1", "PC2", "subarea", "dpnt"))
 ccd_df2 <- rbind(ccd_df, ccd_df)
 ```
 
@@ -542,24 +486,24 @@ mySRSsample <- anneal(
   maxNoChange = 20,
   verbose = TRUE
 )
-saveRDS(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
-#saveRDS(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
+#write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
+write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
 ```
 
 Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left cube point is very large. In this stratum no population units are present that are close to these two design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance. In geographical space no differences can be seen between the two samples.  
 
 ```{r StratifiedCCRSD, echo = FALSE, out.width = "100%", fig.cap = "Stratified CCRSD samples from the Cotton Research Farm, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
-mySRSsample <- readRDS(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
+mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
 mysample_w0 <- mySRSsample$mysample
 
-mySRSsample <- readRDS(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
+mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
 mysample_w5 <- mySRSsample$mysample
 mysamples <- rbind(mysample_w0, mysample_w5)
 mysamples$weight <- rep(c("Weight: 0", "Weight: 5"), each = 18)
 
 ggplot(mysamples) +
-  geom_raster(data = grdCRF, mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = PC1)) +
-  geom_point(data = mysample, mapping = aes(x = x1 / 1000, y = x2 / 1000), size = 2) +
+  geom_raster(data = grdCRF, mapping = aes(x = x / 1000, y = y / 1000, fill = PC1)) +
+  geom_point(data = mysamples, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
   scale_fill_continuous(name = "PC1", type = "viridis") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +

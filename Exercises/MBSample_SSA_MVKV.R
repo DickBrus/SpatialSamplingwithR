@@ -1,6 +1,5 @@
 library(spsann)
 library(sp)
-library(matrixcalc)
 library(spcosa)
 library(ggplot2)
 library(sswr)

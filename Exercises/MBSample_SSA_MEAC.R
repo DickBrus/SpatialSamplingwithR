@@ -1,6 +1,5 @@
 library(spcosa)
 library(sp)
-library(matrixcalc)
 library(sswr)
 
 gridded(grdHunterValley) <- ~ s1 + s2

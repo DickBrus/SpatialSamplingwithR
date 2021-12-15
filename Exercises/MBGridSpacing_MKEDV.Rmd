@@ -40,10 +40,10 @@ units <- sample(nrow(grdCRF), size = 1000, replace = TRUE)
 mysample <- grdCRF[units, ]
 
 #Shift the randomly selected grid points to random points within the cells
-mysample$x1 <- jitter(mysample$x1, amount = 25 / 2)
-mysample$x2 <- jitter(mysample$x2, amount = 25 / 2)
+mysample$x <- jitter(mysample$x, amount = 25 / 2)
+mysample$y <- jitter(mysample$y, amount = 25 / 2)
 
-coordinates(mysample) <- ~x1 + x2
+coordinates(mysample) <- ~ x + y
 ```
 
 ### Kriging with an external drift
@@ -59,7 +59,7 @@ spacing <- seq(from = 70, to = 100, by = 5)
 #set number of times grid sampling of a given spacing is repeated
 r <- 10
 
-gridded(grdCRF) <- ~x1 + x2
+gridded(grdCRF) <- ~x + y
 MKV <- matrix(nrow = length(spacing), ncol = r)
 
 for (i in seq_len(length(spacing))) {
@@ -67,9 +67,9 @@ for (i in seq_len(length(spacing))) {
         mygridxy <- spsample(x = grdCRF, cellsize = spacing[i], type = "regular")
         #add a dummy variable for interpolation
         mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
-        coordinates(mygrid) <- ~s1 + s2
+        coordinates(mygrid) <- ~ s1 + s2
         mygrd <- data.frame(over(mygrid, grdCRF), mygrid)
-        coordinates(mygrd) <- ~s1 + s2
+        coordinates(mygrd) <- ~ s1 + s2
         #Use gstat for KED predictions
         predictions  <- krige(
             dummy ~ lnEM100cm,

@@ -17,7 +17,7 @@
 #' @importFrom gstat variogramLine vgm
 getCriterion <- function(mysample, dpnt, weight, phi = NULL) {
   D2dpnt <- sqrt((mysample$PC1 - dpnt$x1)^2 + (mysample$PC2 - dpnt$x2)^2)
-  D <- as.matrix(dist(mysample[, c("x1", "x2")]))
+  D <- as.matrix(dist(mysample[, c("x", "y")]))
   if (is.null(phi)) {
     diag(D) <- NA
     dmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE)
@@ -44,14 +44,14 @@ getCriterion <- function(mysample, dpnt, weight, phi = NULL) {
 #'
 #' @return \code{\link{data.frame}} with units of permuted sample.
 permute <- function(mysample, candidates)  {
-  unit.rand <- sample(nrow(mysample), size = 1)
+  unit_rand <- sample(nrow(mysample), size = 1)
   #remove selected unit from candidates
-  candidates <- candidates[candidates$unit != mysample$unit[unit.rand], ]
+  candidates <- candidates[candidates$point_id != mysample$point_id[unit_rand], ]
   #replace selected sampling point by another randomly selected point from the same group
-  units.dpnt <- which(candidates$dpnt == mysample$dpnt[unit.rand])
-  candidates.dpnt <- candidates[units.dpnt, ]
-  unit.candidate <- sample(nrow(candidates.dpnt), size = 1)
-  mysample[unit.rand, ] <- candidates.dpnt[unit.candidate, ]
+  units_dpnt <- which(candidates$dpnt == mysample$dpnt[unit_rand])
+  cnd_dpnt <- candidates[units_dpnt, ]
+  unit_cnd <- sample(nrow(cnd_dpnt), size = 1)
+  mysample[unit_rand, ] <- cnd_dpnt[unit_cnd, ]
   mysample
 }
 
@@ -62,8 +62,8 @@ permute <- function(mysample, candidates)  {
 #' This function optimises the sampling pattern of a
 #' central composite response surface design sample.
 #'
-#' @param mysample0 \code{\link{data.frame}} of units of initial sample,
-#'   with unit ID, two spatial coordinates, two principal component scores,
+#' @param mysample \code{\link{data.frame}} of units of initial sample,
+#'   with point_id, two spatial coordinates, two principal component scores,
 #'   and associated design-point.
 #' @param candidates \code{\link{data.frame}} with candidate units per design
 #'   point. \code{\link{data.frame}} has same variables as \code{mysample}.
@@ -90,14 +90,14 @@ permute <- function(mysample, candidates)  {
 #' @importFrom stats dist runif
 #'
 #' @export
-anneal <- function(mysample0,
+anneal <- function(mysample,
                  candidates,
                  dpnt,
                  weight = 0,
                  phi = NULL,
                  T_ini  =  1,
                  coolingRate  =  0.95,
-                 maxPermuted = 20 * nrow(mysample0),
+                 maxPermuted = 20 * nrow(mysample),
                  maxNoChange = 20,
                  verbose = getOption("verbose")) {
 
@@ -105,16 +105,16 @@ anneal <- function(mysample0,
   T <- T_ini
 
   # compute the minimisation criterion MSSD for initial sample
-  D2dpnt <- sqrt((mysample0$PC1 - dpnt$x1)^2 + (mysample0$PC2 - dpnt$x2)^2)
-  D <- as.matrix(dist(mysample0[, c("x1", "x2")]))
-  if (!is.null(phi)) {
-    C <- variogramLine(vgm(model = "Exp", psill = 1, range = phi), dist_vector = D, covariance = TRUE)
-    criterion_cur <- mean(C) + mean(D2dpnt) * weight
-  } else {
+  D2dpnt <- sqrt((mysample$PC1 - dpnt$x1)^2 + (mysample$PC2 - dpnt$x2)^2)
+  D <- as.matrix(dist(mysample[, c("x", "y")]))
+  if (is.null(phi)) {
     diag(D) <- NA
     dmin <- apply(D, MARGIN = 1, FUN = min, na.rm = TRUE)
     logdmin <- log(dmin)
     criterion_cur <- mean(-logdmin) + mean(D2dpnt) * weight
+  } else {
+    C <- variogramLine(vgm(model = "Exp", psill = 1, range = phi), dist_vector = D, covariance = TRUE)
+    criterion_cur <- mean(C) + mean(D2dpnt) * weight
   }
 
   # Define structure for storing trace of criterion
@@ -123,7 +123,7 @@ anneal <- function(mysample0,
   # initialize number of zero changes of objective function
   nNoChange <- 0
 
-  mysample_cur <- mysample0
+  mysample_cur <- mysample
 
   # start cooling loop
   repeat{

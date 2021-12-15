@@ -1,14 +1,19 @@
 library(gstat)
-library(sswr)
+library(sf)
 
 nugget <- 483
 psill <- 966 - nugget #966 is the sill of the variogram without nugget
 vgm_SphNug <- vgm(model = "Sph", nugget = nugget, psill = psill, range = 44.6)
 
-library(rgdal)
-shpField <- readOGR(dsn = "../data", layer = "Leest")
-proj4string(shpField) <- NA_character_
-mygrid <- spsample(shpField, type = "regular", n = 2000, offset = c(0.5, 0.5)) %>% as(., "data.frame")
+#read shape (geopackage) file and make grid
+
+field <- read_sf("../data", "Leest") %>%
+  st_set_crs(NA_crs_)
+
+mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
+mygrid <- mygrid[field] %>%
+  st_coordinates(mygrid)
+
 H <- as.matrix(dist(mygrid))
 G <- variogramLine(vgm_SphNug, dist_vector = H)
 #replace zeroes on diagonal by nugget

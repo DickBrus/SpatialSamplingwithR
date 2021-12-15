@@ -1,12 +1,22 @@
 library(gstat)
-library(rgdal)
-library(sswr)
+library(sf)
 
+#specify semivariogram model as gstat object
 vgmodel <- vgm(model = "Sph", psill = 966, range = 44.6)
 
-shpField <- readOGR(dsn = "../data", layer = "Leest")
-proj4string(shpField) <- NA_character_
-mygrid <- spsample(shpField, type = "regular", n = 2000, offset = c(0.5, 0.5)) %>% as(., "data.frame")
+field <- read_sf("../data", "Leest") %>%
+  st_set_crs(NA_crs_)
+
+#read shape file (geopackage file) and make grid
+mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
+mygrid <- mygrid[field] %>%
+  st_coordinates(mygrid)
+
+
+
+#compute required sample size for SI
+
+
 H <- as.matrix(dist(mygrid))
 G <- variogramLine(vgmodel, dist_vector = H)
 m_semivar_field <- mean(G)
@@ -14,8 +24,17 @@ u <- qnorm(0.975)
 lmax <- 20
 ceiling(n_SI <- (u * sqrt(m_semivar_field) / (lmax / 2))^2)
 
-#required sample size for SY
+
+
+#compute required sample size for SY
+
+
+#convert mygrid to tibble (data.frame) and next to SpatialPixels object
+mygrid <- mygrid %>%
+  as_tibble() %>%
+  setNames(c("x1", "x2"))
 gridded(mygrid) <- ~ x1 + x2
+
 n <- 5:40
 Exi_SY <- numeric(length = length(n))
 set.seed(314)
