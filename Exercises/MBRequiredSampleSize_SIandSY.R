@@ -41,7 +41,8 @@ set.seed(314)
 for (i in seq_len(length(n))) {
   m_semivar_SY <- numeric(length = 10)
   for (j in 1:10) {
-    mySYsample <- spsample(x = mygrid, n = n[i], type = "regular") %>% as(., "data.frame")
+    mySYsample <- spsample(x = mygrid, n = n[i], type = "regular") %>% 
+      as("data.frame")
     H_SY <- as.matrix(dist(mySYsample))
     G_SY <- variogramLine(vgmodel, dist_vector = H_SY)
     m_semivar_SY[j] <- mean(G_SY)

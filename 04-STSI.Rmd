@@ -643,11 +643,7 @@ When no covariate is available, we may still decide to apply a  *geographical st
 
 A simple method for constructing geographical strata is k-means clustering [@bru99]. See Section \@ref(SpatialCoverage) for a simple illustrative example of how geographical strata are computed with k-means clustering. In this approach the study area is discretised by a large number of grid cells. These grid cells are the objects that are clustered. The clustering variables are simply the spatial coordinates of the centres of the grid cells. This method leads to compact geographical strata\index{Compact geographical stratum}, shortly referred to as geostrata\index{Geostratum|see{Compact geographical stratum}}. Geostrata can be computed with function `kmeans`, as shown in Section \@ref(kmeansstratification). The two clustering variables have the same scale, so they should not be scaled because this would lead to an arbitrary distortion of geographical distances.  The geostrata generally will not have the same size (number of grid cells). Geostrata of equal size can be attractive, as then the sample becomes selfweighting, i.e. the sample mean is an unbiased estimator of the population mean. 
 
-Geostrata of the same size can be computed with function `stratify` of the package **spcosa** (@spcosa, @walvoort2010), with argument `equalArea = TRUE`. At the moment of writing this book **spcosa** is not available on CRAN, but it can be installed from github with function `install_github`.
-
-```{r, eval=FALSE}
-install_github("cran/spcosa")
-```
+Geostrata of the same size can be computed with function `stratify` of the package **spcosa** (@spcosa, @walvoort2010), with argument `equalArea = TRUE`.
 
 If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. @walvoort2010 describe the k-means algorithms implemented in this package in detail. Argument `object` of function `stratify` specifies a spatial object of the population units. In the **R** code below `data.frame` `grdVoorst` is converted to a `SpatialPixelsDataFrame` with function `gridded` of the package **sp**. The spatial object can also be of class `SpatialPolygons`. In that case either argument `nGridCells` or argument `cellSize` must be set, so that the vector map in `object` can be discretised by a finite number of grid cells. Argument `nTry` specifies the number of initial stratifications in k-means clustering, and therefore is comparable with argument `nstart` of function `kmeans`. For more details on spatial stratification using k-means clustering, see Section \@ref(SpatialCoverage). The k-means algorithm used with `equalArea = TRUE` takes much more computing time than the one used with `equalArea = FALSE`. 
 
@@ -760,13 +756,13 @@ lcd_kriged <- krige(
   locations = meuse,
   newdata = meuse.grid,
   model = lcdr_fit,
-  debug.level = 0)  %>% as(., "data.frame")
+  debug.level = 0)  %>% as("data.frame")
 #kriging of Zn
 lzn_kriged <- krige(
   log(zinc) ~ sqrt(dist),
   meuse, meuse.grid,
   model = lznr_fit,
-  debug.level = 0) %>% as(., "data.frame")
+  debug.level = 0) %>% as("data.frame")
 ```
 
 

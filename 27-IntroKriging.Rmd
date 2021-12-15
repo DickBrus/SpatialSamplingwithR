@@ -266,7 +266,9 @@ mypop <- cbind(mypop, Z)
 ```{r Twokrigingsimulations, echo=FALSE, out.width = "100%", fig.cap="Two maps simulated with the spherical semivariogram of Figure 21.1, the centred square grid of sampling units, and the prediction unit (red cell with coordinates (590,670))."}
 #select square grid of 100 units
 gridded(mypop) <- ~ s1 + s2
-mysample <- spsample(x = mypop, type = "regular", cellsize = c(100, 100), offset = c(0.5, 0.5)) %>% as(., "data.frame")
+mysample <- spsample(
+  x = mypop, type = "regular", cellsize = c(100, 100), offset = c(0.5, 0.5)) %>%
+  as("data.frame")
 mypop <- as(mypop, "data.frame")
 
 #select prediction unit
@@ -279,8 +281,18 @@ df_lf <- df %>% pivot_longer(cols = c("z1", "z2"))
 
 ggplot(data = df_lf) +
   geom_tile(mapping = aes(x = s1, y = s2, fill = value)) +
-  geom_tile(data = mysample, mapping = aes(x = x1, y = x2), width = 20, height = 20, size = 0.3, colour = "white", fill = NA) +
-  geom_tile(data = s_0, mapping = aes(x = s1, y = s2), width = 25, height = 25, fill = "red") +
+  geom_tile(data = mysample,
+            mapping = aes(x = x1, y = x2),
+            width = 20,
+            height = 20,
+            size = 0.3,
+            colour = "white",
+            fill = NA) +
+  geom_tile(data = s_0,
+            mapping = aes(x = s1, y = s2),
+            width = 25,
+            height = 25,
+            fill = "red") +
   scale_fill_viridis_c(name = "z") +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +

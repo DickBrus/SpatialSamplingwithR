@@ -174,7 +174,7 @@ set.seed(314)
 m_semivar_SY <- numeric(length = 100)
 for (i in 1:100) {
   mySYsample <- spsample(x = mygrid, n = n, type = "regular") %>%
-    as(., "data.frame")
+    as("data.frame")
   H_SY <- as.matrix(dist(mySYsample))
   G_SY <- variogramLine(vgm_MoM, dist_vector = H_SY)
   m_semivar_SY[i] <- mean(G_SY)
@@ -269,7 +269,7 @@ for (i in 1:R) {
     model = vgm_REML_gstat, beta = vgm_REML$beta,
     nmax = 20, nsim = 1,
     dummy = TRUE,
-    debug.level = 0) %>% as(., "data.frame")
+    debug.level = 0) %>% as("data.frame")
   m_zsim <- tapply(zsim$sim1, INDEX = mySYs$sample, FUN = mean)
   v_mzsim_SY[i] <- var(m_zsim)
 }
@@ -322,7 +322,7 @@ zsim <- krige(
   locations = grdAmhara, newdata = grdAmhara,
   model = vgm_REML_gstat, beta = vgm_REML$beta,
   nmax = 20, nsim = 1000,
-  dummy = TRUE, debug.level = 0) %>% as(., "data.frame")
+  dummy = TRUE, debug.level = 0) %>% as("data.frame")
 zsim <- zsim[, -c(1, 2)]
 ```
 
@@ -520,7 +520,7 @@ for (i in 1:100) {
     lnN ~ 1, locations = sampleMelle, newdata = mygrid,
     model = vgmdl,
     nmax = 20, nsim = 100,
-    debug.level = 0) %>% as(., "data.frame")
+    debug.level = 0) %>% as("data.frame")
   zsim <- exp(ysim[, -c(1, 2)])
   S2h <- apply(zsim, MARGIN = 2, FUN = function(x)
     tapply(x, INDEX = as.factor(mygeostrata$stratumId), FUN = var))
@@ -552,7 +552,8 @@ for (i in 1:4) {
       model = vgm(model = "Exp", nugget = nugget, psill = psill, range = range),
       nmax = 20,
       nsim = 1,
-      debug.level = 0) %>% as(., "data.frame")
+      debug.level = 0) %>%
+      as("data.frame")
     zsim <- exp(ysim$sim1)
     S2h <- tapply(zsim, INDEX = as.factor(mygeostrata$stratumId), FUN = var)
     v[i, j] <- 1 / n^2 * sum(S2h)
