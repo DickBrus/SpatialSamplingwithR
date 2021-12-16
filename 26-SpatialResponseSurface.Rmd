@@ -104,7 +104,6 @@ grdCRF <- grdCRF %>%
 grdCRF_lf <- grdCRF %>% pivot_longer(cols = c("lnEM100cm", "lnEM50cm"))
 
 ggplot(data = grdCRF_lf) +
-#  geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = value)) +
   geom_raster(mapping = aes(x = x , y = y , fill = value)) +
   scale_fill_viridis_c(name = "lnEM") +
   scale_x_continuous(
@@ -173,13 +172,13 @@ The coordinates of the CCRSD design points are multiplied by a factor so that a 
 d <- sqrt(grdCRF$PC1^2 + grdCRF$PC2^2)
 fct <- quantile(d, p = 0.7)
 print(fct)
-ccd_df <- transform(ccd_df, x1 = x1 * fct, x2 = x2 * fct)
+ccd_df <- ccd_df %>%
+  mutate(x1 = x1 * fct, x2 = x2 * fct)
 ```
 
 The next step is to select for each design point several candidate sampling points. For each of the nine design points\index{Design point} eight points are selected that are closest to that design point. This results in 9 $\times$ 8 candidate sampling points.
 
 ```{r}
-#grdCRF$unit <- seq_len(nrow(grdCRF))
 candi_all <- NULL
 for (i in seq_len(nrow(ccd_df))) {
     d2dpnt <- sqrt((grdCRF$PC1 - ccd_df$x1[i])^2 +
@@ -206,7 +205,6 @@ ggplot(notcandidates) +
 Figure \@ref(fig:candidatesingeospace) shows that in geographical space for most design points there are multiple spatial clusters of candidate units. For instance, for design point nine there are three clusters of candidate sampling units. Due to this, there is scope to optimise the sample computationally. 
 
 ```{r candidatesingeospace, echo = FALSE, out.width = "100%", fig.cap = "Candidate sampling points plotted on a map of the first standardised principal component (PC1)."}
-#library(ggpubr)
 ggplot(grdCRF) +
   geom_raster(aes(x = x / 1000, y = y / 1000, fill = PC1)) +
   geom_point(data = candi_all, mapping = aes(x = x / 1000, y = y / 1000, shape = as.factor(dpnt)), size = 2) +
@@ -462,10 +460,11 @@ As before, `dpnt` is used as a stratum identifier to subsample the candidate sam
 set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 18))
-mysample0tst <- getdata(candi_all, units_stsi) %>%
+mysample0 <- getdata(candi_all, units_stsi) %>%
   dplyr::select(c(point_id, x, y, PC1, PC2, subarea, dpnt))
 ccd_df2 <- rbind(ccd_df, ccd_df)
 ```
+
 
 ```{r, echo = FALSE, eval = FALSE}
 set.seed(314)
@@ -473,7 +472,7 @@ mySRSsample <- anneal(
   mysample = mysample0,
   candidates = candi_all,
   dpnt = ccd_df2,
-  weight = 5,
+#  weight = 5,
   phi = 50,
   T_ini = 1,
   coolingRate = 0.9,
@@ -481,11 +480,11 @@ mySRSsample <- anneal(
   maxNoChange = 20,
   verbose = TRUE
 )
-#write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
-write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
+write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
+#write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
 ```
 
-Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left cube point is very large. In this stratum no population units are present that are close to these two design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance. In geographical space no differences can be seen between the two samples.  
+Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left and upper right cube points is very large. In this stratum no population units are present that are close to these design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance.  
 
 ```{r StratifiedCCRSD, echo = FALSE, out.width = "100%", fig.cap = "Stratified CCRSD samples from the Cotton Research Farm, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
 mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
