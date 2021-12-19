@@ -1,9 +1,5 @@
 # Model-based optimisation of the sampling pattern {#MBSamplePattern}
 
-```{r, echo = FALSE}
-grdCRF <- read_rds(file = "data/CottonResearchFarm_Uzbekistan.rds")
-```
-
 In Chapter \@ref(MBgridspacing) a model of the spatial variation is used to optimise the spacing of a regular grid. The grid spacing determines the number of grid points within the study area, so optimisation of the grid spacing is equivalent to optimisation of the sample size of a square grid.
 
 This chapter is about optimisation of the spatial coordinates of the sampling units *given the sample size*. So, we are searching for the optimal spatial sampling pattern of a fixed number of sampling units. The constraint of sampling on a regular grid is dropped. In general the optimal spatial sampling pattern is irregular. Similar to spatial coverage sampling (Section \@ref(SpatialCoverage)), we search for the optimal sampling pattern through minimisation of an explicit criterion. In spatial coverage sampling the minimisation criterion is the mean squared shortest distance (MSSD) which is minimised by k-means. In this chapter the minimisation criterion is the mean kriging variance (MKV) or a quantile of the kriging variance. Algorithm k-means cannot be used for minimising this criterion as it uses (standardised) distances between cluster centres (the sampling locations) and the nodes of a discretisation grid, and the kriging variance is not a simple linear function of these distances. A different optimisation algorithm is needed. Here spatial simulated annealing\index{Simulated annealing} is used which is explained in the next subsection. Non-spatial simulated annealing was used before in conditioned Latin hypercube sampling using package **clhs** (Chapter \@ref(cLHS)).
@@ -162,11 +158,11 @@ trace <- res$objective$energy
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(mysample, trace, file = "results/MBSample_OK_Uzbekistan.RData")
+save(mysample, trace, file = "results/MBSample_OK_Uzbekistan.rda")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/MBSample_OK_Uzbekistan_cellsize0.RData")
+load(file = "results/MBSample_OK_Uzbekistan_cellsize0.rda")
 MKV_cellsize0 <- as.numeric(tail(trace, 1))
 ```
 
@@ -174,7 +170,7 @@ The spatial pattern of the sample in Figure \@ref(fig:ModelBasedSampleOK) and th
 
 ```{r ModelBasedSampleOK, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern for the mean variance of OK predictions of lnECe (model-based sample) and spatial coverage sample of the Cotton Research Farm."}
 library(spcosa)
-load(file = "results/MBSample_OK_Uzbekistan.RData")
+load(file = "results/MBSample_OK_Uzbekistan.rda")
 
 s0 <- grdCRF #this grid is constructed in SpatialResponseSurface.Rmd
 gridded(s0) <- ~ x + y
@@ -270,7 +266,7 @@ Optimisation of the sampling pattern for KED is illustrated with the Cotton Rese
 
 At several points multiple pairs of observations of the study variable ECe and the covariate EM have been made. These calibration data have exactly the same spatial coordinates. This leads to problems with REML estimation. The covariance matrix is not positive definite, so that it cannot be inverted. To solve this problem I jittered the coordinates of the sampling points by a small amount.
 
-<!-- Note that in the next chunk I use EM as measured at the calibration sites (Sample_ECEM_CRF_Uzbekistan.csv) to fit the regression model and to compute the residuals. Ideally the interpolated EM values in data/CottonResearchFarm_Uzbekistan.RData (obtained by ordinary kriging of EM data in TransectsData_EM_CRF_Uzbekistan.csv) at the calibration sites are used as a covariate. However, the EM measurements in  the transects are at one time only, whereas the calibration data consist of simultaneous EM and EC measurements at multiple times. Therefore, to keep it simple, I used the EM data at the calibration sites -->
+<!-- Note that in the next chunk I use EM as measured at the calibration sites (sampleCRF.rda) to fit the regression model and to compute the residuals. Ideally the interpolated EM values in data/grdCRF.rda (obtained by ordinary kriging of EM data in TransectsData_EM_CRF_Uzbekistan.csv) at the calibration sites are used as a covariate. However, the EM measurements in  the transects are at one time only, whereas the calibration data consist of simultaneous EM and EC measurements at multiple times. Therefore, to keep it simple, I used the EM data at the calibration sites -->
 
 ```{r}
 library(geoR)
@@ -440,13 +436,13 @@ infillSample <- res$points[ids, ]
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(res, file = "results/MBInfillSample_OK_Amhara.RData")
+save(res, file = "results/MBInfillSample_OK_Amhara.rda")
 ```
 
 Figure \@ref(fig:ModelBasedInfill) shows a model-based infill sample of 100 points for OK of the soil organic matter (SOM) concentration (dag kg^-1^) throughout West-Amhara. Comparison of the model-based infill sample with the spatial infill sample of Figure \@ref(fig:spatialinfillEthiopia) shows that in a wider zone on both sides of the roads no new sampling points are selected. This can be explained by the large range, `r formatC(vgm_ML$phi, 1, format = "f")` km, of the semivariogram.
 
 ```{r ModelBasedInfill, echo = FALSE, out.width="100%", fig.cap = "Model-based infill sample for OK of the SOM concentration throughout West-Amhara. Legacy units have free-value 0, infill units have free-value 1."}
-load("results/MBInfillSample_OK_Amhara.RData")
+load("results/MBInfillSample_OK_Amhara.rda")
 df <- data.frame(x = res$points$x, y = res$points$y, free = res$points$free)
 df$free <- as.factor(df$free)
 ggplot() +
@@ -495,13 +491,13 @@ res <- optimMKV(
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-save(res, file = "results/MBInfillSample_KED_Amhara.RData")
+save(res, file = "results/MBInfillSample_KED_Amhara.rda")
 ```
 
 Figure \@ref(fig:ModelBasedInfillKED) shows the optimised sample. Again the legacy points are avoided, but the infill sampling of the under-sampled areas is less uniform compared to Figure \@ref(fig:ModelBasedInfill). Spreading in geographical space is less important than with OK because the residual semivariogram has a much smaller range (Table \@ref(tab:VariogramREMLEthiopia)). Spreading in covariate space does not play any role with OK, whereas with KED selecting locations with extreme values for the covariates is important to minimise the uncertainty about the estimated model-mean.
 
 ```{r ModelBasedInfillKED, echo = FALSE, out.width = "100%", fig.cap = "Model-based infill sample for KED of the SOM concentration throughout West-Amhara, plotted on a map of one of the covariates. Legacy units have free-value 0, infill units have free-value 1."}
-load("results/MBInfillSample_KED_Amhara.RData")
+load("results/MBInfillSample_KED_Amhara.rda")
 df <- data.frame(x = res$points$x, y = res$points$y, free = res$points$free)
 df$free <- as.factor(df$free)
 
@@ -515,7 +511,7 @@ ggplot() +
 ```
 
 ```{r, echo = FALSE}
-load("results/MBInfillSample_KED_Amhara.RData")
+load("results/MBInfillSample_KED_Amhara.rda")
 MKV_KED_opt <- as.numeric(tail(res$objective$energy, 1))
 ```
 

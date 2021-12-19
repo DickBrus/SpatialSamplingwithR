@@ -41,7 +41,7 @@ Ep_av_mz_regr[i] <- mean(av_mz_regr)
 }
 
 df <- data.frame(n, Vp_mz_regr_exhaustive, Vp_mz_regr, Ep_av_mz_regr)
-#save(df, file = "results/VarRegressionEstimator.RData")
+#save(df, file = "results/VarRegressionEstimator.rda")
 names(df) <- c("n", "VarMean_exh", "VarMean_sam", "ApproxVar")
 
 #compute difference between variance of regression estimator with exhaustive fit of model and variance with sample fit of model,

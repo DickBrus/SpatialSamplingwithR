@@ -43,4 +43,4 @@ for (i in 1:10000) {
 (var(mz_reg2ph))
 (mean(av_mz_reg2ph))
 
-#save(mz_regr, mz_reg2ph, av_mz_reg2ph, file = "results/RegressionEstimator_Twophase.RData")
+#save(mz_regr, mz_reg2ph, av_mz_reg2ph, file = "results/RegressionEstimator_Twophase.rda")

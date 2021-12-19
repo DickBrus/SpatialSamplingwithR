@@ -116,10 +116,10 @@ The few data make that the sample semivariogram is very noisy. For the moment I 
 
 #### Simple random sampling {-}
 
-For simple random sampling we must compute the mean semivariance within the field (Equation \@ref(eq:MBdesignvarSI)). As shown in the next code chunk, the mean semivariance is approximated by discretising the field by a square grid of 2,000 points, computing the 2,000 $\times$ 2,000 matrix with distances between all pairs of discretisation nodes, transforming this distance matrix into a semivariance matrix using function `variogramLine` of package **gstat** [@peb04], and finally averaging the semivariances. Note that in this case we do not need to replace the zeroes on the diagonal of the semivariance matrix by the nugget, as a model without nugget is fitted. The shape file is read with function `read_sf` of package **sf** [@sf], resulting in a simple feature object. The projection attributes of this object are removed with function `st_set_crs`. The centres of square grid cells are selected with function `st_make_grid`. The centres inside the field are selected with `mygrid[field]`, and finally the coordinates are extracted with function `st_coordinates`.  
+For simple random sampling we must compute the mean semivariance within the field (Equation \@ref(eq:MBdesignvarSI)). As shown in the next code chunk, the mean semivariance is approximated by discretising the field by a square grid of 2,000 points, computing the 2,000 $\times$ 2,000 matrix with distances between all pairs of discretisation nodes, transforming this distance matrix into a semivariance matrix using function `variogramLine` of package **gstat** [@peb04], and finally averaging the semivariances. Note that in this case we do not need to replace the zeroes on the diagonal of the semivariance matrix by the nugget, as a model without nugget is fitted. The geopackage file is read with function `read_sf` of package **sf** [@sf], resulting in a simple feature object. The projection attributes of this object are removed with function `st_set_crs`. The centres of square grid cells are selected with function `st_make_grid`. The centres inside the field are selected with `mygrid[field]`, and finally the coordinates are extracted with function `st_coordinates`.  
 
 ```{r ExiVarSILeest}
-field <- read_sf("data", "Leest") %>%
+field <- read_sf("data/Leest.gpkg") %>%
   st_set_crs(NA_crs_)
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
 mygrid <- mygrid[field] %>%
@@ -562,13 +562,13 @@ for (i in 1:4) {
     Zsim <- rbind(Zsim, zsimdf)
   }
 }
-save(Zsim, v, file = "results/SimulatedMaps_Melle.RData")
+save(Zsim, v, file = "results/SimulatedMaps_Melle.rda")
 ```
 
 (ref:plotsimulatedmapsMellelabel) Maps of NO~3~-N of field Melle simulated with four semivariograms (rows). Each semivariogram is used to simulate four maps (columns a-d).
 
 ```{r, plotsimulatedmapsMelle, echo = FALSE, out.width = "100%", fig.cap = "(ref:plotsimulatedmapsMellelabel)"}
-load(file = "results/SimulatedMaps_Melle.RData")
+load(file = "results/SimulatedMaps_Melle.rda")
 ggplot(data = Zsim) +
   geom_raster(mapping = aes(x = x1, y = x2, fill = zsim)) +
   scale_x_continuous(name = "") +

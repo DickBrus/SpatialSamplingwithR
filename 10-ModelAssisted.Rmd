@@ -301,13 +301,13 @@ for (i in 1:number_of_samples) {
   mz_regr[i] <- res$mean
   v_mz_regr[i] <- res$AGB^2
 }
-save(mz_HT, mz_regr, v_mz_regr, file = "results/SimpleRegressionEstimatesAGB_Amazonia.RData")
+save(mz_HT, mz_regr, v_mz_regr, file = "results/SimpleRegressionEstimatesAGB_Amazonia.rda")
 ```
 
 (ref:SamplingDistributionRegressionlabel) Approximated sampling distribution of the simple regression estimator (Regression) and the $\pi$ estimator (HT) of the mean AGB (10^9^ kg ha^-1^) in Eastern Amazonia, for simple random sampling without replacement of size 100.
 
 ```{r SamplingDistributionRegression, echo = FALSE, fig.width = 5, fig.asp = .8, fig.cap = "(ref:SamplingDistributionRegressionlabel)"}
-load(file = "results/SimpleRegressionEstimatesAGB_Amazonia.RData")
+load(file = "results/SimpleRegressionEstimatesAGB_Amazonia.rda")
 estimates <- data.frame(mz_regr, mz_HT)
 names(estimates) <- c("Regression", "HT")
 df <- estimates %>% pivot_longer(., cols = c("Regression", "HT"))
@@ -1165,11 +1165,11 @@ for (i in 1:500) {
   mz_rtree[i] <- res$pop_mean
   v_mz_rtree_btstrp[i] <- res$pop_mean_var
 }
-save(mz_rtree, v_mz_rtree_linHTSRS, v_mz_rtree_btstrp, file = "results/RegressionTreeEstimates_Amazonia_100pnts.RData")
+save(mz_rtree, v_mz_rtree_linHTSRS, v_mz_rtree_btstrp, file = "results/RegressionTreeEstimates_Amazonia_100pnts.rda")
 ```
 
 ```{r, echo = FALSE}
-load(file = "results/RegressionTreeEstimates_Amazonia_100pnts.RData")
+load(file = "results/RegressionTreeEstimates_Amazonia_100pnts.rda")
 ```
 
 The variance of the 500 estimated population means of AGB is `r formatC(var(mz_rtree), 1, format = "f")` (10^9^ kg ha^-1^)^2^. Estimation of the variance through Taylor linearisation strongly underestimates the variance: the average of the 500 estimated variances equals `r formatC(mean(v_mz_rtree_linHTSRS), 1, format = "f")` (10^9^ kg ha^-1^)^2^. On the contrary, the bootstrap variance estimator overestimates the variance: the average of the 500 estimated variances equals `r formatC(mean(v_mz_rtree_btstrp), 1, format = "f")` (10^9^ kg ha^-1^)^2^. I prefer to overestimate my uncertainty about the mean, instead of being overoptimistic, and so I would recommend to report the bootstrap variance.
@@ -1195,7 +1195,7 @@ AGBpred <- res$predictions
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
-save(AGBpred_OOB, AGBpred, file = "results/RandomForestSingleSample_Amazonia.RData")
+save(AGBpred_OOB, AGBpred, file = "results/RandomForestSingleSample_Amazonia.rda")
 ```
 
 Finally, the model-calibration estimate and the generalised difference estimate are computed. Both estimators and their variances are computed in two ways. They differ in how the study variable AGB is predicted for the sampling units:  
@@ -1206,7 +1206,7 @@ Finally, the model-calibration estimate and the generalised difference estimate 
 The next code chunk shows how the model-calibration estimate can be computed with the AGB data of the simple random sample and the RF predictions of AGB. First, all trees are used.
 
 ```{r, echo = FALSE}
-load(file = "results/RandomForestSingleSample_Amazonia.RData")
+load(file = "results/RandomForestSingleSample_Amazonia.rda")
 ```
 
 ```{r}
@@ -1294,7 +1294,7 @@ for (i in 1:1000) {
   v_mz_MD_OOB[i] <- (1 - n / N) * var(d_OOB) / n
 }
 
-save(mz_MC, mz_MD, v_mz_MC, v_mz_MD, mz_MC_OOB, mz_MD_OOB, v_mz_MC_OOB, v_mz_MD_OOB, file = "results/RandomForestEstimates_Amazonia_250pnts.RData")
+save(mz_MC, mz_MD, v_mz_MC, v_mz_MD, mz_MC_OOB, mz_MD_OOB, v_mz_MC_OOB, v_mz_MD_OOB, file = "results/RandomForestEstimates_Amazonia_250pnts.rda")
 ```
 
 For each estimator the 1,000 estimated means are used to compute the relative bias\index{Bias!relative bias}:
@@ -1323,7 +1323,7 @@ Ideally, this ratio equals 1. If it is smaller than 1, the variance estimator un
 Finally, the relative efficiency\index{Relative efficiency} is computed as the ratio of the MSE of the $\pi$ estimator and the MSE of a model-assisted estimator. The $\pi$ estimator is unbiased, so the MSE equals the variance, which can be computed without error by the population variance divided by the sample size. If the relative efficiency is larger than 1, the model-assisted estimator is more accurate than the $\pi$ estimator.
 
 ```{r, echo=FALSE}
-load(file = "results/RandomForestEstimates_Amazonia_100pnts.RData")
+load(file = "results/RandomForestEstimates_Amazonia_100pnts.rda")
 grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
 #compute mean across all population units (population mean)
 mz_pop <- mean(grdAmazonia$AGB)
@@ -1353,7 +1353,7 @@ The reason of underestimation of the variance when predicting AGB at sample unit
 Hereafter I report the results obtained with the out-of-bag samples only.
 
 ```{r, echo = FALSE}
-load(file = "results/RandomForestEstimates_Amazonia_50pnts.RData")
+load(file = "results/RandomForestEstimates_Amazonia_50pnts.rda")
 
 mz_pop <- mean(grdAmazonia$AGB)
 MSE_HT_50 <- var(grdAmazonia$AGB) / 50
@@ -1380,7 +1380,7 @@ R_MD_50_OOB <- m_v_mz_MD_50_OOB / MSE_MD_50_OOB
 
 RE_MD_50_OOB <- MSE_HT_50 / MSE_MD_50_OOB
 
-load(file = "results/RandomForestEstimates_Amazonia_100pnts.RData")
+load(file = "results/RandomForestEstimates_Amazonia_100pnts.rda")
 MSE_HT_100 <- var(grdAmazonia$AGB) / 100
 
 #calibration estimator
@@ -1405,7 +1405,7 @@ R_MD_100_OOB <- m_v_mz_MD_100_OOB / MSE_MD_100_OOB
 
 RE_MD_100_OOB <- MSE_HT_100 / MSE_MD_100_OOB
 
-load(file = "results/RandomForestEstimates_Amazonia_250pnts.RData")
+load(file = "results/RandomForestEstimates_Amazonia_250pnts.rda")
 MSE_HT_250 <- var(grdAmazonia$AGB) / 250
 
 #calibration estimator

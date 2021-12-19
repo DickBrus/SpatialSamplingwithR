@@ -4,10 +4,11 @@ library(sf)
 #specify semivariogram model as gstat object
 vgmodel <- vgm(model = "Sph", psill = 966, range = 44.6)
 
-field <- read_sf("../data", "Leest") %>%
+#read geopackage file and make grid
+
+field <- read_sf("../data/Leest.gpkg") %>%
   st_set_crs(NA_crs_)
 
-#read shape file (geopackage file) and make grid
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
 mygrid <- mygrid[field] %>%
   st_coordinates(mygrid)

@@ -39,6 +39,6 @@ for (i in 1:R) {
 
 all.equal(mz, mz_g)
 df <- data.frame(se_mz, se_mz_g)
-#save(df, file = "results/SERegressionEstimator.RData")
+#save(df, file = "results/SERegressionEstimator.rda")
 
 summary(df)

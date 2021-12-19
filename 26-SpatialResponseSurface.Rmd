@@ -1,9 +1,5 @@
 # Spatial response surface sampling {#SpatialResponseSurface}
 
-```{r, echo = FALSE}
-grdCRF <- read_rds(file = "data/CottonResearchFarm_Uzbekistan.rds")
-```
-
 As with conditioned Latin hypercube sampling, spatial response surface sampling\index{Spatial response surface sampling} is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum of the response within specified ranges of the factors. There are many types of response surface designs, see @myers2002.  With response surface sampling one assumes that some type of low order regression model can be used to accurately approximate the relationship between the study variable and the covariates.  A commonly used design is the central composite design\index{Central composite design}. The data obtained with this design are used to fit a multiple linear regression model with quadratic terms, yielding a curved, quadratic surface of the response.
 
 The response surface sampling approach is an adaptation of an experimental design, but at the same time it is an example of a model-based sampling design. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see the optimal sample in Figure \@ref(fig:twosamples). The assumption of independent data might be violated when the sampling units are spatially clustered.  For this reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
@@ -190,7 +186,7 @@ for (i in seq_len(nrow(ccd_df))) {
 }
 ```
 
-Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate sampling points associated with the design points with coordinates  (-1.51,-1.51), (0,-2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample the value of one of the principal component scores will be less extreme than the ideal values according to the CCRSD design.   
+Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate sampling points associated with the design points with coordinates  (0,-2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample  there will be three points with principal component scores that considerably differ from the ideal values according to the CCRSD design.
 
 ```{r candidatelocations, echo = FALSE, fig.width = 5, fig.cap = "Clusters of points (red points) around the design points (triangles) of a CCRSD (two covariates), serving as candidate sampling points."}
 notcandidates <- grdCRF[-candi_all$point_id, ]
@@ -222,8 +218,8 @@ library(sampling)
 set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 9))
-mysample0 <- getdata(candi_all, units_stsi)
-mysample0 <- mysample0[, c("point_id", "x", "y", "PC1", "PC2", "dpnt")]
+mysample0 <- getdata(candi_all, units_stsi) %>%
+  dplyr::select(point_id, x, y, PC1, PC2, dpnt)
 ```
 
 The locations of the nine sampling units are now optimised by minimising a criterion that is a function of the distance between the nine sampling points. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion. 
@@ -348,8 +344,8 @@ A stratified simple random subsample of two points per stratum is selected, whic
 set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(2, 9))
-mysample0 <- getdata(candi_all, units_stsi)
-mysample0 <- mysample0[, c("point_id", "x", "y", "PC1", "PC2", "dpnt")]
+mysample0 <- getdata(candi_all, units_stsi) %>%
+  dplyr::select(point_id, x, y, PC1, PC2, dpnt)
 ```
 
 The data frame with the design points must be doubled. Note that the order of the design points must be equal to the order in the stratified subsample.
@@ -454,14 +450,14 @@ ggplot(grdCRF) +
   coord_fixed()
 ```
 
-As before, `dpnt` is used as a stratum identifier to subsample the candidate sampling units. Finally, the number of rows in `data.frame` `ccd_df` with the design points is doubled.
+As before, `dpnt` is used as a stratum identifier to subsample the candidate sampling units. Note that the order of the variables in `mysample0` must be equal to the order in `candi_all`.  Finally, the number of rows in `data.frame` `ccd_df` with the design points is doubled.
 
 ```{r}
 set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 18))
 mysample0 <- getdata(candi_all, units_stsi) %>%
-  dplyr::select(c(point_id, x, y, PC1, PC2, subarea, dpnt))
+  dplyr::select(point_id, x, y, PC1, PC2, subarea, dpnt)
 ccd_df2 <- rbind(ccd_df, ccd_df)
 ```
 
@@ -484,7 +480,7 @@ write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CR
 #write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
 ```
 
-Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left and upper right cube points is very large. In this stratum no population units are present that are close to these design points. The distance could be decreased a bit by adding a penalty term to the minimisation criterion that is proportional to this distance.  
+Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left and upper right cube points is very large. In this stratum no population units are present that are close to these design points. By adding a penalty term to the minimisation criterion that is proportional to the distance to the design points, the distance is somewhat decreased but not really for the three design points mentioned above (Figure \@ref(fig:CCRSDinPCSpace2n)). Also note the spatial cluster of three sampling units in Figure \@ref(fig:StratifiedCCRSD) obtained with a weight equal to 5.
 
 ```{r StratifiedCCRSD, echo = FALSE, out.width = "100%", fig.cap = "Stratified CCRSD samples from the Cotton Research Farm, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
 mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
