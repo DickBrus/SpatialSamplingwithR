@@ -46,16 +46,16 @@ print(vgm_MoM)
 
 ## Select random sample of evaluation points
 
-Select a simple random sample of size 1,000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cellsize/2 and +cellsize/2, respectively. This can be done with function jitter. The cell size is 1 km x 1 km.
+Select a simple random sample of size 1,000 for evaluating the square grids. Add a small number to the x-coordinates and y-coordinates by drawing from a uniform distribution with lower and upper limit equal to -cell_size/2 and +cell_size/2, respectively. This can be done with function jitter. The cell size is 1 km x 1 km.
 
 ```{r}
 set.seed(314)
 units <- sample(nrow(grdAmhara), size = 1000, replace = TRUE)
 mysample <- grdAmhara[units, ]
-
 #Shift the randomly selected points to random points within the cells
-mysample$s1 <- jitter(mysample$s1, amount = 0.5)
-mysample$s2 <- jitter(mysample$s2, amount = 0.5)
+cell_size <- 1
+mysample$s1 <- jitter(mysample$s1, amount = 0.5 * cell_size)
+mysample$s2 <- jitter(mysample$s2, amount = 0.5 * cell_size)
 ```
 
 ## Kriging
@@ -155,7 +155,7 @@ Plot the MKV's obtained  with the three semivariograms against the grid spacing.
 df <- data.frame(spacing, MKV, MKV_morenugget, MKV_smallerrange)
 #save(df,file = "../results/MBGridSpacing_Amhara_Sensitivity.rda")
 
-df_lf <- df %>% pivot_longer(., cols = c("MKV", "MKV_morenugget", "MKV_smallerrange"))
+df_lf <- df %>% pivot_longer(cols = c("MKV", "MKV_morenugget", "MKV_smallerrange"))
 ggplot(data = df_lf) +
   geom_point(mapping = aes(x = spacing, y = value, shape = name), size = 3) +
   scale_shape_manual(values = c(0, 1, 2), labels = c("Original", "More nugget", "Smaller range"), name = "Semivariogram") +
@@ -166,11 +166,11 @@ ggplot(data = df_lf) +
 Compute the tolerable grid spacing and the corresponding expected sample size for a MKV value of 0.85.
 
 ```{r}
-(spacings_tol <- lapply(1:3, function(i) approx(x = df[, i + 1], y = df$spacing, xout = 0.85)$y) %>% as.numeric(.))
-#compute size of pixels
-res2 <- getGridTopology(grdAmhara) %>% data.frame(.)
+grdAmhara <- as(grdAmhara, "data.frame")
+(spacings_tol <- lapply(1:3, function(i) approx(x = df[, i + 1], y = df$spacing, xout = 0.85)$y) %>% as.numeric())
+cell_size <- 1
 #compute total area in km2
-A <- length(grdAmhara) * res2$cellsize[1] * res2$cellsize[2]
+A <- nrow(grdAmhara) * cell_size^2
 #compute required expected sample size
 (nreq <- A / spacings_tol^2)
 ```

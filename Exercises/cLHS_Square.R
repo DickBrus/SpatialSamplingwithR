@@ -16,7 +16,7 @@ ggplot(data = grdSquare) +
   geom_tile(data = myclhsample, mapping = aes(x = s1, y = s2), width = 1, height = 1, size = 1, colour = "red", fill = NA) +
   scale_x_continuous(name = "Easting") +
   scale_y_continuous(name = "Northing") +
-  scale_fill_continuous(name = "x", type = "viridis") +
+  scale_fill_viridis_c(name = "x") +
   coord_fixed()
 
 probs <- seq(from = 0, to = 1, length.out = 16 + 1)

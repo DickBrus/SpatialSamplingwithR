@@ -7,7 +7,7 @@ vgm_SphNug <- vgm(model = "Sph", nugget = nugget, psill = psill, range = 44.6)
 
 #read shape (geopackage) file and make grid
 
-field <- read_sf("../data", "Leest") %>%
+field <- read_sf("../data/leest.gpkg") %>%
   st_set_crs(NA_crs_)
 
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")

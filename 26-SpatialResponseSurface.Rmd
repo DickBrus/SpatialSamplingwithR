@@ -219,7 +219,7 @@ set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 9))
 mysample0 <- getdata(candi_all, units_stsi) %>%
-  dplyr::select(point_id, x, y, PC1, PC2, dpnt)
+  dplyr::select(-(ID_unit:Stratum))
 ```
 
 The locations of the nine sampling units are now optimised by minimising a criterion that is a function of the distance between the nine sampling points. Two minimisation criteria are implemented, a geometric criterion and a model-based criterion. 
@@ -345,7 +345,7 @@ set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(2, 9))
 mysample0 <- getdata(candi_all, units_stsi) %>%
-  dplyr::select(point_id, x, y, PC1, PC2, dpnt)
+  dplyr::select(-(ID_unit:Stratum))
 ```
 
 The data frame with the design points must be doubled. Note that the order of the design points must be equal to the order in the stratified subsample.
@@ -380,7 +380,7 @@ mysample <- mySRSsample$mysample
 ggplot(grdCRF) +
   geom_raster(aes(x = x / 1000, y = y / 1000, fill = PC1)) +
   geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
-  scale_fill_continuous(name = "PC1", type = "viridis") +
+  scale_fill_viridis_c(name = "PC1") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
@@ -410,7 +410,7 @@ Figure \@ref(fig:StrataCRF4CCRSD) shows two subareas used as strata in stratifie
 ```{r StrataCRF4CCRSD, echo = FALSE, out.width = "100%", fig.cap = "Two subareas of the Cotton Research Farm used as strata in stratified CCRSD sampling."}
 ggplot(grdCRF) +
   geom_raster(aes(x = x / 1000, y = y / 1000, fill = as.factor(subarea))) +
-  scale_fill_grey(name = "Stratum") +
+  scale_fill_grey(name = "Stratum", start = 0.6, end = 0.8) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
@@ -444,20 +444,20 @@ ggplot(grdCRF) +
   geom_raster(aes(x = x / 1000, y = y / 1000, fill = PC1)) +
   geom_point(data = candi_all, mapping = aes(x = x / 1000, y = y / 1000, shape = as.factor(dpnt9)), size = 1.5) +
   scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8), name = "Design pnt") +
-  scale_fill_continuous(name = "PC1", type = "viridis") +
+  scale_fill_viridis_c(name = "PC1") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 ```
 
-As before, `dpnt` is used as a stratum identifier to subsample the candidate sampling units. Note that the order of the variables in `mysample0` must be equal to the order in `candi_all`.  Finally, the number of rows in `data.frame` `ccd_df` with the design points is doubled.
+As before, `dpnt` is used as a stratum identifier to subsample the candidate sampling units. Finally, the number of rows in `data.frame` `ccd_df` with the design points is doubled.
 
 ```{r}
 set.seed(314)
 units_stsi <- sampling::strata(
   candi_all, stratanames = "dpnt", size = rep(1, 18))
 mysample0 <- getdata(candi_all, units_stsi) %>%
-  dplyr::select(point_id, x, y, PC1, PC2, subarea, dpnt)
+  dplyr::select(-(ID_unit:Stratum))
 ccd_df2 <- rbind(ccd_df, ccd_df)
 ```
 
@@ -494,7 +494,7 @@ mysamples$weight <- rep(c("Weight: 0", "Weight: 5"), each = 18)
 ggplot(mysamples) +
   geom_raster(data = grdCRF, mapping = aes(x = x / 1000, y = y / 1000, fill = PC1)) +
   geom_point(data = mysamples, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
-  scale_fill_continuous(name = "PC1", type = "viridis") +
+  scale_fill_viridis_c(name = "PC1") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   facet_wrap(~ weight, ncol = 1, nrow = 2) +

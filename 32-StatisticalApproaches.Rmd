@@ -24,7 +24,7 @@ On the contrary, in the model-based approach only one sample is considered, but 
 ```{r, echo=FALSE}
 library(gstat)
 library(spcosa)
-field <- read_sf("data", "Leest") %>%
+field <- read_sf("data/leest.gpkg") %>%
   st_set_crs(NA_crs_)
 grdField <- st_make_grid(field, cellsize = 1, what = "centers")
 grdField <- grdField[field] %>%
@@ -92,7 +92,7 @@ plt1 <- ggplot(data = samplesdf) +
   facet_wrap(~ sam, ncol = 5, nrow = 1)
 
 #Plot 5 simulated fields and spatial coverage sample
-grdF <- df_grdField %>% pivot_longer(., cols = c("pop1", "pop2", "pop3", "pop4", "pop5"))
+grdF <- df_grdField %>% pivot_longer(cols = c("pop1", "pop2", "pop3", "pop4", "pop5"))
 plt2 <- ggplot(data = grdF) +
   geom_tile(mapping = aes(x = x1, y = x2, fill = value)) +
   geom_point(data = mySCsample, mapping = aes(x = x1, y = x2), size = 1.5, colour = "red") +
@@ -366,7 +366,7 @@ preds$zpred[1] <- minsimz
 ```{r preferentialsample, echo = FALSE, out.width = "100%", fig.cap = "Preferential sample (size of open dots is proportional to value of study variable) from a simulated field (z) and map of ordinary kriging predictions (zpred)."}
 
 df <- data.frame(s1 = sim$s1, s2 = sim$s2, z = sim$z, zpred = preds$zpred)
-d <- df %>% pivot_longer(., cols = c("z", "zpred"))
+d <- df %>% pivot_longer(cols = c("z", "zpred"))
 
 sam <- as(sam, "data.frame")
 
@@ -426,7 +426,7 @@ n <- c(25, 100)
 n25 <- n[1] / (1 + (n[1] - 1) * meanrho)
 n100 <- n[2] / (1 + (n[2] - 1) * meanrho)
 df <- data.frame(meanrho, n25, n100)
-df_lf <- df %>% pivot_longer(., cols = c("n25", "n100"))
+df_lf <- df %>% pivot_longer(cols = c("n25", "n100"))
 df_lf$name <- factor(df_lf$name, levels = c("n25", "n100"), ordered = TRUE)
 ggplot(data = df_lf) +
   geom_line(mapping = aes(x = meanrho, y = value, linetype = name), size = 1) +
@@ -479,7 +479,7 @@ modelvar <- round(sigmasq / 10 * (1 + (10 - 1) * meanrho), 3)
 ggplot(data = simdf) +
     geom_point(mapping = aes(x = s1, y = s2, colour = z), size = 3) +
     geom_point(data = SRS, mapping = aes(x = s1, y = s2), size = 6, shape = 1, stroke = 1.5) +
-    scale_color_continuous(name = "z", type = "viridis") +
+    scale_colour_viridis_c(name = "z") +
     scale_x_continuous(name = "Easting", breaks = c(2, 4, 6, 8)) +
     scale_y_continuous(name = "Northing", breaks = c(2, 4, 6, 8)) +
     coord_fixed()
@@ -509,7 +509,7 @@ save(n, DBvar, MBvar, file = "results/MBvarDBvar.rda")
 load(file = "results/MBvarDBvar.rda")
 meanMBvar <- apply(MBvar, MARGIN = 1, FUN = mean)
 df <- data.frame(n, DBvar, meanMBvar)
-d <- df %>% pivot_longer(., cols = c("DBvar", "meanMBvar"))
+d <- df %>% pivot_longer(cols = c("DBvar", "meanMBvar"))
 ggplot(data = d) +
   geom_point(mapping = aes(x = n, y = value, shape = name), size = 2) +
   scale_shape_manual(values = c(3, 1), name = "Variance", labels = c("DB", "MB")) +
@@ -613,7 +613,7 @@ plt1 <- ggplot(data = mypopulation) +
   geom_raster(mapping = aes(x = s1, y = s2, fill = x)) +
 #  ggtitle("Covariate") +
   theme(plot.title = element_text(size = 16, hjust = 0.5)) +
-  scale_fill_continuous(name = "x", type = "viridis") +
+  scale_fill_viridis_c(name = "x") +
   scale_y_continuous(name = "Northing") +
   scale_x_continuous(name = "Easting") +
   coord_fixed()
@@ -622,7 +622,7 @@ plt2 <- ggplot(data = mypopulation) +
   geom_raster(mapping = aes(x = s1, y = s2, fill = z)) +
 #  ggtitle("Study variable") +
   theme(plot.title = element_text(size = 16, hjust = 0.5)) +
-  scale_fill_continuous(name = "z", type = "viridis") +
+  scale_fill_viridis_c(name = "z") +
   scale_y_continuous(name = "Northing") +
   scale_x_continuous(name = "Easting") +
   coord_fixed()
@@ -782,7 +782,7 @@ df <- data.frame(confidence = 1 - alphas,
                  n50 = coverage_regr_av[3, ],
                  n100 = coverage_regr_av[4, ])
 
-d <- df %>% pivot_longer(., cols = c("n10", "n25", "n50", "n100"))
+d <- df %>% pivot_longer(cols = c("n10", "n25", "n50", "n100"))
 d$name <- factor(d$name, levels = c("n10", "n25", "n50", "n100"), ordered = TRUE)
 
 ggplot(d) +
@@ -801,7 +801,7 @@ df <- data.frame(confidence = 1 - alphas,
                  n50 = coverage_ratio_av[3, ],
                  n100 = coverage_ratio_av[4, ])
 
-d <- df %>% pivot_longer(., cols = c("n10", "n25", "n50", "n100"))
+d <- df %>% pivot_longer(cols = c("n10", "n25", "n50", "n100"))
 d$name <- factor(d$name, levels = c("n10", "n25", "n50", "n100"), ordered = TRUE)
 
 ggplot(d) +

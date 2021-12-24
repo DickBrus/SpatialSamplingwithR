@@ -8,7 +8,7 @@ library(sswr)
 
 SIpairs <- function(h, n, area) {
   topo <- as(getGridTopology(area), "data.frame")
-  cellsize <- topo$cellsize[1]
+  cell_size <- topo$cellsize[1]
   xy <- coordinates(area)
   dxy <- numeric(length = 2)
   xypnts1 <- xypnts2 <- NULL
@@ -16,8 +16,8 @@ SIpairs <- function(h, n, area) {
   while (i <= n) {
     id1 <- sample(length(area), size = 1)
     xypnt1 <- xy[id1, ]
-    xypnt1[1] <- jitter(xypnt1[1], amount = cellsize / 2)
-    xypnt1[2] <- jitter(xypnt1[2], amount = cellsize / 2)
+    xypnt1[1] <- jitter(xypnt1[1], amount = cell_size / 2)
+    xypnt1[2] <- jitter(xypnt1[2], amount = cell_size / 2)
     angle <- runif(n = 1, min = 0, max = 2 * pi)
     dxy[1] <- h * sin(angle)
     dxy[2] <- h * cos(angle)

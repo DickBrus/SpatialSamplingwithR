@@ -150,8 +150,8 @@ save(mz_eco_HT, mz_eco_ratio, mz_eco_regr, mz_eco_synt, mz_eco_extsynt, file = "
 
 ```{r TableRatiovsHTEstimatesEcoregions, echo = FALSE}
 load(file = "results/MeanAGB_ecoregions.rda")
-sd_mz_HT <- apply(mz_eco_HT, MARGIN = 1, FUN = var, na.rm = TRUE) %>% sqrt(.) %>% round(., 1)
-sd_mz_ratio <- apply(mz_eco_ratio, MARGIN = 1, FUN = var, na.rm = TRUE) %>% sqrt(.) %>% round(., 1)
+sd_mz_HT <- apply(mz_eco_HT, MARGIN = 1, FUN = var, na.rm = TRUE) %>% sqrt(.) %>% round(1)
+sd_mz_ratio <- apply(mz_eco_ratio, MARGIN = 1, FUN = var, na.rm = TRUE) %>% sqrt(.) %>% round(1)
 notNA <- apply(mz_eco_HT, MARGIN = 1, FUN = function(x) {
   sum(!is.na(x))})
 N_eco <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = length)
@@ -249,12 +249,13 @@ mz_pop <- tapply(grdAmazonia$AGB, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 ```{r}
 library(forestinventory)
 n <- 200
+grdAmazonia <- grdAmazonia %>%
+  mutate(lnSWIR2 = log(SWIR2),
+         ind = 0L)
 set.seed(314)
 units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
-grdAmazonia$ind <- rep(0, nrow(grdAmazonia))
-grdAmazonia$ind[units] <- 1
-grdAmazonia$AGB[grdAmazonia$ind == 0] <- NA
-grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
+grdAmazonia$ind[units] <- 1L
+grdAmazonia$AGB[grdAmazonia$ind == 0L] <- NA
 mx_eco_pop <- tapply(
   grdAmazonia$lnSWIR2, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 mX_eco_pop <- data.frame(
@@ -266,7 +267,6 @@ res <- forestinventory::twophase(AGB ~ lnSWIR2, data = grdAmazonia,
   psmall = TRUE, exhaustive = mX_eco_pop)
 regr <- res$estimation
 ```
-
 (ref:TableRegressionEstimatesEcoregionslabel) Regression estimates of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, for simple random sample without replacement of size 200, using lnSWIR2 as a predictor. For explanation of variances of regression estimator, see text. n2G: sample size of ecoregion; NA: not available; NaN: not a number.
 
 ```{r TableRegressionEstimatesEcoregions, echo = FALSE}
@@ -563,13 +563,13 @@ load(file = "results/ModelBasedPredictionsAGB_Amazonia.rda")
 head(predictions)
 ```
 
-Besides a prediction (column `var1.pred`), for every population unit the variance of the prediction error is computed (`var1.var`). The unit-wise predictions can be averaged across all units of an ecoregion to obtain a model-based prediction of the mean of that ecoregion.
+Besides a prediction (variable `var1.pred`), for every population unit the variance of the prediction error is computed (`var1.var`). The unit-wise predictions can be averaged across all units of an ecoregion to obtain a model-based prediction of the mean of that ecoregion.
 
 ```{r}
 AGBpred_unit <- predictions$var1.pred
 grdAmazonia <- as(grdAmazonia, "data.frame")
 mz_eco_mb <- tapply(AGBpred_unit, INDEX = grdAmazonia$Ecoregion,
-                    FUN = mean) %>% round(., 1)
+                    FUN = mean) %>% round(1)
 ```
 
 A difficulty is the computation of the standard error of these model-based predictions of the ecoregion mean. We cannot simply sum the unit-wise variances and divide the sum by the squared number of units, because the prediction errors of units with a mutual distance smaller than the estimated range of the spherical semivariogram are correlated. A straightforward approach to obtain the standard error of the predicted mean is geostatistical simulation\index{Geostatistical simulation}. A large number of maps are simulated, conditional on the selected sample. For an infinite number of maps, the "average map", i.e. the map obtained by averaging for each unit all simulated values of that unit, is equal to the map with predicted AGB. For each simulated map, the average of the simulated values across all units of an ecoregion is computed. This results in as many averages as we have simulated maps. The variance of the averages of an ecoregion is an estimate of the variance of the predicted mean of that ecoregion. To reduce computing time a 5 km $\times$ 5 km subgrid of `grdAmazonia` is used in the geostatistical simulation.  

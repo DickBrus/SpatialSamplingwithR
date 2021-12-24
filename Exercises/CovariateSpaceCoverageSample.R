@@ -25,7 +25,7 @@ ggplot(grdHunterValley) +
 ggplot(data = grdHunterValley) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = cti)) +
   geom_point(data = myCSCsample, mapping = aes(x = s1 / 1000, y = s2 / 1000), colour = "orange", size = 1) +
-  scale_fill_continuous(name = "twi", type = "viridis") +
+  scale_fill_viridis_c(name = "twi") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()

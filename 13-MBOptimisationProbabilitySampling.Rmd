@@ -119,7 +119,7 @@ The few data make that the sample semivariogram is very noisy. For the moment I 
 For simple random sampling we must compute the mean semivariance within the field (Equation \@ref(eq:MBdesignvarSI)). As shown in the next code chunk, the mean semivariance is approximated by discretising the field by a square grid of 2,000 points, computing the 2,000 $\times$ 2,000 matrix with distances between all pairs of discretisation nodes, transforming this distance matrix into a semivariance matrix using function `variogramLine` of package **gstat** [@peb04], and finally averaging the semivariances. Note that in this case we do not need to replace the zeroes on the diagonal of the semivariance matrix by the nugget, as a model without nugget is fitted. The geopackage file is read with function `read_sf` of package **sf** [@sf], resulting in a simple feature object. The projection attributes of this object are removed with function `st_set_crs`. The centres of square grid cells are selected with function `st_make_grid`. The centres inside the field are selected with `mygrid[field]`, and finally the coordinates are extracted with function `st_coordinates`.  
 
 ```{r ExiVarSILeest}
-field <- read_sf("data/Leest.gpkg") %>%
+field <- read_sf("data/leest.gpkg") %>%
   st_set_crs(NA_crs_)
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
 mygrid <- mygrid[field] %>%
@@ -441,7 +441,7 @@ setup <- createBayesianSetup(likelihood = ll, prior = priors,
   best = bestML, names = c("lambda", "xi", "phi"))
 set.seed(314)
 res <- runMCMC(setup, sampler = "DEzs")
-MCMCsample <- getSample(res, start = 1000, numSamples = 1000) %>% data.frame(.)
+MCMCsample <- getSample(res, start = 1000, numSamples = 1000) %>% data.frame()
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
@@ -477,7 +477,7 @@ ggplot(df_lf, mapping = aes(x = d, y = value,  group = name)) +
 The evaluated sampling design is the same as used in Subsection \@ref(AnalyticalApproach) for field Leest: stratified simple random sampling, using compact geographical strata of equal size, a total sample size of 25 points, and one point per stratum. 
 
 ```{r, echo = FALSE}
-field <- read_sf("data", "Melle") %>%
+field <- read_sf("data/melle.gpkg") %>%
   st_set_crs(NA_crs_)
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
 mygrid <- mygrid[field] %>%
@@ -574,7 +574,7 @@ ggplot(data = Zsim) +
   scale_x_continuous(name = "") +
   scale_y_continuous(name = "") +
   coord_fixed(ratio = 1) +
-  scale_fill_continuous(name = "Nsim", type = "viridis", limits = c(0, 100)) +
+  scale_fill_viridis_c(name = "Nsim", limits = c(0, 100)) +
   facet_wrap(~ fld, nrow = 4, ncol = 4)
 ```
 
@@ -746,14 +746,14 @@ The predictions and their standard errors are shown in Figure \@ref(fig:predicte
 ```{r predictedlnSOM, echo = FALSE, out.width = "100%", fig.cap = "(ref:predictedlnSOMlabel)"}
 plt1 <- ggplot(grdXuancheng) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = lnSOMpred)) +
-  scale_fill_continuous(name = "lnSOM", type = "viridis") +
+  scale_fill_viridis_c(name = "lnSOM") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
 
 plt2 <- ggplot(grdXuancheng) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = sqrt(varpred))) +
-  scale_fill_continuous(name = "se", type = "viridis") +
+  scale_fill_viridis_c(name = "se") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()

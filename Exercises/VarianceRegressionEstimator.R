@@ -51,7 +51,7 @@ with(df, (VarMean_exh - VarMean_sam) / VarMean_sam)
 with(df, (ApproxVar - VarMean_sam) / VarMean_sam)
 
 library(tidyverse)
-df_lf <- df %>% pivot_longer(., cols = c("VarMean_exh", "VarMean_sam", "ApproxVar"))
+df_lf <- df %>% pivot_longer(cols = c("VarMean_exh", "VarMean_sam", "ApproxVar"))
 
 library(ggplot2)
 ggplot(df_lf) +

@@ -27,15 +27,15 @@ ggplot() +
         plot.background = element_blank())
 ```
 
-Argument `n` in function `spsample` is used to set the sample size. Note that this is the *expected* sample size\index{Expected sample size}, i.e. on average over repeated sampling the sample size is 40. In Figure \@ref(fig:sampleSY) the number of selected sampling points equals `r nrow(mySYsample)`. Given the expected sample size, the spacing\index{Grid spacing} of the square grid can be computed with $\sqrt{A/n}$, with $A$ the area of the study area. This area $A$ can be computed by the total number of cells of the discretisation grid multiplied by the area of a grid cell. Function `getGridTopology` is used to retrieve the cell size of the grid cells of the `SpatialPixelsDataFrame`. Note that this area is smaller than the number of grid cells in the horizontal direction multiplied by the number of grid cells in the vertical direction multiplied by the grid cell area, as we have non-availables (built-up areas, roads, etc.).   
+Argument `n` in function `spsample` is used to set the sample size. Note that this is the *expected* sample size\index{Expected sample size}, i.e. on average over repeated sampling the sample size is 40. In Figure \@ref(fig:sampleSY) the number of selected sampling points equals `r nrow(mySYsample)`. Given the expected sample size, the spacing\index{Grid spacing} of the square grid can be computed with $\sqrt{A/n}$, with $A$ the area of the study area. This area $A$ can be computed by the total number of cells of the discretisation grid multiplied by the area of a grid cell. Note that the area of the study area is smaller than the number of grid cells in the horizontal direction multiplied by the number of grid cells in the vertical direction multiplied by the grid cell area, as we have non-availables (built-up areas, roads, etc.).   
 
 ```{r}
-gridtop <- as(getGridTopology(grdVoorst), "data.frame")
-A <- nrow(grdVoorst) * gridtop$cellsize[1] * gridtop$cellsize[2]
+cell_size <- 25
+A <- nrow(grdVoorst) * cell_size^2
 (spacing <- sqrt(A / n))
 ```
 
-Instead of argument `n` we may use argument `cellsize` to select a grid with a specified spacing. The expected sample size of a square grid can then be computed with $A/spacing^2$. 
+Instead of argument `n` we may use argument `cell_size` to select a grid with a specified spacing. The expected sample size of a square grid can then be computed with $A/spacing^2$. 
 
 The spatial coverage\index{Spatial coverage} with random grid sampling is better than that with stratified random sampling using compact geographical strata (Section \@ref(geostrata)), even with one sampling unit per geostratum. Consequently, in general systematic random sampling results in more precise estimates of the mean or total.
 
@@ -223,7 +223,7 @@ The following code can be used for random selection of triangular grids.
 ```{r}
 SY_triangular <- function(dx, grd) {
   dy <- sqrt(3) / 2 * dx
-  # randomly select offset
+  #randomly select offset
   offset_x <- runif(1, min = 0, max = dx)
   offset_y <- runif(1, min = 0, max = dy)
   #compute x-coordinates of 1 row and y-coordinates of 1 column
@@ -453,7 +453,7 @@ ggplot(as(grdVoorst, "data.frame")) +
 
 This method yields an approximated variance of `r round(av_STSI_mz,1)` (g kg^-1^)^2^, which is for the selected triangular grid  slightly larger than the simple random sample approximation. Hereafter we will see that on average the stratified simple random sample approximation of the variance is smaller than the simple random sample approximation. For an individual sample the reverse can be true.
 
-A similar approach for approximating the variance was proposed by Mat&eacute;rn [@Matern1947] a long time ago. In this approach the variance is approximated by computing the squared difference of two local means. A local mean is computed by linear interpolation of the observations at the two nodes on the diagonal of a square sampling grid cell. The four corners of a square sampling grid cell serve as a group. Every sampling grid node belongs to four groups, and so the observation at a sampling grid node is used four times in computing a local mean. Near the edges of the study area we have incomplete groups: one, two, or even three observations are missing. To compute a squared difference these missing values are replaced by the sample mean. This results in as many squared differences as we have groups. Note that the number of groups is larger than the sample size. The squared differences are computed by
+A similar approach for approximating the variance was proposed by Mat&eacute;rn [@Matern1947] a long time ago. In this approach the variance is approximated by computing the squared difference of two local means. A local mean is computed by linear interpolation of the observations at the two nodes on the diagonal of a square sampling grid cell. The four corners of a sampling grid cell serve as a group. Every sampling grid node belongs to four groups, and so the observation at a sampling grid node is used four times in computing a local mean. Near the edges of the study area we have incomplete groups: one, two, or even three observations are missing. To compute a squared difference these missing values are replaced by the sample mean. This results in as many squared differences as we have groups. Note that the number of groups is larger than the sample size. The squared differences are computed by
 
 \begin{equation}
 \begin{split}
@@ -488,7 +488,7 @@ matern <- function(s) {
 }
 ```
 
-Before using this function the data frame with the sample data must be extended with two variables: an index $i$ for the column number and an index $j$ for the row number of the square grid. This is done with function `mutate` of the **dplyr** package [@dplyr].
+Before using this function the data frame with the sample data must be extended with two variables: an index $i$ for the column number and an index $j$ for the row number of the square grid. In the next code chunk this is done with function `mutate` of package **dplyr** [@dplyr] which is part of package **tidyverse** [@Wickham2019]. We have seen the pipe operator `%>%` of package **magrittr** [@magrittr] before in Section \@ref(CDF). If you are not familiar with  **tidyverse* I recommend to read the excellent book R for Data Science [@Wickham2017]. 
 
 ```{r}
 mySYsample <- mySYsample %>%
@@ -506,7 +506,7 @@ Figure \@ref(fig:SamplingDistributionSY) shows the approximated sampling distrib
 load(file = "results/SYVoorst_square.rda")
 estimates <- data.frame(mz_SY_HT, mz_SY_ratio, mz_SI)
 names(estimates) <- c("SY.HT", "SY.ratio", "SI")
-df <- estimates %>% pivot_longer(.,cols = c("SY.HT", "SY.ratio", "SI"))
+df <- estimates %>% pivot_longer(cols = c("SY.HT", "SY.ratio", "SI"))
 df$name <- factor(df$name, levels = c("SY.ratio", "SY.HT", "SI"), ordered = TRUE)
 ggplot(data = df) +
     geom_boxplot(aes(y = value, x = name)) +
@@ -529,7 +529,7 @@ The average of the 10,000 approximated variances treating the systematic sample 
 ```{r SamplingDistributionApproxVarSY,  echo = FALSE, fig.asp = .8, fig.width=5, fig.cap = "(ref:SamplingDistributionApproxVarSYlabel)"}
 estimates <- data.frame(SI = sqrt(av_SI_mz), STSI = sqrt(av_STSI_mz),
                         Mat = sqrt(av_Matern_mz))
-df <- estimates %>% pivot_longer(., cols = c("SI", "STSI", "Mat"))
+df <- estimates %>% pivot_longer(cols = c("SI", "STSI", "Mat"))
 df$name <- factor(df$name, levels = c("SI", "STSI", "Mat"), ordered = TRUE)
 ggplot(data = df) +
     geom_boxplot(aes(y = value, x = name)) +

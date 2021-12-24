@@ -156,7 +156,7 @@ mynestedsample$factor1 <- rep(1:2)
 mynestedsample$factor2 <- rep(1:2, each = 2)
 mynestedsample$factor3 <- rep(1:2, each = 4)
 
-df <- mynestedsample %>% pivot_longer(., cols = c("factor1", "factor2", "factor3"))
+df <- mynestedsample %>% pivot_longer(cols = c("factor1", "factor2", "factor3"))
 ggplot(df) +
   geom_tile(data = grid, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(aes(x = s1 / 1000, y = s2 / 1000), shape = 4, size = 0.8) +
@@ -178,7 +178,7 @@ mynestedsample_2$factor3 <- rep(1:2, each = 2)
 ```
 
 ```{r FactorLevelsBalancedNestedSample2, echo = FALSE, out.width = "100%", fig.asp = 0.30, fig.cap = "The levels of the three factors assigned to the sampling points of the balanced nested sample selected with the second version."}
-df <- mynestedsample_2 %>% pivot_longer(., cols = c("factor1", "factor2", "factor3"))
+df <- mynestedsample_2 %>% pivot_longer(cols = c("factor1", "factor2", "factor3"))
 ggplot(df) +
   geom_tile(data = grid, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(aes(x = s1 / 1000, y = s2 / 1000), shape = 4, size = 0.8) +
@@ -224,7 +224,7 @@ IPP sampling is straightforward for simple random sampling\index{Simple random s
 ```{r SIPairs}
 SIpairs <- function(h, n, area) {
   topo <- as(getGridTopology(area), "data.frame")
-  cellsize <- topo$cellsize[1]
+  cell_size <- topo$cellsize[1]
   xy <- coordinates(area)
   dxy <- numeric(length = 2)
   xypnts1 <- xypnts2 <- NULL
@@ -232,8 +232,8 @@ SIpairs <- function(h, n, area) {
   while (i <= n) {
     id1 <- sample(length(area), size = 1)
     xypnt1 <- xy[id1, ]
-    xypnt1[1] <- jitter(xypnt1[1], amount = cellsize / 2)
-    xypnt1[2] <- jitter(xypnt1[2], amount = cellsize / 2)
+    xypnt1[1] <- jitter(xypnt1[1], amount = cell_size / 2)
+    xypnt1[2] <- jitter(xypnt1[2], amount = cell_size / 2)
     angle <- runif(n = 1, min = 0, max = 2 * pi)
     dxy[1] <- h * sin(angle); dxy[2] <- h * cos(angle)
     xypnt2 <- as.data.frame(t(xypnt1 + dxy))
@@ -264,7 +264,7 @@ for (i in seq_len(length(h))) {
 }
 ```
 
-The `data.frame` `allpairs` has four columns: the spatial coordinates of the first and of the second point of a pair. An overlay is made of the selected points with the `SpatialPixelsDataFrame`, and the cti values are extracted.
+The `data.frame` `allpairs` has four variables: the spatial coordinates of the first and of the second point of a pair. An overlay is made of the selected points with the `SpatialPixelsDataFrame`, and the cti values are extracted.
 
 ```{r Allpairs}
 pnt1 <- allpairs[, c(1, 2)]

@@ -6,7 +6,7 @@ library(spcosa)
 set.seed(31415)
 
 # read field of interest, remove projection attributes, and convert to spatial object 
-field <- read_sf("../data", "Leest") %>%
+field <- read_sf("../data/leest.gpkg") %>%
   st_set_crs(NA_crs_) %>%
   as_Spatial
 

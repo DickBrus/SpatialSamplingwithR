@@ -24,7 +24,7 @@ mysample_df <- data.frame(as(mysample, "data.frame"), z = mysampledata$z)
 
 head(mysample_df)
 
-#add column with identifier for composite
+#add variable with identifier for composite
 mysample_df$composite <- rep(1:n_h)
 
 #compute means for composites

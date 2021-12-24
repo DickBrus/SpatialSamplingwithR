@@ -24,15 +24,12 @@ Due to built-up areas, roads, etc., the PSUs in Voorst have unequal size, i.e. t
 ```
 
 ```{r}
-w <- 500 #width of PSUs
-s1bnd <- seq(
-  from = min(grdVoorst$s1) + w,
-  to = min(grdVoorst$s1) + (11 * w),
-  by = w) + 12.5
-s1f <- findInterval(grdVoorst$s1, s1bnd)
-s2bnd <- min(grdVoorst$s2) + w + 12.5
-s2f <- findInterval(grdVoorst$s2, s2bnd)
-grdVoorst$psu <- as.character(interaction(s1f, s2f))
+cell_size <- 25
+w <- 500 #width of zones
+grdVoorst <- grdVoorst %>%
+    mutate(zone_s1 = s1 %>% findInterval(min(s1) + 1:11 * w + 0.5 * cell_size),
+           zone_s2  = s2 %>% findInterval(min(s2) + w + 0.5 * cell_size),
+           psu = str_c(zone_s1, zone_s2, sep = "_"))
 ```
 
 In the next code  chunk a function is defined to select a two-stage cluster random sample from an infinite population, discretised by finite number of points (centres of grid cells).
@@ -57,23 +54,34 @@ Note that both the PSUs and the SSUs are selected with replacement. If a grid ce
 
 In the next code chunk function `twostage` is used to select four times a PSU ($n=4$), with probabilities proportional to size and with replacement (ppswr). The second stage sample size equals 10 for all PSUs ($m_j=10,\; j = 1, \dots, N$). These SSUs are selected by simple random sampling. 
 
-```{r}
+```{r, eval = FALSE, echo = FALSE}
 n <- 4
 m <- 10
 set.seed(314)
 mysample <- twostage(sframe = grdVoorst, psu = "psu", n = n, m = m)
-cellsize <- 25
-mysample$s1 <- jitter(mysample$s1, amount = cellsize / 2)
-mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
+cell_size <- 25
+mysample$s1 <- jitter(mysample$s1, amount = cell_size / 2)
+mysample$s2 <- jitter(mysample$s2, amount = cell_size / 2)
+```
+
+```{r}
+n <- 4
+m <- 10
+cell_size <- 25
+set.seed(314)
+mysample <- grdVoorst %>%
+  twostage(psu = "psu", n = n, m = m) %>%
+  mutate(s1 = s1 %>% jitter(amount = cell_size / 2),
+         s2 = s2 %>% jitter(amount = cell_size / 2))
 ```
 
 Figure \@ref(fig:TwostageVoorst) shows the selected sample.
 
 ```{r TwostageVoorst, echo = FALSE, out.width = '100%', fig.cap = "Two-stage cluster random sample from Voorst. PSUs are 0.5 km squares, built-up areas, roads, etc. excluded. Four times a PSU is selected by ppswr. Each time a PSU is selected, ten SSUs (points) are selected from that PSU by simple random sampling."}
-ggplot(data = grdVoorst) +
-  geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = as.factor(psu))) +
+ggplot(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = as.factor(psu))) +
+  geom_raster() +
   scale_fill_viridis_d(alpha = 0.5) +
-  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1.5) +
+  geom_point(data = mysample, size = 1.5) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
@@ -185,13 +193,21 @@ and $m$ as above.
 
 In **R** the population mean and the sampling variance of the estimator of the mean can be estimated as follows.
 
-```{r}
+```{r, echo = FALSE, eval = FALSE}
 mz_psu <- tapply(mysample$z, INDEX = mysample$psudraw, FUN = mean)
 mz <- mean(mz_psu)
 se_mz <- sqrt(var(mz_psu) / n)
 ```
 
-The estimated mean equals `r formatC(mz, 1, format = "f")` g kg^-1^, and the estimated standard error equals `r formatC(se_mz, 1, format = "f")` g kg^-1^. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.
+```{r}
+est <- mysample %>%
+  group_by(psudraw) %>%
+  summarise(mz_psu = mean(z)) %>%
+  summarise(mz = mean(mz_psu),
+            se_mz = sqrt(var(mz_psu) / n()))
+```
+
+The estimated mean equals `r formatC(est$mz, 1, format = "f")` g kg^-1^, and the estimated standard error equals `r formatC(est$se_mz, 1, format = "f")` g kg^-1^. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.
 
 ```{r}
 print(mean(mysample$z))
@@ -247,7 +263,7 @@ save(mz, mz_SI, v_mz, file = "results/Twostage_Voorst.rda")
 load(file = "results/Twostage_Voorst.rda")
 estimates <- data.frame(mz, mz_SI)
 names(estimates) <- c("Twostage", "SI")
-df <- estimates %>% pivot_longer(., cols = c("Twostage", "SI"))
+df <- estimates %>% pivot_longer(cols = c("Twostage", "SI"))
 df$name <- factor(df$name, levels = c("Twostage", "SI"), ordered = TRUE)
 ggplot(data = df) +
     geom_boxplot(aes(y = value, x = name)) +
@@ -338,7 +354,7 @@ mysample$ssunits <- units$ID_unit
 
 The population mean is estimated by the $\pi$ estimator and the ratio estimator.
 
-```{r}
+```{r, echo = FALSE, eval = FALSE}
 N <- length(unique(grdVoorst$psu))
 M_psu <- tapply(grdVoorst$z, INDEX = grdVoorst$psu, FUN = length)
 pi_psu <- n / N
@@ -351,7 +367,21 @@ M_HT <- sum(1 / mysample$pi)
 mz_ratio <- tz_HT / M_HT
 ```
 
-The $\pi$ estimate equals 79.0, and the ratio estimate equals `r formatC(mz_ratio, 1, format = "f")` g kg^-1^. The $\pi$ estimate of the population mean can also be computed by first estimating totals of PSUs, see Equation \@ref(eq:EstTotalTwostageEqual). 
+```{r}
+N <- length(unique(grdVoorst$psu))
+M_psu <- tapply(grdVoorst$z, INDEX = grdVoorst$psu, FUN = length)
+pi_psu <- n / N
+pi_ssu <- m / M_psu[mysample$psu]
+est <- mysample %>%
+  mutate(pi = pi_psu * pi_ssu,
+         z_piexpanded = z / pi) %>%
+  summarise(tz_HT = sum(z_piexpanded),
+            mz_HT = tz_HT / M,
+            M_HT = sum(1 / mysample$pi),
+            mz_ratio = tz_HT / M_HT)
+```
+
+The $\pi$ estimate equals `r formatC(est$mz_HT, 1, format = "f")` g kg^-1^, and the ratio estimate equals `r formatC(est$mz_ratio, 1, format = "f")` g kg^-1^. The $\pi$ estimate of the population mean can also be computed by first estimating totals of PSUs, see Equation \@ref(eq:EstTotalTwostageEqual). 
 
 ```{r}
 tz_psu <- tapply(mysample$z / pi_ssu, INDEX = mysample$psu, FUN = sum)
@@ -416,11 +446,15 @@ for (i in 1:3) {
   mysample_h <- twostage(sframe = grd_h, psu = "psu", n = n_h[i], m = m)
   mysample <- rbind(mysample, mysample_h)
 }
-mysample$s1 <- jitter(mysample$s1, amount = cellsize / 2)
-mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
+mysample$s1 <- jitter(mysample$s1, amount = cell_size / 2)
+mysample$s2 <- jitter(mysample$s2, amount = cell_size / 2)
 ```
 
-```{r STtwostage, echo = FALSE, out.width = '100%', fig.cap = "Stratified two-stage random sample from Voorst. Strata are groups of eight PSUs (0.5 km squares) within 2 km $\\times$ 1 km blocks. From each stratum two times a PSU is selected by ppswr, and six SSUs (points) are selected per PSU draw by simple random sampling."}
+```{r STtwostage, echo = FALSE, out.width = "100%", fig.cap = "Stratified two-stage random sample from Voorst. Strata are groups of eight PSUs (0.5 km squares) within 2 km $\\times$ 1 km blocks. From each stratum two times a PSU is selected by ppswr, and six SSUs (points) are selected per PSU draw by simple random sampling."}
+s1bnd <- seq(
+  from = min(grdVoorst$s1) + w,
+  to = min(grdVoorst$s1) + (11 * w),
+  by = w) + 12.5
 ggplot(grdVoorst) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000, fill = as.factor(psu))) +
   scale_fill_viridis_d(alpha = 0.5) +

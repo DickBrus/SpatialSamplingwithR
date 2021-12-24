@@ -231,9 +231,9 @@ The two maps are evaluated by statistical validation with a stratified simple ra
 library(terra)
 
 rmap <- rast(x="data/Geo_Xuancheng.tif")
-grd <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
-units <- which(grd$Geo_Xuancheng == 99)
-grd <- grd[-units, ]
+grd <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE) %>%
+  filter(Geo_Xuancheng != 99)
+
 #1: granite and granodiorite
 #2: pyroclastic rocks
 #3: conglomerate
@@ -257,7 +257,7 @@ coord_fixed()
 
 ### Estimation of the population mean error and mean squared error
 
-To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in `data.frame` `sample_test` is `SOM_A_hori`. Four new columns are added to `sample_test` using function `mutate`, by computing the prediction errors for KED and RF and squaring these errors.
+To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample\index{Validation sample} in `data.frame` `sample_test` is `SOM_A_hori`. Four new variables are added to `sample_test` using function `mutate`, by computing the prediction errors for KED and RF and squaring these errors.
 
 
 ```{r}
@@ -270,13 +270,16 @@ sample_test <- sample_test %>%
       e2RF = (SOM_A_hori - SOM_RF)^2)
 ```
 
-These four new variables now are our study variables of which we would like to estimate the population means. The population means can be estimated as explained in Chapter \@ref(STSI). First, the stratum weights are computed, that is the relative number of raster cells.
-
-
+These four new variables now are our study variables of which we would like to estimate the population means. The population means can be estimated as explained in Chapter \@ref(STSI). First, the stratum sizes and stratum weights are computed, i.e. the number and relative number of raster cells per stratum (Figure \@ref(fig:validationsample)).
 
 ```{r}
-strataXuancheng <- strataXuancheng %>%
-    mutate(w_h = N_h / sum(N_h))
+rmap <- rast(x="data/Geo_Xuancheng.tif")
+strata_Xuancheng <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE) %>%
+  rename(stratum = Geo_Xuancheng) %>%
+  filter(stratum != 99) %>%
+  group_by(stratum) %>%
+  summarise(N_h = n()) %>%
+  mutate(w_h = N_h / sum(N_h))
 ```
 
 Next, the stratum means of the prediction errors, obtained with KED and RF, are estimated by the sample means, and the population mean of the errors are estimated by the weighted mean of the estimated stratum means.
@@ -287,7 +290,7 @@ me <- sample_test %>%
     summarise(
       meKED_h = mean(eKED),
       meRF_h = mean(eRF)) %>%
-    left_join(strataXuancheng, by = "stratum") %>%
+    left_join(strata_Xuancheng, by = "stratum") %>%
     summarise(
       meKED = sum(w_h * meKED_h),
       meRF = sum(w_h * meRF_h))
@@ -301,7 +304,7 @@ mse <- sample_test %>%
     summarise(
       mseKED_h = mean(e2KED),
       mseRF_h = mean(e2RF)) %>%
-    left_join(strataXuancheng, by = "stratum") %>%
+    left_join(strata_Xuancheng, by = "stratum") %>%
     summarise(
       mseKED = sum(w_h * mseKED_h),
       mseRF = sum(w_h * mseRF_h))
@@ -318,27 +321,27 @@ The estimated MSE of the KED map equals `r formatC(mse$mseKED, 1, format = "f")`
 We are uncertain about both population MSEs, as we measured the squared errors at `r nrow(sample_test)` sampling points only. So, we would like to know how uncertain we are. This uncertainty is quantified by the standard error of the estimator of the population MSE. A problem is that in the second stratum we have only one sampling point. So, for this stratum we cannot compute the variance of the squared errors. To compute the variance we need at least two sampling points. 
 
 ```{r}
-lut <- sample_test %>%
+n_strata <- sample_test %>%
     group_by(stratum) %>%
     summarise(n = n())
-lut
+n_strata
 ```
 
-A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to the look-up table `lut`. This table is subsequently used  to add the collapsed stratum identifiers to `data.frames` `sample_test` and `strataXuancheng`.
+A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to `n_strata`. This table is subsequently used  to add the collapsed stratum identifiers to `data.frames` `sample_test` and `strata_Xuancheng`.
 
 ```{r}
-lut <- lut %>%
+n_strata <- n_strata %>%
     mutate(stratum_clp = c(1, 1:7))
 sample_test <- sample_test %>%
-    left_join(lut, by = "stratum")
-strataXuancheng <- strataXuancheng %>%
-    left_join(lut, by = "stratum")
+    left_join(n_strata, by = "stratum")
+strata_Xuancheng <- strata_Xuancheng %>%
+    left_join(n_strata, by = "stratum")
 ```
 
 The collapsed strata\index{Collapsed strata} can be used to estimate the standard errors of the estimators of the  population MSEs. As a first step the weights and the sample sizes of the collapsed strata are computed.
 
 ```{r}
-strataXuancheng_clp <- strataXuancheng %>%
+strata_clp_Xuancheng <- strata_Xuancheng %>%
     group_by(stratum_clp) %>%
     summarise(N_hc = sum(N_h)) %>%
     mutate(w_hc = N_hc / sum(N_hc)) %>%
@@ -359,7 +362,7 @@ se <- sample_test %>%
       s2e2_KED_hc = var(e2KED),
       s2e_RF_hc = var(eRF),
       s2e2_RF_hc = var(e2RF)) %>%
-    left_join(strataXuancheng_clp, by = "stratum_clp") %>%
+    left_join(strata_clp_Xuancheng, by = "stratum_clp") %>%
     summarise(
       se_me_KED = sqrt(sum(w_hc^2 * s2e_KED_hc / n_hc)),
       se_mse_KED = sqrt(sum(w_hc^2 * s2e2_KED_hc / n_hc)),
@@ -395,7 +398,7 @@ To estimate the MEC, we must first estimate the population variance of the study
 ```{r}
 library(surveyplanning)
 s2z <- sample_test %>%
-  left_join(strataXuancheng_clp, by = "stratum_clp") %>%
+  left_join(strata_clp_Xuancheng, by = "stratum_clp") %>%
   summarise(s2z = s2(SOM_A_hori, w = N_hc / n_hc)) %>%
   flatten_dbl
 ```
@@ -430,10 +433,10 @@ Now we test whether the two population MSEs  differ significantly. This can be d
 ```{r, echo = FALSE, eval = FALSE}
 sample_test$de2 <- sample_test$e2KED - sample_test$e2RF
 m_de2_h <- tapply(sample_test$de2, INDEX = sample_test$stratum, FUN = mean)
-m_de2 <- sum(strataXuancheng$w_h * m_de2_h)
+m_de2 <- sum(strata_Xuancheng$w_h * m_de2_h)
 
 s2_de2_hc <- tapply(sample_test$de2, INDEX = sample_test$stratum_clp, FUN = var)
-se_m_de2 <- sqrt(sum(strataXuancheng_clp$w_hc^2 * s2_de2_hc / strataXuancheng$clp$n_hc))
+se_m_de2 <- sqrt(sum(strata_clp_Xuancheng$w_hc^2 * s2_de2_hc / strata_Xuancheng$clp$n_hc))
 t <- m_de2 / se_m_de2
 p <- 2 * pt(t, df = df, lower.tail = t < 0)
 ```
@@ -443,7 +446,7 @@ m_de2 <- sample_test %>%
   mutate(de2 = e2KED - e2RF) %>%
   group_by(stratum) %>%
   summarise(m_de2_h = mean(de2)) %>%
-  left_join(strataXuancheng, by = "stratum") %>%
+  left_join(strata_Xuancheng, by = "stratum") %>%
   summarise(m_de2 = sum(w_h * m_de2_h)) %>%
   flatten_dbl
 
@@ -451,7 +454,7 @@ se_m_de2 <- sample_test %>%
   mutate(de2 = e2KED - e2RF) %>%
   group_by(stratum_clp) %>%
   summarise(s2_de2_hc = var(de2)) %>%
-  left_join(strataXuancheng_clp, by = "stratum_clp") %>%
+  left_join(strata_clp_Xuancheng, by = "stratum_clp") %>%
   summarise(se_m_de2 = sqrt(sum(w_hc^2 * s2_de2_hc / n_hc))) %>%
   flatten_dbl
 

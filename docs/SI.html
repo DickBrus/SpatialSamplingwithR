@@ -24,7 +24,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2021-12-15" />
+<meta name="date" content="2021-12-24" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -636,7 +636,7 @@ Figure 3.3: Estimated cumulative distribution function of the SOM concentration 
 Function <code>quantile</code> actually computes sample quantiles, i.e. it assumes that the population units are selected with equal inclusion probabilities (as in simple random sampling), so that the estimators of the population proportions obtained with Equation <a href="SI.html#eq:HTProportionSI">(3.6)</a> are unbiased. With unequal inclusion probabilities these probabilities must be accounted for in estimating the population proportions, see following chapters.
 </div>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="SI.html#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(mysample<span class="sc">$</span>z, <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">4</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-2"><a href="SI.html#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(., <span class="dv">1</span>)</span></code></pre></div>
+<span id="cb13-2"><a href="SI.html#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">1</span>)</span></code></pre></div>
 <pre><code>  25%   50%   75% 
  50.4  65.6 138.7 </code></pre>
 <p>Note the pipe operator <code>%&gt;%</code> of package <strong>magrittr</strong> <span class="citation">(<a href="#ref-magrittr" role="doc-biblioref">Bache and Wickham 2020</a>)</span> forwarding the result of function <code>quantile</code> to function <code>round</code>.</p>
@@ -706,7 +706,7 @@ S^{2}(z) = \frac{1}{A} \int \limits_{\mathbf{s} \in \mathcal{A}} \left(z(\mathbf
 <span id="cb16-2"><a href="SI.html#cb16-2" aria-hidden="true" tabindex="-1"></a>se_tz <span class="ot">&lt;-</span> se_mz <span class="sc">*</span> vol_soil <span class="sc">*</span> bd <span class="sc">*</span> <span class="dv">10</span><span class="sc">^-</span><span class="dv">6</span></span></code></pre></div>
 <p>The estimated standard error of the estimated total equals 20,334 Mg. This standard error does not account for spatial variation of bulk density.</p>
 <p>Although there is no advantage in using package <strong>survey</strong> <span class="citation">(<a href="#ref-Lumley2020" role="doc-biblioref">Lumley 2021</a>)</span> to compute the <span class="math inline">\(\pi\)</span> estimator and its standard error for this simple sampling design, I illustrate how this works. For more complex designs and alternative estimators, estimation of the population mean and its standard error with functions defined in this package is very convenient, as will be shown in the following chapters.</p>
-<p>First, the sampling design that is used to select the sampling units is specified with function <code>svydesign</code>. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula <code>id = ~ 1</code>. In Chapter <a href="Cl.html#Cl">6</a> clusters of population units are used as sampling units, and in Chapter <a href="Twostage.html#Twostage">7</a> both clusters and individual units are used as sampling units. Argument <code>probs</code> specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument <code>weights</code>, which are in this case equal to the inverse of the inclusion probabilities. Variable <code>pi</code> is a column in <code>data.frame</code> <code>mysample</code>, which is indicated with the tilde in <code>probs = ~ pi</code>.</p>
+<p>First, the sampling design that is used to select the sampling units is specified with function <code>svydesign</code>. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula <code>id = ~ 1</code>. In Chapter <a href="Cl.html#Cl">6</a> clusters of population units are used as sampling units, and in Chapter <a href="Twostage.html#Twostage">7</a> both clusters and individual units are used as sampling units. Argument <code>probs</code> specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument <code>weights</code>, which are in this case equal to the inverse of the inclusion probabilities. Variable <code>pi</code> is a variable in <code>data.frame</code> <code>mysample</code>, which is indicated with the tilde in <code>probs = ~ pi</code>.</p>
 <p>The population mean is then estimated with function <code>svymean</code>. The first argument is a formula specifying the study variable. Argument <code>design</code> specifies the sampling design.</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="SI.html#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
 <span id="cb17-2"><a href="SI.html#cb17-2" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>pi <span class="ot">&lt;-</span> n <span class="sc">/</span> N</span>
@@ -862,7 +862,7 @@ Figure 3.6: Simple random sample of ten floating circular plots from a square.
 <ol start="8" style="list-style-type: decimal">
 <li>Write an <strong>R</strong> script to select a simple random sample of size 40 from Voorst.
 <ul>
-<li>Use the selected sample to estimate the population mean of the SOM concentration and its standard error (SOM is in the column <span class="math inline">\(z\)</span> of the data frame).</li>
+<li>Use the selected sample to estimate the population mean of the SOM concentration and its standard error (SOM is in the variable <span class="math inline">\(z\)</span> of the data frame).</li>
 <li>Compute the lower and the upper bound of the 90% confidence interval using the <em>t</em> distribution, and check whether the population mean is covered by the interval.</li>
 <li>Compare the length of the 90% confidence interval with the length of the 95% interval. Explain the difference in width.</li>
 <li>Use the selected sample to estimate the total mass of SOM in Mg in the topsoil (<span class="math inline">\(0-30\)</span> cm) of Voorst. Use as a bulk density 1,500 kg m<span class="math inline">\(^{-3}\)</span>. The size of the grid cells is 25 m <span class="math inline">\(\times\)</span> 25 m.</li>

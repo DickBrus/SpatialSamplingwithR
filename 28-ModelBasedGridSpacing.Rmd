@@ -117,7 +117,7 @@ The estimated mean and quantiles of the kriging variance are plotted against the
 
 ```{r MOKVvsSpacingEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Mean, median (P50), and 0.90 quantile (P90) of the ordinary kriging variance of predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid."}
 names(dfKV_OK)[c(3, 4, 5)] <- c("Mean", "P50", "P90")
-df <- dfKV_OK %>% pivot_longer(., cols = c("Mean", "P50", "P90"))
+df <- dfKV_OK %>% pivot_longer(cols = c("Mean", "P50", "P90"))
 
 ggplot(df) +
   geom_point(mapping = aes(x = spacing, y = value, shape = name), size = 2) +
@@ -179,7 +179,7 @@ Figure \@ref(fig:MOBKVvsSpacingEthiopia) shows that the mean, P50, and P90 of th
 
 ```{r MOBKVvsSpacingEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:MOBKVvsSpacingEthiopia)"}
 names(dfKV_OBK)[c(2, 3, 4)] <- c("Mean", "P50", "P90")
-df <- dfKV_OBK %>% pivot_longer(., cols = c("Mean", "P50", "P90"))
+df <- dfKV_OBK %>% pivot_longer(cols = c("Mean", "P50", "P90"))
 
 ggplot(df) +
   geom_point(mapping = aes(x = spacing, y = value, shape = name), size = 2) +
@@ -252,7 +252,7 @@ save(dfKV_KED, file = "results/MKEDVarvsGridspacing_Amhara.rda")
 ```{r MKEDVvsSpacingEthiopia, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "Mean kriging variance of OK and KED predictions of the SOM concentration in West-Amhara, as a function of the spacing of a square grid. With KED for each spacing ten MKV values are shown obtained by selecting ten randomly placed grids of that spacing."}
 load(file = "results/MKEDVarvsGridspacing_Amhara.rda")
 dfKV_KED$OK <- dfKV_OK$Mean
-df <- dfKV_KED %>% pivot_longer(., cols = names(dfKV_KED)[-1])
+df <- dfKV_KED %>% pivot_longer(cols = names(dfKV_KED)[-1])
 df$name <- as.factor(df$name)
 library(forcats)
 df$name <- fct_collapse(df$name, KED = c("X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8", "X9", "X10"))
@@ -291,7 +291,7 @@ with $f(\pmb{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the 
 
 Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution  through Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling}, see Subsection \@ref(MBpredSamplingVarBayes). 
 
-In a Bayesian approach we must define the likelihood function of the data, see Subsections \@ref(MBpredSamplingVarBayes) and \@ref(MLestimationVariogram). I assume that the SOM concentration data in West-Amhara have a multivariate normal distribution, and that the spatial covariance of the data can be modelled by a spherical model, see  Subsection \@ref(MLestimationVariogram). The likelihood is a function of the semivariogram parameters. Given a vector of semivariogram parameters, the variance-covariance matrix of the data is computed from the matrix with geographic distances between the sampling points. Function `spDists` of package **sp** is used to compute this distance matrix.
+In a Bayesian approach we must define the likelihood function of the data, see Subsection \@ref(MBpredSamplingVarBayes). I assume that the SOM concentration data in West-Amhara have a multivariate normal distribution, and that the spatial covariance of the data can be modelled by a spherical model, see  Subsection \@ref(MLestimationVariogram). The likelihood is a function of the semivariogram parameters. Given a vector of semivariogram parameters, the variance-covariance matrix of the data is computed from the matrix with geographic distances between the sampling points. Inputs of the loglikelihood function `ll` are the matrix with distances between the sampling points, the design matrix `X`, and the vector with observations of the study variable `z`, see Subsection \@ref(MBpredSamplingVarBayes)/ 
 
 ```{r, echo=FALSE}
 library(mvtnorm)
@@ -313,7 +313,9 @@ ll <- function(thetas) {
 ```
 
 ```{r}
-D <- spDists(sampleAmhara)
+D <- as.matrix(dist(sampleAmhara[,c("s1","s2")]))
+X <- matrix(1, nrow(sampleAmhara), 1)
+z <- sampleAmhara$SOM
 ```
 
 Besides the likelihood function, in a Bayesian approach we must define prior distributions for the semivariogram parameters. Here we combine the partial sill and nugget into the *ratio of spatial dependence*\index{Ratio of spatial dependence}, i.e. the proportion of the sill attributable to the partial sill. For the ratio of spatial dependence $\xi$ and the distance parameter $\phi$ I use uniform distributions as priors, with a lower bound of 0 and an upper bound of 1 for the ratio of spatial dependence, and a lower bound of $10^{-6}$ km and an upper bound of 100 km for the range. A uniform distribution for the sill is not recommended [@Gelman2013]. Instead, I assume a uniform distribution for the *inverse* of the sill, with a lower bound of $10^{-6}$ and an upper bound of 2.
@@ -324,8 +326,8 @@ These priors can be defined by function `createUniformPrior`  of package **Bayes
 library(BayesianTools)
 priors <- createUniformPrior(
   lower = c(1E-6, 0, 1E-6), upper = c(2, 1, 100))
-sill_ML <- vgm_ML$psill[1] + vgm_ML$psill[2]
-thetas_ML <- c(1 / sill_ML, vgm_ML$psill[2] / sill_ML, vgm_ML$range[2])
+sill_ML <- vgm_ML$nugget + vgm_ML$sigmasq
+thetas_ML <- c(1 / sill_ML, vgm_ML$sigmasq / sill_ML, vgm_ML$phi)
 model <- "Sph"
 setup <- createBayesianSetup(likelihood = ll, prior = priors,
   best = thetas_ML, names = c("lambda", "xi", "range"))
@@ -337,7 +339,7 @@ A sample from the posterior distribution of the semivariogram parameters is then
 set.seed(314)
 res <- runMCMC(setup, sampler = "DEzs")
 mcmcsample <- getSample(res, start = 1000, numSamples = 1000) %>%
-  as.data.frame(.)
+  data.frame()
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
@@ -373,14 +375,14 @@ for (i in seq_len(length(spacing))) {
   coordinates(mygrid) <- ~ s1 + s2
   for (j in seq_len(nrow(mcmcsample))) {
     sill <- 1 / mcmcsample$lambda[j]
-    vgm_ML$psill[2] <- mcmcsample$xi[j] * sill
-    vgm_ML$psill[1] <- sill - vgm_ML$psill[2]
-    vgm_ML$range[2] <- mcmcsample$range[j]
+    vgm_ML_gstat$psill[2] <- mcmcsample$xi[j] * sill
+    vgm_ML_gstat$psill[1] <- sill - vgm_ML_gstat$psill[2]
+    vgm_ML_gstat$range[2] <- mcmcsample$range[j]
     predictions  <- krige(
       formula = dummy ~ 1,
       locations = mygrid,
       newdata = mysample,
-      model = vgm_ML,
+      model = vgm_ML_gstat,
       nmax = 100,
       debug.level = 0)
     MKV[i, j] <- mean(predictions$var1.var)

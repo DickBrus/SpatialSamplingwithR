@@ -52,13 +52,13 @@ mysample <- grdKandahar[units, ]
 
 
 ```{block2, type = 'rmdnote'}
-To select the units, computing the selection probabilities is not strictly needed. Exactly the same units are selected when the agricultural area within the units (column `agri` in the data frame) is used in argument `prob` of `sample`.
+To select the units, computing the selection probabilities is not strictly needed. Exactly the same units are selected when the agricultural area within the units (variable `agri` in the data frame) is used in argument `prob` of `sample`.
 ```
 
 Four units are selected twice.
 
 ```{r}
-table_frq <- table(units) %>% data.frame(.)
+table_frq <- table(units) %>% data.frame()
 print(table_frq[table_frq$Freq > 1, ])
 ```
 
@@ -115,10 +115,10 @@ Many algorithms are available for ppswor sampling, see @Tille2006 for an overvie
 library(sampling)
 set.seed(314)
 N <- 10
-x <- rnorm(N, mean = 20, sd = 5)
 n <- 4
+x <- rnorm(N, mean = 20, sd = 5)
 pi <- inclusionprobabilities(x, n)
-print(df <- data.frame(id = seq(1:10), x, pi))
+print(data.frame(id = seq_len(N), x, pi))
 ```
 
 ```{r }
@@ -176,7 +176,7 @@ mu1 <- 10; sd1 <- 2
 mu2 <- 15; sd2 <- 4
 mu <- c(mu1, mu2)
 sigma <- matrix(
-  data = c(sd1^2, sd1 *  sd2 *  rho, sd1 *  sd2 *  rho, sd2^2),
+  data = c(sd1^2, rep(sd1 *  sd2 *  rho, 2), sd2^2),
   nrow = 2, ncol = 2)
 N <- 1000
 set.seed(314)
@@ -359,7 +359,7 @@ load(file = "results/pps_Kandahar.rda")
 estimates <- data.frame(tz_HT, tz_Hajek, v_tz_HR, tz_SI)
 names(estimates)[c(1, 2, 4)] <- c("ppswor.HT", "ppswor.Hajek", "SI")
 
-df <- estimates %>% pivot_longer(., cols = c("ppswor.HT", "ppswor.Hajek", "SI"))
+df <- estimates %>% pivot_longer(cols = c("ppswor.HT", "ppswor.Hajek", "SI"))
 df$name <- factor(df$name, levels = c("ppswor.Hajek", "ppswor.HT", "SI"), ordered = TRUE)
 
 ggplot(data = df) +

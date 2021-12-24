@@ -38,14 +38,23 @@ mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
 head(mysample)
 ```
 
-Variable `stratum` is not used in this chapter (but in the next chapter). The selected sample is shown in Figure \@ref(fig:SampleSI).
+```{r, echo = FALSE, eval = FALSE}
+cell_size <- 25
+set.seed(314)
+mysample <- grdVoorst %>%
+  slice_sample(n = n, replace = TRUE) %>%
+  mutate(s1 = s1 %>% jitter(amount = cell_size / 2),
+         s1 = s1 %>% jitter(amount = cell_size / 2))
+head(mysample)
+```
 
+Variable `stratum` is not used in this chapter (but in the next chapter). The selected sample is shown in Figure \@ref(fig:SampleSI).
 
 ```{r SampleSI, echo=FALSE, out.width='100%', fig.cap="Simple random sample of size 40 from Voorst."}
 library(ggplot2)
-ggplot() +
-  geom_raster(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
-  geom_point(data = mysample, mapping = aes(x = s1 / 1000, y = s2 / 1000), size = 1.5) +
+ggplot(grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000)) +
+  geom_raster(fill = "grey") +
+  geom_point(data = mysample, size = 1.5) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
@@ -194,7 +203,7 @@ Function `quantile` actually computes sample quantiles\index{Sample quantile}, i
 
 ```{r}
 quantile(mysample$z, probs = c(0.25, 0.5, 0.75), type = 4) %>%
-  round(., 1)
+  round(1)
 ```
 Note the pipe operator `%>%` of package **magrittr** [@magrittr] forwarding the result of function `quantile` to function `round`.  
 
@@ -288,7 +297,7 @@ The estimated standard error of the estimated total equals 20,334 Mg. This stand
 
 Although there is no advantage in using package **survey** [@Lumley2020] to compute the $\pi$ estimator and its standard error for this simple sampling design, I illustrate how this works. For more complex designs and alternative estimators, estimation of the population mean and its standard error with functions defined in this package is very convenient, as will be shown in the following chapters.
 
-First, the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula `id = ~ 1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. Argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. Variable `pi` is a column in `data.frame` `mysample`, which is indicated with the tilde in `probs = ~ pi`.
+First, the sampling design that is used to select the sampling units is specified with function `svydesign`. The first argument specifies the sampling units. In this case the centres of the discretisation grid cells are used as sampling units, which is indicated by the formula `id = ~ 1`. In Chapter \@ref(Cl) clusters of population units are used as sampling units, and in Chapter \@ref(Twostage) both clusters and individual units are used as sampling units. Argument `probs` specifies the inclusion probabilities of the sampling units. Alternatively, we may specify the weights with argument `weights`, which are in this case equal to the inverse of the inclusion probabilities. Variable `pi` is a variable in `data.frame` `mysample`, which is indicated with the tilde in `probs = ~ pi`.
 
 The population mean is then estimated with function `svymean`. The first argument is a formula specifying the study variable. Argument `design` specifies the sampling design. 
 
@@ -517,7 +526,7 @@ with $\widehat{S^2}(z)$ the estimated population variance of the totals per popu
 #### Exercises {-}
 
 8. Write an **R** script to select a simple random sample of size 40 from Voorst.
-    + Use the selected sample to estimate the population mean of the SOM concentration and its standard error (SOM is in the column $z$ of the data frame).
+    + Use the selected sample to estimate the population mean of the SOM concentration and its standard error (SOM is in the variable $z$ of the data frame).
     + Compute the lower and the upper bound of the 90\% confidence interval using the *t* distribution, and check whether the population mean is covered by the interval.
     + Compare the length of the 90\% confidence interval with the length of the 95\% interval. Explain the difference in width.
     + Use the selected sample to estimate the total mass of SOM in Mg in the topsoil ($0-30$ cm) of Voorst. Use as a bulk density 1,500 kg m$^{-3}$. The size of the grid cells is 25 m $\times$ 25 m.

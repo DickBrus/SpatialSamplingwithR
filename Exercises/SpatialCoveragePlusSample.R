@@ -11,15 +11,15 @@ n <- 90
 
 #Compute clusters (geostrata) and select centres
 
-coordinates(grdHunterValley) <- ~ s1 + s2
-gridded(grdHunterValley) <- TRUE
+gridded(grdHunterValley) <- ~ s1 + s2
 set.seed(314)
 myStrata <- stratify(grdHunterValley, nStrata = n, equalArea = FALSE, nTry = 10)
 mySCsample <- spsample(myStrata)
 
 # Compute average distance between neighbouring points of spatial coverage sample
-gridTopology <- as(getGridTopology(grdHunterValley), "data.frame")
-A <- N *  gridTopology$cellsize[1]^2
+grdHunterValley <- as(grdHunterValley, "data.frame")
+cellsize <- min(diff(sort(unique(grdHunterValley$s1))))
+A <- N *  cellsize^2
 d <- sqrt(A / n)
 
 # Specify separation distances and subsample sizes
