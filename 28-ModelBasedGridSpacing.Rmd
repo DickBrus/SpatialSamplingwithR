@@ -38,7 +38,7 @@ The semivariogram of SOM can also be estimated by maximum likelihood (ML) using 
 
 ```{r}
 library(geoR)
-sampleAmhara <- as(sampleAmhara, "data.frame")
+sampleAmhara <- as_tibble(sampleAmhara)
 dGeoR <- as.geodata(
   obj = sampleAmhara, header = TRUE, coords.col = c("s1", "s2"),
   data.col = "SOM")
@@ -78,10 +78,10 @@ To check whether the size of the simple random sample of evaluation points is su
 
 ```{r}
 set.seed(314)
-units <- sample(nrow(grdAmhara), size = 5000, replace = TRUE)
-mysample <- grdAmhara[units, ]
-mysample$s1 <- jitter(mysample$s1, amount = 0.5)
-mysample$s2 <- jitter(mysample$s2, amount = 0.5)
+mysample <- grdAmhara %>%
+  slice_sample(n = 5000, replace = TRUE) %>%
+  mutate(s1 = s1 %>% jitter(amount = 0.5),
+         s1 = s1 %>% jitter(amount = 0.5))
 ```
 
 The **R** code below shows the next steps. Given a spacing, a square grid with a fixed starting point is selected with function `spsample`, using argument `offset`. A dummy variable is added to the data frame, having value 1 at all grid points, but any other value is also fine. The predicted value at all evaluation points equals 1. However, we are not interested in the predicted value but in the kriging variance only, and we have seen in Chapter \@ref(Introkriging) that the kriging variance is independent of the observations of the study variable. The ML estimates of the semivariogram are used in function `vgm` to define a semivariogram model of class `variogramModel` that can be handled by function `krige`. For each grid spacing the population mean, median, and P90 of the kriging variance are estimated from the evaluation sample. The estimated median and P90 can be computed with function `quantile`.
@@ -94,11 +94,10 @@ MKV_OK <- P50KV_OK <- P90KV_OK <- samplesize <-
 vgm_ML_gstat <- vgm(model = "Sph", nugget = vgm_ML$nugget,
   psill = vgm_ML$sigmasq, range = vgm_ML$phi)
 for (i in seq_len(length(spacing))) {
-  mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i],
+  mygrid <- spsample(x = grdAmhara, cellsize = spacing[i],
     type = "regular", offset = c(0.5, 0.5))
-  mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+  mygrid$dummy <- rep(1, length(mygrid))
   samplesize[i] <- nrow(mygrid)
-  coordinates(mygrid) <- ~ s1 + s2
   predictions  <- krige(
     formula = dummy ~ 1,
     locations = mygrid,
@@ -153,11 +152,10 @@ In the previous section the tolerable grid spacing is derived from a constraint 
 ```{r}
 MKV_OBK <- P50KV_OBK <- P90KV_OBK <- numeric(length = length(spacing))
 for (i in seq_len(length(spacing))) {
-  mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i],
+  mygrid <- spsample(x = grdAmhara, cellsize = spacing[i],
     type = "regular", offset = c(0.5, 0.5))
-  mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
+  mygrid$dummy <- rep(1, length(mygrid))
   samplesize[i] <- nrow(mygrid)
-  coordinates(mygrid) <- ~ s1 + s2
   predictions  <- krige(
     formula = dummy ~ 1,
     locations = mygrid,
@@ -227,11 +225,10 @@ vgm_REML_gstat <- vgm(model = "Sph", nugget = vgm_REML$nugget,
 set.seed(314)
 for (i in seq_len(length(spacing))) {
   for (j in 1:R) {
-    mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular")
-    mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
-    coordinates(mygrid) <- ~ s1 + s2
+    mygrid <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular")
+    mygrid$dummy <- rep(1, length(mygrid))
     mygrd <- data.frame(over(mygrid, grdAmhara), mygrid)
-    coordinates(mygrd) <- ~ s1 + s2
+    coordinates(mygrd) <- ~ x1 + x2
     predictions <- krige(
       formula = dummy ~ dem + rfl_NIR + rfl_red + lst,
       locations = mygrd,
@@ -370,9 +367,9 @@ The units of the MCMC sample (vectors with semivariogram parameters) are used on
 spacing <- 1:12
 MKV <- matrix(nrow = length(spacing), ncol = nrow(mcmcsample))
 for (i in seq_len(length(spacing))) {
-  mygridxy <- spsample(x = grdAmhara, cellsize = spacing[i], type = "regular", offset = c(0.5, 0.5))
-  mygrid <- data.frame(s1 = mygridxy$x1, s2 = mygridxy$x2, dummy = 1)
-  coordinates(mygrid) <- ~ s1 + s2
+  mygrid <- spsample(x = grdAmhara, cellsize = spacing[i],
+    type = "regular", offset = c(0.5, 0.5))
+  mygrid$dummy <- rep(1, length(mygrid))
   for (j in seq_len(nrow(mcmcsample))) {
     sill <- 1 / mcmcsample$lambda[j]
     vgm_ML_gstat$psill[2] <- mcmcsample$xi[j] * sill
@@ -392,7 +389,7 @@ save(MKV, file = "results/MOKV_Bayesian_Amhara.rda")
 ```
 
 ```{r, echo = FALSE}
-grdAmhara <- as(grdAmhara, "data.frame")
+rm(grdAmhara)
 ```
 
 ```{r, echo = FALSE}

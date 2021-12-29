@@ -2,7 +2,8 @@ library(spcosa)
 library(sp)
 library(sswr)
 
-head(grdHunterValley)
+grdHunterValley
+
 N <- nrow(grdHunterValley)
 
 # Choose number of locations of spatial coverage sample
@@ -17,7 +18,7 @@ myStrata <- stratify(grdHunterValley, nStrata = n, equalArea = FALSE, nTry = 10)
 mySCsample <- spsample(myStrata)
 
 # Compute average distance between neighbouring points of spatial coverage sample
-grdHunterValley <- as(grdHunterValley, "data.frame")
+grdHunterValley <- as_tibble(grdHunterValley)
 cellsize <- min(diff(sort(unique(grdHunterValley$s1))))
 A <- N *  cellsize^2
 d <- sqrt(A / n)

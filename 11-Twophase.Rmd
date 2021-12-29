@@ -62,9 +62,8 @@ library(sampling)
 n2 <- 40
 n1_h <- tapply(mysample$z, INDEX = mysample$stratum, FUN = length)
 n2_h <- round(n1_h / n1 * n2, 0)
-n2_h_ord <- n2_h[unique(mysample$stratum)]
 units <- sampling::strata(mysample, stratanames = "stratum",
-  size = n2_h_ord, method = "srswor")
+  size = n2_h[unique(mysample$stratum)], method = "srswor")
 mysubsample <- getdata(mysample, units)
 table(mysubsample$stratum)
 ```
@@ -101,7 +100,7 @@ mz_h_subsam <- tapply(mysubsample$z, INDEX = mysubsample$stratum, FUN = mean)
 mz <- sum(n1_h / n1 * mz_h_subsam, na.rm = TRUE)
 ```
 
-The estimated population mean equals `r` formatC(mz, 1, format = "f")` g kg^-1^. The sampling variance over repeated sampling with both designs can be approximated^[In the approximation it is assumed that $N$ is much larger than $n_1$, and $(n_{1h}-1)/(n_1-1)$ is replaced by $n_{1h}/n_1$.] by (@sar92, Equation at bottom of p. 353)
+The estimated population mean equals `r formatC(mz, 1, format = "f")` g kg^-1^. The sampling variance over repeated sampling with both designs can be approximated^[In the approximation it is assumed that $N$ is much larger than $n_1$, and $(n_{1h}-1)/(n_1-1)$ is replaced by $n_{1h}/n_1$.] by (@sar92, Equation at bottom of p. 353)
 
 \begin{equation}
 \widehat{V}\!(\hat{\bar{z}}) = \sum_{h=1}^{H_{\mathcal{S}_1}}\left( \frac{n_{1h}}{n_1}\right)^2
@@ -121,25 +120,24 @@ v_mz_2 <- 1 / n1 * sum(w1_h * (mz_h_subsam - mz)^2)
 se_mz <- sqrt(v_mz_1 + v_mz_2)
 ```
 
-The estimated standard error equals `r` formatC(se_mz, 1, format = "f")` g kg^-1^.
+The estimated standard error equals `r formatC(se_mz, 1, format = "f")` g kg^-1^.
 
 The mean and its standard error can be estimated with functions `twophase` and `svymean` of package **survey** [@Lumley2020]. A data frame with the first-phase sample is passed to function `twophase` using argument `data`. A variable in this data frame, passed to function `twophase` with argument `subset`, is an indicator with value `TRUE` if this unit is selected in the second phase, and `FALSE` otherwise. 
 
 ```{r}
 library(survey)
-mysample$ind <- FALSE
+lut <- data.frame(stratum = sort(unique(mysample$stratum)), fpc2 = n1_h)
+mysample <- mysample %>%
+  mutate(ind = FALSE,
+         fpc1 = N) %>%
+  left_join(lut, by = "stratum")
 mysample$ind[units$ID_unit] <- TRUE
-mysample$fpc1 <- N
-labels <- sort(unique(mysample$stratum))
-fpc2 <- n1_h
-lut <- data.frame(stratum = labels, fpc2)
-mysample <- merge(x = mysample, y = lut)
-mysample$stratum <- as.factor(mysample$stratum)
 design_2phase <- survey::twophase(
   id = list(~ 1, ~ 1), strata = list(NULL, ~ stratum),
   data = mysample, subset = ~ ind, fpc = list(~ fpc1, ~ fpc2))
 svymean(~ z, design_2phase)
 ```
+
 
 As shown in the next code chunk the standard error is computed with the original variance estimator, without approximation (@sar92, Equation (9.4.14)).
 
@@ -163,7 +161,8 @@ Two-phase sampling for regression is now illustrated with Eastern Amazonia (Subs
 In the next code chunk a first-phase sample of 250 units (the dots in the plot) is selected by simple random sampling without replacement. In the second phase a subsample of 100 units (the triangles in the plot) is selected from the 250 units by simple random sampling without replacement. At all 250 units of the first-phase sample the covariate lnSWIR2 is measured, whereas AGB is measured at the 100 subsample units only. 
 
 ```{r twophasesample}
-grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
+grdAmazonia <- grdAmazonia %>%
+  mutate(lnSWIR2 = log(SWIR2))
 n1 <- 250; n2 <- 100
 set.seed(314)
 units_1 <- sample(nrow(grdAmazonia), size = n1, replace = FALSE)
@@ -234,9 +233,10 @@ The estimated standard error equals ` formatC(se_mz_reg2ph,2)` 10^9^ kg ha^-1^.
 The regression estimator for two-phase sampling and its standard error can also be computed with package **survey**, as shown below. The standard error differs from the standard error computed above because it is computed with the g-weights, see Subsection \@ref(RegressionEstimator). Note argument `fpc = list(~ N, NULL)`. There is no need to add the first-phase sample size as a second element of the list, because this sample size is simply the number of rows of the data frame. Setting the second element of the list to `NULL` does not mean that the standard error is computed for with replacement sampling in the second phase. Function `twophase` assumes that the second-phase units are always selected without replacement.
 
 ```{r}
-mysample$id <- 1:n1
-mysample$ind <- ifelse(mysample$id %in% units_2, TRUE, FALSE)
-mysample$N <- rep(N, n1)
+mysample <- mysample %>%
+  mutate(id = row_number(),
+         N = N,
+         ind = id %in% units_2)
 design_2phase <- survey::twophase(
   id = list(~ 1, ~ 1), data = mysample, subset = ~ ind, fpc = list(~ N, NULL))
 mysample_cal <- calibrate(
@@ -256,5 +256,6 @@ svymean(~ AGB, mysample_cal)
   
 ```{r, echo = FALSE}
 rm(list = ls())
+
 ```
 

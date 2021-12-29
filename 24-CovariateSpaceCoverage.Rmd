@@ -7,7 +7,7 @@ The simplest option for covariate space coverage (CSC) sampling\index{Covariate 
 In the next code chunk a CSC sample of twenty units is selected from Eastern Amazonia. All five quantitative covariates, SWIR2, Terra_PP, Prec_dm, Elevation, and Clay, are used as covariates. To select twenty units, twenty clusters are constructed using function `kmeans` of the **stats** package [@R2020]. The number of clusters is passed to function `kmeans` with argument `centers`. Note that the number of clusters is not based, as would be usual in cluster analysis, on the assumed number of subregions with a high density of units in the multivariate distribution, but rather on the number of sampling units. The k-means clustering algorithm is a deterministic algorithm, i.e. the final optimised clustering is fully determined by the initial clustering. This final clustering can be suboptimal, i.e. the minimised MSSSD value is somewhat larger than the global minimum. Therefore the clustering should be repeated many times, every time starting with a different random initial clustering. The number of repeats is specified with argument `nstart`. The best solution is automatically kept. To speed up the computations a 5 km $\times$ 5 km subgrid of `grdAmazonia` is used.
 
 ```{r, echo = FALSE}
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia <- read_rds(file = "results/grdAmazonia_5km.rds")
 ```
 
 ```{r}
@@ -104,7 +104,7 @@ If we have legacy data that can be used to fit a model for mapping, it is more e
 
 ```{r}
 CSIS <- function(fixed, nsup, nstarts, mygrd) {
-  nfix <- nrow(fixed)
+  n_fix <- nrow(fixed)
   p <- ncol(mygrd)
   units <- fixed$units
   mygrd_minfx <- mygrd[-units, ]
@@ -121,7 +121,7 @@ CSIS <- function(fixed, nsup, nstarts, mygrd) {
         centers[, i] <- tapply(mygrd[, i], INDEX = clusters, FUN = mean)
       }
       #restore fixed centers
-      centers[1:nfix, ] <- centers_cur[1:nfix, ]
+      centers[1:n_fix, ] <- centers_cur[1:n_fix, ]
       #check convergence
       sumd <- diag(rdist(x1 = centers, x2 = centers_cur)) %>% sum(.)
       if (sumd < 1E-12) {
@@ -152,11 +152,11 @@ res <- CSIS(fixed = fixed, nsup = 15, nstarts = 10, mygrd = mygrd)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(res, file = "results/CSIS_Amazonia.rds")
+write_rds(res, file = "results/CSIS_Amazonia.rds")
 ```
 
 ```{r, echo = FALSE}
-res <- readRDS(file = "results/CSIS_Amazonia.rds")
+res <- read_rds(file = "results/CSIS_Amazonia.rds")
 ```
 
 Figures \@ref(fig:CSCIS) and \@ref(fig:CSInfillsampleinscatter) show the selected sample plotted on a map of the clusters and in biplots of covariates, respectively.
@@ -255,7 +255,7 @@ knitr::kable(
 
 #### Exercises {-}
 
-1. Write an **R** script to select a covariate space coverage sample of size 20 from Hunter Valley (`data.frame grdHunterValley` of package **sswr**). Use the covariates cti (compound topographic index, which is the same as topographic wetness index), ndvi (normalised difference vegetation index), and elevation_m in k-means clustering of the raster cells. Plot the clusters and the sample on a map of cti and in a biplot of cti against ndvi.  
+1. Write an **R** script to select a covariate space coverage sample of size 20 from Hunter Valley (`grdHunterValley` of package **sswr**). Use the covariates cti (compound topographic index, which is the same as topographic wetness index), ndvi (normalised difference vegetation index), and elevation_m in k-means clustering of the raster cells. Plot the clusters and the sample on a map of cti and in a biplot of cti against ndvi.  
 
 ```{r, echo = FALSE}
 rm(list = ls())

@@ -196,12 +196,13 @@ Recall that a sample is balanced on a covariate $x$ if the $\pi$ estimate of the
 Equal inclusion probabilities are used, i.e. for all population units the inclusion probability equals $n/N$.
 
 ```{r, echo = FALSE}
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia <- read_rds(file = "results/grdAmazonia_5km.rds")
 ```
 
  
 ```{r}
-grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
+grdAmazonia <- grdAmazonia %>%
+  mutate(lnSWIR2 = log(SWIR2))
 library(sampling)
 N <- nrow(grdAmazonia)
 n <- 100
@@ -219,7 +220,7 @@ The population mean can be estimated by the sample mean.
 mz <- mean(mysample$AGB)
 ```
 
-To estimate the variance a function is defined for estimating the population regression coefficients. 
+To estimate the variance a function is defined for estimating the population regression coefficients.
 
 ```{r}
 estimate_b <- function(z, X, c) {
@@ -389,8 +390,8 @@ print(pi_h <- n_h / N_h)
 The inclusion probabilities are added to `data.frame` `mypop` with the 400 population units, using a lookup table `lut` and function `merge`. The seven leftmost units on the bottom row are shown below. Variables s1 and s2 are the spatial coordinates of the centres of the units. 
 
 ```{r}
-labels <- sort(unique(mypop$stratum))
-lut <- data.frame(stratum = labels, pi = n_h / N_h)
+lut <- data.frame(stratum = sort(unique(mypop$stratum)),
+                  pi = n_h / N_h)
 mypop <- merge(x = mypop, y = lut, by = "stratum")
 ord <- order(mypop$s2, mypop$s1)
 head(mypop[ord, ], 7)
@@ -470,7 +471,7 @@ ggplot(data = mypop) +
   coord_fixed()
 ```
 
-As a first step the inclusion probabilities are added to `data.frame` `mypop` with the spatial coordinates and simulated values. The next code chunk shows how this can be done with package **tidyverse** [@Wickham2019]. To keep it simple I computed inclusion probabilities equal to 2 divided by the number of population units in a cross-classification stratum. Note that this does not imply that a sample is selected with two units per cross-stratum. As we will see later it is possible that in some  cross-classification strata no units are selected at all, while in other cross-classification strata more than two units are selected. In multi-way stratified sampling the marginal stratum sample sizes are controlled. The inclusion probabilities  should result in six selected units for all four units of map A and eight selected units for all three units of map B.   
+As a first step the inclusion probabilities are added to `data.frame` `mypop` with the spatial coordinates and simulated values. To keep it simple I computed inclusion probabilities equal to 2 divided by the number of population units in a cross-classification stratum. Note that this does not imply that a sample is selected with two units per cross-classification stratum. As we will see later it is possible that in some  cross-classification strata no units are selected at all, while in other cross-classification strata more than two units are selected. In multi-way stratified sampling the marginal stratum sample sizes are controlled. The inclusion probabilities  should result in six selected units for all four units of map A and eight selected units for all three units of map B.   
 
 ```{r}
 mypop <- mypop %>%
@@ -503,7 +504,6 @@ Finally, the two-way stratified random sample is selected with function `samplec
 
 ```{r}
 sample_ind <- samplecube(X = X, pik = mypop$pih, method = 1, comment = FALSE)
-eps <- 1e-6
 units <- which(sample_ind > (1 - eps))
 mysample <- mypop[units, ]
 ```
@@ -602,7 +602,7 @@ myLPMsample$pi <- pi[units]
 tz_HT <- sum(myLPMsample$poppy / myLPMsample$pi)
 ```
 
-The estimated total poppy area equals 56,420 ha. The sampling variance of the estimator of the population total with the local pivotal method can be estimated by [@Grafstrom2014]
+The estimated total poppy area equals `r formatC(tz_HT, 0, format = "f", big.mark = ",")` ha. The sampling variance of the estimator of the population total with the local pivotal method can be estimated by [@Grafstrom2014]
 
 \begin{equation}
 \widehat{V}(\hat{t}(z)) = \frac{1}{2} \sum_{k \in \mathcal{S}} \left( \frac{z_k}{\pi_k} - \frac{z_{k_j}}{\pi_{k_j}} \right)^2 \;,
@@ -620,7 +620,7 @@ pk <- myLPMsample$pi / n
 se_tz_pwr <- sqrt(var(myLPMsample$poppy / pk) / n)
 ```
 
-The standard error obtained with function `vsb` equals 14,222 ha, the standard error of the Hansen-Hurwitz estimator equals 13,468 ha. So, for the selected sample the Hansen-Hurwitz variance estimator is smaller than the other variance estimator, but on average it will be larger.
+The standard error obtained with function `vsb` equals `r formatC(se_tz_HT, 0, format = "f", big.mark = ",")` ha, the standard error of the pwr estimator equals `r formatC(se_tz_pwr, 0, format = "f", big.mark = ",")` ha.
 
 As explained above, the LPM design can also be used to select a probability sample well-spread in the space spanned by one or more quantitative covariates. Matrix $\mathbf{X}$ then should contain the values of the *scaled* (standardised) covariates instead of the spatial coordinates.
 
@@ -765,7 +765,7 @@ ggplot(data = datfr) +
 
 ```
 
-GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. `data.frame` `grdKandahar` is first converted  to an `sf` object with function `st_as_sf` of package **sf** [@sf]. The data set is using a UTM projection (zone 41N) with WGS84 datum. This projection is passed to function `st_as_df` with argument `crs` (`crs = 32641`). Argument `sframe` of function `grts` specifies the sampling frame. The sample size is passed to function `grts` with argument `n_base`. Argument `seltype` is set to `proportional` to select units with probabilities proportional to an ancillary variable which is passed to function `grts` with argument `aux_var`. 
+GRTS samples can be selected with function `grts` of package **spsurvey** [@spsurvey]. The next code chunk shows the selection of a GRTS sample of 40 units from Kandahar. Tibble `grdKandahar` is first converted  to an `sf` object with function `st_as_sf` of package **sf** [@sf]. The data set is using a UTM projection (zone 41N) with WGS84 datum. This projection is passed to function `st_as_df` with argument `crs` (`crs = 32641`). Argument `sframe` of function `grts` specifies the sampling frame. The sample size is passed to function `grts` with argument `n_base`. Argument `seltype` is set to `proportional` to select units with probabilities proportional to an ancillary variable which is passed to function `grts` with argument `aux_var`. 
 
 ```{r GRTSppsKandahar}
 library(spsurvey)
@@ -787,7 +787,7 @@ tz_ratio <- res$Mean$Estimate * nrow(grdKandahar)
 se_tz_ratio <- res$Mean$StdError * nrow(grdKandahar)
 ```
 
-The estimated total poppy area is 109,809 ha, and the estimated standard error is 24,327 ha.
+The estimated total poppy area is `r formatC(tz_ratio, 0, format = "f", big.mark = ",")` ha, and the estimated standard error is `r formatC(se_tz_ratio, 0, format = "f", big.mark = ",")`  ha.
 
 The alternative is to estimate the total poppy area by the $\pi$ estimator. Function `vsb` of package **BalancedSampling** can be used to estimate the standard error of the $\pi$ estimator.
 
@@ -797,7 +797,7 @@ Xsample <- st_coordinates(myGRTSsample)
 se_tz_HT <- sqrt(vsb(myGRTSsample$ip, myGRTSsample$poppy, Xsample))
 ```
 
-The estimated total is 71,634 ha, and the estimated standard error is 12,593 ha. 
+The estimated total is `r formatC(tz_HT, 0, format = "f", big.mark = ",")`  ha, and the estimated standard error is `r formatC(se_tz_HT, 0, format = "f", big.mark = ",")` ha. 
 
 ## Balanced sampling with spreading {#BalancedandSpreaded}
 
@@ -843,10 +843,8 @@ with $p$ the number of balancing variables, $e_k$ the regression model residual 
 
 The variance estimator can be computed with functions `localmean_weight` and `localmean_var` of package **spsurvey** [@spsurvey].
 
-
 ```{r}
 library(spsurvey)
-library(MASS)
 pi <- rep(n / N, n)
 c <- (1 - pi)
 b <- estimate_b(z = mysample$AGB / pi, X = Xbal[units, ] / pi, c = c)
@@ -869,4 +867,5 @@ The estimated standard error is `r formatC(sqrt(v_mz), 1, format = "f")` 10^9^ k
 
 ```{r, echo = FALSE}
 rm(list = ls())
+
 ```

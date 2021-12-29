@@ -45,7 +45,7 @@ v_dat %>%
 
 
 ```{r, echo = FALSE, eval = FALSE}
-v_crf <- read_sf("data", "CottonResearchFarm_Uzbekistan") %>%
+v_crf <- read_sf(system.file("extdata/cottonresearchfarm_uzbekistan.gpkg", package = "sswr")) %>%
     st_set_agr("constant") %>%
     st_transform(crs = 32641)
 
@@ -421,8 +421,8 @@ The candidate sampling units are selected in a double for-loop. The outer loop i
 ```{r}
 candi_all <- NULL
 for (h in c(1, 2)) {
-  units <- which(grdCRF$subarea == h)
-  data_stratum <- grdCRF[units, ]
+  data_stratum <- grdCRF %>%
+    filter(subarea == h)
   candi_stratum <- NULL
   for (i in seq_len(nrow(ccd_df))) {
       d2dpnt <- sqrt((data_stratum$PC1 - ccd_df$x1[i])^2 +
@@ -502,11 +502,11 @@ ggplot(mysamples) +
 ```
 
 ```{r StratifiedCCRSDinPCSpace, echo = FALSE, out.width = "100%", fig.cap = "Principal component scores of the stratified CCRSD sample, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points (dots)."}
-mySRSsample <- readRDS(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
+mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
 mysample_w0 <- mySRSsample$mysample
 mysample_w0$subarea <- as.factor(rep(c(1, 2), each = 9))
 
-mySRSsample <- readRDS(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
+mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
 mysample_w5 <- mySRSsample$mysample
 mysample_w5$subarea <- as.factor(rep(c(1, 2), each = 9))
 

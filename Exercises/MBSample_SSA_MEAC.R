@@ -59,7 +59,7 @@ res <- optimUSER(
   track = TRUE)
 
 mysample <- res$points
-saveRDS(res, file = "../results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
+write_rds(res, file = "../results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
 MEACopt <- tail(res$objective$energy$obj, 1)
 
 units <- which(mysample$free == 1)

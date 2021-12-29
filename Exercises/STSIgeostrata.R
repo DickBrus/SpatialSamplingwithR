@@ -1,12 +1,13 @@
 library(tidyverse)
 library(sf)
 library(spcosa)
+library(sswr)
 
 # set random seed (for reproduction of results)
 set.seed(31415)
 
 # read field of interest, remove projection attributes, and convert to spatial object 
-field <- read_sf("../data/leest.gpkg") %>%
+field <- read_sf(system.file("extdata/leest.gpkg", package = "sswr")) %>%
   st_set_crs(NA_crs_) %>%
   as_Spatial
 

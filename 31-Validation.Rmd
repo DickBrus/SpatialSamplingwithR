@@ -161,7 +161,7 @@ sample_tst <- sample_test %>%
 coordinates(sample_trn) <- ~ s1 + s2
 vg <- variogram(SOM_A_hori ~ dem + precipitation, data = sample_trn, cutoff = 10)
 vgfitOLS <- fit.variogram(vg, model = vgm(model = "Sph", psill = 30, range = 10, nugget = 0), fit.sills = c(FALSE, TRUE))
-sample_trn <- as(sample_trn, "data.frame")
+sample_trn <- as_tibble(sample_trn)
 dGeoR <- as.geodata(
   obj = sample_trn,
   header = TRUE,
@@ -204,7 +204,7 @@ predictions  <- krige(
 grdXuancheng$SOM_KED <- predictions$var1.pred
 
 write.csv(sample_test, file = "results/STSI_Xuancheng_SOMpred.csv", row.names = FALSE)
-saveRDS(grdXuancheng, file = "data/grdXuancheng.rds")
+write_rds(grdXuancheng, file = "data/grdXuancheng.rds")
 ```
 
 The two maps that are to be validated are shown in Figure \@ref(fig:validatedmaps). Note that non-soil areas (built-up, water, roads) are not predicted. The maps are quite similar. The most striking difference between the maps is the smaller range of the RF predictions: they range from 9.8 to 61.5, whereas the KED predictions range from 5.3 to 90.5.
@@ -229,8 +229,7 @@ The two maps are evaluated by statistical validation with a stratified simple ra
 
 ```{r validationsample, echo = FALSE, fig.width = 5, fig.cap = "Stratified simple random sample for validation of the two maps of the SOM concentration in Xuancheng."}
 library(terra)
-
-rmap <- rast(x="data/Geo_Xuancheng.tif")
+rmap <- rast(x = system.file("extdata/Geo_Xuancheng.tif", package = "sswr"))
 grd <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE) %>%
   filter(Geo_Xuancheng != 99)
 
@@ -273,7 +272,7 @@ sample_test <- sample_test %>%
 These four new variables now are our study variables of which we would like to estimate the population means. The population means can be estimated as explained in Chapter \@ref(STSI). First, the stratum sizes and stratum weights are computed, i.e. the number and relative number of raster cells per stratum (Figure \@ref(fig:validationsample)).
 
 ```{r}
-rmap <- rast(x="data/Geo_Xuancheng.tif")
+rmap <- rast(x = system.file("extdata/Geo_Xuancheng.tif", package = "sswr"))
 strata_Xuancheng <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE) %>%
   rename(stratum = Geo_Xuancheng) %>%
   filter(stratum != 99) %>%
@@ -327,7 +326,7 @@ n_strata <- sample_test %>%
 n_strata
 ```
 
-A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to `n_strata`. This table is subsequently used  to add the collapsed stratum identifiers to `data.frames` `sample_test` and `strata_Xuancheng`.
+A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to `n_strata`. This table is subsequently used  to add the collapsed stratum identifiers to `sample_test` and `strata_Xuancheng`.
 
 ```{r}
 n_strata <- n_strata %>%

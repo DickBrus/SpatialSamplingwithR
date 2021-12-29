@@ -12,7 +12,6 @@ ggplot(df) +
   geom_point(aes(x = P, y = N), size = 2.5) +
   scale_x_continuous(name = "P level", limits = c(1, 4)) +
   scale_y_continuous(name = "N level", limits = c(1, 4)) +
-#  theme(axis.title=element_text(size=16)) +
   coord_equal()
 ```
 
@@ -34,7 +33,7 @@ Argument `cost` is for cost-constrained cLH sampling [@Roudier2012], and argumen
 cLH sampling is illustrated with the five covariates of Eastern Amazonia that were used before in covariate space coverage sampling (Chapter \@ref(kmeans)). 
 
 ```{r, echo = FALSE}
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia <- read_rds(file = "results/grdAmazonia_5km.rds")
 ```
 
 
@@ -45,8 +44,7 @@ set.seed(314)
 res <- clhs(
   grdAmazonia[, covs], size = 20, iter = 50000, temp = 1, tdecrease = 0.95,
   length.cycle = 10, progress = FALSE, simple = FALSE)
-index <- res$index_samples
-myCLHsample <- grdAmazonia[index, ]
+mysample_CLH <- grdAmazonia[res$index_samples, ]
 ```
 
 Figure \@ref(fig:cLHS) shows the selected sample in a map of SWIR2. In Figure \@ref(fig:cLHSscat) the sample is plotted in a biplot of Prec_dm against SWIR2. Each black dot in the biplot represents one grid cell in the population. The vertical and horizontal lines in the biplot are at the bounds of the marginal strata of SWIR2 and Prec_dm, respectively. The number of grid cells between two consecutive vertical lines is constant, as well as the number of grid cells between two consecutive horizontal lines, i.e. the marginal strata have equal sizes. The intervals are the narrowest where the density of grid cells in the plot is highest. Ideally, in each column and row there is exactly one sampling unit (red dot).
@@ -54,7 +52,7 @@ Figure \@ref(fig:cLHS) shows the selected sample in a map of SWIR2. In Figure \@
 ```{r cLHS, echo = FALSE, out.width = "100%", fig.cap = "Conditioned Latin hypercube sample from Eastern Amazonia in a map of SWIR2."}
 ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = SWIR2)) +
-  geom_point(data = myCLHsample, mapping = aes(x = x1 / 1000, y = x2 / 1000), colour = "red", size = 2) +
+  geom_point(data = mysample_CLH, mapping = aes(x = x1 / 1000, y = x2 / 1000), colour = "red", size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +  
   scale_fill_viridis_c(name = "SWIR2") +
@@ -62,13 +60,13 @@ ggplot(data = grdAmazonia) +
 ```
 
 ```{r cLHSscat, echo = FALSE, out.width = "100%", fig.cap = "Conditioned Latin hypercube sample plotted in a biplot of precipitation in the dryest month against SWIR2. The vertical and horizontal lines are at the bounds of the marginal strata of the covariates SWIR2 and precipitation dryest month, respectively."}
-probs <- seq(from = 0, to = 1, length.out = nrow(myCLHsample) + 1)
+probs <- seq(from = 0, to = 1, length.out = nrow(mysample_CLH) + 1)
 bounds <- apply(grdAmazonia[, covs], MARGIN = 2, FUN = function(x) quantile(x, probs = probs))
 ggplot(data = grdAmazonia) +
   geom_point(mapping = aes(x = SWIR2, y = Prec_dm), colour = "black", size = 1, alpha = 0.5) +
   geom_vline(xintercept = bounds[c(-1, -length(bounds)), 1], colour = "grey") +
   geom_hline(yintercept = bounds[c(-1, -length(bounds)), 3], colour = "grey") +
-  geom_point(data = myCLHsample, mapping = aes(x = SWIR2, y = Prec_dm), colour = "red", size = 1) +
+  geom_point(data = mysample_CLH, mapping = aes(x = SWIR2, y = Prec_dm), colour = "red", size = 1) +
   scale_x_continuous(name = "SWIR2") +
   scale_y_continuous(name = "Precipitation dryest month")
 ```
@@ -76,11 +74,12 @@ ggplot(data = grdAmazonia) +
 Figure \@ref(fig:StratumSampleSizes) shows the sample sizes for all 100 marginal strata. The next code chunk shows how the marginal stratum sample sizes are computed.
 
 ```{r}
-probs <- seq(from = 0, to = 1, length.out = nrow(myCLHsample) + 1)
+probs <- seq(from = 0, to = 1, length.out = nrow(mysample_CLH) + 1)
 bounds <- apply(grdAmazonia[, covs], MARGIN = 2,
   FUN = function(x) quantile(x, probs = probs))
+mysample_CLH <- as.data.frame(mysample_CLH)
 counts <- lapply(1:5, function(i)
-  hist(myCLHsample[, i + 3], bounds[, i], plot = FALSE)$counts)
+  hist(mysample_CLH[, i + 3], bounds[, i], plot = FALSE)$counts)
 ```
 
 ```{r StratumSampleSizes, out.width = '100%', echo = FALSE, fig.asp = 0.4, fig.cap = "Sample sizes of marginal strata for the conditioned Latin hypercube sample of size twenty from Eastern Amazonia."}
@@ -116,14 +115,14 @@ In the next code chunk the minimised value of the criterion is computed "by hand
 ```{r}
 O1 <- sum(abs(countslf$counts - 1))
 rho <- cor(grdAmazonia[, c(4, 5, 6, 7, 8)])
-r <- cor(myCLHsample[, c(4, 5, 6, 7, 8)])
+r <- cor(mysample_CLH[, c(4, 5, 6, 7, 8)])
 O3 <- sum(abs(rho - r))
 print(O1 + O3)
 ```
 
 #### Exercises {-}
 
-1. Use the data of Hunter Valley (`data.frame grdHunterValley` of package **sswr**) to select a cLH sample of size 50, using elevation_m, slope_deg, cos_aspect, cti, and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a biplot of cti against elevation_m. In which part of the biplot are most units selected, and which part is undersampled?   
+1. Use the data of Hunter Valley (`grdHunterValley` of package **sswr**) to select a cLH sample of size 50, using elevation_m, slope_deg, cos_aspect, cti, and ndvi as covariates. Plot the selected sample in a map of covariate cti, and plot the selected sample in a biplot of cti against elevation_m. In which part of the biplot are most units selected, and which part is undersampled?   
 2. Load the simulated data of Figure \@ref(fig:twosamples) (`results/SimulatedSquare.rda`), and select a cLH sample of size 16, using the covariate $x$ and the spatial coordinates as stratification variables. Plot the selected sample in the square with simulated covariate values.   
     +  What do you think of the geographical spreading of the sampling units? Is it optimal?
     +  Compute the number of sampling units in the marginal strata of $s1$, $s2$, and the covariate $x$. First compute the bounds of these marginal strata.  Are all marginal strata of $s1$ and $s2$ sampled?  Suppose that all marginal strata of $s1$ and $s2$ are sampled (contain one sampling point), does this guarantee good spatial coverage?
@@ -140,9 +139,8 @@ set.seed(314)
 units <- sample(nrow(grdAmazonia), 10, replace = FALSE)
 res <- clhs(grdAmazonia[, covs], size = 30, must.include = units,
   tdecrease = 0.95, iter = 50000, progress = FALSE, simple = FALSE)
-index <- res$index_samples
-myCLHIsample <- grdAmazonia[index, ]
-myCLHIsample$free <- as.factor(rep(c(1, 0), c(20, 10)))
+mysample_CLHI <- grdAmazonia[res$index_samples, ]
+mysample_CLHI$free <- as.factor(rep(c(1, 0), c(20, 10)))
 ```
 
 Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a map of SWIR2. In Figure \@ref(fig:cLHISscat) the sample is plotted in a biplot of SWIR2 against Prec_dm. The marginal strata already covered by the legacy sample are mostly avoided by the additional sample.
@@ -150,7 +148,7 @@ Figure \@ref(fig:cLHIS) shows the selected Latin hypercube infill sample in a ma
 ```{r cLHIS, echo = FALSE, out.width = "100%", fig.cap = "Conditioned Latin hypercube infill sample from Eastern Amazonia in a map of SWIR2. Legacy units have free-value 0, infill units have free-value 1."}
 ggplot(data = grdAmazonia) +
   geom_raster(mapping = aes(x = x1 / 1000, y = x2 / 1000, fill = SWIR2)) +
-  geom_point(data = myCLHIsample, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = free), colour = "red", size = 2) +
+  geom_point(data = mysample_CLHI, mapping = aes(x = x1 / 1000, y = x2 / 1000, shape = free), colour = "red", size = 2) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   scale_fill_viridis_c(name = "SWIR2") +
@@ -166,7 +164,7 @@ ggplot(data = grdAmazonia) +
   geom_point(mapping = aes(x = SWIR2, y = Prec_dm), colour = "black", size = 1, alpha = 0.5) +
   geom_vline(xintercept = bounds[c(-1, -length(bounds)), 1], colour = "grey") +
   geom_hline(yintercept = bounds[c(-1, -length(bounds)), 3], colour = "grey") +
-  geom_point(data = as.data.frame(myCLHIsample), mapping = aes(x = SWIR2, y = Prec_dm, colour = free), size = 2) +
+  geom_point(data = as.data.frame(mysample_CLHI), mapping = aes(x = SWIR2, y = Prec_dm, colour = free), size = 2) +
   scale_colour_discrete() +
   scale_x_continuous(name = "SWIR2") +
   scale_y_continuous(name = "Precipitation dryest month")
@@ -187,7 +185,7 @@ res <- over(subgrid, grdAmazonia)
 subgrid <- data.frame(coordinates(subgrid), res)
 
 #Use all nodes of 1 km $\times$ 1 km grid not selected in 10 km $\times$ 10 km grid for selecting a large validation by simple random sampling
-grdAmazonia <- as(grdAmazonia, "data.frame")
+grdAmazonia <- as_tibble(grdAmazonia)
 grdmincalibration <- grdAmazonia[-subgrid$id, ]
 nval <- 25000
 set.seed(314)
@@ -240,11 +238,11 @@ for (i in 1:S) {
                  progress = FALSE, simple = FALSE))
   time.CLH[i] <- time[1]
   index <- clhs.out$index_samples
-  myCLHsample <- subgrid[index, ]
+  mysample_CLH <- subgrid[index, ]
 #save O1 + O3
   O1O3.CLH[i] <- tail(clhs.out$obj, 1)
 #compute MSSSD
-  res <- rdist(x1 = scale(myCLHsample[, covs], center = populationmeans, scale = populationsds),
+  res <- rdist(x1 = scale(mysample_CLH[, covs], center = populationmeans, scale = populationsds),
                   x2 = scale(subgrid[, covs]))
   dmin <- apply(res, MARGIN = 2, min)
   MSSSD.CLH[i] <- mean(dmin^2)
@@ -285,7 +283,7 @@ for (i in 1:S) {
 #use CLH sample for calibration
   forest.sample <- ranger(
     AGB ~ SWIR2 + Terra_PP + Prec_dm + Elevation + Clay,
-    data = myCLHsample,
+    data = mysample_CLH,
     num.trees = 1000
   )
   out <- predict(forest.sample, data = myvalidationsample, type = "response")
@@ -320,7 +318,7 @@ res <- over(subgrid, grdAmazonia)
 subgrid <- data.frame(coordinates(subgrid), res)
 
 #Use all nodes of 1 km $\times$ 1 km grid not selected in master sample for selecting calibration samples (10 km $\times$ 10 km grid) for selecting a large validation by simple random sampling
-grdAmazonia <- as(grdAmazonia, "data.frame")
+grdAmazonia <- as_tibble(grdAmazonia)
 grdmincalibration <- grdAmazonia[-subgrid$id, ]
 nval <- 25000
 set.seed(314)

@@ -142,22 +142,16 @@ Comparison with the general estimator of the population regression coefficients 
 
 The simple regression estimator is illustrated with Eastern Amazonia. The population mean of the aboveground biomass (AGB) is estimated by the simple regression estimator, using natural logs of MODIS short-wave infrared radiation (SWIR2) as a covariate.
 
-```{r, echo=FALSE}
-grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
-units <- sample(nrow(grdAmazonia), size = 10000, replace = FALSE)
-mysample <- grdAmazonia[units, c("AGB", "lnSWIR2")]
-lm_pop <- lm(AGB ~ lnSWIR2, data = grdAmazonia)
-ab <- coef(lm_pop)
-r <- cor(grdAmazonia$AGB, grdAmazonia$lnSWIR2)
-```
-
-A simple random sample without replacement of 100 units is selected, and the two population regression coefficients are estimated with Equation \@ref(eq:EstimatorMultipleRegressionCoefficients). `t(X)` computes the transpose of matrix `X`, function `solve` computes the inverse of a matrix, and operator `%*%` is for multiplying two matrices. 
+A simple random sample without replacement of 100 units is selected using `slice_sample` of package **dplyr**, and the two population regression coefficients are estimated with Equation \@ref(eq:EstimatorMultipleRegressionCoefficients).
 
 ```{r}
-n <- 100
+grdAmazonia <- grdAmazonia %>%
+  mutate(lnSWIR2 = log(SWIR2))
 set.seed(321)
-units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
-mysample <- grdAmazonia[units, c("AGB", "lnSWIR2")]
+n <- 100
+mysample <- grdAmazonia %>%
+  dplyr::select(AGB,lnSWIR2) %>%
+  slice_sample(n = n)
 X <- matrix(nrow = n, ncol = 2, data = 1)
 X[, 2] <- mysample$lnSWIR2
 XXinv <- solve(t(X) %*% X)
@@ -178,7 +172,7 @@ Figure \@ref(fig:ScatterAGBvsSWIR2) shows the scatter plot for the simple random
 
 (ref:ScatterAGBvsSWIR2label) Scatter plot of AGB (10^9^ kg ha^-1^) against lnSWIR2 of a simple random sample of size 100 from Eastern Amazonia and the fitted simple linear regression model for AGB.
 
-```{r ScatterAGBvsSWIR2, echo = FALSE, fig.width = 5, fig.asp = .6, fig.cap = "(ref:ScatterAGBvsSWIR2label)"}
+```{r ScatterAGBvsSWIR2, echo = FALSE, fig.width = 5, fig.asp = .7, fig.cap = "(ref:ScatterAGBvsSWIR2label)"}
 ggplot(data = mysample) +
         geom_point(mapping = aes(x = lnSWIR2, y = AGB)) +
         geom_abline(intercept = ab[1], slope = ab[2]) +
@@ -336,18 +330,18 @@ Using multiple covariates in the regression estimator is straightforward with fu
 library(leaps)
 n <- 100
 set.seed(321)
-units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
-covars <- c("AGB", "lnSWIR2", "Terra_PP", "Prec_dm", "Elevation", "Clay")
-mysample <- grdAmazonia[units, covars]
+mysample <- grdAmazonia %>%
+  dplyr::select(AGB, lnSWIR2, Terra_PP, Prec_dm, Elevation, Clay) %>%
+  slice_sample(n = n) 
 models <- regsubsets(AGB ~ ., data = mysample, nvmax = 4)
-res.sum <- summary(models)
-res.sum$outmat
+res_sum <- summary(models)
+res_sum$outmat
 ```
 
 The best model with one predictor is the model with lnSWIR2, the best model with two predictors is the one with lnSWIR2 and Terra_PP, etc. Of these models the third model, i.e. the model with lnSWIR2, Terra_PP, and Elevation, is the best when using adjusted $R^2$ as a selection criterion.
 
 ```{r}
-which.max(res.sum$adjr2)
+which.max(res_sum$adjr2)
 ```
 
 The standard error of the estimated mean AGB is somewhat reduced by adding the covariates Terra_PP and Elevation to the regression estimator.
@@ -441,20 +435,19 @@ levels(grdAmazonia$Biome)
 ```
 
 ```{r}
-biomes <- c("Mangrove", "Forest.dry", "Grassland", "Forest.moist")
+biomes <- c("Mangrove", "Forest_dry", "Grassland", "Forest_moist")
 levels(grdAmazonia$Biome) <- biomes
 ```
 
-Moist forest is by far the largest stratum, it covers 92\% of the area. Mangrove, Forest.dry, and Grassland cover 0.4\%, 2.3\%, and 5.5\% of the area, respectively.  A stratified simple random sample of size 100 is selected using function `strata` of package **sampling**, see Chapter \@ref(STSI). I chose five units as a minimum sample size. Note that the stratum sample sizes are not proportional to their size.
+Moist forest is by far the largest stratum, it covers 92\% of the area. Mangrove, Forest_dry, and Grassland cover 0.4\%, 2.3\%, and 5.5\% of the area, respectively.  A stratified simple random sample of size 100 is selected using function `strata` of package **sampling**, see Chapter \@ref(STSI). I chose five units as a minimum sample size. Note that the stratum sample sizes are not proportional to their size.
 
 ```{r}
 library(sampling)
-ord <- unique(grdAmazonia$Biome)
 N_h <-  table(grdAmazonia$Biome)
 n_h <- c(5, 5, 5, 85)
 set.seed(314)
 units <- sampling::strata(grdAmazonia, stratanames = "Biome",
-  size = n_h[ord], method = "srswor")
+  size = n_h[unique(grdAmazonia$Biome)], method = "srswor")
 mysample <- getdata(grdAmazonia, units)
 ```
 
@@ -819,8 +812,8 @@ The combined ratio estimator\index{Ratio estimator!combined ratio estimator} is
 The code chunks below show how the combined and separate regression estimate can be computed with package **survey**. First, two equal-sized strata are computed using the median of the covariate `agri` as a stratum bound. Stratum sample sizes are computed, and a stratified simple random sample without replacement is selected.
 
 ```{r}
-breaks <- quantile(grdKandahar$agri, probs = 0.5)
-grdKandahar$stratum <- findInterval(grdKandahar$agri, breaks) + 1
+median_agri <- quantile(grdKandahar$agri, probs = 0.5)
+grdKandahar$stratum <- findInterval(grdKandahar$agri, median_agri) + 1
 N_h <-  table(grdKandahar$stratum)
 n_h <- round(n * N_h / sum(N_h))
 set.seed(314)
@@ -1074,7 +1067,7 @@ Package **rpms** [@rpms] is used to build a regression tree for AGB, using all f
 library(rpms)
 tree <- rpms(
   rp_equ = AGB ~ SWIR2 + Terra_PP + Prec_dm + Elevation + Clay,
-  data = mysample, pval = 0.05)
+  data = as.data.frame(mysample), pval = 0.05)
 ```
 
 (ref:regressiontreeAGBlabel) Regression tree for AGB (10^9^ kg ha^-1^) calibrated on a simple random sample of size 100 from Eastern Amazonia.
@@ -1126,11 +1119,11 @@ res <- gregTree(
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
-saveRDS(res, file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
+write_rds(res, file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
 ```
 
 ```{r, echo = FALSE}
-res <- readRDS(file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
+res <- read_rds(file = "results/BootstrapVarianceRegressionTreeAGB_Amazonia.rds")
 ```
 
 ```{r}
@@ -1245,12 +1238,12 @@ mz_MD_OOB <- mean(AGBpred) + mean(d_OOB)
 v_mz_MD_OOB <- (1 - n / N) * var(d_OOB) / n
 ```
 
-For the difference estimator the results are very similar. The two difference estimates are `r formatC(mz_MD, 1, format = "f")` 10^9^ kg ha^-1^ and 227.0 10^9^ kg ha^-1^, and their estimated variances are `r formatC(v_mz_MD, 2, format = "f")` (10^9^ kg ha^-1^)^2^ and `r formatC(v_mz_MD_OOB, 2, format = "f")` (10^9^ kg ha^-1^)^2^, respectively. The model-calibration estimate and the generalised difference estimate are nearly equal.
+For the difference estimator the results are very similar. The two difference estimates are `r formatC(mz_MD, 1, format = "f")` 10^9^ kg ha^-1^ and `r formatC(mz_MD_OOB, 1, format = "f")` 10^9^ kg ha^-1^, and their estimated variances are `r formatC(v_mz_MD, 2, format = "f")` (10^9^ kg ha^-1^)^2^ and `r formatC(v_mz_MD_OOB, 2, format = "f")` (10^9^ kg ha^-1^)^2^, respectively. The model-calibration estimate and the generalised difference estimate are nearly equal.
 
 The sampling and estimation are repeated 1,000 times: 1,000 times a simple random sample without replacement of size 100 is selected. Each sample is used to calibrate a RF, each forest consisting of 1,000 trees. This results in 2 $\times$ 1,000 model-calibration estimates and their estimated variances as well as 2 $\times$ 1,000 difference estimates and their estimated variances. To limit the computing time, a 5 km $\times$ 5 km subgrid of `grdAmazonia` is used for selecting the simple random samples and for predicting AGB with the RF.
 
 ```{r, eval = FALSE, echo = FALSE}
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia <- read_rds(file = "results/grdAmazonia_5km.rds")
 set.seed(314)
 mz_MC <- mz_MD <- v_mz_MC <- v_mz_MD <- numeric(length = 1000)
 mz_MC_OOB <- mz_MD_OOB <- v_mz_MC_OOB <- v_mz_MD_OOB <- numeric(length = 1000)
@@ -1324,7 +1317,7 @@ Finally, the relative efficiency\index{Relative efficiency} is computed as the r
 
 ```{r, echo=FALSE}
 load(file = "results/RandomForestEstimates_Amazonia_100pnts.rda")
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia <- read_rds(file = "results/grdAmazonia_5km.rds")
 #compute mean across all population units (population mean)
 mz_pop <- mean(grdAmazonia$AGB)
 #compute relative bias
@@ -1481,4 +1474,5 @@ The model-assisted approach requires a supplemental sample with observations of 
 
 ```{r, echo = FALSE}
 rm(list = ls())
+
 ```

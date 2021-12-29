@@ -1,5 +1,6 @@
 library(gstat)
 library(sf)
+library(sswr)
 
 nugget <- 483
 psill <- 966 - nugget #966 is the sill of the variogram without nugget
@@ -7,7 +8,7 @@ vgm_SphNug <- vgm(model = "Sph", nugget = nugget, psill = psill, range = 44.6)
 
 #read shape (geopackage) file and make grid
 
-field <- read_sf("../data/leest.gpkg") %>%
+field <- read_sf(system.file("extdata/leest.gpkg", package = "sswr")) %>%
   st_set_crs(NA_crs_)
 
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")

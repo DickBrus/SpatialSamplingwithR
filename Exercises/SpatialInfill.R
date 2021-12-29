@@ -4,7 +4,7 @@ library(ggplot2)
 library(terra)
 
 #read data frame with coordinates (and other attributes) of fine grid (discretisation of study area)
-rmap <- rast(x="data/Elevation_Xuancheng.tif")
+rmap <- rast(x = system.file("extdata/Elevation_Xuancheng.tif", package = "sswr"))
 rmap
 rmap <- as.data.frame(rmap, xy = TRUE, na.rm = TRUE)
 

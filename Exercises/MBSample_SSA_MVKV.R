@@ -15,7 +15,7 @@ set.seed(314)
 myStrata <- stratify(grdHunterValley, nStrata=n, equalArea=FALSE, nTry=10)
 mySCsample <- as(spsample(myStrata), "SpatialPoints")
 myevalsample <- spsample(x=grdHunterValley, n=100, type="regular", offset=c(0.5,0.5))
-grdHunterValley <- as(grdHunterValley, "data.frame")
+grdHunterValley <- as_tibble(grdHunterValley)
 
 xi <- 0.5
 phi <- 200
@@ -46,7 +46,7 @@ res <- optimUSER(
   track=TRUE)
 
 mysample <- candi[res$points$id,]
-saveRDS(mysample, file = "results/MBSample_MVKV_phi200nug05_HunterValley.rds")
+write_rds(mysample, file = "results/MBSample_MVKV_phi200nug05_HunterValley.rds")
 
 ggplot(data=grdHunterValley) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill="grey")+

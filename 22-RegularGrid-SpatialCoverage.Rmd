@@ -41,7 +41,7 @@ The number of grid points in this example equals `r n`. Nodes of the square grid
 
 #### Exercises {-}
 
-1. Write an **R** script to select a square grid of size 100 from West-Amhara in Ethiopia. Use `data.frame` `grdAmhara` of package **sswr** as a sampling frame. Use a fixed starting point of the grid, i.e. do not select the grid randomly.   
+1. Write an **R** script to select a square grid of size 100 from West-Amhara in Ethiopia. Use `grdAmhara` of package **sswr** as a sampling frame. Use a fixed starting point of the grid, i.e. do not select the grid randomly.   
     +  Compute the number of selected grid points. How comes that it is not exactly equal to 100?
     +  Select a square grid with a spacing of 10.2 km, and compute the sample size.
     +  Write a for-loop to select 200 times a square grid of, on average, 100 points with random starting point. Set a seed so that the result can be reproduced. Determine for each randomly selected grid the number of selected grid points, and save this in a numeric. Compute summary statistics of the sample size, and plot a histogram.
@@ -137,8 +137,7 @@ set.seed(314)
 gridded(grdVoorst) <- ~ s1 + s2
 mystrata <- spcosa::stratify(
   grdVoorst, nStrata = n, equalArea = FALSE, nTry = 10)
-mysample <- spsample(mystrata)
-mysample <- as(mysample, "data.frame")
+mysample <- spsample(mystrata) %>% as("data.frame")
 ```
 
 ```{r spatcovVoorst, echo = FALSE, out.width = '100%', fig.cap = "Spatial coverage sample from Voorst."}
@@ -160,7 +159,7 @@ ggplot(mystrata) +
 If the clusters need not be of equal size, we may also use function `kmeans` of the **stats** package, using the spatial coordinates as clustering variables. This requires less computing time, especially with large data sets.
 
 ```{r}
-grdVoorst <- as(grdVoorst, "data.frame")
+grdVoorst <- as_tibble(grdVoorst)
 mystrata_kmeans <- kmeans(
   grdVoorst[, c("s1", "s2")], centers = n, iter.max = 10000, nstart = 10)
 mysample_kmeans <- mystrata_kmeans$centers %>% data.frame()
@@ -176,8 +175,8 @@ coordinates(mysample_kmeans) <- ~ s1 + s2
 res <- over(mysample_kmeans, grdVoorst)
 inside <- as.factor(!is.na(res$z))
 levels(inside) <- (c("Outside", "Inside"))
-grdVoorst <- as(grdVoorst, "data.frame")
-mysample_kmeans <- as(mysample_kmeans, "data.frame")
+grdVoorst <- as_tibble(grdVoorst)
+mysample_kmeans <- as_tibble(mysample_kmeans)
 ggplot() +
   geom_raster(data = grdVoorst, mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(data = mysample_kmeans, mapping = aes(x = s1 / 1000, y = s2 / 1000, shape = inside), size = 1.5) +
@@ -197,7 +196,13 @@ This problem can easily be solved by selecting points inside the study area clos
 
 ```{r}
 library(fields)
+gridded(grdVoorst) <- ~ s1 + s2
+coordinates(mysample_kmeans) <- ~ s1 + s2
+res <- over(mysample_kmeans, grdVoorst)
+inside <- as.factor(!is.na(res$z))
 units_out <- which(inside == FALSE)
+grdVoorst <- as_tibble(grdVoorst)
+mysample_kmeans <- as_tibble(mysample_kmeans)
 D <- fields::rdist(x1 = mysample_kmeans[units_out, ],
   x2 = grdVoorst[, c("s1", "s2")])
 units_close <- apply(D, MARGIN = 1, FUN = which.min)
@@ -216,8 +221,6 @@ mysample_kmeans[units_out, ] <- grdVoorst[units_close, c("s1", "s2")]
 If georeferenced data are available that can be used for mapping the study variable, but we need more data for mapping, it is attractive to account for these existing sampling units when selecting the additional units. The aim now is to fill in the empty spaces, i.e. the parts of the study area not covered by the existing sampling units. This is referred to as *spatial infill sampling*. Existing sampling units can easily be accommodated in the k-means algorithm, using them as fixed cluster centres\index{Fixed cluster centre}.
 
 Figure \@ref(fig:spatialinfillEthiopia) shows a spatial infill sample for West-Amhara. A large set of legacy data on soil organic matter (SOM) in mass percentage (dag kg^-1^) is available, but these data come from strongly spatially clustered units along roads (the prior points in Figure \@ref(fig:spatialinfillEthiopia)). This is a nice example of a convenience sample. The legacy data are not ideal for mapping the SOM concentration throughout West-Amhara. Clearly, it is desirable to collect additional data in the off-road parts of the study area, with the exception of the northeastern part where we have already quite a few data not near the main roads. The legacy data are passed to function `stratify` of package **spcosa** with argument `priorPoints`. The object assigned to this argument must be of class `SpatialPoints` or  `SpatialPointsDataFrame`. This optional argument fixes these points as cluster centres. A spatial infill sample of 100 points is selected, taking into account these fixed points.
-
-<!--Projection attributes of the file with legacy sample: crs <- st_crs("+proj=laea +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")-->
 
 ```{r spatialinfillEthiopia, out.width="100%", fig.cap = "Spatial infill sample of 100 points from West-Amhara."}
 gridded(grdAmhara) <- ~ s1 + s2
@@ -241,7 +244,7 @@ mysample_new <- mysample[units, ]
 ```
 
 #### Exercises {-}
-6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Use the iPSM sample in `data.frame` `sampleXuancheng` of package **sswr** as a legacy sample. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. 
+6. Write an **R** script to select a spatial infill sample of size 100 from study area Xuancheng in China. Use the iPSM sample in tibble `sampleXuancheng` of package **sswr** as a legacy sample. To map the SOM concentration we want to measure the SOM concentration at 100 more sampling points. 
     +  Read the file `data/Elevation_Xuancheng.rds` with function `rast` of package **terra**, and use this file as a discretisation of the study area.
     +  For computational reasons there are far too many raster cells. That many cells are not needed to select a spatial infill sample. Subsample the raster file by selecting a square grid with a spacing of 900 m $\times$ 900 m. First convert the `SpatRaster` object to a `data.frame`, and then change it to a `SpatialPixelsDataFrame` using function `gridded`. Then use function `spsample` with argument `type = "regular"`.
     +  Select a spatial infill sample using functions `stratify` and `sample` of package **spcosa**.  

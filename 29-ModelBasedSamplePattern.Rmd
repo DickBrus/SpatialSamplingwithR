@@ -74,8 +74,7 @@ The semivariogram parameters as estimated by `nls` are then used to define a sem
 ```{r, echo = FALSE}
 library(sfheaders)
 sampleCRF <- sampleCRF  %>%
-  st_as_sf(coords = c("x", "y"), crs = st_crs(4024)) %>%
-  st_transform(crs = 32641) %>%
+  st_as_sf(coords = c("x", "y"), crs = st_crs(32641)) %>%
   st_zm %>%
   sf_to_df(fill = TRUE)
 
@@ -431,8 +430,8 @@ res <- optimMKV(
   points = pnts, candi = candi,
   vgm = vgm_ML_gstat, eqn = z ~ 1,
   nmax = 20, schedule = schedule, track = FALSE)
-ids <- which(res$points$free == 1)
-infillSample <- res$points[ids, ]
+infillSample <- res$points %>%
+  filter(free == 1)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
@@ -458,7 +457,7 @@ ggplot() +
 For West-Amhara maps of covariates are available that can be used in KED, see Section \@ref(MBgridspacingKED). The prediction error variance with KED is partly determined by the covariate values (see Section \@ref(SamplePatternKED)), and therefore, when filling in the undersampled areas, locations with extreme values for the covariates are preferably selected. In Section \@ref(MBgridspacingKED) the legacy data were used to estimate the residual semivariogram by REML, see Table \@ref(tab:VariogramREMLEthiopia). In the next code chunk the estimated parameters of the residual semivariogram are used to optimise the spatial pattern of an infill sample of 100 points for mapping the SOM concentration throughout West-Amhara by KED, using elevation (dem), NIR-reflectance (rfl_NIR), red-reflectance (rfl_red), and land surface temperature (lst) as predictors for the model-mean.
 
 ```{r, echo = FALSE}
-sampleAmhara <- as(sampleAmhara, "data.frame")
+sampleAmhara <- as_tibble(sampleAmhara)
 library(geoR)
 dGeoR <- as.geodata(obj = sampleAmhara, header = TRUE,
    coords.col = c("s1", "s2"), data.col = "SOM", covar.col = c("dem", "rfl_NIR", "rfl_red", "lst"))

@@ -119,7 +119,7 @@ The few data make that the sample semivariogram is very noisy. For the moment I 
 For simple random sampling we must compute the mean semivariance within the field (Equation \@ref(eq:MBdesignvarSI)). As shown in the next code chunk, the mean semivariance is approximated by discretising the field by a square grid of 2,000 points, computing the 2,000 $\times$ 2,000 matrix with distances between all pairs of discretisation nodes, transforming this distance matrix into a semivariance matrix using function `variogramLine` of package **gstat** [@peb04], and finally averaging the semivariances. Note that in this case we do not need to replace the zeroes on the diagonal of the semivariance matrix by the nugget, as a model without nugget is fitted. The geopackage file is read with function `read_sf` of package **sf** [@sf], resulting in a simple feature object. The projection attributes of this object are removed with function `st_set_crs`. The centres of square grid cells are selected with function `st_make_grid`. The centres inside the field are selected with `mygrid[field]`, and finally the coordinates are extracted with function `st_coordinates`.  
 
 ```{r ExiVarSILeest}
-field <- read_sf("data/leest.gpkg") %>%
+field <- read_sf(system.file("extdata/leest.gpkg", package = "sswr")) %>%
   st_set_crs(NA_crs_)
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
 mygrid <- mygrid[field] %>%
@@ -142,7 +142,7 @@ E_{\xi}\{V_\mathrm{STSI}(\hat{\bar{z}})\}=\frac{1}{n^2}\sum_{h=1}^H \bar{\gamma_
 (\#eq:MBdesignvarSTSI2)
 \end{equation}
 
-The next code chunk shows the computation of the mean semivariance per stratum and the model-based prediction of the sampling variance of the estimator of the mean. The matrix with the coordinates is first converted to a `data.framwe` with function `as_tibble`.  
+The next code chunk shows the computation of the mean semivariance per stratum and the model-based prediction of the sampling variance of the estimator of the mean. The matrix with the coordinates is first converted to a tibble, i.e. a data frame of class `tbl_df`. with function `as_tibble`.  
 
 ```{r ExiVarSTSILeest}
 library(spcosa)
@@ -221,7 +221,7 @@ vgm_REML <- likfit(geodata = dGeoR,
   lik.method = "REML", messages = FALSE)
 ```
 
-The estimated parameters of the residual semivariogram of the SOM concentration are shown in Table \@ref(tab:VariogramREMLEthiopia). The estimated regression coefficients are `r formatC(vgm_REML$beta[1],1)` for the intercept, `r formatC(vgm_REML$beta[2], 3, format = "f")` for elevation (dem), `r formatC(vgm_REML$beta[3], 2, format = "f")` for NIR reflectance, `r formatC(vgm_REML$beta[4],2, format = "f")` for red reflectance, and `r formatC(vgm_REML$beta[5], 3, format = "f")` for land surface temperature. 
+The estimated parameters of the residual semivariogram of the SOM concentration are shown in Table \@ref(tab:VariogramREMLEthiopia). The estimated regression coefficients are `r formatC(vgm_REML$beta[1], 1, format = "f")` for the intercept, `r formatC(vgm_REML$beta[2], 3, format = "f")` for elevation (dem), `r formatC(vgm_REML$beta[3], 2, format = "f")` for NIR reflectance, `r formatC(vgm_REML$beta[4], 2, format = "f")` for red reflectance, and `r formatC(vgm_REML$beta[5], 3, format = "f")` for land surface temperature. 
 
 Package **gstat** is used for geostatistical simulation, and therefore first the REML estimates of the semivariogram parameters are passed to function `vgm` using arguments `nugget`, `psill`, and `range` of function `vgm` of this package. 
 
@@ -273,15 +273,15 @@ for (i in 1:R) {
   m_zsim <- tapply(zsim$sim1, INDEX = mySYs$sample, FUN = mean)
   v_mzsim_SY[i] <- var(m_zsim)
 }
-grdAmhara <- as(grdAmhara, "data.frame")
+grdAmhara <- as_tibble(grdAmhara)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(v_mzsim_SY,file = "results/MBpredVariance_SY_Amhara.rds")
+write_rds(v_mzsim_SY,file = "results/MBpredVariance_SY_Amhara.rds")
 ```
 
 ```{r, echo = FALSE}
-v_mzsim_SY <- readRDS(file = "results/MBpredVariance_SY_Amhara.rds")
+v_mzsim_SY <- read_rds(file = "results/MBpredVariance_SY_Amhara.rds")
 ```
 
 ```{r}
@@ -307,9 +307,7 @@ psusize <- as.numeric(table(mypsus))
 summary(psusize)
 ```
 
-To keep the estimation of the population mean simple, the PSUs are selected with probabilities proportional to their size and with replacement (ppswr sampling), see Chapter \@ref(Twostage).
-
-In Section \@ref(twostagesamplingestimators) formulas are presented for computing the optimal number of PSU draws and SSU draws per PSU draw. The optimal sample sizes are a function of the pooled variance of PSU means, $S^2_{\mathrm{b}}$, and the pooled variance of secondary units (points) within the PSUs, $S^2_{\mathrm{w}}$. In the current subsection these variance components are predicted with the geostatistical model.
+In the next code chunks I assume that the PSUs are selected with probabilities proportional to their size and with replacement (ppswr sampling), see Chapter \@ref(Twostage). In Section \@ref(twostagesamplingestimators) formulas are presented for computing the optimal number of PSU draws and SSU draws per PSU draw. The optimal sample sizes are a function of the pooled variance of PSU means, $S^2_{\mathrm{b}}$, and the pooled variance of secondary units (points) within the PSUs, $S^2_{\mathrm{w}}$. In the current subsection these variance components are predicted with the geostatistical model.
 
 As a first step a large number of maps are simulated.
 
@@ -347,12 +345,12 @@ Exi_S2b <- mean(S2b)
 Exi_S2w <- mean(S2w)
 ```
 
-The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1n + c_2nm$, with $c_0$ the fixed costs, $c_1$ the access costs per PSU, including the access costs of the SSUs (points) within a given PSU, and $c_2$ the observation costs per SSU. In the next code chunk I use $c_1=5$ and $c_2=1$. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
+The optimal sample sizes are computed for a simple linear costs model: $C = c_0 + c_1n + c_2nm$, with $c_0$ the fixed costs, $c_1$ the access costs per PSU, including the access costs of the SSUs (points) within a given PSU, and $c_2$ the observation costs per SSU. In the next code chunk I use $c_1=2$ and $c_2=1$. For the optimal sample sizes only the ratio of $c_1$ and $c_2$ is important, not their absolute values.
 
 Given values for $c_1$ and $c_2$, the optimal number of PSU draws $n$ and the optimal number of SSU draws per PSU draw $m$ are computed, required for a sampling variance of the estimator of the mean equal to the sampling variance with systematic random sampling of 50 points, see Equations \@ref(eq:nopt) and \@ref(eq:mopt). 
 
 ```{r}
-c1 <- 5; c2 <- 1
+c1 <- 2; c2 <- 1
 nopt <- 1 / Exi_vmz_SY * (sqrt(Exi_S2w * Exi_S2b) * sqrt(c2 / c1) + Exi_S2b)
 mopt <- sqrt(Exi_S2w / Exi_S2b) * sqrt(c1 / c2)
 ```
@@ -445,7 +443,7 @@ MCMCsample <- getSample(res, start = 1000, numSamples = 1000) %>% data.frame()
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(MCMCsample, file = "results/MCMC_Melles.rds")
+write_rds(MCMCsample, file = "results/MCMC_Melles.rds")
 ```
 
 Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled by MCMC from the posterior distribution of the estimated semivariogram parameters.
@@ -453,7 +451,7 @@ Figure \@ref(fig:MCMCsampleVariogramlnN) shows several semivariograms, sampled b
 (ref:MCMCsampleVariogramlnNlabel) Semivariograms of the natural log of NO~3~-N for field Melle obtained by MCMC sampling from posterior distribution of the estimated semivariogram parameters.
 
 ```{r MCMCsampleVariogramlnN, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:MCMCsampleVariogramlnNlabel)"}
-MCMCsample <- readRDS(file = "results/MCMC_Melles.rds")
+MCMCsample <- read_rds(file = "results/MCMC_Melles.rds")
 d <- 1:150
 semivar <- matrix(nrow = length(d), ncol = 20)
 for (i in 1:20) {
@@ -477,7 +475,7 @@ ggplot(df_lf, mapping = aes(x = d, y = value,  group = name)) +
 The evaluated sampling design is the same as used in Subsection \@ref(AnalyticalApproach) for field Leest: stratified simple random sampling, using compact geographical strata of equal size, a total sample size of 25 points, and one point per stratum. 
 
 ```{r, echo = FALSE}
-field <- read_sf("data/melle.gpkg") %>%
+field <- read_sf(system.file("extdata/melle.gpkg", package = "sswr")) %>%
   st_set_crs(NA_crs_)
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
 mygrid <- mygrid[field] %>%
@@ -529,7 +527,7 @@ for (i in 1:100) {
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(V, file = "results/SimulatedVariances_Melle.rds")
+write_rds(V, file = "results/SimulatedVariances_Melle.rds")
 ```
 
 Figure \@ref(fig:plotsimulatedmapsMelle) shows sixteen maps simulated with the first four semivariograms. The four maps in a row (a to d) are simulated with the same semivariogram. All maps show that the simulated data have positive skew, which is in agreement with the prior data. The data obtained by simulating from a lognormal distribution are always strictly positive. This is not guaranteed when simulating from a normal distribution.
@@ -591,7 +589,7 @@ The sampling variance shows quite strong variation among the maps. The frequency
 (ref:histogramNMellelabel) Frequency distribution of simulated sampling variances of the $\pi$ estimator of the mean of NO~3~-N of field Melle, for stratified simple random sampling, using 25 compact geostrata of equal size, and one point per stratum.
 
 ```{r histogramNMelle, echo = FALSE, fig.width = 5, fig.asp = 0.7, fig.cap = "(ref:histogramNMellelabel)"}
-V <- readRDS(file = "results/SimulatedVariances_Melle.rds")
+V <- read_rds(file = "results/SimulatedVariances_Melle.rds")
 ggplot() +
   geom_histogram(aes(x = V), binwidth = 0.2, fill = "black", alpha = 0.5, colour = "black") +
   scale_y_continuous(name = "Count") +
@@ -783,7 +781,7 @@ The sample semivariogram does not show much spatial structure, but the first two
 
 ```{r, echo = FALSE}
 library(geoR)
-sampleXuancheng <- as(sampleXuancheng, "data.frame")
+sampleXuancheng <- as_tibble(sampleXuancheng)
 dGeoR <- as.geodata(obj = sampleXuancheng, header = TRUE,
    coords.col = c("s1", "s2"), data.col = "lnSOM", covar.col = "dem"
  )
@@ -819,7 +817,7 @@ The discretisation grid with predicted lnSOM consists of 115,526 nodes. These ar
 
 ```{r, echo = FALSE}
 library(sp)
-gridded(grdXuancheng) <- c("s1", "s2")
+gridded(grdXuancheng) <- ~ s1 + s2
 subgrd <- spsample(grdXuancheng, type = "regular", cellsize = 800, offset = c(0.5, 0.5))
 subgrd <- data.frame(coordinates(subgrd), over(subgrd, grdXuancheng))
 ```
@@ -852,11 +850,11 @@ res <- optimStrata(
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(res, file = "results/OptimalStrata_Xuancheng.rds")
+write_rds(res, file = "results/OptimalStrata_Xuancheng.rds")
 ```
 
 ```{r, echo = FALSE}
-res <- readRDS(file = "results/OptimalStrata_Xuancheng.rds")
+res <- read_rds(file = "results/OptimalStrata_Xuancheng.rds")
 ```
 
 A summary of the optimised strata can be obtained with function `summaryStrata`.
@@ -886,7 +884,7 @@ expected_CV(strata)
 Figure \@ref(fig:optimalstrataXuanchengSamplingStrata) shows the optimised strata. I used the stratum bounds in `data.frame` `smr_strata`, to compute the stratum for all raster cells of the original 200 m $\times$  200 m grid.
 
 ```{r optimalstrataXuanchengSamplingStrata, echo = FALSE, out.width = "100%", fig.cap = "Model-based optimal strata for estimating the mean of the natural log of the SOM concentration in Xuancheng."}
-grdXuancheng <- as(grdXuancheng, "data.frame")
+grdXuancheng <- as_tibble(grdXuancheng)
 strat <- findInterval(grdXuancheng$lnSOMpred, smr_strata$Upper_X1[-nrow(smr_strata)])
 
 labels <- as.character(round(smr_strata$Upper_X1, 2))

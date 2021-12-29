@@ -20,10 +20,10 @@ n_h[1] <- n_h[1] - 1
 The stratified simple random sample is selected with function `strata` of package **sampling** [@Tille2016].  Argument `size` specifies the stratum sample sizes.
 
 ```{block2, type = 'rmdcaution'}
-The stratum sample sizes must be in the order in which the strata are encountered in `data.frame` `grdVoorst`, which is determined first with function `unique`.
+The stratum sample sizes must be in the order in which the strata are encountered in tibble `grdVoorst`, which is determined first with function `unique`.
 ```
 
-Within the strata the grid cells are selected by simple random sampling *with replacement* (`method = "srswr"`), so that in principle more than one point can be selected within a grid cell, see Chapter \@ref(SI) for a motivation of this. Function `getdata` extracts the observations of the selected units from the sampling frame, as well as the spatial coordinates and the stratum of these units. The coordinates of the centres of the selected grid cells are jittered by an amount equal to half the side of the grid cells.
+Within the strata the grid cells are selected by simple random sampling *with replacement* (`method = "srswr"`), so that in principle more than one point can be selected within a grid cell, see Chapter \@ref(SI) for a motivation of this. Function `getdata` extracts the observations of the selected units from the sampling frame, as well as the spatial coordinates and the stratum of these units. The coordinates of the centres of the selected grid cells are jittered by an amount equal to half the side of the grid cells.  In the next code chunk this is done with function `mutate` of package **dplyr** [@dplyr] which is part of package **tidyverse** [@Wickham2019]. We have seen the pipe operator `%>%` of package **magrittr** [@magrittr] before in Section \@ref(CDF). If you are not familiar with  **tidyverse* I recommend to read the excellent book R for Data Science [@Wickham2017].
 
 ```{r}
 library(sampling)
@@ -31,10 +31,9 @@ ord <- unique(grdVoorst$stratum)
 set.seed(314)
 units <- sampling::strata(
   grdVoorst, stratanames = "stratum", size = n_h[ord], method = "srswr")
-mysample <- getdata(grdVoorst, units)
-cell_size <- 25
-mysample$s1 <- jitter(mysample$s1, amount = cell_size / 2)
-mysample$s2 <- jitter(mysample$s2, amount = cell_size / 2)
+mysample <- getdata(grdVoorst, units) %>%
+  mutate(s1 = s1 %>% jitter(amount = 25 / 2),
+         s2 = s2 %>% jitter(amount = 25 / 2))
 ```
 
 
@@ -144,7 +143,7 @@ knitr::kable(
 
 Table \@ref(tab:stratummeans) shows per stratum the estimated mean, the estimated variance, and the estimated sampling variance of the estimated mean of the soil organic matter (SOM) concentration. We can see large differences in the within-stratum variances\index{Within-stratum variance}. For the stratified sample of Figure \@ref(fig:SampleSTSI) the estimated population mean equals `r formatC(mz, 1, format = "f")` g kg^-1^ and the estimated standard error of this estimator equals `r formatC(se_mz, 1, format = "f")` g kg^-1^.
 
-The population mean can also be estimated directly using the basic $\pi$ estimator (Equation \@ref(eq:HTMean)). The inclusion probabilities are included in `data.frame` \texttt{mysample}, obtained with function `getdata` (see code chunk above), as variable `Prob`.
+The population mean can also be estimated directly using the basic $\pi$ estimator (Equation \@ref(eq:HTMean)). The inclusion probabilities are included in `data.frame` `mysample`, obtained with function `getdata` (see code chunk above), as variable `Prob`.
 
 ```{r}
 head(mysample)
@@ -517,10 +516,7 @@ In *cum-root-f* stratification\index{\emph{Cum-root-f} stratification} it is ass
 
 *Cum-root-f* stratification is illustrated with the data of Xuancheng (China). We wish to estimate the mean organic matter concentration in the topsoil (SOM, g kg^-1^) of this area. Various covariates are available that are correlated with SOM, such as elevation, yearly average temperature, slope, and various other terrain attributes. Elevation (the name of this variable in the data frame is dem) is used as as a single stratification variable, see Figure \@ref(fig:DEMXuancheng). The correlation coefficient of SOM and elevation in a sample of 183 observations is 0.59. The positive correlation can be explained as follows. Temperature is decreasing with elevation, leading to a smaller decomposition rate of organic matter in the soil.
 
-<!-- projection attributes of Xuancheng: wgs_1984_UTM_Zone_50N  -->
-
 (ref:DEMXuanchenglabel) Elevation used as a stratification variable in *cum-root-f* stratification of Xuancheng.
-
 
 ```{r DEMXuancheng, echo = FALSE, out.width = "100%", fig.cap = "(ref:DEMXuanchenglabel)"}
 ggplot(data = grdXuancheng) +
@@ -565,7 +561,7 @@ ggplot(data = grdXuancheng) +
 
 #### Exercises {-}
 
-5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia (`data.frame grdAmazonia` in package **sswr**) to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as a stratification variable.   
+5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia (`grdAmazonia` in package **sswr**) to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared (SWIR2)  as a stratification variable.   
     +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?
     + Select a stratified simple random sample of 100 units. First compute the stratum sample sizes for proportional allocation.
     + Estimate the population mean of AGB and its sampling variance.
@@ -645,7 +641,7 @@ A simple method for constructing geographical strata is k-means clustering [@bru
 
 Geostrata of the same size can be computed with function `stratify` of the package **spcosa** (@spcosa, @walvoort2010), with argument `equalArea = TRUE`.
 
-If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. @walvoort2010 describe the k-means algorithms implemented in this package in detail. Argument `object` of function `stratify` specifies a spatial object of the population units. In the **R** code below `data.frame` `grdVoorst` is converted to a `SpatialPixelsDataFrame` with function `gridded` of the package **sp**. The spatial object can also be of class `SpatialPolygons`. In that case either argument `nGridCells` or argument `cellSize` must be set, so that the vector map in `object` can be discretised by a finite number of grid cells. Argument `nTry` specifies the number of initial stratifications in k-means clustering, and therefore is comparable with argument `nstart` of function `kmeans`. For more details on spatial stratification using k-means clustering, see Section \@ref(SpatialCoverage). The k-means algorithm used with `equalArea = TRUE` takes much more computing time than the one used with `equalArea = FALSE`. 
+If the total number of grid cells divided by the number of strata is an integer, the stratum sizes are exactly equal, otherwise the difference is one grid cell. @walvoort2010 describe the k-means algorithms implemented in this package in detail. Argument `object` of function `stratify` specifies a spatial object of the population units. In the **R** code below `grdVoorst` is converted to a `SpatialPixelsDataFrame` with function `gridded` of the package **sp**. The spatial object can also be of class `SpatialPolygons`. In that case either argument `nGridCells` or argument `cellSize` must be set, so that the vector map in `object` can be discretised by a finite number of grid cells. Argument `nTry` specifies the number of initial stratifications in k-means clustering, and therefore is comparable with argument `nstart` of function `kmeans`. For more details on spatial stratification using k-means clustering, see Section \@ref(SpatialCoverage). The k-means algorithm used with `equalArea = TRUE` takes much more computing time than the one used with `equalArea = FALSE`. 
 
 ```{r spcosa, eval = FALSE}
 library(spcosa)
@@ -657,12 +653,12 @@ mygeostrata <- stratify(
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(mygeostrata, file = "results/geostrata_Xuancheng.rds")
+write_rds(mygeostrata, file = "results/geostrata_Xuancheng.rds")
 ```
 
 ```{r, echo = FALSE}
 subgrd <- as(subgrd, "data.frame")
-mygeostrata <- readRDS(file = "results/geostrata_Xuancheng.rds")
+mygeostrata <- read_rds(file = "results/geostrata_Xuancheng.rds")
 ```
 
 Function `spsample`  of package **spcosa** is used to select from each geostratum a simple random sample of two points.
@@ -703,11 +699,11 @@ The estimated population mean equals `r formatC(mean, 1, format = "f")` with an 
 6. Why is it attractive to select at least two points per geostratum?  
 7. The alternative to 50 geostrata and two points per geostratum is 100 geostrata and one point per geostratum. Which sampling strategy will be more precise?  
 8. The geostrata in Figure \@ref(fig:GeoStrata) have equal size (area), which can be enforced by argument `equalArea = TRUE`. Why are equal sizes attractive? Work out the estimator of the population mean for strata of equal size.  
-9. Write an **R** script to construct 20 compact geographical strata of equal size for agricultural field Leest. The geopackage file of this field can be read with **sf** function `read_sf("data/leest.gpkg")`.  Remove the projection attributes with `st_set_crs(NA_crs_)`, and convert the simple feature object to a spatial object with method `as_Spatial`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal size, and randomly select one point per stratum.  
+9. Write an **R** script to construct 20 compact geographical strata of equal size for agricultural field Leest. The geopackage file of this field can be read with **sf** function `read_sf(system.file("extdata/leest.gpkg", package = "sswr"))`.  Remove the projection attributes with `st_set_crs(NA_crs_)`, and convert the simple feature object to a spatial object with method `as_Spatial`. Select two points per geostratum, using function `spsample` of package **spcosa**. Repeat this with 40 strata of equal size, and randomly select one point per stratum.  
     + If only one point per stratum is selected, the sampling variance can be approximated by the collapsed strata\index{Collapsed strata} estimator. In this method pairs of strata are formed, and the two strata of a pair are joined. In each new stratum we now have two points. With an odd number of strata there will be one group of three strata and three points. The sample is then analysed as if it were a random sample from the new collapsed strata. Suppose we group the strata on the basis of the measurements of the study variable. Do you think this is a proper way of grouping?
     + In case you think this is not a proper way of grouping the strata, how would you group the strata?
     + Is the sampling variance estimator unbiased? If not, is the sampling variance overestimated or underestimated?  
-10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use argument `equalArea = TRUE`. Select four points per stratum using argument `type = "composite"`, and convert the resulting object to `SpatialPoints`. Extract the $z$-values in `data.frame` `grdVoorst` at the selected sampling points using  function `over`. Add a variable to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Finally, estimate the population mean and its standard error.  
+10. Laboratory costs for measuring the study variable can be saved by bulking the soil aliquots\index{Soil aliquot} (composite sampling\index{Composite sampling}). There are two options: bulking all soil aliquots from the same stratum (bulking within strata) or bulking by selecting one aliquot from each stratum (bulking across strata). In **spcosa** bulking across strata is implemented. Write an **R** script to construct 20 compact geographical strata for study area Voorst. Use argument `equalArea = TRUE`. Select four points per stratum using argument `type = "composite"`, and convert the resulting object to `SpatialPoints`. Extract the $z$-values in `grdVoorst` at the selected sampling points using  function `over`. Add a variable to the resulting data frame indicating the composite (points 1 to 4 are from the first stratum, points 5 to 8 from the second stratum, etc.), and estimate the means for the four composites using function `tapply`. Finally, estimate the population mean and its standard error.  
     + Can the sampling variance of the estimator of the mean be estimated for bulking within the strata?
     + The alternative to analysing the concentration of four composite samples obtained by bulking across strata  is to analyse all 20 $\times$ 4 aliquots separately. The strata have equal size, so the inclusion probabilities are equal. As a consequence, the sample mean is an unbiased estimator of the population mean. Is the precision of this estimated population mean equal to that of the estimated population mean with composite sampling? If not, is it smaller or larger, and why?
     + If you use argument `equalArea = FALSE` in combination with argument `type = "composite"`, you get an error message. Why does this combination of arguments not work?
@@ -872,4 +868,5 @@ Note that these coefficients of variation are computed from the stratification v
 
 ```{r, echo = FALSE}
 rm(list = ls())
+
 ```

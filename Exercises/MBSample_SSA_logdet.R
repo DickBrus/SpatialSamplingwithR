@@ -37,7 +37,7 @@ rslt <- optimUSER(
 
 mysample <- candi[rslt$points$id, ]
 
-saveRDS(mysample, file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
+write_rds(mysample, file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
 
 ggplot(data = grdHunterValley) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +

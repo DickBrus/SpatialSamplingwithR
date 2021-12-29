@@ -115,12 +115,12 @@ Third, a sampling design spreading out the sampling units in geographical space 
 As an illustration I selected a single sample of 500 units from Eastern Amazonia with the dual aim of mapping aboveground biomass (AGB) as well as estimating the means of AGB for four biomes. The biomes are used as strata in stratified random sampling. First, the stratum sample sizes are computed for proportional allocation, so that the inclusion probabilities are approximately equal for all population units.
 
 ```{r, echo = FALSE}
-grdAmazonia <- readRDS(file = "results/grdAmazonia_5km.rds")
+grdAmazonia <- read_rds(file = "results/grdAmazonia_5km.rds")
 ```
 
 ```{r}
 grdAmazonia$Biome <- as.factor(grdAmazonia$Biome)
-biomes <- c("Mangrove", "Forest.dry", "Grassland", "Forest.moist")
+biomes <- c("Mangrove", "Forest_dry", "Grassland", "Forest_moist")
 levels(grdAmazonia$Biome) <- biomes
 N_h <-  table(grdAmazonia$Biome)
 n <- 500
@@ -129,7 +129,7 @@ n_h[3] <- n_h[3] + 1
 print(n_h)
 ```
 
-Biome Forest.moist is by far the largest biome with a sample size of `r n_h[4]` points.
+Biome Forest_moist is by far the largest biome with a sample size of `r n_h[4]` points.
 
 In the next code chunk a balanced sample is selected with equal inclusion probabilities, using both the categorical variable biome and the continuous variable lnSWIR2 as balancing variables (Subsection \@ref(StratifiedsamplingasBalancedsampling)). The geographical coordinates are used as spreading variables.
 
@@ -140,8 +140,8 @@ pi <- n_h / N_h
 stratalabels <- levels(grdAmazonia$Biome)
 lut <- data.frame(Biome = stratalabels, pi = as.numeric(pi))
 grdAmazonia <- merge(x = grdAmazonia, y = lut)
-Xbal <- model.matrix(~ Biome - 1, data = grdAmazonia)
-Xbal <- cbind(Xbal, grdAmazonia$lnSWIR2)
+Xbal <- model.matrix(~ Biome - 1, data = grdAmazonia) %>%
+  cbind(grdAmazonia$lnSWIR2)
 Xspread <- cbind(grdAmazonia$x1, grdAmazonia$x2)
 set.seed(314)
 units <- lcube(Xbal = Xbal, Xspread = Xspread, prob = grdAmazonia$pi)
@@ -161,7 +161,7 @@ ggplot(data = grdAmazonia) +
   coord_fixed()
 ```
 
-I think this is a suitable sample, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest.moist the population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
+I think this is a suitable sample, both for mapping AGB across the entire study area, for instance by kriging with an external drift (Section \@ref(IntroKED)), and for estimating the mean AGB of the four biomes. For biome Forest_moist the population mean can be estimated from the data of this biome only, using the $\pi$ estimator, as the sample size of this biome is very large (Section \@ref(BalancedandSpreaded)). For the other three biomes we may prefer model-assisted estimation for small domains as described in Section \@ref(SmallDomainsModelAssisted).
 
 In this example I used one quantitative covariate, lnSWIR2, for balancing the sample. If we have a legacy sample that can be used to fit a linear or non-linear model, for instance a random forest using multiple covariates and factors as predictors (Chapter \@ref(Modelassisted)), then this model can be used to predict the study variable for all population units, so that we can use the predictions of the study variable to balance the sample, see Section \@ref(RandomForest).
 

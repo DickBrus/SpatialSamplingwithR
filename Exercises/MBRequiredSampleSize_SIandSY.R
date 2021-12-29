@@ -1,12 +1,13 @@
 library(gstat)
 library(sf)
+library(sswr)
 
 #specify semivariogram model as gstat object
 vgmodel <- vgm(model = "Sph", psill = 966, range = 44.6)
 
 #read geopackage file and make grid
 
-field <- read_sf("../data/Leest.gpkg") %>%
+field <- read_sf(system.file("extdata/leest.gpkg", package = "sswr")) %>%
   st_set_crs(NA_crs_)
 
 mygrid <- st_make_grid(field, cellsize = 2, what = "centers")
@@ -30,7 +31,7 @@ ceiling(n_SI <- (u * sqrt(m_semivar_field) / (lmax / 2))^2)
 #compute required sample size for SY
 
 
-#convert mygrid to tibble (data.frame) and next to SpatialPixels object
+#convert mygrid to a data frame of class tbl_df and next to SpatialPixels object
 mygrid <- mygrid %>%
   as_tibble() %>%
   setNames(c("x1", "x2"))
