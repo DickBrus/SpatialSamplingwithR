@@ -1,3 +1,28 @@
+#' Validate
+#'
+#' This function checks whether all columns of data frame with sampling points
+#' and of data frame with candidate sampling points are available
+#'
+#' @return validated data frame
+#'
+#' @importFrom dplyr "%>%"
+#' @importFrom stringr str_glue
+validate <- function(x) {
+  
+  required_column_names <- c("point_id", "x", "y", "PC1", "PC2", "dpnt")
+  missing_column_names <- required_column_names %>%
+    setdiff(names(x))
+  n_missing_column_names <- length(missing_column_names)
+  if (n_missing_column_names == 1L) {
+    stop(str_glue("Column {sQuote(missing_column_names)} is missing"), call. = FALSE)
+  }
+  if (n_missing_column_names  > 1L) {
+    stop(paste0("Columns ", toString(sQuote(missing_column_names)), " are missing"), call. = FALSE)
+  }
+  
+  return(x)
+}
+
 #' Minimisation Criterion
 #'
 #' This function computes the minimisation criterion
@@ -100,7 +125,21 @@ anneal <- function(mysample,
                  maxPermuted = 20 * nrow(mysample),
                  maxNoChange = 20,
                  verbose = getOption("verbose")) {
-
+  #check columns of mysample
+  mysample <- validate(mysample)
+  
+  
+  #check columns of candidates
+  candidates <- validate(candidates)
+  
+  #check columns of dpnt
+  if (!("x" %in% names(dpnt))) {
+    stop("x must be in data frame dpnt", call. = FALSE)
+  }
+  if (!("y" %in% names(dpnt))) {
+    stop("y must be in data frame dpnt", call. = FALSE)
+  }
+  
   # set initial temperature
   T <- T_ini
 

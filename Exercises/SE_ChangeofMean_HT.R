@@ -4,7 +4,7 @@ n <- 100 #size of simple random samples per time
 m <- 50 #size of matched sample
 
 #compute population variance-covariance matrix of data
-S2_z <- var(grdSpainPortugal[, -c(1, 2)])
+S2_z <- var(grdIberia[, -c(1, 2)])
 
 #compute variance of change of mean using pi estimators to estimate the spatial means of 2004 and 2019
 (se_d_HT <- sqrt(S2_z[1, 1] / n + S2_z[4, 4] / n - 2 * (m * S2_z[1, 4] / n^2)))

@@ -523,7 +523,45 @@ ggplot(mysamples) +
  coord_fixed()
 ```
 
+## Mapping
+
+Once that data are collected, the study variable is mapped by fitting a multiple linear regression model using the two covariates, in our case the two EM measurements, as predictors. The fitted model is then used to predict the study variable for all unsampled population units. 
+
+The predicted value of the study variable at an unsampled prediction location $\mathbf{s}_0$ is predicted by
+\begin{equation}
+\widehat{Z}(\mathbf{s}_0) = \mathbf{x}_0 \hat{\pmb{\beta}}_{\text{OLS}}\;,
+(\#eq:ZpredMLR)
+\end{equation}
+with $\mathbf{x}_0$ the ($p+1$)-vector with covariate values at prediction location $\mathbf{s}_0$ and 1 in the first entry ($p$ is the number of covariates) and $\hat{\pmb{\beta}}$ the vector with ordinary least squares estimates\index{Ordinary least squares} of the regression coefficients:
+\begin{equation}
+\hat{\pmb{\beta}}_{\text{OLS}} = (\mathbf{X}^{\mathrm{T}}\mathbf{X})^{-1} (\mathbf{X}^{\mathrm{T}}\mathbf{z})\;,
+(\#eq:betaOLS)
+\end{equation}
+with $\mathbf{X}$ the $(n \times (p+1))$ matrix with covariate values and ones in the first column ($n$ is the sample size and $p$ is the number of covariates), and $\mathbf{z}$ the $n$-vector with observations of the study variable.
+
+```{block2, type = 'rmdnote'}
+Although the principal component scores are used to select the sampling locations there is no need to use these principal component scores as predictors in the linear regression model. When all principal components derived from the covariates are used as predictors, the predicted values and standard errors obtained with the model using the principal components as predictors are equal to those obtained with the model using the covariates as predictors.
+```
+
+The variance of the prediction error can be estimated by
+\begin{equation}
+\widehat{V}(\widehat{Z}(\mathbf{s}_0)) = \hat{\sigma}^2_{\epsilon}(1+\mathbf{x}_0^{\mathrm{T}}(\mathbf{X}^{\mathrm{T}}\mathbf{X})^{-1}\mathbf{x}_0)\;,
+(\#eq:VarZpredMLR)
+\end{equation}
+with $\hat{\sigma}^2_{\epsilon}$ the estimated variance of the residuals.
+
+In **R** the model can be calibrated with function `lm`, and the predictions can be obtained with function `predict`. The standard errors of the estimated means can be obtained with argument `se.fit = TRUE`. The variances of Equation \@ref(eq:VarZpredMLR) can be computed by squaring these standard errors and adding the squared value of the estimated residual variance, which can be extracted with `sigma()`.
+
+```{r, eval = FALSE}
+mdl <- lm(lnECe ~ lnEM100cm + lnEM50cm, data = mysample)
+zpred <- predict(mdl, newdata = grdCRF, se.fit = TRUE)
+v_zpred <- zpred$se.fit^2+sigma(mdl)^2
+```
+
+The assumption underlying Equations \@ref(eq:betaOLS) and \@ref(eq:VarZpredMLR) is that the model residuals are independent. We assume that all spatial structure of the study variable is explained by the covariates. Even the residuals at two locations close to each other are assumed to be uncorrelated. A drawback of the spatial response surface design is that it is hard or even impossible to check this assumption as the sampling locations are spread out throughout the study area. If the residuals are not independent the covariance of the residuals can be accounted for by generalised least squares estimation of the regression coefficients (Equation \@ref(eq:beta_GLS)). The study variable can then be mapped by kriging with an external drift (Subsection \@ref(IntroKED)). However, this requires an estimate of the semivariogram of the residuals (Subsection \@ref(ResidualVariogram)). 
+
 
 ```{r, echo = FALSE}
 rm(list = ls())
+gc()
 ```

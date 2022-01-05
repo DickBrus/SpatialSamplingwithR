@@ -4,7 +4,7 @@ n <- 100 #size of simple random samples per time
 t <- 1:4 #sampling times (unit of time is five years)
 
 #compute population variance-covariance matrix of data
-S2_z <- var(grdSpainPortugal[, -c(1, 2)])
+S2_z <- var(grdIberia[, -c(1, 2)])
 
 #Static-synchronous
 

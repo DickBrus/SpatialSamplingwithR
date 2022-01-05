@@ -15,7 +15,7 @@
 #'
 #' @importFrom sp "coordinates<-" spDists
 #' @importFrom gstat variogramLine vgm
-FIM <- function(A, D, model, thetas, perurbation) {
+FIM <- function(A, D, model, thetas, perturbation) {
   pA <- dA <- list()
   for (i in seq_len(length(thetas))) {
     thetas.pert <- thetas
@@ -64,7 +64,7 @@ FIM <- function(A, D, model, thetas, perurbation) {
 #' @importFrom gstat variogramLine vgm
 #'
 #' @export
-logdet <- function(points, model, thetas, perturbation)  {
+logdet <- function(points, model, thetas, perturbation = 0.01)  {
   points <- as.data.frame(points)
   names(points) <- c("x", "y")
   coordinates(points) <- ~ x + y
@@ -75,7 +75,7 @@ logdet <- function(points, model, thetas, perturbation)  {
   if (inherits(cholA, "try-error")) {
     return(Inf)
   } else {
-    I <- FIM(A, D, model, thetas, perurbation)
+    I <- FIM(A, D, model, thetas, perturbation)
     cholI <- try(chol(I), silent = TRUE)
     if (inherits(cholI, "try-error")) {
       return(Inf)
@@ -89,7 +89,7 @@ logdet <- function(points, model, thetas, perturbation)  {
 
 
 
-#' Variance Kriging Variance
+#' Mean Variance of Kriging Variance
 #'
 #' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
 #'   with coordinates of sampling points.
@@ -106,7 +106,7 @@ logdet <- function(points, model, thetas, perturbation)  {
 #' @importFrom gstat variogramLine vgm
 #'
 #' @export
-MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
+MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01)  {
   points <- as.data.frame(points)
   nobs <- nrow(points)
   names(points) <- c("x", "y")
@@ -118,7 +118,7 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
   if (inherits(cholA, "try-error")) {
     return(Inf)
   } else {
-    I <- FIM(A, D, model, thetas, perurbation) #Fisher information matrix
+    I <- FIM(A, D, model, thetas, perturbation) #Fisher information matrix
     cholI <- try(chol(I), silent = TRUE)
     if (inherits(cholI, "try-error")) {
       return(Inf)
@@ -190,7 +190,7 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
 }
 
 
-#' Augmented Variance
+#' Mean Augmented Kriging Variance
 #'
 #' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
 #'   with coordinates of sampling points
@@ -206,11 +206,11 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation)  {
 #' @return mean augmented kriging variance.
 #'
 #' @export
-MAKV <- function(points, esample, model, thetas, perturbation)  {
+MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
   points <- as.data.frame(points)
   nobs <- nrow(points)
   coordinates(points) <- ~ x + y
-  
+
   D <- spDists(points)
   vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
   A <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
@@ -222,12 +222,12 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
     pA[[i]] <- variogramLine(vgmodel.pert, dist_vector = D, covariance = TRUE)
     dA[[i]] <- (pA[[i]] - A) / (thetas[i] * perturbation)
   }
-  
+
   cholA <- try(chol(A), silent = TRUE)
   if (inherits(cholA, "try-error")) {
     return(Inf)
   } else {
-    I <- FIM(A, D, model, thetas, perurbation) #Fisher Information Matrix
+    I <- FIM(A, D, model, thetas, perturbation) #Fisher Information Matrix
     cholI <- try(chol(I), silent = TRUE)
     if (inherits(cholI, "try-error")) {
       return(Inf)
@@ -237,13 +237,13 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
         return(Inf)
       } else {
         invI <- solve(I)
-      
+
         nrowB <- nobs + 1
         B <- matrix(data = 0, nrow = nrowB, ncol = nrowB)
         B[1:nobs, 1:nobs] <- A
         B[1:nobs, (nobs + 1):nrowB] <- 1
         B[(nobs + 1):nrowB, 1:nobs] <- 1
-      
+
         #compute matrix with covariances between prediction points and sampling points
         D0 <- spDists(x = esample, y = points)
         vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
@@ -253,14 +253,14 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
         for (i in seq_len(length(thetas))) {
           pB[[i]] <- B
           pB[[i]][1:nobs, 1:nobs] <- pA[[i]]
-        
+
           thetas.pert <- thetas
           thetas.pert[i] <- (1 + perturbation) * thetas[i]
           vgmodel.pert <- vgm(model = model, psill = thetas.pert[1], range = thetas.pert[2], nugget = 1 - thetas.pert[1])
           pA0[[i]] <- variogramLine(vgmodel.pert, dist_vector = D0, covariance = TRUE)
           pb[[i]] <- cbind(pA0[[i]], 1)
         }
-      
+
         L <- matrix(nrow = length(esample), ncol = nobs) #matrix with kriging weights
         pL <- array(dim = c(length(esample), length(points), length(thetas))) #array with perturbed kriging weights
         var <- numeric(length = length(esample)) #kriging variance
@@ -276,7 +276,7 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
             pvar[i, j] <- 1 - pl[1:nobs] %*% pA0[[j]][i, ] - pl[-(1:nobs)]
           }
         }
-      
+
         dvar <- dL <- list()
         for (i in seq_len(length(thetas))) {
           dvar[[i]] <- (pvar[, i] - var) / (thetas[i] * perturbation)
@@ -304,7 +304,7 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
 }
 
 
-#' Estimation Adjusted Criterion
+#' Mean Estimation Adjusted Criterion
 #'
 #' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
 #'   with coordinates of sampling points.
@@ -320,7 +320,7 @@ MAKV <- function(points, esample, model, thetas, perturbation)  {
 #' @return Mean estimation adjusted criterion.
 #'
 #' @export
-MEAC <- function(points, esample, model, thetas, perturbation)  {
+MEAC <- function(points, esample, model, thetas, perturbation = 0.01)  {
   points <- as.data.frame(points)
   nobs <- nrow(points)
   coordinates(points) <- ~x + y
@@ -345,7 +345,7 @@ MEAC <- function(points, esample, model, thetas, perturbation)  {
   if (inherits(cholA, "try-error")) {
     return(Inf)
     } else {
-      I <- FIM(A, D, model, thetas, perurbation) #Fisher Information Matrix
+      I <- FIM(A, D, model, thetas, perturbation) #Fisher Information Matrix
       cholI <- try(chol(I), silent = TRUE)
       if (inherits(cholI, "try-error")) {
         return(Inf)
@@ -396,7 +396,7 @@ MEAC <- function(points, esample, model, thetas, perturbation)  {
             dvar[[i]] <- (pvar[, i] - var) / (thetas[i] * perturbation)
             dL[[i]] <- (pL[, , i] - L) / (thetas[i] * perturbation)
           }
-          #tausq: expectation of additional variance due to uncertainty in ML estimates of variogram parameters, see Eq. 5 Lark and Marchant 2018
+          #tausq: expectation of additional variance due to uncertainty in ML estimates of variogram parameters
           tausq <- numeric(length = length(esample))
           tausqk <- 0
           for (k in seq_len(length(esample))) {
@@ -410,8 +410,8 @@ MEAC <- function(points, esample, model, thetas, perturbation)  {
             tausqk <- 0
           }
           AKV <- var + tausq
-          
-          #VKV: variance of kriging variance, see Eq. 9 Lark (2002) Geoderma. This variance is computed per evaluation point
+
+          #VKV: variance of kriging variance
           VKV <- numeric(length = length(var))
           for (i in seq_len(length(dvar))) {
             for (j in seq_len(length(dvar))) {

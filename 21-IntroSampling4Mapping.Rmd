@@ -17,7 +17,6 @@ Z_k = \beta_0 + \beta_1 x_k + \epsilon_k \;,
 with $Z_k$ the study variable of unit $k$, $\beta_0$ and $\beta_1$ regression coefficients, $x_k$ a covariate for unit $k$ used as a predictor, and $\epsilon_k$ the error (residual) at unit $k$, normally distributed with mean zero and a constant variance $\sigma^2$. The errors are assumed independent, so that $\text{Cov}(\epsilon_k,\epsilon_j)=0$ for all $k \neq j$. Figure \@ref(fig:twosamples) shows a simple random sample without replacement and the sample optimised for mapping with a simple linear regression model. Both samples are plotted on a map of the covariate $x$. 
 
 ```{r, echo = FALSE}
-library(gstat)
 #define discretisation grid
 s1 <- s2 <- 1:20 - 0.5
 grdSquare <- expand.grid(s1, s2)
@@ -48,8 +47,6 @@ grdSquare$x <- e + mu
 
 ord <- order(grdSquare$x)
 grdSquare <- grdSquare[ord, ]
-grdSquare$x[1] <- 4
-grdSquare$x[400] <- 32
 
 #compute values of study variable as linear combination of covariate + white noise
 sigma_resid <- 2
@@ -65,11 +62,13 @@ randomsample <- grdSquare[idsrandom, ]
 
 model.random <- lm(z ~ x, data = randomsample)
 det.random <- det(vcov(model.random))
+C.random <- vcov(model.random)
 
 #select optimal sample for simple linear regression model; grid cells are ordered on x
 optsample <- grdSquare[c(1, 2, 3, 4, 5, 6, 7, 8, 393, 394, 395, 396, 397, 398, 399, 400), ]
 model.opt <- lm(z ~ x, data = optsample)
 det.opt <- det(vcov(model.opt))
+C.opt <- vcov(model.opt)
 ```
 
 ```{r twosamples, echo = FALSE, out.width = '100%', fig.cap = "Simple random sample and optimal sample for mapping with a simple linear regression model, plotted on a map of the covariate."}
@@ -89,7 +88,7 @@ ggplot(data = grdSquare) +
 The optimal sample for mapping with a simple linear regression model contains the units with the smallest and the largest values of the covariate $x$. The optimal sample shows strong spatial clustering. Spatial clustering is not avoided because in a simple linear regression model we assume that the residuals are not spatially correlated. In Chapter \@ref(MBSamplePattern) I will show that when the residuals are spatially correlated, spatial clustering of sampling units is avoided. The standard errors of both regression coefficients are considerably smaller for the optimal sample (Table \@ref(tab:sebetas)). The joint uncertainty about the two regression coefficients, quantified by the determinant of the variance-covariance matrix\index{Determinant of variance-covariance matrix} of the regression coefficient estimators, is also much smaller for the optimal sample. When we are less uncertain about the regression coefficients, we are also less uncertain about the regression model predictions of the study variable $z$ at points where we have observations of the covariate $x$ only. We can conclude that for mapping with a simple linear regression model, in this example simple random sampling is not a good option.
 
 ```{r sebetas, echo = FALSE}
-tbl <- data.frame(x = c("SI", "Optimal"), y = c(1.70, 1.08), z = c(0.118, 0.051), d = c(0.00388, 0.000999))
+tbl <- data.frame(x = c("SI", "Optimal"), y = c(formatC(sqrt(C.random[1,1]), 2, format = "f"), formatC(sqrt(C.opt[1,1]), 2, format = "f")), z = c(formatC(sqrt(C.random[2,2]), 3, format = "f"), formatC(sqrt(C.opt[2,2]), 3, format = "f")), d = c(formatC(det.random, 6, format = "f"), formatC(det.opt, 6, format = "f")))
 
 knitr::kable(
   tbl, caption = "Standard errors and determinant of the variance-covariance matrix of estimators of the regression coefficients for the simple random sample (SI) and the optimal sample.",
@@ -185,4 +184,5 @@ In a full factorial design\index{Full factorial design} all combinations of fact
 
 ```{r, echo = FALSE}
 rm(list = ls())
+gc()
 ```

@@ -389,18 +389,18 @@ Estimation of the space-time mean from an SS sample in which both locations and 
 
 For an application of an IS design, to estimate the space-time mean of nutrients (nitrogen and phosphorous) in surface waters, see @bru08b and @Knotters2010d. In both applications sampling times are selected by stratified simple random sampling, with periods of two months as strata. In @bru08b sampling locations are selected by stratified simple random sampling as well.
 
-## Case study: annual mean daily temperature in Spain
+## Case study: annual mean daily temperature in Iberia
 
-The space-time designs are illustrated with the annual mean air temperature at two metres above the earth surface (TAS) in Spain and Portugal for the years 2004, 2009, 2014, and 2019 (Subsection \@ref(TASSpainPortugal)).
+The space-time designs are illustrated with the annual mean air temperature at two metres above the earth surface (TAS) in Iberia for the years 2004, 2009, 2014, and 2019 (Subsection \@ref(TASIberia)).
 
 Sampling locations are selected by simple random sampling. The sample size is 100 locations per survey, so with four surveys we have 400 observations in total, but not with all space-time designs at 400 different sampling locations. In the next sections I will show how a space-time sample with a given space-time design can be selected, and how the population parameters described in Section \@ref(SpaceTimeparameters) can be estimated.
 
 ### Static-synchronous design
 
-Selecting an SS space-time sample, using simple random sampling as a spatial design, is straightforward. We can simply select a single simple random sample of size $n=100$. The locations of this sample are observed at all times (Figure \@ref(fig:sampleSpainPortugalSS)).
+Selecting an SS space-time sample, using simple random sampling as a spatial design, is straightforward. We can simply select a single simple random sample of size $n=100$. The locations of this sample are observed at all times (Figure \@ref(fig:sampleIberiaSS)).
 
 ```{r}
-grd <- grdSpainPortugal %>%
+grd <- grdIberia %>%
   mutate(x = x / 1000,
          y = y / 1000)
 set.seed(314)
@@ -409,7 +409,7 @@ units <- sample(nrow(grd), size = n, replace = TRUE)
 mysample_SS <- grd[units, ]
 ```
 
-```{r sampleSpainPortugalSS, echo = FALSE, out.width = '100%', fig.cap = "Static-synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleIberiaSS, echo = FALSE, out.width = '100%', fig.cap = "Static-synchronous space-time sample from Iberia. Locations are selected by simple random sampling."}
 df_lf <- grd %>% pivot_longer(cols = c("TAS2004", "TAS2009", "TAS2014", "TAS2019"))
 ggplot(df_lf) +
   geom_raster(mapping = aes(x = x, y = y, fill = value)) +
@@ -477,7 +477,7 @@ se_mz_st_SS <- sqrt(t(w) %*% C %*% w)
 
 ### Independent synchronous design
 
-To select an IS space-time sample with four sampling times, we simply select $4n=400$ sampling locations. Figure \@ref(fig:sampleSpainPortugalIS) shows the selected IS space-time sample. A variable identifying the panel of the selected sampling units is added to the data frame.
+To select an IS space-time sample with four sampling times, we simply select $4n=400$ sampling locations. Figure \@ref(fig:sampleIberiaIS) shows the selected IS space-time sample. A variable identifying the panel of the selected sampling units is added to the data frame.
 
 ```{r}
 units <- sample(nrow(grd), size = 4 * n, replace = TRUE)
@@ -489,7 +489,7 @@ mysample_IS$panel <- rep(c("a", "b", "c", "d"), each = n)
 The units of the finite population are selected by simple random sampling *with replacement*. As a consequence, there can be partial overlap between the samples at the different times, i.e. some units are observed at multiple times. However, this overlap is by chance, it is not coordinated as in an SP and RP design. By selecting the units with replacement the estimators of the spatial means are independent (covariance of estimators equals zero). For infinite populations such as points such as points in an area, there will be no overlap, so that the covariance of the estimators equals zero.
 ```
 
-```{r sampleSpainPortugalIS, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "Independent synchronous space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleIberiaIS, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "Independent synchronous space-time sample from Iberia. Locations are selected by simple random sampling."}
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_IS[mysample_IS$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
@@ -563,7 +563,7 @@ se_mz_st_IS <- sqrt(t(w) %*% C %*% w)
 
 ### Serially alternating design
 
-To select an SA space-time sample with a period of two, $2n=200$ sampling locations are selected. A variable is added to `mysample_SA` indicating the panel of the sampling locations. Figure \@ref(fig:sampleSpainPortugalSA) shows the selected SA space-time sample.
+To select an SA space-time sample with a period of two, $2n=200$ sampling locations are selected. A variable is added to `mysample_SA` indicating the panel of the sampling locations. Figure \@ref(fig:sampleIberiaSA) shows the selected SA space-time sample.
 
 ```{r}
 units <- sample(nrow(grd), size = 2 * n, replace = TRUE)
@@ -571,7 +571,7 @@ mysample_SA <- grd[units, ]
 mysample_SA$panel <- rep(c("a", "b"), each = n)
 ```
 
-```{r sampleSpainPortugalSA, echo = FALSE, fig.asp = 0.8, out.width = '100%', fig.cap = "Serially alternating space-time sample from Spain and Portugal. Locations are selected by simple random sampling."}
+```{r sampleIberiaSA, echo = FALSE, fig.asp = 0.8, out.width = '100%', fig.cap = "Serially alternating space-time sample from Iberia. Locations are selected by simple random sampling."}
 
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
@@ -652,7 +652,7 @@ se_mz_st_SA <- sqrt(t(w) %*% C %*% w)
 
 ### Supplemented panel design
 
-With SP sampling and four sampling times we have five panels, one panel with fixed sampling locations and four panels with swarming locations (Figure \@ref(fig:SpaceTimeDesigns)). Each panel consists of $n/2$ sampling locations, so in total $5n/2=250$ locations are selected. A variable indicating the panel is added to the data frame with the selected sampling locations. Figure \@ref(fig:sampleSpainPortugalSP) shows the selected SP sample. 
+With SP sampling and four sampling times we have five panels, one panel with fixed sampling locations and four panels with swarming locations (Figure \@ref(fig:SpaceTimeDesigns)). Each panel consists of $n/2$ sampling locations, so in total $5n/2=250$ locations are selected. A variable indicating the panel is added to the data frame with the selected sampling locations. Figure \@ref(fig:sampleIberiaSP) shows the selected SP sample. 
 
 ```{r}
 units <- sample(nrow(grd), size = 5 * n / 2, replace = TRUE)
@@ -660,7 +660,7 @@ mysample_SP <- grd[units, ]
 mysample_SP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
-```{r sampleSpainPortugalSP, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "Supplemented panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
+```{r sampleIberiaSP, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "Supplemented panel space-time sample from Iberia. Locations are selected by simple random sampling. The permanent sampling locations are indicated by the filled dots, the swarming locations by the other symbols."}
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
@@ -774,7 +774,7 @@ se_mz_st_SP <- sqrt(t(w) %*% XCXinv %*% w)
 
 ### Rotating panel design
 
-Similar to the SP design, with an in-for-two RP design and four sampling times we have five panels, each consisting of $n/2$ sampling locations, so that in total $5n/2=250$ locations are selected. Figure \@ref(fig:sampleSpainPortugalRP) shows the selected space-time sample.
+Similar to the SP design, with an in-for-two RP design and four sampling times we have five panels, each consisting of $n/2$ sampling locations, so that in total $5n/2=250$ locations are selected. Figure \@ref(fig:sampleIberiaRP) shows the selected space-time sample.
 
 ```{r}
 units <- sample(nrow(grd), size = 5 * n / 2, replace = TRUE)
@@ -782,7 +782,7 @@ mysample_RP <- grd[units, ]
 mysample_RP$panel <- rep(c("a", "b", "c", "d", "e"), each = n / 2)
 ```
 
-```{r sampleSpainPortugalRP, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "In-for-two rotating panel space-time sample from Spain and Portugal. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
+```{r sampleIberiaRP, echo = FALSE, fig.asp = 0.8, out.width = "100%", fig.cap = "In-for-two rotating panel space-time sample from Iberia. Locations are selected by simple random sampling. Half of the sampling locations observed in a given year are also observed in the consecutive survey."}
 
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
@@ -1082,7 +1082,7 @@ se_pars <- sqrt(v_pars)
 estimates <- data.frame(c("SS", "IS", "SA", "SP", "RP"), round(se_pars[c(1, 5, 9, 13, 17)], 4), round(se_pars[c(2, 6, 10, 14, 18)], 4), round(se_pars[c(3, 7, 11, 15, 19)], 4), round(se_pars[c(4, 8, 12, 16, 20)], 4), row.names = NULL)
 
 knitr::kable(
-  estimates, caption = "Standard deviations of 10,000 estimates of space-time parameters of annual mean temperature in Spain and Portugal, with static-synchronous (SS), independent synchronous (IS), serially alternating (SA), supplemented panel (SP), and rotating panel (RP) space-time sampling, and simple random sampling with replacement of 100 locations per sampling time.",
+  estimates, caption = "Standard deviations of 10,000 estimates of space-time parameters of annual mean temperature in Iberia, with static-synchronous (SS), independent synchronous (IS), serially alternating (SA), supplemented panel (SP), and rotating panel (RP) space-time sampling, and simple random sampling with replacement of 100 locations per sampling time.",
   col.names = c("", "Current mean", "Change of mean", "Trend of mean", "Space-time mean"),
   booktabs = TRUE,
   linesep = ""
@@ -1120,15 +1120,16 @@ Interesting new developments are presented by @WangZhu2019 and @ZhaoGrafstrom202
 
 #### Exercises {-}
 
-1. Compute for the annual mean temperature data of Spain and Portugal the true standard error of the estimator of (i) the spatial mean in 2019; (ii) the change of the spatial mean from 2004 to 2019; (iii) the temporal trend of the spatial mean (average change per five years in the period 2004 - 2019); and (iv) the space-time mean, for all five space-time designs and simple random sampling with replacement of 100 units per time. Use for the designs SP and RP the true covariances of the elementary estimates in the GLS estimators of the spatial means.
+1. Compute for the annual mean temperature data of Iberia the true standard error of the estimator of (i) the spatial mean in 2019; (ii) the change of the spatial mean from 2004 to 2019; (iii) the temporal trend of the spatial mean (average change per five years in the period 2004 - 2019); and (iv) the space-time mean, for all five space-time designs and simple random sampling with replacement of 100 units per time. Use for the designs SP and RP the true covariances of the elementary estimates in the GLS estimators of the spatial means.
     + Compare the standard errors with the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters). Explain why for the designs SP and RP the true standard errors of the estimators of all space-time parameters are slightly smaller than the standard deviations in Table \@ref(tab:TableRepeatedEstimatesSpaceTimeParameters).  
 2. With an SP and an RP design the change of the mean can also be estimated by the difference of the $\pi$ estimates of the spatial means at the two times, instead of the difference of the two GLS estimates. The variance of the difference of the $\pi$ estimators of two simple random samples at different times with partial overlap equals
 \begin{equation}
 V(\bar{d}_{ab})=\frac{S^2_a}{n} + \frac{S^2_b}{n} - 2\frac{m\;S^2_{ab}}{n^2}\;,
 (\#eq:varChangeofMeanHT)
 \end{equation}
-with $S^2_a$ and $S^2_b$ the spatial variance at time $t_a$ and $t_b$, respectively, $S^2_{ab}$ the spatial covariance of the study variable at times $t_a$ and $t_b$, $n$ the size of the simple random samples, and $m$ the number of units observed at both times. Compute for Spain and Portugal the standard error of the estimator of the change of the mean with Equation \@ref(eq:varChangeofMeanHT), using the *true* spatial variances and covariances for the years 2004 and 2019, for simple random samples of size 100 ($n=100$) and a matching proportion of 0.5 ($m=50$). Compare with the true standard error of the estimator of the change of the mean using the GLS estimators computed in the previous exercise. Explain that the standard error of the $\pi$ estimators is larger than the standard error with the GLS estimators.
+with $S^2_a$ and $S^2_b$ the spatial variance at time $t_a$ and $t_b$, respectively, $S^2_{ab}$ the spatial covariance of the study variable at times $t_a$ and $t_b$, $n$ the size of the simple random samples, and $m$ the number of units observed at both times. Compute for Iberia the standard error of the estimator of the change of the mean with Equation \@ref(eq:varChangeofMeanHT), using the *true* spatial variances and covariances for the years 2004 and 2019, for simple random samples of size 100 ($n=100$) and a matching proportion of 0.5 ($m=50$). Compare with the true standard error of the estimator of the change of the mean using the GLS estimators computed in the previous exercise. Explain that the standard error of the $\pi$ estimators is larger than the standard error with the GLS estimators.
 
 ```{r, echo = FALSE}
 rm(list = ls())
+gc()
 ```
