@@ -375,12 +375,13 @@ ggplot(data = d) +
   coord_fixed() +
   facet_grid(~ name)
 ```
+```{r}
+error <- preds$zpred - sim$z
+```
 
-Figure \@ref(fig:histogramerrorpreferentialsample) shows a histogram of the prediction errors. The population mean error equals 0.483, not 0. You may have expected a positive systematic error because of the overrepresentation of locations with large values, but on the other hand, kriging predictions are best linear unbiased predictions\index{Best linear unbiased predictor} (BLUP), so from that point of view, this systematic error might be unexpected. BLUP means that at individual locations the ordinary kriging predictions are unbiased. However, apparently this does not guarantee that the average of the prediction errors, averaged over all population units, equals 0. The reason is that unbiasedness is defined here over all realisations (populations) of the statistical model of spatial variation. So, the U in BLUP stands for model-unbiasedness. For other model realisations, sampled at the same points, we may have much smaller values, leading to a negative mean error of that population. On average, over all populations, the error at any point will be 0 and consequently also the average over all populations of the mean error.
+Figure \@ref(fig:histogramerrorpreferentialsample) shows a histogram of the prediction errors. The population mean error equals `r formatC(mean(error), 3, format = "f")`, not 0. You may have expected a positive systematic error because of the overrepresentation of locations with large values, but on the other hand, kriging predictions are best linear unbiased predictions\index{Best linear unbiased predictor} (BLUP), so from that point of view, this systematic error might be unexpected. BLUP means that at individual locations the ordinary kriging predictions are unbiased. However, apparently this does not guarantee that the average of the prediction errors, averaged over all population units, equals 0. The reason is that unbiasedness is defined here over all realisations (populations) of the statistical model of spatial variation. So, the U in BLUP stands for model-unbiasedness. For other model realisations, sampled at the same points, we may have much smaller values, leading to a negative mean error of that population. On average, over all populations, the error at any point will be 0 and consequently also the average over all populations of the mean error.
 
 ```{r histogramerrorpreferentialsample, echo = FALSE, fig.width = 5, fig.cap = "Frequency distribution of the errors of ordinary kriging predictions from a preferential sample."}
-error <- preds$zpred - sim$z
-
 ggplot() +
   geom_histogram(aes(x = error), binwidth = 0.5, fill = "black", alpha = 0.5, colour = "black") +
   scale_y_continuous(name = "Count") +
@@ -853,5 +854,4 @@ Contrarily, if in the model-based approach a poor superpopulation model is used,
 
 ```{r, echo=FALSE}
 rm(list = ls())
-gc()
 ```

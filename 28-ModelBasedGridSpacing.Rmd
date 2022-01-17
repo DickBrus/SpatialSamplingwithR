@@ -10,7 +10,7 @@ Suppose that we require the  population mean of the kriging variance not to exce
 
 There is no simple equation that relates the grid spacing to the kriging variance. What can be done is to calculate the mean OK variance for a range of grid spacings, plot the mean ordinary kriging variances against the grid spacings, and use this plot inversely to determine the tolerable grid spacing, given a constraint on the mean OK variance.
 
-In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of the SOM concentration (dag kg^-1^), used before to design a spatial infill sample (Section \@ref(SpatialInfill)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments (MoM), and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget, passed to function `fit.variogram` with argument `model`, are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates. First, the projected coordinates of the sampling points are changed from m into km using function `mutate`^[This is mainly done to avoid problems in (restricted) maximum likelihood estimation of the (residual) semivariogram with function `likfit` of package **geoR**].
+In the next code chunks this procedure is used to compute the tolerable spacing of a square grid for mapping soil organic matter (SOM) in West-Amhara. The legacy data of the SOM concentration (dag kg^-1^), used before to design a spatial infill sample (Section \@ref(SpatialInfill)), are used here to estimate a semivariogram. A sample semivariogram is estimated by the method-of-moments (MoM), and a spherical model is fitted using functions of package **gstat** [@peb04]. The values for the partial sill, range, and nugget, passed to function `fit.variogram` with argument `model`, are guesses from an eyeball examination of the sample semivariogram obtained with function `variogram`, see Figure \@ref(fig:variogramSOMEthiopia). The ultimate estimates of the semivariogram parameters differ from these eyeball estimates. First, the projected coordinates of the sampling points are changed from m into km using function `mutate`^[This is mainly done to avoid problems in (restricted) maximum likelihood estimation of the (residual) semivariogram with function `likfit` of package **geoR**.].
 
 
 ```{r}
@@ -81,7 +81,7 @@ set.seed(314)
 mysample <- grdAmhara %>%
   slice_sample(n = 5000, replace = TRUE) %>%
   mutate(s1 = s1 %>% jitter(amount = 0.5),
-         s1 = s1 %>% jitter(amount = 0.5))
+         s2 = s2 %>% jitter(amount = 0.5))
 ```
 
 The **R** code below shows the next steps. Given a spacing, a square grid with a fixed starting point is selected with function `spsample`, using argument `offset`. A dummy variable is added to the data frame, having value 1 at all grid points, but any other value is also fine. The predicted value at all evaluation points equals 1. However, we are not interested in the predicted value but in the kriging variance only, and we have seen in Chapter \@ref(Introkriging) that the kriging variance is independent of the observations of the study variable. The ML estimates of the semivariogram are used in function `vgm` to define a semivariogram model of class `variogramModel` that can be handled by function `krige`. For each grid spacing the population mean, median, and P90 of the kriging variance are estimated from the evaluation sample. The estimated median and P90 can be computed with function `quantile`.
@@ -288,7 +288,7 @@ with $f(\pmb{\theta}|\mathbf{z})$ the posterior distribution function, i.e. the 
 
 Problems with analytical derivation of the posterior distribution are avoided by selecting a large sample of units (vectors with semivariogram parameters) from the posterior distribution  through Markov chain Monte Carlo (MCMC) sampling\index{Markov chain Monte Carlo sampling}, see Subsection \@ref(MBpredSamplingVarBayes). 
 
-In a Bayesian approach we must define the likelihood function of the data, see Subsection \@ref(MBpredSamplingVarBayes). I assume that the SOM concentration data in West-Amhara have a multivariate normal distribution, and that the spatial covariance of the data can be modelled by a spherical model, see  Subsection \@ref(MLestimationVariogram). The likelihood is a function of the semivariogram parameters. Given a vector of semivariogram parameters, the variance-covariance matrix of the data is computed from the matrix with geographic distances between the sampling points. Inputs of the loglikelihood function `ll` are the matrix with distances between the sampling points, the design matrix `X`, and the vector with observations of the study variable `z`, see Subsection \@ref(MBpredSamplingVarBayes)/ 
+In a Bayesian approach we must define the likelihood function of the data, see Subsection \@ref(MBpredSamplingVarBayes). I assume that the SOM concentration data in West-Amhara have a multivariate normal distribution, and that the spatial covariance of the data can be modelled by a spherical model, see  Subsection \@ref(MLestimationVariogram). The likelihood is a function of the semivariogram parameters. Given a vector of semivariogram parameters, the variance-covariance matrix of the data is computed from the matrix with geographic distances between the sampling points. Inputs of the loglikelihood function `ll` are the matrix with distances between the sampling points, the design matrix `X`, and the vector with observations of the study variable `z`, see Subsection \@ref(MBpredSamplingVarBayes). 
 
 ```{r, echo=FALSE}
 library(mvtnorm)
@@ -430,9 +430,8 @@ spac_tol <- approx(x = df$CF, y = df$spacing, xout = 0.8)$y
 prb <- approx(x = df$spacing, y = df$CF, xout = spacing_tol_Mean)$y
 ```
 
-Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller than or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if we require a probability of 80\% that the MKV does not exceed the target MKV of 0.8, the tolerable grid spacing is `r formatC(spac_tol, 1, format = "f")` km. With a grid spacing of `r formatC(spacing_tol_Mean, 1, format = "f")` km, as determined before, the probability that the MKV exceeds 0.8 is `r formatC(prb*100, 0, format = "f")`\%.
+Finally, for each grid spacing the proportion of MCMC samples with a MKV smaller than or equal to the target MKV of 0.8 is computed. Figure \@ref(fig:ProportionMCMCSamples) shows, for instance, that if the MKV is required not to exceed a target MKV of 0.8 with a probability of 80\%, the tolerable grid spacing is `r formatC(spac_tol, 1, format = "f")` km. With a grid spacing of `r formatC(spacing_tol_Mean, 1, format = "f")` km, as determined before, the probability that the MKV exceeds 0.8 is `r formatC(prb*100, 0, format = "f")`\%.
 
 ```{r, echo = FALSE}
 rm(list = ls())
-gc()
 ```

@@ -13,7 +13,7 @@ Using a list as a sampling frame, the following algorithm can be used to select 
 1. Select randomly one SSU from the list with $M=\sum_{j=1}^N M_j$ SSUs ($M_j$ is the number of SSUs of PSU $j$), and determine the PSU of the selected SSU.  
 2. Repeat step 1 until $n$ selections have been made.  
 
-In the first stage a SSU is selected in order to select a PSU. This may seem unnecessarily complicated. The reason for this is that this procedure automatically adjusts for the size of the PSUs (number of SSUs within a PSU), i.e. a PSU is selected with probability proportional to its size. In the second stage, a pre-determined number of SSUs, $m_{j}$, is selected every time PSU $j$ is selected.
+In the first stage an SSU is selected in order to select a PSU. This may seem unnecessarily complicated. The reason for this is that this procedure automatically adjusts for the size of the PSUs (number of SSUs within a PSU), i.e. a PSU is selected with probability proportional to its size. In the second stage, a pre-determined number of SSUs, $m_{j}$, is selected every time PSU $j$ is selected.
 
 Note that the SSU selected in the first step of the two algorithms primarily serves to identify the PSU, but these SSUs can also be used as selected SSUs.   
 
@@ -377,7 +377,7 @@ est <- mysample %>%
          z_piexpanded = z / pi) %>%
   summarise(tz_HT = sum(z_piexpanded),
             mz_HT = tz_HT / M,
-            M_HT = sum(1 / mysample$pi),
+            M_HT = sum(1 / pi),
             mz_ratio = tz_HT / M_HT)
 ```
 
@@ -430,8 +430,8 @@ The basic sampling designs stratified random sampling (Chapter \@ref(STSI)) and 
 ```{r, echo = FALSE}
 w <- 1000 #width of strata
 s1bnd <- seq(min(grdVoorst$s1) + w, min(grdVoorst$s1) + 5 * w, w) + 12.5
-grdVoorst$zonestratum <- as.factor(findInterval(grdVoorst$s1, s1bnd))
-levels(grdVoorst$zonestratum) <- rep(c("a", "b", "c"), each = 2)
+grdVoorst$zone_stratum <- as.factor(findInterval(grdVoorst$s1, s1bnd))
+levels(grdVoorst$zone_stratum) <- rep(c("a", "b", "c"), each = 2)
 ```
 
 
@@ -439,10 +439,10 @@ levels(grdVoorst$zonestratum) <- rep(c("a", "b", "c"), each = 2)
 n_h <- rep(2, 3)
 m <- 6
 set.seed(314)
-stratumlabels <- unique(grdVoorst$zonestratum)
+stratumlabels <- unique(grdVoorst$zone_stratum)
 mysample <- NULL
 for (i in 1:3) {
-  grd_h <- grdVoorst[grdVoorst$zonestratum == stratumlabels[i], ]
+  grd_h <- grdVoorst[grdVoorst$zone_stratum == stratumlabels[i], ]
   mysample_h <- twostage(sframe = grd_h, psu = "psu", n = n_h[i], m = m)
   mysample <- rbind(mysample, mysample_h)
 }
@@ -474,20 +474,19 @@ ggplot(grdVoorst) +
 The population mean can be estimated in much the same way as with stratified cluster random sampling. With function `svymean` this is an easy task.  
 
 ```{r}
-N_h <- tapply(grdVoorst$psu, INDEX = grdVoorst$zonestratum,
+N_h <- tapply(grdVoorst$psu, INDEX = grdVoorst$zone_stratum,
   FUN = function(x) {
     length(unique(x))
     })
-M_h <- tapply(grdVoorst$z, INDEX = grdVoorst$zonestratum, FUN = length)
-mysample$w1 <- N_h[mysample$zonestratum]
-mysample$w2 <- M_h[mysample$zonestratum]
-design_str2stage <- svydesign(id = ~ psudraw + ssunits, strata = ~ zonestratum,
+M_h <- tapply(grdVoorst$z, INDEX = grdVoorst$zone_stratum, FUN = length)
+mysample$w1 <- N_h[mysample$zone_stratum]
+mysample$w2 <- M_h[mysample$zone_stratum]
+design_str2stage <- svydesign(id = ~ psudraw + ssunits, strata = ~ zone_stratum,
   weights = ~ w1 + w2, data = mysample, nest = TRUE)
 svymean(~ z, design_str2stage)
 ```
 
 ```{r, echo = FALSE}
 rm(list = ls())
-gc()
 ```
 

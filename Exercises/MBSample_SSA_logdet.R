@@ -1,6 +1,5 @@
 library(spsann)
 library(sp)
-library(matrixcalc)
 library(ggplot2)
 library(sswr)
 
@@ -16,17 +15,17 @@ thetas <- c(xi, phi)
 
 schedule <- scheduleSPSANN(
   initial.acceptance = 0.8,
-  initial.temperature = 0.04,
+  initial.temperature = 0.15,
   temperature.decrease = 0.9,
   chains = 300,
-  chain.length = 2,
+  chain.length = 10,
   stopping = 10,
   x.min = 0, y.min = 0,
   cellsize = 50)
 
 set.seed(314)
 rslt <- optimUSER(
-  points = 100,
+  points = 50,
   candi = candi,
   fun = logdet,
   model = "Exp",
@@ -35,11 +34,12 @@ rslt <- optimUSER(
   schedule = schedule,
   track = TRUE)
 
-mysample <- candi[rslt$points$id, ]
+mysample <- rslt$points
 
-write_rds(mysample, file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
+write_rds(mysample, file = "results/MBSample_logdet_phi200nug05_HunterValley_50pnts
+          .rds")
 
-ggplot(data = grdHunterValley) +
+ggplot(data = as.data.frame(grdHunterValley)) +
   geom_raster(mapping = aes(x = s1 / 1000, y = s2 / 1000), fill = "grey") +
   geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), shape = 2, size = 2) +
   scale_x_continuous(name = "Easting (km)") +

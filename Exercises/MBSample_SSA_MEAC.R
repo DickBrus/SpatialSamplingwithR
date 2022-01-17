@@ -15,10 +15,9 @@ thetas <- c(s, range)
 # Select spatial coverage sample for prediction. These locations are fixed, i.e. their locations are not optimised in simulated annealing
 # Note that a spatial coverage sample is not strictly needed! The alternative is to optimise the coordinates of all points in SSA
 
-# Choose number of units of spatial coverage sample
-n  <- 80
+# Select spatial coverage sample
 set.seed(314)
-myStrata <- stratify(grdHunterValley, nStrata = n, equalArea = FALSE, nTry = 10)
+myStrata <- stratify(grdHunterValley, nStrata = 80, equalArea = FALSE, nTry = 10)
 mySCsample <- as(spsample(myStrata), "SpatialPoints")
 
 # Select initial supplemental sample
@@ -27,7 +26,7 @@ units <- sample(nrow(grdHunterValley), nsup)
 mysupsample <- as(grdHunterValley[units, ], "SpatialPoints")
 
 # Select evaluation sample
-myevalsample <- spsample(x = grdHunterValley, n = 100, type = "regular", offset = c(0.5, 0.5))
+myevalsample <- spsample(x = grdHunterValley, n = 200, type = "regular", offset = c(0.5, 0.5))
 
 # Set amount of perturbation of correlogram parameters
 perturbation <- 0.01
@@ -36,7 +35,7 @@ schedule <- scheduleSPSANN(
   initial.acceptance = 0.8,
   initial.temperature = 0.008,
   temperature.decrease = 0.8,
-  chains = 500,
+  chains = 300,
   chain.length = 5,
   stopping = 10,
   x.min = 0, y.min = 0,
@@ -59,7 +58,7 @@ res <- optimUSER(
   track = TRUE)
 
 mysample <- res$points
-write_rds(res, file = "../results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
+write_rds(res, file = "results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
 MEACopt <- tail(res$objective$energy$obj, 1)
 
 units <- which(mysample$free == 1)

@@ -130,7 +130,7 @@ ggplot(data = df) +
 
 The estimated semivariogram parameters are shown in Table \@ref(tab:TableVariogramsCRF4). The nugget-to-sill ratio\index{Nugget-to-sill ratio} is about 1/4, and the effective range\index{Effective range} is about 575 m (three times the distance parameter of an exponential model).
 
-The coordinates of the sampling points are optimised with function `optimMKV` of package **spsann** [@Alessandro2016]^[At the moment of writing this book package **spsann** is not available on CRAN. I have added the file `spsann_2.2.0.tar.gz` to the folder `Rscripts` of the github repository of this book. In this folder you can also find a the file `pedometrics_0.7.0.tar.gz` which is a dependency of `spsann`. The packages can be installed with **RStudio** by selecting "Package Archive File (.zip; .tar.gz)" from the drop-down list in the field "Install from:".] First, the candidate sampling points are specified by the nodes of a grid discretising the population. As explained hereafter, this does not necessarily imply that the population is treated as a finite population. Next, the parameters of the annealing schedule are set. Note that both the initial acceptance rate and the initial temperature are set, which may seem weird as the acceptance rate is a function of the temperature, see Equation \@ref(eq:AcceptanceProb). The initial acceptance rate is used as a threshold value. The optimisation stops when an initial temperature is chosen that leads to an acceptance rate smaller than the chosen value for the initial acceptance rate. In this case a larger value for the initial temperature must be chosen. Arguments `chain.length` and `stopping` of function `scheduleSPSANN` are multipliers. So, for a chain length of five, the number of iterations equals $5n$, with $n$ the sample size.
+The coordinates of the sampling points are optimised with function `optimMKV` of package **spsann** [@Alessandro2016]^[At the moment of writing this book package **spsann** is not available on CRAN. I have added the file `spsann_2.2.0.tar.gz` to the folder `Rscripts` of the github repository of this book. In this folder you can also find the file `pedometrics_0.7.0.tar.gz` which is a dependency of **spsann**. The packages can be installed with **RStudio** by selecting "Package Archive File (.zip; .tar.gz)" from the drop-down list in the field "Install from:".]. First, the candidate sampling points are specified by the nodes of a grid discretising the population. As explained hereafter, this does not necessarily imply that the population is treated as a finite population. Next, the parameters of the annealing schedule are set. Note that both the initial acceptance rate and the initial temperature are set, which may seem weird as the acceptance rate is a function of the temperature, see Equation \@ref(eq:AcceptanceProb). The initial acceptance rate is used as a threshold value. The optimisation stops when an initial temperature is chosen that leads to an acceptance rate smaller than the chosen value for the initial acceptance rate. In this case a larger value for the initial temperature must be chosen. Arguments `chain.length` and `stopping` of function `scheduleSPSANN` are multipliers. So, for a chain length of five, the number of iterations equals $5n$, with $n$ the sample size.
 
 During the optimisation a sample is perturbed by replacing one randomly selected point of the current sample by a new point. This selection of the new point is done in two steps. In the first step one node of the discretisation grid (specified with argument `candi`) is randomly selected. Only the nodes within a neighbourhood defined by `x.min`, `x.max`, `y.min`, and `y.max` can be selected. The nodes within this neighbourhood have equal probability of being selected. In the second step one point is selected within a grid cell with the selected node at its centre and a side length specified with argument `cellsize`. So, it is natural to set `cellsize` to the spacing of the discretisation grid. With `cellsize = 0` the sampling points are restricted to the nodes of the discretisation grid.
 
@@ -152,7 +152,7 @@ res <- optimMKV(
   vgm = vgm_lnECe, eqn = z ~ 1,
   schedule = schedule, nmax = 20, 
   plotit = FALSE, track = TRUE)
-mysample <- candi[res$points$id, ]
+mysample <- res$points
 trace <- res$objective$energy
 ```
 
@@ -213,7 +213,7 @@ ggplot(trace) +
 
 For comparison I also computed a spatial coverage sample of the same size. The spatial patterns of the two samples are quite similar (Figure \@ref(fig:ModelBasedSampleOK)). The MKV of the spatial coverage sample equals `r formatC(MKV, 4, format = "f")` (dS m^-1^)^2^, whereas for the model-based sample the MKV equals `r formatC(trace$obj[nrow(trace)], 4, format = "f")` (dS m^-1^)^2^. So, no gain in precision is achieved  by the model-based optimisation of the sampling pattern compared to spatial coverage sampling. With `cellsize = 0` the minimised MKV is slightly smaller: `r formatC(MKV_cellsize0, 4, format = "f")` (dS m^-1^)^2^. This outcome is in agreement with the results reported by @bru07c.
 
-Instead of the mean OK variance (MOKV), we may prefer to use some quantile of the cumulative distribution function of the OK variance as a minimisation criterion. For instance, if we use the 0.90 quantile as criterion, we are searching for the sampling locations so that the 90th percentile (P90) of the OK variance is minimal. This can be done with function `optimUSER` of package **spsann**. The objective function\index{Objective function} to be minimised can be passed to this function with argument `fun`. In this case the objective function is as follows.
+Instead of the mean OK variance (MOKV), we may prefer to use some quantile of the cumulative distribution function of the OK variance as a minimisation criterion. For instance, if we use the 0.90 quantile as a criterion, we are searching for the sampling locations so that the 90th percentile (P90) of the OK variance is minimal. This can be done with function `optimUSER` of package **spsann**. The objective function\index{Objective function} to be minimised can be passed to this function with argument `fun`. In this case the objective function is as follows.
 
 ```{r}
 QOKV <- function(points, esample, model, nmax, prob) {
@@ -234,19 +234,19 @@ QOKV <- function(points, esample, model, nmax, prob) {
 The next code chunk shows how this objective function can be minimised.
 
 ```{r, eval = FALSE}
-myevalsample <- candi
-coordinates(myevalsample) <- ~ x + y
+mysample_eval <- candi
+coordinates(mysample_eval) <- ~ x + y
 set.seed(314)
 res <- optimUSER(
   points = 50, candi = candi,
   fun = QOKV,
-  esample = myevalsample,
+  esample = mysample_eval,
   model = vgm_lnECe,
   nmax = 20, prob = 0.9,
   schedule = schedule)
 ```
 
-Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Above I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points. The number of points used in kriging is specified with argument `nmax`, and the probability of the cumulative distribution function of the kriging variance is specified with argument `prob`. Optimisation of the sampling pattern for a quantile of the ordinary kriging variance is left as an exercise.
+Argument `esample` specifies a `SpatialPoints` object with the evaluation points\index{Evaluation point}, i.e. the points at which the kriging variance is computed. Above I used all candidate sampling points as evaluation points. Computing time can be reduced by selecting a coarser square grid with evaluation points. The number of points used in kriging is specified with argument `nmax`, and the probability of the cumulative distribution function of the kriging variance is specified with argument `prob`. Optimisation of the sampling pattern for a quantile of the OK variance is left as an exercise.
 
 #### Exercises {-}
 
@@ -330,18 +330,16 @@ res <- optimMKV(
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
-mysample <- candi[res$points$id, ]
-ids <- as.integer(rownames(mysample))
-mysample$lnEM100cm <- grdCRF[ids, "lnEM100cm"]
+mysample <- res$points
+mysample$lnEM100cm <- grdCRF$lnEM100cm[res$points$id]
 write_rds(mysample, file = "results/MBSample_KED_Uzbekistan.rds")
 ```
 
-Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample of 50 points. This clearly shows the irregular spatial pattern of the sampling points induced by the covariate lnEM100cm. 
+Figure \@ref(fig:ModelBasedSampleKED) shows the optimised locations of a sample of 50 points. This clearly shows the irregular spatial pattern of the sampling points induced by the covariate lnEM100cm. Computing time was substantial: 35.06 minutes (processor AMD Ryzen 5, 16 GB RAM).
 
 ```{r ModelBasedSampleKED, echo = FALSE, out.width = "100%", fig.cap = "Optimised sampling pattern for KED of lnECe at the Cotton Research Farm, using lnEM100cm as a covariate."}
 mysample <- read_rds(file = "results/MBSample_KED_Uzbekistan.rds")
 
-#pdf(file = "Sample_KED_CRFUzbekistan.pdf", width = 7, height = 4)
 ggplot(data = grdCRF) +
   geom_raster(mapping = aes(x = x / 1000, y = y / 1000, fill = lnEM100cm)) +
   geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), size = 1.5, colour = "orange") +
@@ -349,19 +347,18 @@ ggplot(data = grdCRF) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed()
-#dev.off()
 ```
 
 Comparing the population and sample histograms of the covariate clearly shows that locations with small and locations with large values for the covariate are preferentially selected (Figure \@ref(fig:histogramslnEM)). The optimised sampling pattern is a compromise between spreading in geographic space and covariate space, see also @heu07 and @bru07. More precisely, locations are selected by spreading them out throughout the study area, while accounting for the values of the covariates at the selected locations, in a way that locations with covariate values near the minimum and maximum are preferred. This can be explained by noting that the variance of the KED prediction error can be decomposed into two components: the variance of the interpolated residuals and the variance of the estimator of the model-mean, see Section \@ref(IntroKED). The contribution of the first variance component is minimised through geographical spreading, that of the second component by selecting locations with covariate values near the minimum and maximum.
 
-```{r histogramslnEM, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Sample histogram and population histogram of lnEM100cm used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
+```{r histogramslnEM, echo = FALSE, out.width = "100%", fig.asp = 0.5, fig.cap = "Sample frequency distribution and population frequency distribution of lnEM100cm used as covariate in model-based optimisation of the sampling pattern for mapping with KED."}
 plt1 <- ggplot(data = mysample) +
   geom_histogram(mapping = aes(x = lnEM100cm), breaks = seq(from = 2.75, to = 5, by = 0.25), fill = "black", alpha = 0.5, color = "black") +
   scale_y_continuous(name = "Count") +
   ggtitle("Sample") +
   theme(plot.title = element_text(size = 10, hjust = 0.5))
 
-plt2 <- ggplot(data = grdCRF) +
+plt2 <- ggplot(data = as.data.frame(grdCRF)) +
   geom_histogram(mapping = aes(x = lnEM100cm), breaks = seq(from = 2.75, to = 5, by = 0.25), fill = "black", alpha = 0.5, color = "black") +
   scale_y_continuous(name = "Count") +
   ggtitle("Population") +
@@ -518,5 +515,4 @@ The MKV of the optimised sample equals `r formatC(MKV_KED_opt, 3, format = "f")`
 
 ```{r, echo = FALSE}
 rm(list = ls())
-gc()
 ```

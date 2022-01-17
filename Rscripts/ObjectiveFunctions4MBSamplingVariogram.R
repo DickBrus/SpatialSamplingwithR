@@ -1,3 +1,32 @@
+#' Validate input files
+#'
+#' This function checks various input files
+#' @param psample \code{\link[sp]{SpatialPoints}} used for prediction at the
+#'   evaluation points.
+#' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
+#' @param model \pkg{gstat} model type of a priori semivariogram model.
+#' @param thetas parameters of semivariogram model.
+#' @param perturbation proportion of a semivariogram parameter value added to
+#'   that value.
+
+validate <- function(sample, model, thetas, perturbation) {
+  if (!(class(sample) %in% c("SpatialPoints"))) {
+    stop("esample must be of class SpatialPoints", call. = FALSE)
+  }
+  if (!(model %in% c("Exp", "Sph"))) {
+    stop("model must be a character: Exp or Sph", call. = FALSE)
+  }
+  if (length(thetas) > 2) {
+    stop("numeric thetas must be of length 2", call. = FALSE)
+  }
+  if (thetas[1] > 1) {
+    stop("first value of thetas (ratio of spatial dependence) must be < 1", call. = FALSE)
+  }
+  if (perturbation > 1) {
+    stop("perturbation must be < 1, say < 0.05", call. = FALSE)
+  }
+}
+
 #' Fisher Information Matrix
 #'
 #' This function computes the Fisher information matrix.
@@ -40,10 +69,6 @@ FIM <- function(A, D, model, thetas, perturbation) {
   return(I)
 }
 
-
-
-
-
 #' Determinant Information Matrix
 #'
 #' This function computes the log of the reciprocal determinant of Fisher
@@ -65,9 +90,19 @@ FIM <- function(A, D, model, thetas, perturbation) {
 #'
 #' @export
 logdet <- function(points, model, thetas, perturbation = 0.01)  {
-  points <- as.data.frame(points)
-  names(points) <- c("x", "y")
-  coordinates(points) <- ~ x + y
+  if (!(model %in% c("Exp", "Sph"))) {
+    stop("model must be a character: Exp or Sph", call. = FALSE)
+  }
+  if (length(thetas) > 2) {
+    stop("numeric thetas must be of length 2", call. = FALSE)
+  }
+  if (thetas[1] > 1) {
+    stop("first value of thetas (ratio of spatial dependence) must be < 1", call. = FALSE)
+  }
+  if (perturbation > 1) {
+    stop("perturbation must be < 1, say < 0.05", call. = FALSE)
+  }
+  
   D <- spDists(points)
   vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
   A <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
@@ -87,8 +122,6 @@ logdet <- function(points, model, thetas, perturbation = 0.01)  {
 }
 
 
-
-
 #' Mean Variance of Kriging Variance
 #'
 #' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
@@ -106,11 +139,16 @@ logdet <- function(points, model, thetas, perturbation = 0.01)  {
 #' @importFrom gstat variogramLine vgm
 #'
 #' @export
-MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01)  {
+MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01) {
+  validate(sample = esample, model, thetas, perturbation)
+  if (!(class(psample) %in% c("SpatialPoints"))) {
+    stop("psample must be of class SpatialPoints", call. = FALSE)
+  }
   points <- as.data.frame(points)
   nobs <- nrow(points)
-  names(points) <- c("x", "y")
-  coordinates(points) <- ~ x + y
+  coordinates(points) <- ~x + y
+  
+  #compute distance matrix and correlation matrix of sampling points used for estimating the semivariogram
   D <- spDists(points)
   vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
   A <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
@@ -130,17 +168,17 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01)  
                              dist_vector = D, covariance = TRUE)
         #extend correlation matrix A with a column and row with ones (ordinary kriging)
         nobs <- length(psample)
-        B <- matrix(data = 0, nrow = nobs + 1, ncol = nobs + 1)
+        B <- matrix(data = 1, nrow = nobs + 1, ncol = nobs + 1)
         B[1:nobs, 1:nobs] <- A
-        B[1:nobs, nobs + 1] <- 1
-        B[nobs + 1, 1:nobs] <- 1
+        B[nobs + 1, nobs + 1] <- 0
+        
         #compute matrix with correlations between evaluation points and sampling points used for prediction
         D0 <- spDists(x = esample, y = psample)
         A0 <- variogramLine(vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1]),
                                 dist_vector = D0, covariance = TRUE)
         b <- cbind(A0, 1)
-        #compute perturbed correlation matrix (pA)
-        pA <- pA0 <- list()
+        #compute perturbed correlation matrices (pA and pA0)
+        pA <- pA0 <- pB <- pb <- list()
         for (i in seq_len(length(thetas))) {
           thetas.pert <- thetas
           thetas.pert[i] <- (1 + perturbation) * thetas[i]
@@ -148,22 +186,15 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01)  
                                        dist_vector = D, covariance = TRUE)
           pA0[[i]] <- variogramLine(vgm(model = model, psill = thetas.pert[1], range = thetas.pert[2], nugget = 1 - thetas.pert[1]),
                                   dist_vector = D0, covariance = TRUE)
-        }
-        #extend pA and pA0 with ones
-        pB <- pb <- list()
-        for (i in seq_len(length(thetas))) {
-          pB[[i]] <- matrix(data = 0, nrow = nobs + 1, ncol = nobs + 1)
+          pB[[i]] <- B
           pB[[i]][1:nobs, 1:nobs] <- pA[[i]]
-          pB[[i]][1:nobs, nobs + 1] <- 1
-          pB[[i]][nobs + 1, 1:nobs] <- 1
           pb[[i]] <- cbind(pA0[[i]], 1)
         }
         #compute perturbed kriging variances (pvar)
         var <- numeric(length = length(esample)) #kriging variance
         pvar <- matrix(nrow = length(esample), ncol = length(thetas)) #matrix with perturbed kriging variances
         for (i in seq_len(length(esample))) {
-          b <- c(A0[i, ], 1)
-          l <- solve(B, b)
+          l <- solve(B, b[i,])
           var[i] <- 1 - l[1:nobs] %*% A0[i, ] - l[nobs + 1]
           for (j in seq_len(length(thetas))) {
             pl <- solve(pB[[j]], pb[[j]][i, ])
@@ -192,8 +223,7 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01)  
 
 #' Mean Augmented Kriging Variance
 #'
-#' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
-#'   with coordinates of sampling points
+#' @param points \code{\link{data.frame}} with coordinates of fixed and free sampling points
 #' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
 #' @param model \pkg{gstat} model type of a priori semivariogram model.
 #' @param thetas parameters of semivariogram model.
@@ -207,10 +237,10 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01)  
 #'
 #' @export
 MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
+  validate(sample = esample, model, thetas, perturbation)
   points <- as.data.frame(points)
   nobs <- nrow(points)
-  coordinates(points) <- ~ x + y
-
+  coordinates(points) <- ~x + y
   D <- spDists(points)
   vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
   A <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
@@ -231,24 +261,19 @@ MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
     cholI <- try(chol(I), silent = TRUE)
     if (inherits(cholI, "try-error")) {
       return(Inf)
-    } else {
-      cholI <- try(chol(I), silent = TRUE)
-      if (inherits(cholI, "try-error")) {
-        return(Inf)
       } else {
         invI <- solve(I)
 
         nrowB <- nobs + 1
-        B <- matrix(data = 0, nrow = nrowB, ncol = nrowB)
+        B <- matrix(data = 1, nrow = nrowB, ncol = nrowB)
         B[1:nobs, 1:nobs] <- A
-        B[1:nobs, (nobs + 1):nrowB] <- 1
-        B[(nobs + 1):nrowB, 1:nobs] <- 1
+        B[nrowB, nrowB] <- 0
 
-        #compute matrix with covariances between prediction points and sampling points
+        #compute matrix with covariances between evaluation points and sampling points
         D0 <- spDists(x = esample, y = points)
         vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
         A0 <- variogramLine(vgmodel, dist_vector = D0, covariance = TRUE)
-        #compute pB and pb by extending pA and pA0 with X
+        #compute pB and pb by extending pA and pA0 with ones
         pB <- pA0 <- pb <- list()
         for (i in seq_len(length(thetas))) {
           pB[[i]] <- B
@@ -264,7 +289,6 @@ MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
         L <- matrix(nrow = length(esample), ncol = nobs) #matrix with kriging weights
         pL <- array(dim = c(length(esample), length(points), length(thetas))) #array with perturbed kriging weights
         var <- numeric(length = length(esample)) #kriging variance
-        pvar <- matrix(nrow = length(esample), ncol = length(thetas)) #matrix with perturbed kriging variances
         for (i in seq_len(length(esample))) {
           b <- c(A0[i, ], 1)
           l <- solve(B, b)
@@ -273,13 +297,11 @@ MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
           for (j in seq_len(length(thetas))) {
             pl <- solve(pB[[j]], pb[[j]][i, ])
             pL[i, , j] <- pl[1:nobs]
-            pvar[i, j] <- 1 - pl[1:nobs] %*% pA0[[j]][i, ] - pl[-(1:nobs)]
           }
         }
 
-        dvar <- dL <- list()
+        dL <- list()
         for (i in seq_len(length(thetas))) {
-          dvar[[i]] <- (pvar[, i] - var) / (thetas[i] * perturbation)
           dL[[i]] <- (pL[, , i] - L) / (thetas[i] * perturbation)
         }
         #tausq: expectation of additional variance due to uncertainty in ML estimates of variogram parameters, see Eq. 5 Lark and Marchant 2018
@@ -301,13 +323,11 @@ MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
       }
     }
   }
-}
 
 
 #' Mean Estimation Adjusted Criterion
 #'
-#' @param points \code{\link{data.frame}} or \code{SpatialPoints(DataFrame)}
-#'   with coordinates of sampling points.
+#' @param points \code{\link{data.frame}} with coordinates of fixed and free sampling points
 #' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
 #' @param model \pkg{gstat} model type of a priori semivariogram model.
 #' @param thetas parameters of semivariogram model.
@@ -321,10 +341,10 @@ MAKV <- function(points, esample, model, thetas, perturbation = 0.01)  {
 #'
 #' @export
 MEAC <- function(points, esample, model, thetas, perturbation = 0.01)  {
+  validate(sample = esample, model, thetas, perturbation)
   points <- as.data.frame(points)
   nobs <- nrow(points)
   coordinates(points) <- ~x + y
-
   D <- spDists(points)
   vgmodel <- vgm(
     model = model, psill = thetas[1], range = thetas[2],
@@ -353,16 +373,15 @@ MEAC <- function(points, esample, model, thetas, perturbation = 0.01)  {
           invI <- solve(I)
 
           nrowB <- nobs + 1
-          B <- matrix(data = 0, nrow = nrowB, ncol = nrowB)
+          B <- matrix(data = 1, nrow = nrowB, ncol = nrowB)
           B[1:nobs, 1:nobs] <- A
-          B[1:nobs, (nobs + 1):nrowB] <- 1
-          B[(nobs + 1):nrowB, 1:nobs] <- 1
+          B[nrowB, nrowB] <- 0
 
           #compute matrix with covariances between prediction nodes and sampling points
           D0 <- spDists(x = esample, y = points)
           vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
           A0 <- variogramLine(vgmodel, dist_vector = D0, covariance = TRUE)
-          #compute pB and pb by extending pA and pA0 with X
+          #compute pB and pb by extending pA and pA0 with ones
           pB <- pA0 <- pb <- list()
           for (i in seq_len(length(thetas))) {
             pB[[i]] <- B
@@ -419,8 +438,8 @@ MEAC <- function(points, esample, model, thetas, perturbation = 0.01)  {
               VKV <- VKV + VKVij
             }
           }
-          MEAC <- mean(AKV + VKV / (2 * var)) #Estimation Adjusted Criterion of Zhu and Stein (2006), see Eq. 2.16
+          MEAC <- mean(AKV + VKV / (2 * var))
           MEAC
         }
     }
-}
+  }

@@ -307,7 +307,7 @@ ggplot(data = df) +
     scale_y_continuous(name = "Estimated mean AGB")
 ```
 
-The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r formatC(var(estimates$Bal), 1, format = "f")` (10^9^ kg ha^-1^)^2^. The gain in precision compared to simple random sampling, equals `r formatC(var(estimates$SI)/var(estimates$Bal), 3, format = "f")` (design effect is `r formatC(var(estimates$Bal)/var(estimates$SI), 3, format = "f")`), so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r formatC(mean(estimates$v_mz), 1, format = "f")` (10^9^ kg ha^-1^)^2^, indicating that the approximated variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r formatC(mean(grdAmazonia$lnSWIR2), 3, format = "f")`. The sample mean of lnSWIR2 varies a bit among the samples. Figure \@ref(fig:histSampleMeanSWIR) shows the approximated sampling distribution of the sample mean of lnSWIR2. In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
+The variance of the 1,000 estimates of the population mean of the study variable AGB equals `r formatC(var(estimates$Bal), 1, format = "f")` (10^9^ kg ha^-1^)^2^. The gain in precision compared to simple random sampling equals `r formatC(var(estimates$SI)/var(estimates$Bal), 3, format = "f")` (design effect is `r formatC(var(estimates$Bal)/var(estimates$SI), 3, format = "f")`), so with simple random sampling about three times more sampling units are needed to estimate the population mean with the same precision. The mean of the 1,000 estimated variances equals `r formatC(mean(estimates$v_mz), 1, format = "f")` (10^9^ kg ha^-1^)^2^, indicating that the approximated variance estimator somewhat underestimates the true variance in this case. The population mean of the balancing variable lnSWIR2 equals `r formatC(mean(grdAmazonia$lnSWIR2), 3, format = "f")`. The sample mean of lnSWIR2 varies a bit among the samples. Figure \@ref(fig:histSampleMeanSWIR) shows the approximated sampling distribution of the sample mean of lnSWIR2. In other words, many samples are not perfectly balanced on lnSWIR2. This is not exceptional, in most cases perfect balance is impossible.
 
 ```{r histSampleMeanSWIR, echo = FALSE, fig.width = 5, fig.cap = "Approximated sampling distribution of the sample mean of balancing variable lnSWIR2 in Eastern Amazonia with balanced sampling of size 100 and equal inclusion probabilities."}
 ggplot(data = estimates) +
@@ -387,14 +387,21 @@ n <- sum(n_h)
 print(pi_h <- n_h / N_h)
 ```
 
-The inclusion probabilities are added to `data.frame` `mypop` with the 400 population units, using a lookup table `lut` and function `merge`. The seven leftmost units on the bottom row are shown below. Variables s1 and s2 are the spatial coordinates of the centres of the units. 
+The inclusion probabilities are added to tibble `mypop` with the 400 population units, using a lookup table `lut` and function `left_join`. The ten leftmost units on the bottom row of Figure \@ref(fig:BalancedSampleCategorical) are shown below. Variables s1 and s2 are the spatial coordinates of the centres of the units. 
 
-```{r}
-lut <- data.frame(stratum = sort(unique(mypop$stratum)),
-                  pi = n_h / N_h)
+```{r, echo = FALSE, eval = FALSE}
+lut <- data.frame(stratum = sort(unique(mypop$stratum)), pi = n_h / N_h)
 mypop <- merge(x = mypop, y = lut, by = "stratum")
 ord <- order(mypop$s2, mypop$s1)
 head(mypop[ord, ], 7)
+```
+```{r}
+lut <- data.frame(stratum = sort(unique(mypop$stratum)), pi = n_h / N_h)
+mypop <- mypop %>%
+  as.tibble(mypop) %>%
+  left_join(lut, by = "stratum") %>%
+  arrange(s2, s1)
+mypop
 ```
 
 Next, the design matrix $\mathbf{X}$ is computed with function `model.matrix`, expanding the factor `stratum` to a set of dummy variables, see code chunk below. By adding `- 1` to the formula, we avoid that the first column in the design matrix has all ones. The design matrix has four columns with dummy variables (indicators), indicating to which stratum a unit belongs. 
@@ -867,5 +874,4 @@ The estimated standard error is `r formatC(sqrt(v_mz), 1, format = "f")` 10^9^ k
 
 ```{r, echo = FALSE}
 rm(list = ls())
-gc()
 ```

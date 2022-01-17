@@ -123,7 +123,7 @@ pc <- grdCRF %>%
   prcomp(center = TRUE, scale = TRUE)
 ```
 
-The means of the two principal component scores are 0, but their standard deviations are not zero but `r formatC(pc$sdev[1], 3, format = "f")` and `r formatC(pc$sdev[2], 3, format = "f")`. Therefore the principal component scores are divided by these standard deviations. They then will have the same weight in the following steps. 
+The means of the two principal component scores are 0, however, their standard deviations are not zero but `r formatC(pc$sdev[1], 3, format = "f")` and `r formatC(pc$sdev[2], 3, format = "f")`. Therefore the principal component scores are divided by these standard deviations. They then will have the same weight in the following steps. 
 
 ```{r}
 grdCRF <- grdCRF %>%
@@ -525,9 +525,9 @@ ggplot(mysamples) +
 
 ## Mapping
 
-Once that data are collected, the study variable is mapped by fitting a multiple linear regression model using the two covariates, in our case the two EM measurements, as predictors. The fitted model is then used to predict the study variable for all unsampled population units. 
+Once the data are collected, the study variable is mapped by fitting a multiple linear regression model using the two covariates, in our case the two EM measurements, as predictors. The fitted model is then used to predict the study variable for all unsampled population units. 
 
-The predicted value of the study variable at an unsampled prediction location $\mathbf{s}_0$ is predicted by
+The value of the study variable at an unsampled prediction location $\mathbf{s}_0$ is predicted by
 \begin{equation}
 \widehat{Z}(\mathbf{s}_0) = \mathbf{x}_0 \hat{\pmb{\beta}}_{\text{OLS}}\;,
 (\#eq:ZpredMLR)
@@ -537,10 +537,10 @@ with $\mathbf{x}_0$ the ($p+1$)-vector with covariate values at prediction locat
 \hat{\pmb{\beta}}_{\text{OLS}} = (\mathbf{X}^{\mathrm{T}}\mathbf{X})^{-1} (\mathbf{X}^{\mathrm{T}}\mathbf{z})\;,
 (\#eq:betaOLS)
 \end{equation}
-with $\mathbf{X}$ the $(n \times (p+1))$ matrix with covariate values and ones in the first column ($n$ is the sample size and $p$ is the number of covariates), and $\mathbf{z}$ the $n$-vector with observations of the study variable.
+with $\mathbf{X}$ the $(n \times (p+1))$ matrix with covariate values and ones in the first column ($n$ is the sample size, and $p$ is the number of covariates) and $\mathbf{z}$ the $n$-vector with observations of the study variable.
 
 ```{block2, type = 'rmdnote'}
-Although the principal component scores are used to select the sampling locations there is no need to use these principal component scores as predictors in the linear regression model. When all principal components derived from the covariates are used as predictors, the predicted values and standard errors obtained with the model using the principal components as predictors are equal to those obtained with the model using the covariates as predictors.
+Although the principal component scores are used to select the sampling locations there is no need to use these scores as predictors in the linear regression model. When all principal components derived from the covariates are used as predictors, the predicted values and standard errors obtained with the model using the principal components as predictors are equal to those obtained with the model using the covariates as predictors.
 ```
 
 The variance of the prediction error can be estimated by
@@ -558,10 +558,9 @@ zpred <- predict(mdl, newdata = grdCRF, se.fit = TRUE)
 v_zpred <- zpred$se.fit^2+sigma(mdl)^2
 ```
 
-The assumption underlying Equations \@ref(eq:betaOLS) and \@ref(eq:VarZpredMLR) is that the model residuals are independent. We assume that all spatial structure of the study variable is explained by the covariates. Even the residuals at two locations close to each other are assumed to be uncorrelated. A drawback of the spatial response surface design is that it is hard or even impossible to check this assumption as the sampling locations are spread out throughout the study area. If the residuals are not independent the covariance of the residuals can be accounted for by generalised least squares estimation of the regression coefficients (Equation \@ref(eq:beta_GLS)). The study variable can then be mapped by kriging with an external drift (Subsection \@ref(IntroKED)). However, this requires an estimate of the semivariogram of the residuals (Subsection \@ref(ResidualVariogram)). 
+The assumption underlying Equations \@ref(eq:betaOLS) and \@ref(eq:VarZpredMLR) is that the model residuals are independent. We assume that all spatial structure of the study variable is explained by the covariates. Even the residuals at two locations close to each other are assumed to be uncorrelated. A drawback of the spatial response surface design is that it is hard or even impossible to check this assumption as the sampling locations are spread out throughout the study area. If the residuals are not independent the covariance of the residuals can be accounted for by generalised least squares estimation of the regression coefficients (Equation \@ref(eq:betaGLS)). The study variable can then be mapped by kriging with an external drift (Section \@ref(IntroKED)). However, this requires an estimate of the semivariogram of the residuals (Section \@ref(ResidualVariogram)). 
 
 
 ```{r, echo = FALSE}
 rm(list = ls())
-gc()
 ```

@@ -303,7 +303,7 @@ ggplot(data = grid) +
 2. See [`MBSample_QOKV.Rmd`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_QOKV.Rmd). Figure \@ref(fig:MBsampleP90OKVCRF) shows the optimised sampling pattern. Compared with the optimised sampling pattern using the *mean* ordinary kriging variance (MOKV) as a minimisation criterion (Figure \@ref(fig:ModelBasedSampleOK)), the sampling locations are pushed more to the border of the study area. This is because with a sample optimised for MOKV (and a spatial coverage sample) near the border the kriging variances are the largest. By pushing sampling locations towards the border, the kriging variances in this border zone are strongly reduced. 
 
 ```{r MBsampleP90OKVCRF, echo=FALSE, out.width = "100%", fig.cap="Optimised sampling pattern of 50 points on the Cotton Research Farm, using the P90 of ordinary kriging predictions of lnECe as a minimisation criterion."}
-load(file = "results/MBSample_OK_P90_Uzbekistan.rda")
+mysample <- read_rds(file = "results/MBSample_OK_P90_Uzbekistan.rds")
 ggplot(data=grdCRF) +
   geom_raster(mapping = aes(x = x / 1000, y = y / 1000), fill="grey") +
   geom_point(data = mysample, mapping = aes(x = x / 1000, y = y / 1000), size = 2) +
@@ -349,17 +349,18 @@ ggplot(data=mysamples) +
 
 1. See [`NestedSampling_v1.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/NestedSampling_v1.R).  
 2. See [`SI_PointPairs.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/SI_PointPairs.R). With the seed I used (314) the variance of the estimator of the range parameter with the smaller separation distances is much smaller compared to that obtained with the larger separation distances (the estimated standard error is 115 m).  
-3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. With the smaller ratio of spatial dependence of 0.5 the cluster of sampling points covers a larger area as compared to the sampling pattern obtained with a ratio of spatial dependence of 0.8 (see Figure \@ref(fig:MBVariogram)). Again, quite a few pairs of points at very short distance can be seen.   
+3. See [`MBSample_SSA_logdet.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_logdet.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The smaller ratio of spatial dependence of 0.5 (larger nugget) results in one cluster of sampling points and many point-pairs with nearly coinciding points.   
 4. See [`MBSample_SSA_MVKV.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MVKV.R). Figure \@ref(fig:MBSupSamples) shows the optimised sampling pattern. The circular cluster of sampling points covers a larger area than the cluster obtained with a ratio of spatial dependence of 0.8.
 
 ```{r MBSupSamples, echo = FALSE, out.width = "100%", fig.cap = "Model-based sample for estimating the semivariogram, using the log of the determinant of the inverse Fisher information matrix (logdet) and the mean variance of the kriging variance (MVKV) as a minimisation criterion. The sampling pattern is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.5."}
-mysample <- read_rds(file = "results/MBSample_logdet_phi200nug05_HunterValley.rds")
+mysample <- read_rds(file = "results/MBSample_logdet_phi200nug05_HunterValley_50pnts.rds")
 mysample_logdet <- mysample
 
+mysample <- read_rds(file = "results/MBSample_MVKV_phi200nug05_HunterValley_50pnts.rds")
 mysample_MVKV <- mysample
 
 mysamples <- rbind(mysample_logdet,mysample_MVKV)
-mysamples$criterion <- rep(c("logdet","MVKV"),each=100)
+mysamples$criterion <- rep(c("logdet","MVKV"),each=50)
 
 ggplot(mysamples) +
   geom_raster(data=grdHunterValley, mapping=aes(x=s1/1000, y=s2/1000), fill="grey") +
@@ -371,12 +372,14 @@ ggplot(mysamples) +
 ```
 
 ```{r, echo=FALSE}
+load(file = "results/MBSample_MEAC_phi200nug02_HunterValley.rda")
+MEACopt_10 <- tail(res$objective$energy$obj, 1)
 res <- read_rds(file = "results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
-MEACopt <- as.numeric(tail(res$objective$energy,1))
+MEACopt_20 <- as.numeric(tail(res$objective$energy,1))
 ```
 
 
-5. See [`MBSample_SSA_MEAC.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MEAC.R).  Figure \@ref(fig:MBSampleMEACHV) shows the optimised sampling pattern of the 20 sampling points together with the 80 spatial coverage sampling points. The minimised MEAC value equals `r formatC(MEACopt, 3, format = "f")`, which is smaller than that for the spatial coverage sample of 90 points supplemented by 10 points (0.788).
+5. See [`MBSample_SSA_MEAC.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/MBSample_SSA_MEAC.R).  Figure \@ref(fig:MBSampleMEACHV) shows the optimised sampling pattern of the 20 sampling points together with the 80 spatial coverage sampling points. The minimised MEAC value equals `r formatC(MEACopt_20, 3, format = "f")`, which is slightly smaller than that for the spatial coverage sample of 90 points supplemented by 10 points (`r formatC(MEACopt_10, 3, format = "f")`).
 
 
 ```{r MBSampleMEACHV, echo = FALSE, out.width = "100%", fig.cap = "Optimised sample of 20 points supplemented to a spatial coverage sample of 80 points, using MEAC as a minimisation criterion. The sampling pattern of the supplemental sample is optimised with an exponential semivariogram with a range of 200 m and a ratio of spatial dependence of 0.8."}
@@ -390,6 +393,8 @@ myStrata <- stratify(grdHunterValley, nStrata = n, equalArea=FALSE, nTry=10)
 mySCsample <- as(spsample(myStrata),"SpatialPoints")
 mySCsampledf <- as(mySCsample,"data.frame")
 
+res <- read_rds(file = "results/MBSample_MEAC_phi200nug02_20sup_HunterValley.rds")
+MEACopt_20 <- as.numeric(tail(res$objective$energy,1))
 mysample <- res$points
 units <- which(mysample$free==1)
 mysupsample <- mysample[units, c("x","y")]
@@ -399,9 +404,6 @@ plot(myStrata) +
   geom_point(data=mysupsample, mapping=aes(x = x / 1000, y = y / 1000), shape=2, size=2, colour="red") +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)")
-
-
-MEACopt <- tail(res$objective$energy$obj,1)
 ```
 
 
@@ -420,5 +422,4 @@ write_rds(SessionInfo, file = "SessionInfo.rds")
 
 ```{r, echo=FALSE}
 rm(list=ls())
-gc()
 ```

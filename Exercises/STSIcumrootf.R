@@ -3,16 +3,16 @@ library(stratification)
 library(ggplot2)
 library(sswr)
 
-grdAmazonia$lnSWIR2 <- log(grdAmazonia$SWIR2)
-
 #set number of strata
 H <- 10
 
 #compute optimal strata
 nclass <- H * 100 #number of classes used in computing the histogram
 
-#grdAmazonia must be sorted in ascending order by the columns used for optimal stratification, see help of function strata.cumrootf
-grdAmazonia <- grdAmazonia[order(grdAmazonia$lnSWIR2), ]
+#compute lnSWIR2, and sort tibble on lnSWIR2
+grdAmazonia <- grdAmazonia %>%
+  mutate(lnSWIR = log(SWIR2)) %>%
+  arrange(lnSWIR2)
 
 #NB n does not influence the optimal stratification
 n <- 100
