@@ -1,10 +1,10 @@
-# (PART) Probability sampling for estimating (sub)population parameters {-}
+# (PART) Probability sampling for estimating population parameters {-}
 
 
 # Introduction to probability sampling {#IntroProbabilitySampling}
 
 
-To estimate population parameters like the mean or the total, *probability sampling* is most appropriate. Probability sampling is random sampling using a random number generator such that all population units have a probability larger than zero of being selected, and that these probabilities are known for at least the selected units.
+To estimate population parameters like the mean or the total, *probability sampling* is most appropriate. Probability sampling is random sampling using a random number generator such that all population units have a probability larger than zero of being selected, and these probabilities are known for at least the selected units.
 
 The probability that a unit is included in the sample, in short the inclusion probability\index{Inclusion probability of a unit} of that unit, can be calculated as the sum of the selection probabilities over all samples that can be selected with a given sampling design and that contain this unit. In formula:
 
@@ -22,7 +22,7 @@ where $\mathcal{S} \ni k$ indicates that the sum is over all samples that contai
 This is a selection scheme for simple random sampling without replacement. With this scheme the selection probability of any sample of $n$ units is $1/\binom{N}{n}$ (there are $\binom{N}{n}$ samples of size $n$, and each sample has an equal selection probability), and zero for all other samples. There are $\binom{N-1}{n-1}$ samples of size $n$ in which unit $k$ is included. The inclusion probability of each unit $k$ therefore is $\binom{N-1}{n-1}/\binom{N}{n}=\frac{n}{N}$. The sampling design plays a key role in the design-based approach as it determines the sampling distribution of random quantities computed from a sample such as the estimator of the population mean, see Section \@ref(HTestimator). The number of selected population units is referred to as the *sample size*\index{Sample size}.
 
 ```{block2, type='rmdnote'}
-In sampling with replacement each unit can be selected more than once. In this case the sample size refers to the number of draws, not to the number of unique population units in the sample.
+In sampling with replacement, each unit can be selected more than once. In this case, the sample size refers to the number of draws, not to the number of unique population units in the sample.
 ```
 
 
@@ -41,16 +41,16 @@ There are many schemes for selecting a probability sample. The following samplin
 
 The first five sampling designs are basic sampling designs. Implementation of these designs is rather straightforward, as well as the associated estimation of the population mean, total, or proportion, and their sampling variance. The final three sampling designs are more advanced. Appropriate use of these designs requires more knowledge of sampling theory and statistics, such as linear regression.
 
-## Arbitrary (haphazard) sampling versus probability sampling {-}
+## Arbitrary (haphazard) sampling vs. probability sampling {-}
 
-In publications it is commonly stated that the sampling units were selected (more or less) at random (within strata), without further specification of how the sampling units were precisely selected. In statistical inference, the sampling units are subsequently treated as if they were selected by (stratified) simple random sampling. With probability sampling all units in the population have a positive probability of being selected, and the inclusion probabilities are known for all units. It is highly questionable whether this also holds for arbitrary\index{Arbitrary sampling} and haphazard sampling\index{Haphazard sampling}. In arbitrary and haphazard sampling the sampling units are not selected by a probability mechanism. So, the selection probabilities of the sampling units and of combinations of sampling units are unknown. Design-based estimation is therefore impossible, because it requires the inclusion probabilities of the population units as determined by the sampling design. The only option for statistical analysis using arbitrarily or haphazardly selected samples is model-based inference, i.e. a model of the spatial variation must be assumed.
+In publications it is commonly stated that the sampling units were selected at random (within strata), without further specification of how the sampling units were precisely selected. In statistical inference, the sampling units are subsequently treated as if they were selected by (stratified) simple random sampling. With probability sampling, all units in the population have a positive probability of being selected, and the inclusion probabilities are known for all units. It is highly questionable whether this also holds for arbitrary\index{Arbitrary sampling} and haphazard sampling\index{Haphazard sampling}. In arbitrary and haphazard sampling, the sampling units are not selected by a probability mechanism. So, the selection probabilities of the sampling units and of combinations of sampling units are unknown. Design-based estimation is therefore impossible, because it requires the inclusion probabilities of the population units as determined by the sampling design. The only option for statistical analysis using arbitrarily or haphazardly selected samples is model-based inference, i.e., a model of the spatial variation must be assumed.
 
 ```{r, echo = FALSE, fig.cap = ""}
 include_graphics("images/cartoon.jpeg")
 ```
 
 #### Exercises {-}
-1. Suppose a researcher selects a sample of points from a study area by throwing darts on a map depicting the study area. Is the resulting sample a probability sample? If not, why not?  
+1. Suppose a researcher selects a sample of points from a study area by throwing darts on a map depicting the study area. Is the resulting sample a probability sample? If not, why?  
 
 ## Horvitz-Thompson estimator {#HTestimator}
 
@@ -71,10 +71,10 @@ w_k = \frac{1}{\pi_k}\;,
 with $\pi_k$ the inclusion probability of unit $k$. The estimator\index{Estimator} of Equation \@ref(eq:HTTotal) is referred to as the Horvitz-Thompson estimator\index{Horvitz-Thompson estimator|see {$\pi$ estimator}} or $\pi$ estimator\index{$\pi$ estimator}. The $z_k/\pi_k$-values are referred to as the  $\pi$-expanded values\index{$\pi$-expanded value}. The $z$-value of unit $k$ in the sample is multiplied by the reciprocal of the inclusion probability of that unit, and the sample sum of these $\pi$-expanded values is used as an estimator of the population total\index{Population total}. The inclusion probabilities are determined by the type of sampling design and the sample size.
 
 ```{block2, type='rmdnote'}
-An *estimator* is not the same as an *estimate*. Whereas an estimate is a particular value calculated from the sample data, an estimator is a formula for estimating a parameter. An estimator is a *random variable* and therefore has a probability distribution. For this reason it is not correct, although very common, to say 'the variance (standard error) of the estimated population mean equals ...'. It is (more) correct to say 'the variance (standard error) of the estimator of the population mean equals ...'.
+An *estimator* is not the same as an *estimate*. Whereas an estimate is a particular value calculated from the sample data, an estimator is a formula for estimating a parameter. An estimator is a *random variable* and therefore has a probability distribution. For this reason, it is not correct, although very common, to say 'the variance (standard error) of the estimated population mean equals ...'. It is correct to say 'the variance (standard error) of the estimator of the population mean equals ...'.
 ```
 
-Also for infinite populations\index{Population!infinite population}, think of points in a continuous population, the above estimator for the population total can be used, but special attention must then be paid to the inclusion probabilities. Suppose the infinite population is discretised by $N$ cells of a fine grid, and a simple random sample of $n$ cells is selected. The inclusion probabilities of the grid cells is then $n/N$. However, constraining the sampling points to the centres of the cells of the discretisation grid is not needed and even undesirable. To account for the infinite number of points in the population we may adopt a two-step approach, see Figure \@ref(fig:SamplingFromInfinitePopulation). In the first step $n$ cells of the discretisation grid are selected by simple random sampling *with replacement*. In the second step one point is selected fully randomly from the selected grid cells. If a grid cell is selected more than once, more points are selected in that grid cell. With this selection procedure the inclusion probability density\index{Inclusion probability density} is $n/A$, with $A$ the area of the study area. This inclusion probability density equals the expected number of sampling points per unit area, e.g. the expected number of points per ha or per m^2^. The inclusion probability density can be interpreted as the global sampling intensity\index{Sampling intensity}. Note that the local sampling intensity may strongly vary, think for instance of cluster random sampling.
+Also for infinite populations\index{Population!infinite population}, think of points in a continuous population, the above estimator for the population total can be used, but special attention must then be paid to the inclusion probabilities. Suppose the infinite population is discretised by $N$ cells of a fine grid, and a simple random sample of $n$ cells is selected. The inclusion probabilities of the grid cells is then $n/N$. However, constraining the sampling points to the centres of the cells of the discretisation grid is not needed and even undesirable. To account for the infinite number of points in the population we may adopt a two-step approach, see Figure \@ref(fig:SamplingFromInfinitePopulation). In the first step, $n$ cells of the discretisation grid are selected by simple random sampling *with replacement*. In the second step, one point is selected fully randomly from the selected grid cells. If a grid cell is selected more than once, more points are selected in that grid cell. With this selection procedure the inclusion probability density\index{Inclusion probability density} is $n/A$, with $A$ the area of the study area. This inclusion probability density equals the expected number of sampling points per unit area, e.g., the expected number of points per ha or per m^2^. The inclusion probability density can be interpreted as the global sampling intensity\index{Sampling intensity}. Note that the local sampling intensity may strongly vary; think for instance of cluster random sampling.
 
 The $\pi$ estimator for the *mean* of a finite population\index{Population!finite population}\index{Population mean}, $\bar{z}$, is simply the $\pi$ estimator for the total, divided by the total number of units in the population, $N$:
 
@@ -83,22 +83,22 @@ The $\pi$ estimator for the *mean* of a finite population\index{Population!finit
 (\#eq:HTMean)
 \end{equation}
 
-For infinite populations discretised by a finite set of points the same estimator can be used.
+For infinite populations discretised by a finite set of points, the same estimator can be used.
 
-For infinite populations the population total can be estimated by multiplying the estimated population mean by the area of the population $A$:
+For infinite populations, the population total can be estimated by multiplying the estimated population mean by the area of the population $A$:
 
 \begin{equation}
 \hat{t}_{\pi}(z)=A \hat{\bar{z}}_{\pi} \;.
 (\#eq:HTTotalinfinite)
 \end{equation}
 
-The $\pi$ estimator can be worked out for the different types of sampling design listed above by inserting the inclusion probabilities as determined by the sampling design. For simple random sampling this leads to the unweighted sample mean (see Chapter \@ref(SI)), and for stratified simple random sampling the $\pi$ estimator is equal to the weighted sum of the sample means per stratum, with weights equal to the relative size of the strata (see Chapter \@ref(STSI)).
+The $\pi$ estimator can be worked out for the different types of sampling design listed above by inserting the inclusion probabilities as determined by the sampling design. For simple random sampling, this leads to the unweighted sample mean (see Chapter \@ref(SI)), and for stratified simple random sampling the $\pi$ estimator is equal to the weighted sum of the sample means per stratum, with weights equal to the relative size of the strata (see Chapter \@ref(STSI)).
 
 ## Hansen-Hurwitz estimator
 
-In sampling finite populations, units can be selected with or without replacement. In sampling with replacement after each draw the selected unit is replaced. As a consequence, a unit can be selected more than once. Sampling with replacement is less efficient than sampling without replacement. If a population unit is selected in a given draw, there is no additional information in this unit if it is selected again. One reason that sampling with replacement\index{Sampling with replacement} is still used is that it is more easy to implement.
+In sampling finite populations, units can be selected with or without replacement. In sampling with replacement after each draw the selected unit is replaced. As a consequence, a unit can be selected more than once. Sampling with replacement is less efficient than sampling without replacement. If a population unit is selected in a given draw, there is no additional information in this unit if it is selected again. One reason that sampling with replacement\index{Sampling with replacement} is still used is that it is easier to implement.
 
-The most common estimator used for sampling with replacement is the Hansen-Hurwitz estimator\index{Hansen-Hurwitz estimator|see {pwr estimator}}, referred to as the  $p$-expanded with replacement (pwr) estimator\index{pwr estimator} by @sar92. With direct unit sampling, i.e. sampling of individual population units, the pwr estimator is
+The most common estimator used for sampling with replacement is the Hansen-Hurwitz estimator\index{Hansen-Hurwitz estimator|see {pwr estimator}}, referred to as the  $p$-expanded with replacement (pwr) estimator\index{pwr estimator} by @sar92. With direct unit sampling, i.e., sampling of individual population units, the pwr estimator is
 
 \begin{equation}
 \hat{t}_{\text{pwr}}(z)=\frac{1}{n}\sum_{k \in \mathcal{S} } \frac{z_k}{p_k} \;,
@@ -107,9 +107,9 @@ The most common estimator used for sampling with replacement is the Hansen-Hurwi
 
 with $p_k$ the *draw-by-draw selection probability* of population unit $k$. For instance, in simple random sampling with replacement the draw-by-draw selection probability $p$ of each unit is $1/N$. If we select only one unit $k$, the population total can be estimated by the observation of that unit divided by $p$, $\hat{t}(z) = z_k/p_k = N z_k$. If we repeat this $n$ times, this results in $n$ estimated population totals. The pwr estimator is the average of these $n$ elementary estimates. If a unit occurs multiple times in the sample $\mathcal{S}$, this unit provides multiple elementary estimates of the population total.
 
-A sample obtained by sampling with replacement is referred to as an *ordered sample*\index{Ordered sample} [@sar92]. Selecting the distinct units from this ordered sample results in the *set-sample*\index{Set-sample}. Instead of using the ordered sample in the pwr estimator, we may use the set-sample in the $\pi$ estimator. This requires computation of the inclusion probabilities for with replacement sampling. For instance, for simple random sampling with replacement the inclusion probability of each unit equals $1-\left(1-\frac{1}{N}\right)^n$, with $n$ the number of draws. This probability is smaller than $n/N$, the inclusion probability for simple random sampling without replacement. There is no general rule which estimator is most accurate [@sar92]. In this book I only use the pwr estimator for sampling with replacement.
+A sample obtained by sampling with replacement is referred to as an *ordered sample*\index{Ordered sample} [@sar92]. Selecting the distinct units from this ordered sample results in the *set-sample*\index{Set-sample}. Instead of using the ordered sample in the pwr estimator, we may use the set-sample in the $\pi$ estimator. This requires computation of the inclusion probabilities for sampling with replacement. For instance, for simple random sampling with replacement the inclusion probability of each unit equals $1-\left(1-\frac{1}{N}\right)^n$, with $n$ the number of draws. This probability is smaller than $n/N$, the inclusion probability for simple random sampling without replacement. There is no general rule on which estimator is most accurate [@sar92]. In this book I only use the pwr estimator for sampling with replacement.
 
-Sampling with replacement can also be applied at the level of clusters of population units as in cluster random sampling and two-stage cluster random sampling. If the clusters are selected with probabilities proportional to their size and with replacement, estimation of a population parameter is rather simple. This is a second reason why sampling with replacement can be attractive. With cluster sampling the Hansen-Hurwitz estimator is
+Sampling with replacement can also be applied at the level of clusters of population units as in cluster random sampling and two-stage cluster random sampling. If the clusters are selected with probabilities proportional to their size and with replacement, estimation of a population parameter is rather simple. This is a second reason why sampling with replacement can be attractive. With cluster sampling, the Hansen-Hurwitz estimator is
 
 \begin{equation}
 \hat{t}_{\text{pwr}}(z)=\frac{1}{n}\sum_{j \in \mathcal{S} } \frac{t_j(z)}{p_j} \;,
@@ -123,11 +123,11 @@ with $t_j(z)$ the total of the cluster selected in the $j$th draw. If not all po
 
 ## Using models in design-based approach
 
-Design-based estimates of population parameters such as the mean, total, or proportion (areal fraction) are model-free: no use is made of a model for the spatial variation of the study variable. However, such a model can be used to optimise the probability sampling design.  In Chapter \@ref(MBpredictionofDesignVariance) I describe how a model can be used to compare alternative sampling designs at equal costs or equal precision to evaluate which sampling design performs best, to optimise the sample size(s) given a requirement on the precision of the estimated population parameter, or to optimise the spatial strata for stratified random sampling.
+Design-based estimates of population parameters such as the mean, total, or proportion (areal fraction) are model-free: no use is made of a model for the spatial variation of the study variable. However, such a model can be used to optimise the probability sampling design.  In Chapter \@ref(MBpredictionofDesignVariance) I describe how a model can be used to compare alternative sampling designs at equal costs or equal precision to evaluate which sampling design performs best, to optimise the sample size given a requirement on the precision of the estimated population parameter, or to optimise the spatial strata for stratified random sampling.
 
 A model of the spatial variation can also be used at a later stage, after the data have been collected, in estimating the population parameter of interest. If one or more ancillary variables that are related to the study variable are available, these variables can be used in estimation to increase the accuracy. This leads to alternative estimators, such as the regression estimator, the ratio estimator, and the poststratified estimator (Chapter \@ref(Modelassisted)). These estimators together are referred to as model-assisted estimators\index{Model-assisted approach}. In model-assisted estimation  the inclusion probabilities, as determined by the random sampling design, play a key role, but besides, modelling assumptions about how the population might have been generated are used to work out an efficient estimator. The role of a model in the model-assisted approach is fundamentally different from its role in the model-based approach. This is explained in Chapter \@ref(Approaches).
 
-For novices in geostatistics Chapters \@ref(Modelassisted) and \@ref(MBpredictionofDesignVariance) can be quite challenging, and I recommend to skip these chapters first and only return to them after having read the introductory chapter on geostatistics (Chapter \@ref(Introkriging)).
+For novices in geostatistics, Chapters \@ref(Modelassisted) and \@ref(MBpredictionofDesignVariance) can be quite challenging, and I recommend skipping these chapters and only return to them after having read the introductory chapter on geostatistics (Chapter \@ref(Introkriging)).
 
 ```{r, echo=FALSE}
 rm(list = ls())

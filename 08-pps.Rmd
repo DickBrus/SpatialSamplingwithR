@@ -1,16 +1,16 @@
 # Sampling with probabilities proportional to size {#pps}
 
-In simple random sampling the inclusion probabilities are equal for all population units. The advantage of this is simple and straightforward statistical inference. With equal inclusion probabilities the unweighted sample mean is an unbiased estimator of the spatial mean, i.e. the sampling design is *self-weighting*. However, in some situations equal probability sampling is not very efficient, i.e. given the sample size the precision of the estimated mean or total will be relatively low. An example is the following. In order to estimate the total area of a given crop in a country, a raster of square cells of, for instance, 1 km $\times$ 1 km is constructed and projected on the country. The square cells are the population units, and these units serve as the sampling units. Note that near the country border cells cross the border. Some of them may contain only a few hectares of the target population, the country under study. We do not want to select many of these squares with only a few hectares of the study area, as intuitively it is clear that this will result in a low precision of the estimated crop area. In such situation it can be more efficient to select units with probabilities proportional to the area of the target population within the squares, so that small units near the border have a smaller probability of being selected than interior units. Actually, the sampling units are not the square cells, but the pieces of land obtained by overlaying the cells and the GIS map of the country under study. As a consequence, the sampling units have unequal size. The sampling units of unequal size are selected by probabilities proportional to their size (pps).
+In simple random sampling the inclusion probabilities are equal for all population units. The advantage of this is simple and straightforward statistical inference. With equal inclusion probabilities the unweighted sample mean is an unbiased estimator of the spatial mean, i.e., the sampling design is *self-weighting*. However, in some situations equal probability sampling is not very efficient, i.e., given the sample size the precision of the estimated mean or total will be relatively low. An example is the following. In order to estimate the total area of a given crop in a country, a raster of square cells of, for instance, 1 km $\times$ 1 km is constructed and projected on the country. The square cells are the population units, and these units serve as the sampling units. Note that near the country border cells cross the border. Some of them may contain only a few hectares of the target population, the country under study. We do not want to select many of these squares with only a few hectares of the study area, as intuitively it is clear that this will result in a low precision of the estimated crop area. In such situation it can be more efficient to select units with probabilities proportional to the area of the target population within the squares, so that small units near the border have a smaller probability of being selected than interior units. Actually, the sampling units are not the square cells, but the pieces of land obtained by overlaying the cells and the GIS map of the country under study. As a consequence, the sampling units have unequal size. The sampling units of unequal size are selected by probabilities proportional to their size (pps).
 
 ```{block2, type = 'rmdnote'}
 In Chapters \@ref(Cl) and \@ref(Twostage)  pps sampling was already used to select clusters (primary sampling units) of population units. In this chapter the *individual* population units (elementary sampling units) are selected with probabilities proportional to size. 
 ```
 
-If we have a GIS map of land use categories such as agriculture, built-up areas, water bodies, forests, etc., we may use this file to further adapt the selection probabilities. The crop will be grown in agricultural areas only, so we expect small crop areas in cells largely covered by non-agricultural land. As a size measure in computing the selection probabilities we may use the agricultural area (as represented in the GIS map) in the country under study within the cells. Note that size now has a different meaning. It does not refer to the area of the sampling units anymore, but to an ancillary variable that we expect to be related to the study variable, i.e. the crop area. When the crop area per cell is proportional to the agricultural area per cell, then the precision of the estimated total area of the crop can be increased by selecting the cells with probabilities proportional to the agricultural area.
+If we have a GIS map of land use categories such as agriculture, built-up areas, water bodies, forests, etc., we may use this file to further adapt the selection probabilities. The crop will be grown in agricultural areas only, so we expect small crop areas in cells largely covered by non-agricultural land. As a size measure in computing the selection probabilities, we may use the agricultural area, as represented in the GIS map, in the country under study within the cells. Note that size now has a different meaning. It does not refer to the area of the sampling units anymore, but to an ancillary variable that we expect to be related to the study variable, i.e., the crop area. When the crop area per cell is proportional to the agricultural area per cell, then the precision of the estimated total area of the crop can be increased by selecting the cells with probabilities proportional to the agricultural area.
 
-In this example the sampling units have an area. However, sampling with probabilities proportional to size is not restricted to areal sampling units\index{Areal sampling unit}, but can also be used for selecting points. If we have a map of an ancillary variable that is expected to be (linearly) related to the study variable, this ancillary variable can be used as a size measure. For instance, in areas where soil organic matter shows a positive (linear) relation with  elevation, it can be efficient to select sampling points with a selection probability proportional to  this environmental variable. The ancillary variable must be strictly positive for all points.
+In this example the sampling units have an area. However, sampling with probabilities proportional to size is not restricted to areal sampling units\index{Areal sampling unit}, but can also be used for selecting points. If we have a map of an ancillary variable that is expected to be positively related to the study variable, this ancillary variable can be used as a size measure. For instance, in areas where soil organic matter shows a positive relation with  elevation, it can be efficient to select sampling points with a selection probability proportional to  this environmental variable. The ancillary variable must be strictly positive for all points.
 
-Sampling units can be selected with probabilities proportional to their size *with* or *without* replacement. This distinction is immaterial for infinite populations, as in sampling points from an area. pps sampling with replacement (ppswr) is much easier to implement than pps sampling without replacement (ppswor). The problem with ppswor is that after each draw the selected unit is removed from the sampling frame, so that the sum of the size variable over all remaining units changes and as a result the draw-by-draw selection probabilities of the units.
+Sampling units can be selected with probabilities proportional to their size (pps) *with* or *without* replacement. This distinction is immaterial for infinite populations, as in sampling points from an area. pps sampling with replacement (ppswr) is much easier to implement than pps sampling without replacement (ppswor). The problem with ppswor is that after each draw the selected unit is removed from the sampling frame, so that the sum of the size variable over all remaining units changes and as a result the draw-by-draw selection probabilities of the units.
 
 pps sampling is illustrated with the simulated map of poppy area per 5 km square in the province of Kandahar (Figure \@ref(fig:mapsKandahar)). The first six rows of the data frame are shown below. Variable `poppy` is the study variable, variable `agri` is the agricultural area within the 5 km squares, used as a size variable.
 
@@ -20,7 +20,7 @@ grdKandahar
 
 ## Probability-proportional-to-size sampling with replacement {#ppswr}
 
-In the first draw a sampling unit is selected with probability $p_k = x_k/t(x)$, with $x_k$ the size variable for unit $k$ and $t(x) = \sum_{k=1}^N x_k$ the population total of the size variable\index{pps sampling!with replacement (ppswr)}. The selected unit is then replaced, and these two steps are repeated $n$ times. Note that with this sampling design population units can be selected more than once, especially with large sampling fractions\index{Sampling fraction} $n/N$.
+In the first draw, a sampling unit is selected with probability $p_k = x_k/t(x)$, with $x_k$ the size variable for unit $k$ and $t(x) = \sum_{k=1}^N x_k$ the population total of the size variable\index{pps sampling!with replacement (ppswr)}. The selected unit is then replaced, and these two steps are repeated $n$ times. Note that with this sampling design population units can be selected more than once, especially with large sampling fractions\index{Sampling fraction} $n/N$.
 
 The population total can be estimated by the pwr estimator: 
 
@@ -29,7 +29,7 @@ The population total can be estimated by the pwr estimator:
 (\#eq:HHTotalppswr)
 \end{equation}
 
-where $n$ is the sample size (number of draws). The population mean can be estimated by the estimated population total divided by the population size $N$. With independent draws the sampling variance of the estimator of the population total can be estimated by
+where $n$ is the sample size (number of draws). The population mean can be estimated by the estimated population total divided by the population size $N$. With independent draws, the sampling variance of the estimator of the population total can be estimated by
 
 \begin{equation}
 \widehat{V}\!\left(\hat{t}(z)\right)=
@@ -39,7 +39,7 @@ where $n$ is the sample size (number of draws). The population mean can be estim
 
 The sampling variance of the estimator of the mean can be estimated by the variance of the estimator of the total divided by $N^2$. 
 
-As a first step I check whether the size variable is strictly positive in our case study of Kandahar. The minimum equals `r formatC(min(grdKandahar$agri)*10000, 3, format = "f")` m^2^, so this is the case.  If there are values equal to or smaller than 0, these values must be replaced by a small number, so that all units have a positive probability of being selected. Then the draw-by-draw selection probabilities are computed, and the sample is selected using function `sample`.
+As a first step, I check whether the size variable is strictly positive in our case study of Kandahar. The minimum equals `r formatC(min(grdKandahar$agri)*10000, 3, format = "f")` m^2^, so this is the case.  If there are values equal to or smaller than 0, these values must be replaced by a small number, so that all units have a positive probability of being selected. Then the draw-by-draw selection probabilities are computed, and the sample is selected using function `sample`.
 
 ```{r}
 grdKandahar$p <- grdKandahar$agri /  sum(grdKandahar$agri)
@@ -74,7 +74,7 @@ ggplot(data = grdKandahar) +
   coord_fixed()
 ```
 
-The next code chunk shows how the population total of the poppy area can be estimated, using Equation \@ref(eq:HHTotalppswr), as well as the standard error of the estimator of the population total (square root of estimator of Equation \@ref(eq:VarHHTotalppswr)). As a first step the observations are inflated (expanded) through division of the observations by the selection probabilities of the corresponding units. 
+The next code chunk shows how the population total of the poppy area can be estimated, using Equation \@ref(eq:HHTotalppswr), as well as the standard error of the estimator of the population total (square root of estimator of Equation \@ref(eq:VarHHTotalppswr)). As a first step, the observations are inflated, or expanded, through division of the observations by the selection probabilities of the corresponding units. 
 
 ```{r}
 z_pexpanded <- mysample$poppy / mysample$p
@@ -91,9 +91,9 @@ design_ppswr <- svydesign(id = ~ 1, data = mysample, weights = ~ weight)
 svytotal(~ poppy, design_ppswr)
 ```
 
-In ppswr sampling a sampling unit can be selected more than once, especially with large sampling fractions $n/N$. This may decrease the sampling efficiency. With large sampling fractions the alternative is pps sampling without replacement (ppswor), see next section.
+In ppswr sampling, a sampling unit can be selected more than once, especially with large sampling fractions $n/N$. This may decrease the sampling efficiency. With large sampling fractions, the alternative is pps sampling without replacement (ppswor), see next section.
 
-The estimators of Equations \@ref(eq:HHTotalppswr) and \@ref(eq:VarHHTotalppswr) can also be used for infinite populations. For infinite populations the probability that a unit is selected more than once is zero.
+The estimators of Equations \@ref(eq:HHTotalppswr) and \@ref(eq:VarHHTotalppswr) can also be used for infinite populations. For infinite populations, the probability that a unit is selected more than once is zero.
 
 #### Exercises {-}
 
@@ -105,11 +105,11 @@ The estimators of Equations \@ref(eq:HHTotalppswr) and \@ref(eq:VarHHTotalppswr)
 
 ## Probability-proportional-to-size sampling without replacement {#ppswor}
 
-The alternative to pps sampling with replacement (ppswr) is pps sampling without replacement (ppswor)\index{pps sampling!without replacement (ppswor)}. In ppswor sampling the  *inclusion* probabilities are proportional to a size variable, not the draw-by-draw selection probabilities as in ppswr. For this reason ppswor sampling is  referred to as $\pi$ps sampling by @sar92. ppswor sampling starts with assigning target inclusion probabilities to all units in the population. With inclusion probabilities proportional to a size variable $x$ the target inclusion probabilities are computed by $\pi_k=  n\;x_k/\sum_{j=1}^Nx_j,\; k = 1, \dots , N$. 
+The alternative to pps sampling with replacement (ppswr) is pps sampling without replacement (ppswor)\index{pps sampling!without replacement (ppswor)}. In ppswor sampling the  *inclusion* probabilities are proportional to a size variable, not the draw-by-draw selection probabilities as in ppswr. For this reason, ppswor sampling is  referred to as $\pi$ps sampling by @sar92. ppswor sampling starts with assigning target inclusion probabilities to all units in the population. With inclusion probabilities proportional to a size variable $x$ the target inclusion probabilities are computed by $\pi_k=  n\;x_k/\sum_{j=1}^Nx_j,\; k = 1, \dots , N$. 
 
 ### Systematic pps sampling without replacement {#Systematicpps}
 
-Many algorithms are available for ppswor sampling, see @Tille2006 for an overview. A simple, straightforward method is systematic ppswor sampling\index{Systematic ppswor sampling}. Two subtypes can be distinguished, systematic ppswor sampling with fixed frame order and systematic ppswor sampling with random frame order [@Rosen1997b]. Given some order of the units, the cumulative sum of the inclusion probabilities is computed. Each population unit is then associated with an interval of cumulative inclusion probabilities. The larger the inclusion probability of a unit, the wider the interval. Then a random number from the uniform distribution is drawn, which serves as the start of a 1-dimensional systematic sample of size $n$ with an interval of 1. Finally, the units are determined for which the systematic random values are in the interval of cumulative inclusion probabilities, see Figure \@ref(fig:sysppswor) for ten population units and a sample size of four. The units selected are 2, 5, 7, and 9. Note that the sum of the interval lengths equals the sample size. Further note that a unit cannot be selected more than once because the inclusion probabilities are $<1$ and the sampling interval equals 1.
+Many algorithms are available for ppswor sampling, see @Tille2006 for an overview. A simple, straightforward method is systematic ppswor sampling\index{Systematic ppswor sampling}. Two subtypes can be distinguished, systematic ppswor sampling with fixed frame order and systematic ppswor sampling with random frame order [@Rosen1997b]. Given some order of the units, the cumulative sum of the inclusion probabilities is computed. Each population unit is then associated with an interval of cumulative inclusion probabilities. The larger the inclusion probability of a unit, the wider the interval. Then a random number from the uniform distribution is drawn, which serves as the start of a one-dimensional systematic sample of size $n$ with an interval of 1. Finally, the units are determined for which the systematic random values are in the interval of cumulative inclusion probabilities, see Figure \@ref(fig:sysppswor) for ten population units and a sample size of four. The units selected are 2, 5, 7, and 9. Note that the sum of the interval lengths equals the sample size. Further note that a unit cannot be selected more than once because the inclusion probabilities are $<1$ and the sampling interval equals 1.
 
 ```{r}
 library(sampling)
@@ -145,7 +145,7 @@ ggplot(data = dat) +
     plot.background = element_blank())
 ``` 
 
-Sampling efficiency can be increased by ordering the units by the size variable (Figure \@ref(fig:sysppsworsort)). With this design the third, fourth, fifth, and second unit in the original frame are selected, with sizes 15.8, 16.5, 20.6, and 23.6, respectively. Ordering the units by size leads to a large within-sample and a small between-sample variance of the size variable $x$. If the study variable is proportional to the size variable, this results in a smaller sampling variance of the estimator of the mean of the study variable. A drawback of systematic ppswor sampling with fixed order is that no unbiased estimator of the sampling variance exists.
+Sampling efficiency can be increased by ordering the units by the size variable (Figure \@ref(fig:sysppsworsort)). With this design, the third, fourth, fifth, and second units in the original frame are selected, with sizes 15.8, 16.5, 20.6, and 23.6, respectively. Ordering the units by size leads to a large within-sample and a small between-sample variance of the size variable $x$. If the study variable is proportional to the size variable, this results in a smaller sampling variance of the estimator of the mean of the study variable. A drawback of systematic ppswor sampling with fixed order is that no unbiased estimator of the sampling variance exists.
 
 ```{r sysppsworsort, echo = FALSE, out.width = "100%", fig.asp = .15, fig.cap = "Systematic random sample along a line with unequal inclusion probabilities. Units are ordered by size."}
 pisorted <- pi[order(pi)]
@@ -207,14 +207,14 @@ se_syspps_sorted <- sqrt(var(mz_sysppssorted))
 se_SI <- sqrt((1 - n /  N) *  var(dat$z) /  n)
 ```
 
-The standard deviation of the 10,000 estimated means with systematic ppswor sampling with random order is `r formatC(se_syspps, 3, format = "f")`, and when ordered by size `r formatC(se_syspps_sorted, 3, format = "f")`. So, a small gain in precision is achieved through ordering the units by size. For comparison I also computed the standard error for simple random sampling without replacement (SI) of the same size. The standard error with this basic sampling design is `r formatC(se_SI, 3, format = "f")`.
+The standard deviation of the 10,000 estimated means with systematic ppswor sampling with random order is `r formatC(se_syspps, 3, format = "f")`, and when ordered by size `r formatC(se_syspps_sorted, 3, format = "f")`. So, a small gain in precision is achieved through ordering the units by size. For comparison, I also computed the standard error for simple random sampling without replacement (SI) of the same size. The standard error with this basic sampling design is `r formatC(se_SI, 3, format = "f")`.
 
 ### The pivotal method {#pivotalmethod}
 
-Another interesting algorithm for ppswor sampling is the pivotal method\index{Pivotal method for ppswor sampling} [@Deville1998]. A nice adaptation of this algorithm, the local pivotal method, leading to samples with improved (geographical) spreading, is described in  Section \@ref(Spreaded). In the pivotal method the $N$-vector with inclusion probabilities is successively updated to a vector with indicators.  If the indicator value for sampling unit $k$ becomes 1, then this sampling unit is selected, if it becomes 0, then it is not selected. The updating algorithm can be described as follows:
+Another interesting algorithm for ppswor sampling is the pivotal method\index{Pivotal method for ppswor sampling} [@Deville1998]. A nice adaptation of this algorithm, the local pivotal method, leading to samples with improved (geographical) spreading, is described in  Section \@ref(Spreaded). In the pivotal method, the $N$-vector with inclusion probabilities is successively updated to a vector with indicators.  If the indicator value for sampling unit $k$ becomes 1, then this sampling unit is selected, if it becomes 0, then it is not selected. The updating algorithm can be described as follows:
 
 1. Select randomly two units $k$ and $l$ with $0<\pi_k<1$ and $0<\pi_l<1$.  
-2. If $\pi_k + \pi_l < 1$ then update the probabilities by
+2. If $\pi_k + \pi_l < 1$, then update the probabilities by
 
 \begin{equation}
 (\pi^{\prime}_k,\pi^{\prime}_l)=\left\{
@@ -226,7 +226,7 @@ Another interesting algorithm for ppswor sampling is the pivotal method\index{Pi
 (\#eq:algppswor1)
 \end{equation}
 
-and if $\pi_k + \pi_l \geq 1$ update the probabilities by
+and if $\pi_k + \pi_l \geq 1$, update the probabilities by
 
 \begin{equation}
 (\pi^{\prime}_k,\pi^{\prime}_l)=\left\{
@@ -244,7 +244,7 @@ In words, when the sum of the inclusion probabilities is smaller than 1, the upd
 
 When the sum of the inclusion probabilities of the two units is larger than or equal to 1, then one of the units is selected (updated inclusion probability is one), while the inclusion probability of the other unit is lowered by 1 minus the inclusion probability of the selected unit. The probability of being selected is proportional to the complement of the inclusion probability of the other unit. After the inclusion probability of a unit has been updated to either 0 or 1, this unit cannot be selected anymore in the next iteration.
 
-With this ppswor design the population total can be estimated by the $\pi$ estimator, Equation \@ref(eq:HTTotal). The $\pi$ estimator of the mean is simply obtained by dividing the estimator for the total by the population size $N$.
+With this ppswor design, the population total can be estimated by the $\pi$ estimator, Equation \@ref(eq:HTTotal). The $\pi$ estimator of the mean is simply obtained by dividing the estimator for the total by the population size $N$.
 
 ```{block2, type='rmdnote'}
 The inclusion probabilities $\pi_k$ used in the $\pi$ estimator are not the final probabilities obtained with the local pivotal method, which are either 0 or 1, but the initial inclusion probabilities.
@@ -259,7 +259,7 @@ An alternative estimator of the population mean is the ratio estimator, also kno
 
 with $w_k = 1/\pi_k$. The denominator is an estimator of the population size $N$. The H&aacute;jek estimator of the population total is obtained by multiplying the H&aacute;jek estimator of the mean with the population size $N$. Recall that the ratio estimator of the population mean was presented before in the chapters on systematic random sampling (Equation \@ref(eq:RatioMeanSY)), cluster random sampling with simple random sampling of clusters (Equation \@ref(eq:EstMeanRatioClEqual)), and two-stage cluster random sampling with simple random sampling of PSUs. These sampling designs have in common that the sample size (for cluster random sampling the number of SSUs) is random.
 
-Various functions in package **sampling** [@Tille2016] can be used to select a ppswor sample. In the code chunk below I use function `UPrandompivotal`. With this function the order of the population units is randomised before function `UPpivotal` is used. Argument `pi` is a numeric with the inclusion probabilities. These are computed with function `inclusionprobabilities`. Recall that $\pi_k=  n\;x_k/t(x)$. The sum of the inclusion probabilities should be equal to the sample size $n$. Function `UPpivotal` returns a numeric of length $N$ with elements 1 and 0, 1 if the unit is selected, 0 if it is not selected.
+Various functions in package **sampling** [@Tille2016] can be used to select a ppswor sample. In the code chunk below, I use function `UPrandompivotal`. With this function, the order of the population units is randomised before function `UPpivotal` is used. Argument `pi` is a numeric with the inclusion probabilities. These are computed with function `inclusionprobabilities`. Recall that $\pi_k=  n\;x_k/t(x)$. The sum of the inclusion probabilities should be equal to the sample size $n$. Function `UPpivotal` returns a numeric of length $N$ with elements 1 and 0, 1 if the unit is selected, 0 if it is not selected.
 
 ```{r}
 library(sampling)
@@ -272,7 +272,7 @@ mysample <- data.frame(grdKandahar[sampleind == 1, ], pi = pi[sampleind == 1])
 nrow(mysample)
 ```
 
-As can be seen not 40 but only 39 units are selected. The reason is that function `UPrandompivotal` uses a very small number that can be set with argument `eps`. If the updated inclusion probability of a unit is larger than the complement of this small number `eps`, the unit is treated as being selected. The default value of `eps` is $10^{-6}$. If we replace `sampleind == 1` by `sampleind > 1 - eps`, 40 units are selected. 
+As can be seen, not 40 but only 39 units are selected. The reason is that function `UPrandompivotal` uses a very small number that can be set with argument `eps`. If the updated inclusion probability of a unit is larger than the complement of this small number `eps`, the unit is treated as being selected. The default value of `eps` is $10^{-6}$. If we replace `sampleind == 1` by `sampleind > 1 - eps`, 40 units are selected. 
 
 ```{r}
 eps <- 1e-6
@@ -290,7 +290,7 @@ tz_Hajek <- N * sum(mysample$poppy / mysample$pi) / sum(1 / mysample$pi)
 
 The total poppy area as estimated with the $\pi$ estimator equals `r formatC(tz_HT, 0, format = "f", big.mark = ",")` ha. The H&aacute;jek estimator results in a much smaller estimated total: `r formatC(tz_Hajek, 0, format = "f", big.mark = ",")` ha.
 
-The $\pi$ estimate can also be computed with function `svytotal` of package **survey**, which also provides an approximate estimate of the standard error. Various methods are implemented in function `svydesign` for approximating the standard error. These methods differ in the way the pairwise inclusion probabilities are approximated from the unit-wise inclusion probabilities. These approximated pairwise inclusion probabilities are then used in the $\pi$ variance estimator or the Yates-Grundy variance estimator\index{Yates-Grundy variance estimator}. In the next code chunks Brewer's method\index{Brewer's variance estimator} is used, see option 2 of Brewer's method in @Berger2004, as well as Hartley-Rao's method\index{Hartley-Rao's variance estimator} for approximating the variance. 
+The $\pi$ estimate can also be computed with function `svytotal` of package **survey**, which also provides an approximate estimate of the standard error. Various methods are implemented in function `svydesign` for approximating the standard error. These methods differ in the way the pairwise inclusion probabilities are approximated from the unit-wise inclusion probabilities. These approximated pairwise inclusion probabilities are then used in the $\pi$ variance estimator or the Yates-Grundy variance estimator\index{Yates-Grundy variance estimator}. In the next code chunks, Brewer's method\index{Brewer's variance estimator} is used, see option 2 of Brewer's method in @Berger2004, as well as Hartley-Rao's method\index{Hartley-Rao's variance estimator} for approximating the variance. 
 
 ```{r}
 library(survey)
@@ -306,7 +306,7 @@ design_ppsworhr <- svydesign(
 svytotal(~ poppy, design_ppsworhr)
 ```
 
-In package **samplingVarEst** [@samplingVarEst] also various functions are available for approximating the variance: `VE.Hajek.Total.NHT`, `VE.HT.Total.NHT`, and `VE.SYG.Total.NHT`. The first variance approximation is the H&aacute;jek-Ros&eacute;n variance estimator\index{H$\text{{\'a}}$jek-Ros$\text{{\'e}}$n variance estimator}, see Equation (4.3) in @Rosen1997b. The latter two functions require the pairwise inclusion probabilities\index{Pairwise inclusion probability}, which can be estimated by function `Pkl.Hajek.s`.
+In package **samplingVarEst** [@samplingVarEst] also various functions are available for approximating the variance: `VE.Hajek.Total.NHT`, `VE.HT.Total.NHT`, and `VE.SYG.Total.NHT`. The first variance approximation is the H&aacute;jek-Ros&eacute;n variance estimator\index{H$\text{{\'a}}$jek-Ros$\text{{\'e}}$n variance estimator}, see equation (4.3) in @Rosen1997b. The latter two functions require the pairwise inclusion probabilities\index{Pairwise inclusion probability}, which can be estimated by function `Pkl.Hajek.s`.
 
 ```{r HajekRosenVarianceEstimator}
 library(samplingVarEst)
@@ -318,7 +318,7 @@ se_tz_SYG <- sqrt(VE.SYG.Total.NHT(mysample$poppy, mysample$pi, pikl))
 
 The three approximated standard errors are `r formatC(se_tz_Hajek, 0, format = "f", big.mark = ",")`, `r formatC(se_tz_HT, 0, format = "f", big.mark = ",")`, and `r formatC(se_tz_SYG, 0, format = "f", big.mark = ",")` ha. The differences are small when related to the estimated total.
 
-Figure \@ref(fig:SamplingDistributionPps) shows the approximated sampling distribution of estimators of the total poppy area with ppswor sampling and simple random sampling without replacement of size 40, obtained by repeating the random sampling with each design and estimation 10,000 times. With the ppswor samples the total poppy area is estimated by the $\pi$ estimator and the H&aacute;jek estimator. For each ppswor sample the variance of the $\pi$ estimator is approximated by the H&aacute;jek-Ros&eacute;n variance estimator (using function `VE.Hajek.Total.NHT` of package **samplingVarEst**).
+Figure \@ref(fig:SamplingDistributionPps) shows the approximated sampling distribution of estimators of the total poppy area with ppswor sampling and simple random sampling without replacement of size 40, obtained by repeating the random sampling with each design and estimation 10,000 times. With the ppswor samples, the total poppy area is estimated by the $\pi$ estimator and the H&aacute;jek estimator. For each ppswor sample the variance of the $\pi$ estimator is approximated by the H&aacute;jek-Ros&eacute;n variance estimator (using function `VE.Hajek.Total.NHT` of package **samplingVarEst**).
 
 ```{r repeatedpps, eval = FALSE, echo = FALSE}
 ppswor <- function(sframe, size, n) {
@@ -388,7 +388,7 @@ Interestingly, with ppswor sampling the variance of the 10,000 H&aacute;jek esti
 #### Exercises {-}  
 
 2. A field with poppy was found outside Kandahar in a selected sampling unit crossing the boundary. Should this field be included in the sum of the poppy area of that sampling unit?  
-3. In another sampling unit a poppy field was encountered in Kandahar but in the area represented as non-agriculture in the GIS map. Should this field be included in the sum of that sampling unit?
+3. In another sampling unit, a poppy field was encountered in Kandahar but in the area represented as non-agricultural in the GIS map. Should this field be included in the sum of that sampling unit?
 
 ```{r, echo = FALSE}
 rm(list = ls())

@@ -2,18 +2,18 @@
 
 As with conditioned Latin hypercube sampling, spatial response surface sampling\index{Spatial response surface sampling} is an experimental design adapted for spatial surveys. Experimental response surface designs aim at finding an optimum of the response within specified ranges of the factors. There are many types of response surface designs, see @myers2002.  With response surface sampling one assumes that some type of low order regression model can be used to accurately approximate the relationship between the study variable and the covariates.  A commonly used design is the central composite design\index{Central composite design}. The data obtained with this design are used to fit a multiple linear regression model with quadratic terms, yielding a curved, quadratic surface of the response.
 
-The response surface sampling approach is an adaptation of an experimental design, but at the same time it is an example of a model-based sampling design. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see the optimal sample in Figure \@ref(fig:twosamples). The assumption of independent data might be violated when the sampling units are spatially clustered.  For this reason the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
+The response surface sampling approach is an adaptation of an experimental design, but at the same time it is an example of a model-based sampling design. Sampling units are selected to implicitly optimise the estimation of the quadratic regression model. However, this optimisation is done under one or more spatial constraints. Unconstrained optimisation of the sampling design under the linear regression model will not prevent the units from spatial clustering, see the optimal sample in Figure \@ref(fig:twosamples). The assumption of independent data might be violated when the sampling units are spatially clustered.  For this reason, the response surface sampling design selects samples with good spatial coverage, so that the design becomes robust against violation of the independence assumption.
 
-@lesch95 adapted the response surface methodology for observational studies. Several problems needed to be tackled. First, when multiple covariates are used, the covariates must be decorrelated. Second, when sampling units are spatially clustered, the assumption in linear regression modelling of spatially uncorrelated model residuals can be violated. To address these two problems @lesch95 proposed the following procedure; see also @lesch2005:   
+@lesch95 adapted the response surface methodology for observational studies. Several problems needed to be tackled. First, when multiple covariates are used, the covariates must be decorrelated. Second, when sampling units are spatially clustered, the assumption in linear regression modelling of spatially uncorrelated model residuals can be violated. To address these two problems, @lesch95 proposed the following procedure; see also @lesch2005:   
 
 1. Transform the covariate matrix into a scaled, centred, decorrelated matrix by principal components analysis (PCA).   
 2. Choose the response surface design type.   
 3. Select candidate sampling units based on the distance from the design points in the space spanned by the principal components. Select multiple sampling units per design point.   
 4. Select the combination of candidate sampling units with the highest value for a criterion that quantifies how uniform the sample is spread across the study area.   
 
-This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic induction (EM) measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010, and @Fitzgerald2010.
+This design has been applied, among others, for mapping soil salinity (ECe), using electromagnetic (EM) induction measurements and surface array conductivity measurements as predictors in multiple linear regression models. For applications, see @corwin2005, @lesch2005, @fitzgerald2006, @Corwin2010, and @Fitzgerald2010.
 
-Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). As a first step the natural log of the two EM measurements are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
+Spatial response surface sampling  is illustrated with the EM measurements (mS m^-1^) of the apparent electrical conductivity on the 80 ha Cotton Research Farm in Uzbekistan. The EM measurements in vertical dipole mode, with transmitter at 1 m and 0.5 m from the receiver, are on transects covering the Cotton Research Farm (Figure \@ref(fig:EMdataUzbekistan)). As a first step, the natural log of the two EM measurements, denoted by lnEM, are interpolated by ordinary kriging to a fine grid (Figure \@ref(fig:EMdataUzbekistan2)). These ordinary kriging predictions of lnEM are used as covariates in response surface sampling. The two covariates are strongly correlated, $r=0.73$, as expected since they are interpolations of measurements of the same variable but of different overlapping layers.
 
 ```{r EMdataUzbekistan, echo = FALSE, out.width = "100%", fig.cap = "Natural log of EM measurements on the Cotton Research Farm (with transmitter at 1 m and 0.5 m from receiver)."}
 #Krassovsky datum: epsg:4024
@@ -115,7 +115,7 @@ ggplot(data = grdCRF_lf) +
   facet_grid(~ name)
 ```
 
-Function `prcomp` of the **stats** package [@R2020] is used to compute the principal component scores\index{Principal component score} for all units in the population (grid cells). The two covariates are centred and scaled, i.e. standardised principal components are computed. 
+Function `prcomp` of the **stats** package [@R2020] is used to compute the principal component scores\index{Principal component score} for all units in the population (grid cells). The two covariates are centred and scaled, i.e., standardised principal components are computed. 
 
 ```{r}
 pc <- grdCRF %>%
@@ -123,7 +123,7 @@ pc <- grdCRF %>%
   prcomp(center = TRUE, scale = TRUE)
 ```
 
-The means of the two principal component scores are 0, however, their standard deviations are not zero but `r formatC(pc$sdev[1], 3, format = "f")` and `r formatC(pc$sdev[2], 3, format = "f")`. Therefore the principal component scores are divided by these standard deviations. They then will have the same weight in the following steps. 
+The means of the two principal component scores are 0; however, their standard deviations are not zero but `r formatC(pc$sdev[1], 3, format = "f")` and `r formatC(pc$sdev[2], 3, format = "f")`. Therefore, the principal component scores are divided by these standard deviations. They then will have the same weight in the following steps. 
 
 ```{r}
 grdCRF <- grdCRF %>%
@@ -140,7 +140,7 @@ set.seed(314)
 print(ccdesign <- ccd(basis = 2, n0 = 1, alpha = "rotatable"))
 ```
 
-The experiment consists of two blocks, each of five experimental units. Block 1, the so-called cube block, consists of one centre point and four cube points\index{Cube point}. In the experimental unit represented by the centre point both factors have levels in the centre of the experimental range. In the experimental units represented by the cube points the levels of both factors is either -1 or +1 unit in the design space. Block 2, referred to as the star block, consists of one centre point and four star points\index{Star point}. With `alpha = "rotatable"` the  star points are on the circle circumscribing the square (Figure \@ref(fig:ccdesign)).
+The experiment consists of two blocks, each of five experimental units. Block 1, the so-called cube block, consists of one centre point and four cube points\index{Cube point}. In the experimental unit represented by the centre point, both factors have levels in the centre of the experimental range. In the experimental units represented by the cube points, the levels of both factors is either -1 or +1 unit in the design space. Block 2, referred to as the star block, consists of one centre point and four star points\index{Star point}. With `alpha = "rotatable"` the  star points are on the circle circumscribing the square (Figure \@ref(fig:ccdesign)).
 
 ```{r ccdesign, echo = FALSE, fig.width=5, fig.cap = "Rotatable central composite design for two factors."}
 cube <- data.frame(x1 = c(-1, 1, -1, 1, 0), x2 = c(-1, -1, 1, 1, 0))
@@ -162,7 +162,7 @@ ccd_df <- data.frame(x1 = ccdesign$x1, x2 = ccdesign$x2)
 ccd_df <- ccd_df[-6, ]
 ```
 
-The coordinates of the CCRSD design points are multiplied by a factor so that a large proportion $p$ of the bivariate standardised principal component scores of the population units is covered by the circle that passes through the design points (Figure \@ref(fig:ccdesign)). The factor is computed as a sample quantile of the empirical distribution of the distances of the points in the scatter to the centre. For $p$ I chose 0.7.
+The coordinates of the CCRSD points are multiplied by a factor so that a large proportion $p$ of the bivariate standardised principal component scores of the population units is covered by the circle that passes through the design points (Figure \@ref(fig:ccdesign)). The factor is computed as a sample quantile of the empirical distribution of the distances of the points in the scatter to the centre. For $p$, I chose 0.7.
 
 ```{r}
 d <- sqrt(grdCRF$PC1^2 + grdCRF$PC2^2)
@@ -172,7 +172,7 @@ ccd_df <- ccd_df %>%
   mutate(x1 = x1 * fct, x2 = x2 * fct)
 ```
 
-The next step is to select for each design point several candidate sampling points. For each of the nine design points\index{Design point} eight points are selected that are closest to that design point. This results in 9 $\times$ 8 candidate sampling points.
+The next step is to select for each design point several candidate sampling points. For each of the nine design points\index{Design point}, eight points are selected that are closest to that design point. This results in 9 $\times$ 8 candidate sampling points.
 
 ```{r}
 candi_all <- NULL
@@ -186,7 +186,7 @@ for (i in seq_len(nrow(ccd_df))) {
 }
 ```
 
-Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate sampling points associated with the design points with coordinates  (0,-2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample  there will be three points with principal component scores that considerably differ from the ideal values according to the CCRSD design.
+Figure \@ref(fig:candidatelocations) shows the nine clusters of candidate sampling points around the design points. Note that the location of the candidate sampling points associated with the design points with coordinates  (0,-2.13), (1.51,-1.51), and (2.13,0) are all far inside the circle that passes through the design points. So, for the optimised sample,  there will be three points with principal component scores that considerably differ from the ideal values according to the CCRSD design.
 
 ```{r candidatelocations, echo = FALSE, fig.width = 5, fig.cap = "Clusters of points (red points) around the design points (triangles) of a CCRSD (two covariates), serving as candidate sampling points."}
 notcandidates <- grdCRF[-candi_all$point_id, ]
@@ -198,7 +198,7 @@ ggplot(notcandidates) +
   scale_y_continuous(name = "PC2") +
   coord_fixed()
 ```
-Figure \@ref(fig:candidatesingeospace) shows that in geographical space for most design points there are multiple spatial clusters of candidate units. For instance, for design point nine there are three clusters of candidate sampling units. Due to this, there is scope to optimise the sample computationally. 
+Figure \@ref(fig:candidatesingeospace) shows that in geographical space for most design points there are multiple spatial clusters of candidate units. For instance, for design point nine, there are three clusters of candidate sampling units. Therefore, there is scope to optimise the sample computationally. 
 
 ```{r candidatesingeospace, echo = FALSE, out.width = "100%", fig.cap = "Candidate sampling points plotted on a map of the first standardised principal component (PC1)."}
 ggplot(grdCRF) +
@@ -211,7 +211,7 @@ ggplot(grdCRF) +
   coord_fixed()
 ```
 
-As a first step an initial subsample from the candidate sampling units is selected by stratified simple random sampling, using the levels of factor `dpnt` as strata. Function `strata` of package **sampling** is used for stratified random sampling [@Tille2016].
+As a first step, an initial subsample from the candidate sampling units is selected by stratified simple random sampling, using the levels of factor `dpnt` as strata. Function `strata` of package **sampling** is used for stratified random sampling [@Tille2016].
 
 ```{r}
 library(sampling)
@@ -228,9 +228,9 @@ In the geometric criterion (as proposed by @lesch2005) for each sampling point t
 
 The model-based minimisation criterion is the average correlation of the sampling points. This criterion requires as input the parameters of a residual correlogram (see Section \@ref(IntroKED)). I assume an exponential correlogram without nugget, so that the only parameter to be chosen is the distance parameter $\phi$ (Equation \@ref(eq:exponential)). Three times $\phi$ is referred to as the effective range\index{Effective range} of the exponential correlogram. The correlation of the random variables at two points separated by this distance is 0.05.
 
-A penalty term is added to the geometric or the model-based minimisation criterion, equal to the average distance of the sampling points to the associated design points, multiplied by a weight. With weights $> 0$ sampling points close to the design points are preferred over more distant points.
+A penalty term is added to the geometric or the model-based minimisation criterion, equal to the average distance of the sampling points to the associated design points, multiplied by a weight. With weights $> 0$, sampling points close to the design points are preferred over more distant points.
 
-In the next code chunk a function is defined for computing the minimisation criterion.  Given a chosen value for $\phi$, the 9 $\times$ 9 distance matrix of the sampling points can be converted into a correlation matrix, using function `variogramLine` of package **gstat** [@peb04]. Argument `weight` is an optional argument with default value 0.
+In the next code chunk, a function is defined for computing the minimisation criterion.  Given a chosen value for $\phi$, the 9 $\times$ 9 distance matrix of the sampling points can be converted into a correlation matrix, using function `variogramLine` of package **gstat** [@peb04]. Argument `weight` is an optional argument with default value 0.
 
 ```{r}
 getCriterion <- function(mysample, dpnt, weight = 0, phi = NULL) {
@@ -255,10 +255,10 @@ Function `getCriterion` is used to compute the geometric criterion for the initi
 criterion_geo <- getCriterion(mysample = mysample0, dpnt = ccd_df)
 ```
 
-The initial value of the geometric criterion  is `r formatC(criterion_geo, 3, format = "f")`. In the next code chunk the initial value for the model-based criterion is computed for an effective range of 150 m.
+The initial value of the geometric criterion  is `r formatC(criterion_geo, 3, format = "f")`. In the next code chunk, the initial value for the model-based criterion is computed for an effective range of 150 m.
 
 ```{block2, type = 'rmdnote'}
-It does not make sense to make the effective range smaller than the size of the grid cells, which is 25 m in our case. For smaller ranges the correlation matrix is for any sample a matrix with zeroes. If the effective range is smaller than the smallest distance between two points in a cluster, the mean correlation is equal for all samples. 
+It does not make sense to make the effective range smaller than the size of the grid cells, which is 25 m in our case. For smaller ranges, the correlation matrix is for any sample a matrix with zeroes. If the effective range is smaller than the smallest distance between two points in a cluster, the mean correlation is equal for all samples. 
 ```
 
 ```{r}
@@ -268,7 +268,7 @@ criterion_mb <- getCriterion(mysample = mysample0, dpnt = ccd_df, phi = phi)
 
 The initial value of the model-based criterion is `r formatC(criterion_mb, 3, format = "f")`.
 
-The objective function defining the minimisation criterion is minimised with simulated annealing\index{Simulated annealing} (@Kirkpatrick1983, @Aarts1987). One sampling point is randomly selected and replaced by another candidate sampling point from the same cluster. If the criterion of the new sample is smaller than that of the current sample, the new sample is accepted, if it is larger it is accepted with a probability that is a function of the change in the criterion (the larger the increase, the smaller the acceptance probability) and of an annealing parameter named the temperature (the higher the temperature, the larger the probability of accepting a new, poorer sample, given an increase of the criterion). See Section \@ref(SSA) for a more detailed introduction to simulated annealing. 
+The objective function defining the minimisation criterion is minimised with simulated annealing\index{Simulated annealing} (@Kirkpatrick1983, @Aarts1987). One sampling point is randomly selected and replaced by another candidate sampling point from the same cluster. If the criterion of the new sample is smaller than that of the current sample, the new sample is accepted. If it is larger, it is accepted with a probability that is a function of the change in the criterion (the larger the increase, the smaller the acceptance probability) and of an annealing parameter named the temperature (the higher the temperature, the larger the probability of accepting a new, poorer sample, given an increase of the criterion). See Section \@ref(SSA) for a more detailed introduction to simulated annealing. 
 
 The sampling pattern can be optimised with function `anneal` of  package **sswr**. The arguments of this function will be clear from the description of the sampling procedure above.
 
@@ -324,7 +324,7 @@ ggplot(mysamples) +
 
 ## Increasing the sample size {#IncreaseSampleSize}
 
-Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on how strong the candidate sampling units are spatially clustered. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster, so in this case the solution may work properly. I increased the number of candidate sampling units per design point to sixteen, so that there is a larger choice in the optimisation of the sampling pattern. 
+Nine points are rather few for fitting a polynomial regression model, especially for a second-order polynomial with interaction. Therefore, in experiments often multiple observations are done for each design point. Increasing the sample size of a response surface sample in observational studies is not straightforward. The challenge is to avoid spatial clustering of sampling points. A simple solution is to select multiple points from each subset of candidate sampling units. The success of this solution depends on how strong candidate sampling units are spatially clustered. For the Cotton Research Farm for most design points the candidate sampling units are not in one spatial cluster; so in this case, the solution may work properly. I increased the number of candidate sampling units per design point to 16, so that there is a larger choice in the optimisation of the sampling pattern. 
 
 ```{r}
 candi_all <- NULL
@@ -372,7 +372,7 @@ mySRSsample <- anneal(
 write_rds(mySRSsample, file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
 ```
 
-Figures \@ref(fig:CCRSDUzbekistan2n) and \@ref(fig:CCRSDinPCSpace2n) show the optimised CCRSD sample of eighteen points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 150 m, and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.
+Figures \@ref(fig:CCRSDUzbekistan2n) and \@ref(fig:CCRSDinPCSpace2n) show the optimised CCRSD sample of 18 points in geographical and principal component space, respectively, obtained with the model-based criterion, an effective range of 150 m, and zero weight for the penalty term. Sampling points are not spatially clustered, so I do not expect violation of the assumption of independent residuals. In principal component space, all points are pretty close to the design points, except for the four design points in the lower right corner, where no candidate units near these design points are available.
 
 ```{r CCRSDUzbekistan2n, echo = FALSE, out.width = "100%", fig.cap = "CCRSD sample with two points per design point, from the Cotton Research Farm, plotted on a map of the first standardised principal component (PC1)."}
 mySRSsample <- read_rds(file = "results/SpatialResponseSurfaceSample_2n_CRF_mb.rds")
@@ -416,7 +416,7 @@ ggplot(grdCRF) +
   coord_fixed()
 ```
 
-The candidate sampling units are selected in a double for-loop. The outer loop is over the strata, the inner loop over the design points. Note that variable `dpnt` continues to increase by 1 after the inner-loop over the nine design points in subarea 1 is completed, so that variable `dpnt` (used as a stratification variable in subsampling the sample of candidate sampling points) now has values $1,2, \dots , 18$.  An equal number of candidate sampling points per design point in both strata (eight points) is selected by sorting the points of a stratum by the distance to a design point using function `order`. Figure \@ref(fig:candidatesSTResponse) shows the candidate sampling points for stratified CCRSD sampling.
+The candidate sampling units are selected in a double for-loop. The outer loop is over the strata, the inner loop over the design points. Note that variable `dpnt` continues to increase by 1 after the inner loop over the nine design points in subarea 1 is completed, so that variable `dpnt` (used as a stratification variable in subsampling the sample of candidate sampling points) now has values $1,2, \dots , 18$.  An equal number of candidate sampling points per design point in both strata (eight points) is selected by sorting the points of a stratum by the distance to a design point using function `order`. Figure \@ref(fig:candidatesSTResponse) shows the candidate sampling points for stratified CCRSD sampling.
 
 ```{r}
 candi_all <- NULL
@@ -480,7 +480,7 @@ write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CR
 #write_rds(mySRSsample, file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb_w5.rds")
 ```
 
-Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of eighteen points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1 the distance to the star point at the top and the upper left and upper right cube points is very large. In this stratum no population units are present that are close to these design points. By adding a penalty term to the minimisation criterion that is proportional to the distance to the design points, the distance is somewhat decreased but not really for the three design points mentioned above (Figure \@ref(fig:CCRSDinPCSpace2n)). Also note the spatial cluster of three sampling units in Figure \@ref(fig:StratifiedCCRSD) obtained with a weight equal to 5.
+Figures \@ref(fig:StratifiedCCRSD) and \@ref(fig:StratifiedCCRSDinPCSpace) show the optimised sample of 18 points in geographical and principal component space, obtained with the model-based criterion with an effective range of 150 m. The pattern in the principal component space is worse compared to the pattern in Figure \@ref(fig:CCRSDinPCSpace2n). In stratum 1, the distance to the star point at the top and the upper left and upper right cube points is very large. In this stratum no population units are present that are close to these design points. By adding a penalty term to the minimisation criterion that is proportional to the distance to the design points, the distance is somewhat decreased, but not really for the three design points mentioned above (Figure \@ref(fig:CCRSDinPCSpace2n)). Also note the spatial cluster of three sampling units in Figure \@ref(fig:StratifiedCCRSD) obtained with a weight equal to 5.
 
 ```{r StratifiedCCRSD, echo = FALSE, out.width = "100%", fig.cap = "Stratified CCRSD samples from the Cotton Research Farm, optimised with the model-based criterion, obtained without (weight = 0) and with penalty (weight = 5) for a large average distance to design points."}
 mySRSsample <- read_rds(file = "results/StratifiedSpatialResponseSurfaceSample_CRF_mb.rds")
@@ -540,7 +540,7 @@ with $\mathbf{x}_0$ the ($p+1$)-vector with covariate values at prediction locat
 with $\mathbf{X}$ the $(n \times (p+1))$ matrix with covariate values and ones in the first column ($n$ is the sample size, and $p$ is the number of covariates) and $\mathbf{z}$ the $n$-vector with observations of the study variable.
 
 ```{block2, type = 'rmdnote'}
-Although the principal component scores are used to select the sampling locations there is no need to use these scores as predictors in the linear regression model. When all principal components derived from the covariates are used as predictors, the predicted values and standard errors obtained with the model using the principal components as predictors are equal to those obtained with the model using the covariates as predictors.
+Although the principal component scores are used to select the sampling locations, there is no need to use these scores as predictors in the linear regression model. When all principal components derived from the covariates are used as predictors, the predicted values and standard errors obtained with the model using the principal components as predictors are equal to those obtained with the model using the covariates as predictors.
 ```
 
 The variance of the prediction error can be estimated by
@@ -558,7 +558,7 @@ zpred <- predict(mdl, newdata = grdCRF, se.fit = TRUE)
 v_zpred <- zpred$se.fit^2+sigma(mdl)^2
 ```
 
-The assumption underlying Equations \@ref(eq:betaOLS) and \@ref(eq:VarZpredMLR) is that the model residuals are independent. We assume that all spatial structure of the study variable is explained by the covariates. Even the residuals at two locations close to each other are assumed to be uncorrelated. A drawback of the spatial response surface design is that it is hard or even impossible to check this assumption as the sampling locations are spread out throughout the study area. If the residuals are not independent the covariance of the residuals can be accounted for by generalised least squares estimation of the regression coefficients (Equation \@ref(eq:betaGLS)). The study variable can then be mapped by kriging with an external drift (Section \@ref(IntroKED)). However, this requires an estimate of the semivariogram of the residuals (Section \@ref(ResidualVariogram)). 
+The assumption underlying Equations \@ref(eq:betaOLS) and \@ref(eq:VarZpredMLR) is that the model residuals are independent. We assume that all spatial structure of the study variable is explained by the covariates. Even the residuals at two locations close to each other are assumed to be uncorrelated. A drawback of the spatial response surface design is that it is hard or even impossible to check this assumption, as the sampling locations are spread out throughout the study area. If the residuals are not independent, the covariance of the residuals can be accounted for by generalised least squares estimation of the regression coefficients (Equation \@ref(eq:betaGLS)). The study variable can then be mapped by kriging with an external drift (Section \@ref(IntroKED)). However, this requires an estimate of the semivariogram of the residuals (Section \@ref(ResidualVariogram)). 
 
 
 ```{r, echo = FALSE}
