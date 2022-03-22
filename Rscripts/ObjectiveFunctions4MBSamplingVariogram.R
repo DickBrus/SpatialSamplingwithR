@@ -1,14 +1,13 @@
 #' Validate input files
 #'
 #' This function checks various input files
-#' @param psample \code{\link[sp]{SpatialPoints}} used for prediction at the
-#'   evaluation points.
-#' @param esample \code{\link[sp]{SpatialPoints}} used for evaluation.
+#'
+#' @param sample \code{\link[sp]{SpatialPoints}} used for prediction at the
+#'   evaluation points or used for evaluation.
 #' @param model \pkg{gstat} model type of a priori semivariogram model.
 #' @param thetas parameters of semivariogram model.
 #' @param perturbation proportion of a semivariogram parameter value added to
 #'   that value.
-
 validate <- function(sample, model, thetas, perturbation) {
   if (!(class(sample) %in% c("SpatialPoints"))) {
     stop("esample must be of class SpatialPoints", call. = FALSE)
@@ -102,7 +101,7 @@ logdet <- function(points, model, thetas, perturbation = 0.01)  {
   if (perturbation > 1) {
     stop("perturbation must be < 1, say < 0.05", call. = FALSE)
   }
-  
+
   D <- spDists(points)
   vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
   A <- variogramLine(vgmodel, dist_vector = D, covariance = TRUE)
@@ -147,7 +146,7 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01) {
   points <- as.data.frame(points)
   nobs <- nrow(points)
   coordinates(points) <- ~x + y
-  
+
   #compute distance matrix and correlation matrix of sampling points used for estimating the semivariogram
   D <- spDists(points)
   vgmodel <- vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1])
@@ -171,7 +170,7 @@ MVKV <- function(points, psample, esample, model, thetas, perturbation = 0.01) {
         B <- matrix(data = 1, nrow = nobs + 1, ncol = nobs + 1)
         B[1:nobs, 1:nobs] <- A
         B[nobs + 1, nobs + 1] <- 0
-        
+
         #compute matrix with correlations between evaluation points and sampling points used for prediction
         D0 <- spDists(x = esample, y = psample)
         A0 <- variogramLine(vgm(model = model, psill = thetas[1], range = thetas[2], nugget = 1 - thetas[1]),

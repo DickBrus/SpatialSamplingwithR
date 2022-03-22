@@ -1,14 +1,16 @@
-#' Validate
+#' Validate Column Names
 #'
 #' This function checks whether all columns of data frame with sampling points
 #' and of data frame with candidate sampling points are available
+#'
+#' @param x data.frame to validate
 #'
 #' @return validated data frame
 #'
 #' @importFrom dplyr "%>%"
 #' @importFrom stringr str_glue
-validate <- function(x) {
-  
+validate_colnames <- function(x) {
+
   required_column_names <- c("point_id", "x", "y", "PC1", "PC2", "dpnt")
   missing_column_names <- required_column_names %>%
     setdiff(names(x))
@@ -19,7 +21,7 @@ validate <- function(x) {
   if (n_missing_column_names  > 1L) {
     stop(paste0("Columns ", toString(sQuote(missing_column_names)), " are missing"), call. = FALSE)
   }
-  
+
   return(x)
 }
 
@@ -126,12 +128,12 @@ anneal <- function(mysample,
                  maxNoChange = 20,
                  verbose = getOption("verbose")) {
   #check columns of mysample
-  mysample <- validate(mysample)
-  
-  
+  mysample <- validate_colnames(mysample)
+
+
   #check columns of candidates
-  candidates <- validate(candidates)
-  
+  candidates <- validate_colnames(candidates)
+
   #check columns of dpnt
   if (!("x" %in% names(dpnt))) {
     stop("x must be in data frame dpnt", call. = FALSE)
@@ -139,7 +141,7 @@ anneal <- function(mysample,
   if (!("y" %in% names(dpnt))) {
     stop("y must be in data frame dpnt", call. = FALSE)
   }
-  
+
   # set initial temperature
   T <- T_ini
 
