@@ -2,13 +2,13 @@
 #'
 #' This function checks various input files
 #'
-#' @param sample \code{\link[sp]{SpatialPoints}} used for prediction at the
+#' @param esample \code{\link[sp]{SpatialPoints}} used for prediction at the
 #'   evaluation points or used for evaluation.
 #' @param model \pkg{gstat} model type of a priori semivariogram model.
 #' @param thetas parameters of semivariogram model.
 #' @param perturbation proportion of a semivariogram parameter value added to
 #'   that value.
-validate <- function(sample, model, thetas, perturbation) {
+validate <- function(esample, model, thetas, perturbation) {
   if (!(class(sample) %in% c("SpatialPoints"))) {
     stop("esample must be of class SpatialPoints", call. = FALSE)
   }
