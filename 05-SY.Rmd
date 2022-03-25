@@ -1,6 +1,6 @@
 # Systematic random sampling {#SY}
 
-A simple way of drawing probability samples whose units are spread uniformly over the study area, is systematic random sampling\index{Systematic random sampling} (SY), which from a two-dimensional spatial population entails the selection of a regular grid randomly placed on the area\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type = "regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. First, `data.frame` `grdVoorst` is converted to  `SpatialPixelsDataFrame` with function `gridded`.
+A simple way of drawing probability samples whose units are spread uniformly over the study area is systematic random sampling\index{Systematic random sampling} (SY), which from a two-dimensional spatial population entails the selection of a regular grid randomly placed on the area\index{Regular grid}. A systematic sample can be selected with function `spsample` of package **sp** with argument `type = "regular"` [@Bivand2013]. Argument `offset` is not used, so that the grid is randomly placed on the study area. This is illustrated with Voorst. First, `data.frame` `grdVoorst` is converted to  `SpatialPixelsDataFrame` with function `gridded`.
 
 ```{r}
 library(sp)
@@ -173,7 +173,7 @@ mySYsample_rect <- spsample(
   x = grdVoorst, cellsize = c(dx, dy), type = "regular")
 ```
 
-The E-W spacing is somewhat larger than the N-S spacing: `r dx` m versus 333.333 m. The variation in sample size with the random rectangular grid is much smaller than that of the square grid. The sample size now ranges from 33 to 46, whereas with the square grid the range varies from 20 to 48.
+The E-W spacing is somewhat larger than the N-S spacing: `r dx` m vs. 333.333 m. The variation in sample size with the random rectangular grid is much smaller than that of the square grid. The sample size now ranges from 33 to 46, whereas with the square grid the range varies from 20 to 48.
 
 ```{r, echo = FALSE, eval = FALSE}
 set.seed(314)
@@ -299,7 +299,7 @@ m_av_STSI_mz_SYtri <- mean(av_STSI_mz)
 
 ## Estimation of population parameters {#EstVarSY}
 
-With systematic random sampling all units have the same inclusion probability, equal to $E[n]/N$, with $E[n]$ the expected sample size. Consequently, the population total can be estimated by
+With systematic random sampling, all units have the same inclusion probability, equal to $E[n]/N$, with $E[n]$ the expected sample size. Consequently, the population total can be estimated by
 
 \begin{equation}
 \hat{t}(z)=\sum_{k \in \mathcal{S}}\frac{z_k}{\pi_k} = N \sum_{k \in \mathcal{S}}\frac{z_k}{E[n]} \;.
@@ -358,7 +358,7 @@ av_SI_mz <- var(mySYsample$z) / nrow(mySYsample)
 
 The approximated variance equals `r round(av_SI_mz,1)` (g kg^-1^)^2^.
 
-Alternatively, the sampling variance can be estimated by treating the systematic random sample as if it were a stratified simple random sample (Equation \@ref(eq:EstVarMeanSTSI)). The sampling units are clustered on the basis of their spatial coordinates into $H=n/2$ clusters ($n$ even) or $H=(n-1)/2$ clusters ($n$ odd). In the next code chunk, a simple k-means function is defined to cluster the sampling units of the grid into equal-sized clusters\index{k-means clustering}. Arguments `s1` and `s2` are the spatial coordinates of the sampling units, `k` is the number of clusters. First, in this function the ids of equal-sized clusters are randomly assigned to the sampling units on the nodes of the sampling grid (initial clustering). Next, the centres of the clusters, i.e., the means of the spatial coordinates of the clusters (initial cluster centres), are computed. There are two for-loops. In the inner-loop it is determined whether the cluster id of the unit selected in the outer-loop should be swopped with the cluster id of the next unit. If both units have the same cluster id the next unit is selected, until a unit of a different cluster is found. The cluster ids of the two units are swopped when the sum of the squared distances of the two units to their corresponding cluster centres is reduced. When the cluster ids are swopped, the centres are recomputed. The two loops are repeated until no swops are made anymore.
+Alternatively, the sampling variance can be estimated by treating the systematic random sample as if it were a stratified simple random sample (Equation \@ref(eq:EstVarMeanSTSI)). The sampling units are clustered on the basis of their spatial coordinates into $H=n/2$ clusters ($n$ even) or $H=(n-1)/2$ clusters ($n$ odd). In the next code chunk, a simple k-means function is defined to cluster the sampling units of the grid into equal-sized clusters\index{k-means clustering}. Arguments `s1` and `s2` are the spatial coordinates of the sampling units, `k` is the number of clusters. First, in this function the ids of equal-sized clusters are randomly assigned to the sampling units on the nodes of the sampling grid (initial clustering). Next, the centres of the clusters, i.e., the means of the spatial coordinates of the clusters (initial cluster centres), are computed. There are two for-loops. In the inner loop it is determined whether the cluster id of the unit selected in the outer loop should be swopped with the cluster id of the next unit. If both units have the same cluster id the next unit is selected, until a unit of a different cluster is found. The cluster ids of the two units are swopped when the sum of the squared distances of the two units to their corresponding cluster centres is reduced. When the cluster ids are swopped, the centres are recomputed. The two loops are repeated until no swops are made anymore.
 
 ```{r}
 .kmeans_equal_size <- function(s1, s2, k) {
