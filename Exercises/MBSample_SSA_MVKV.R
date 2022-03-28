@@ -20,7 +20,7 @@ phi <- 200
 thetas <- c(xi,phi)
 
 schedule <- scheduleSPSANN(
-  initial.acceptance = 0.8,
+  initial.acceptance = c(0.8, 0.95),
   initial.temperature = 0.002,
   temperature.decrease = 0.8,
   chains = 300,

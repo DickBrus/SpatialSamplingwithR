@@ -32,7 +32,7 @@ myevalsample <- spsample(x = grdHunterValley, n = 200, type = "regular", offset 
 perturbation <- 0.01
 
 schedule <- scheduleSPSANN(
-  initial.acceptance = 0.8,
+  initial.acceptance = c(0.8, 0.95),
   initial.temperature = 0.008,
   temperature.decrease = 0.8,
   chains = 300,

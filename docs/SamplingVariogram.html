@@ -23,7 +23,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2022-03-25" />
+<meta name="date" content="2022-03-28" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -819,7 +819,7 @@ Figure 24.5: Frequency distributions of estimated parameters of a spherical semi
 <span id="cb521-4"><a href="SamplingVariogram.html#cb521-4" aria-hidden="true" tabindex="-1"></a>candi <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(candi)</span>
 <span id="cb521-5"><a href="SamplingVariogram.html#cb521-5" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(candi) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>)</span>
 <span id="cb521-6"><a href="SamplingVariogram.html#cb521-6" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">scheduleSPSANN</span>(</span>
-<span id="cb521-7"><a href="SamplingVariogram.html#cb521-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance =</span> <span class="fl">0.8</span>,</span>
+<span id="cb521-7"><a href="SamplingVariogram.html#cb521-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.95</span>),</span>
 <span id="cb521-8"><a href="SamplingVariogram.html#cb521-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.temperature =</span> <span class="fl">0.15</span>, <span class="at">temperature.decrease =</span> <span class="fl">0.9</span>,</span>
 <span id="cb521-9"><a href="SamplingVariogram.html#cb521-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">300</span>, <span class="at">chain.length =</span> <span class="dv">10</span>, <span class="at">stopping =</span> <span class="dv">10</span>,</span>
 <span id="cb521-10"><a href="SamplingVariogram.html#cb521-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">x.min =</span> <span class="dv">0</span>, <span class="at">y.min =</span> <span class="dv">0</span>, <span class="at">cellsize =</span> <span class="dv">50</span>)</span>
@@ -906,7 +906,7 @@ VKV(\mathbf{s}_0) = \sum_{i=1}^p \sum_{j=1}^p \mathrm{Cov}(\theta_i,\theta_j) \f
 <p>For the simple random sample, the square root of MVKV equals 0.223. The mean kriging variance (MKV) at these points equals 0.787, so the uncertainty about the kriging variance is substantial. Hereafter, we will see how much MVKV can be reduced by optimising the sampling pattern with spatial simulated annealing.</p>
 <p>As for logdet, the sample with minimum value for MVKV can be searched for using <strong>spsann</strong> function <code>optimUSER</code>. The objective function <code>MVKV</code> is defined in package <strong>sswr</strong>. Argument <code>points</code> specifies the size of the sample for semivariogram estimation. Argument <code>psample</code> is to specify the sample used for prediction at the evaluation points (after the second round of sampling). Argument <code>esample</code> is to specify the sample with evaluation points for estimating MVKV. The optimisation requires substantial computing time. With 200 evaluation points and the annealing schedule specified below the computing time was 46.25 minutes (processor AMD Ryzen 5, 16 GB RAM).</p>
 <div class="sourceCode" id="cb527"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb527-1"><a href="SamplingVariogram.html#cb527-1" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">scheduleSPSANN</span>(</span>
-<span id="cb527-2"><a href="SamplingVariogram.html#cb527-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance =</span> <span class="fl">0.8</span>,</span>
+<span id="cb527-2"><a href="SamplingVariogram.html#cb527-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.95</span>),</span>
 <span id="cb527-3"><a href="SamplingVariogram.html#cb527-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.temperature =</span> <span class="fl">0.002</span>, <span class="at">temperature.decrease =</span> <span class="fl">0.8</span>,</span>
 <span id="cb527-4"><a href="SamplingVariogram.html#cb527-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">300</span>, <span class="at">chain.length =</span> <span class="dv">2</span>, <span class="at">stopping =</span> <span class="dv">10</span>,</span>
 <span id="cb527-5"><a href="SamplingVariogram.html#cb527-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">x.min =</span> <span class="dv">0</span>, <span class="at">y.min =</span> <span class="dv">0</span>, <span class="at">cellsize =</span> <span class="dv">50</span>)</span>
@@ -1029,7 +1029,7 @@ EAC(\mathbf{s}_0) = AKV(\mathbf{s}_0) + \frac{1}{2V_{\mathrm{OK}}(\mathbf{s}_0)}
 <span id="cb533-3"><a href="SamplingVariogram.html#cb533-3" aria-hidden="true" tabindex="-1"></a>candi <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(candi)</span>
 <span id="cb533-4"><a href="SamplingVariogram.html#cb533-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(candi) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>)</span>
 <span id="cb533-5"><a href="SamplingVariogram.html#cb533-5" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">scheduleSPSANN</span>(</span>
-<span id="cb533-6"><a href="SamplingVariogram.html#cb533-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance =</span> <span class="fl">0.8</span>,</span>
+<span id="cb533-6"><a href="SamplingVariogram.html#cb533-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.acceptance =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.95</span>),</span>
 <span id="cb533-7"><a href="SamplingVariogram.html#cb533-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">initial.temperature =</span> <span class="fl">0.008</span>, <span class="at">temperature.decrease =</span> <span class="fl">0.8</span>,</span>
 <span id="cb533-8"><a href="SamplingVariogram.html#cb533-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">300</span>, <span class="at">chain.length =</span> <span class="dv">10</span>, <span class="at">stopping =</span> <span class="dv">10</span>,</span>
 <span id="cb533-9"><a href="SamplingVariogram.html#cb533-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">x.min =</span> <span class="dv">0</span>, <span class="at">y.min =</span> <span class="dv">0</span>, <span class="at">cellsize =</span> <span class="dv">50</span>)</span>
