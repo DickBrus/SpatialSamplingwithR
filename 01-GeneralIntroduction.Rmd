@@ -350,7 +350,9 @@ grid.arrange(plt1, plt2, nrow = 2)
 
 Figure \@ref(fig:matrixscatter) shows a matrix of two-dimensional density plots of aboveground biomass and the five covariates, made with function `ggpairs` of **R** package **GGally** [@GGally]. The covariate with the strongest correlation with AGB is SWIR2. The Pearson correlation coefficient with AGB is -0.80. The relation does not look linear. The correlation of AGB with the covariates Terra_PP and Prec_dm is weakly positive. All correlations are significant, but this is not meaningful because of the very large number of data used in computing the correlation coefficients.
 
-```{r matrixscatter, echo = FALSE, fig.asp =  .66, out.width = '100%', fig.cap = "Matrix of two-dimensional density plots of AGB and five covariates of Eastern Amazonia."}
+(ref:MatrixScatterlabel) Matrix of two-dimensional density plots of AGB and five covariates of Eastern Amazonia. Terra_PP values are divided by 1000.
+
+```{r matrixscatter, echo = FALSE, fig.asp =  .66, out.width = '100%', fig.cap = "(ref:MatrixScatterlabel)"}
 library(GGally)
 density2d <- function(data, mapping, ...) {
     ggplot(data = data, mapping = mapping) +
@@ -359,6 +361,7 @@ density2d <- function(data, mapping, ...) {
 
 grdAmazonia %>%
   dplyr::select(AGB, SWIR2, Terra_PP, Prec_dm, Elevation, Clay) %>%
+  mutate(Terra_PP = Terra_PP/1000) %>%
   slice_sample(n = 50000) %>%
   ggpairs(
     upper = list(continuous = "cor"),
