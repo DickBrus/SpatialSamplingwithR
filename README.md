@@ -7,6 +7,8 @@ Brus, Dick. Spatial sampling with R. The R Series. CRC Press.
 
 This book has been published by CRC Press in the [R Series](https://www.routledge.com/Chapman--HallCRC-The-R-Series/book-series/CRCTHERSER). 
 
+An online version of this book is available at https://dickbrus.github.io/SpatialSamplingwithR/.
+
 ## Contributing
 
 We encourage contributions on any part of the book, including:
