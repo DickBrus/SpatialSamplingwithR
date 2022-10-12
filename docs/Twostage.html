@@ -23,7 +23,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2022-10-10" />
+<meta name="date" content="2022-10-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -501,7 +501,7 @@ div.csl-indent {
             <section class="normal" id="section-">
 <div id="Twostage" class="section level1 hasAnchor" number="7">
 <h1><span class="header-section-number">Chapter 7</span> Two-stage cluster random sampling<a href="Twostage.html#Twostage" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter <a href="Cl.html#Cl">6</a>), in two-stage cluster random sampling not all units of the selected clusters are observed, but only some. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in single-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling, the clusters are commonly referred to as primary sampling units (PSUs) and the units selected in the second stage as the secondary sampling units (SSUs).</p>
+<p>As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter <a href="Cl.html#Cl">6</a>), in two-stage cluster random sampling not all units of the selected clusters are observed, but only some. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in one-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling, the clusters are commonly referred to as primary sampling units (PSUs) and the units selected in the second stage as the secondary sampling units (SSUs).</p>
 <p>As with cluster random sampling, two-stage cluster random sampling may lead to a strong spatial clustering of the selected population units in the study area. This may save considerable time for fieldwork, and more population units can be observed for the same budget. However, due to the spatial clustering the estimates will generally be less precise compared to samples of the same size selected by a design that leads to a much better spreading of the sampling units throughout the study area, such as systematic random sampling.</p>
 <p>In two-stage cluster random sampling, in principle any type of sampling design can be used at the two stages, leading to numerous combinations. An example is (SI,SI), in which both PSUs and SSUs are selected by simple random sampling.</p>
 <p>Commonly, the PSUs have unequal size, i.e., the number of SSUs (finite population) or the area (infinite population) are not equal for all PSUs. Think for instance of the agricultural fields, forest stands, lakes, river sections, etc. in an area. If the PSUs are of unequal size, then PSUs can best be selected with probabilities proportional to their size (pps). Recall that in (one-stage) cluster random sampling, I also recommended to select the clusters with probabilities proportional to their size, see Chapter <a href="Cl.html#Cl">6</a>. If the total of the study variable of a PSU is proportional to its size, then pps sampling leads to more precise estimates compared to simple random sampling of PSUs. Also, with pps sampling of PSUs, the estimation of means or totals and of their sampling variances is much simpler compared to selection with equal probabilities. Implementation of selection with probabilities proportional to size is easiest when units are replaced (pps with replacement, ppswr). This implies that a PSU might be selected more than once, especially if the total number of PSUs in the population is small compared to the number of PSU draws (large sampling fraction in first stage).</p>
@@ -527,11 +527,11 @@ Due to built-up areas, roads, etc., the PSUs in Voorst have unequal size, i.e., 
 <p>In the next code chunk, a function is defined to select a two-stage cluster random sample from an infinite population, discretised by a finite number of points, being the centres of grid cells.</p>
 <div class="sourceCode" id="cb125"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="Twostage.html#cb125-1" aria-hidden="true" tabindex="-1"></a>twostage <span class="ot">&lt;-</span> <span class="cf">function</span>(sframe, psu, n, m) {</span>
 <span id="cb125-2"><a href="Twostage.html#cb125-2" aria-hidden="true" tabindex="-1"></a>  units <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(sframe), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb125-3"><a href="Twostage.html#cb125-3" aria-hidden="true" tabindex="-1"></a>  mypsusample <span class="ot">&lt;-</span> sframe[units, psu]</span>
+<span id="cb125-3"><a href="Twostage.html#cb125-3" aria-hidden="true" tabindex="-1"></a>  mypsusample <span class="ot">&lt;-</span> sframe<span class="sc">$</span>psu[units]</span>
 <span id="cb125-4"><a href="Twostage.html#cb125-4" aria-hidden="true" tabindex="-1"></a>  ssunits <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb125-5"><a href="Twostage.html#cb125-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (psunit <span class="cf">in</span> mypsusample) {</span>
+<span id="cb125-5"><a href="Twostage.html#cb125-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">length</span>(mypsusample))) { </span>
 <span id="cb125-6"><a href="Twostage.html#cb125-6" aria-hidden="true" tabindex="-1"></a>    ssunit <span class="ot">&lt;-</span> <span class="fu">sample</span>(</span>
-<span id="cb125-7"><a href="Twostage.html#cb125-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">which</span>(sframe[, psu] <span class="sc">==</span> psunit), <span class="at">size =</span> m, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb125-7"><a href="Twostage.html#cb125-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">which</span>(sframe<span class="sc">$</span>psu <span class="sc">==</span> mypsusample[i]), <span class="at">size =</span> m, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb125-8"><a href="Twostage.html#cb125-8" aria-hidden="true" tabindex="-1"></a>    ssunits <span class="ot">&lt;-</span> <span class="fu">c</span>(ssunits, ssunit)</span>
 <span id="cb125-9"><a href="Twostage.html#cb125-9" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb125-10"><a href="Twostage.html#cb125-10" aria-hidden="true" tabindex="-1"></a>  psudraw <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span>n), <span class="at">each =</span> m)</span>
@@ -632,9 +632,9 @@ n=\frac{C_{\mathrm{max}}S_{\mathrm{b}}}{S_{\mathrm{w}}\sqrt{c_1c_2}+S_{\mathrm{b
 <span id="cb127-3"><a href="Twostage.html#cb127-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mz_psu =</span> <span class="fu">mean</span>(z)) <span class="sc">%&gt;%</span></span>
 <span id="cb127-4"><a href="Twostage.html#cb127-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mz =</span> <span class="fu">mean</span>(mz_psu),</span>
 <span id="cb127-5"><a href="Twostage.html#cb127-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">se_mz =</span> <span class="fu">sqrt</span>(<span class="fu">var</span>(mz_psu) <span class="sc">/</span> <span class="fu">n</span>()))</span></code></pre></div>
-<p>The estimated mean equals 48.6 g kg<sup>-1</sup>, and the estimated standard error equals 0.0 g kg<sup>-1</sup>. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.</p>
+<p>The estimated mean equals 71.2 g kg<sup>-1</sup>, and the estimated standard error equals 18.6 g kg<sup>-1</sup>. The sampling design is self-weighting, and so the estimated mean is equal to the sample mean.</p>
 <div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb128-1"><a href="Twostage.html#cb128-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(mysample<span class="sc">$</span>z))</span></code></pre></div>
-<pre><code>[1] 48.55792</code></pre>
+<pre><code>[1] 71.18013</code></pre>
 <p>The same estimate is obtained with functions <code>svydesign</code> and <code>svymean</code> of package <strong>survey</strong> <span class="citation">(<a href="#ref-Lumley2020" role="doc-biblioref">Lumley 2021</a>)</span>. The estimator of the population total can be written as a weighted sum of the observations with all weights equal to <span class="math inline">\(M/(n\;m)\)</span>. These weights are passed to function <code>svydesign</code> with argument <code>weight</code>.</p>
 <div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="Twostage.html#cb130-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
 <span id="cb130-2"><a href="Twostage.html#cb130-2" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">nrow</span>(grdVoorst)</span>
@@ -642,13 +642,13 @@ n=\frac{C_{\mathrm{max}}S_{\mathrm{b}}}{S_{\mathrm{w}}\sqrt{c_1c_2}+S_{\mathrm{b
 <span id="cb130-4"><a href="Twostage.html#cb130-4" aria-hidden="true" tabindex="-1"></a>design_2stage <span class="ot">&lt;-</span> <span class="fu">svydesign</span>(</span>
 <span id="cb130-5"><a href="Twostage.html#cb130-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="sc">~</span> psudraw <span class="sc">+</span> ssunits, <span class="at">weight =</span> <span class="sc">~</span> weights, <span class="at">data =</span> mysample)</span>
 <span id="cb130-6"><a href="Twostage.html#cb130-6" aria-hidden="true" tabindex="-1"></a><span class="fu">svymean</span>(<span class="sc">~</span> z, design_2stage, <span class="at">deff =</span> <span class="st">&quot;replace&quot;</span>)</span></code></pre></div>
-<pre><code>    mean     SE DEff
-z 48.558  0.000    0</code></pre>
+<pre><code>    mean     SE   DEff
+z 71.180 18.563 4.2985</code></pre>
 <p>Similar to (one-stage) cluster random sampling, the estimated design effect is much larger than 1.</p>
 <p>A confidence interval estimate of the population mean can be computed with method <code>confint</code>. The number of degrees of freedom equals the number of PSU draws minus 1.</p>
 <div class="sourceCode" id="cb132"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb132-1"><a href="Twostage.html#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(<span class="fu">svymean</span>(<span class="sc">~</span> z, design_2stage, <span class="at">df =</span> <span class="fu">degf</span>(design_2stage), <span class="at">level =</span> <span class="fl">0.95</span>))</span></code></pre></div>
-<pre><code>     2.5 %   97.5 %
-z 48.55792 48.55792</code></pre>
+<pre><code>     2.5 %  97.5 %
+z 34.79724 107.563</code></pre>
 <p>Figure <a href="Twostage.html#fig:SamplingDistributionTwostage">7.2</a> shows the approximated sampling distribution of the pwr estimator of the mean soil organic matter (SOM) concentration with two-stage cluster random sampling and of the <span class="math inline">\(\pi\)</span> estimator with simple random sampling from Voorst, obtained by repeating the random sampling with each design and estimation 10,000 times. For simple random sampling the sample size is equal to <span class="math inline">\(n \times m\)</span>.</p>
 
 <div class="figure" style="text-align: center"><span style="display:block;" id="fig:SamplingDistributionTwostage"></span>
@@ -802,8 +802,8 @@ Figure 7.3: Stratified two-stage random sample from Voorst. Strata are groups of
 <span id="cb147-8"><a href="Twostage.html#cb147-8" aria-hidden="true" tabindex="-1"></a>design_str2stage <span class="ot">&lt;-</span> <span class="fu">svydesign</span>(<span class="at">id =</span> <span class="sc">~</span> psudraw <span class="sc">+</span> ssunits, <span class="at">strata =</span> <span class="sc">~</span> zone_stratum,</span>
 <span id="cb147-9"><a href="Twostage.html#cb147-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">weights =</span> <span class="sc">~</span> w1 <span class="sc">+</span> w2, <span class="at">data =</span> mysample, <span class="at">nest =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb147-10"><a href="Twostage.html#cb147-10" aria-hidden="true" tabindex="-1"></a><span class="fu">svymean</span>(<span class="sc">~</span> z, design_str2stage)</span></code></pre></div>
-<pre><code>    mean SE
-z 73.654  0</code></pre>
+<pre><code>    mean     SE
+z 66.411 4.1335</code></pre>
 
 </div>
 </div>

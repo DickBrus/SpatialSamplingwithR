@@ -1,6 +1,6 @@
 # Two-stage cluster random sampling {#Twostage}
 
-As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter \@ref(Cl)), in two-stage cluster random sampling\index{Two-stage cluster random sampling} not all units of the selected clusters are observed, but only some. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in single-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling, the clusters are commonly referred to as primary sampling units\index{Primary sampling unit} (PSUs) and the units selected in the second stage as the secondary sampling units\index{Secondary sampling unit} (SSUs).
+As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter \@ref(Cl)), in two-stage cluster random sampling\index{Two-stage cluster random sampling} not all units of the selected clusters are observed, but only some. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in one-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling, the clusters are commonly referred to as primary sampling units\index{Primary sampling unit} (PSUs) and the units selected in the second stage as the secondary sampling units\index{Secondary sampling unit} (SSUs).
 
 As with cluster random sampling, two-stage cluster random sampling may lead to a strong spatial clustering of the selected population units in the study area. This may save considerable time for fieldwork, and more population units can be observed for the same budget. However, due to the spatial clustering the estimates will generally be less precise compared to samples of the same size selected by a design that leads to a much better spreading of the sampling units throughout the study area, such as systematic random sampling.
 
@@ -34,14 +34,15 @@ grdVoorst <- grdVoorst %>%
 
 In the next code chunk, a function is defined to select a two-stage cluster random sample from an infinite population, discretised by a finite number of points, being the centres of grid cells.
 
+
 ```{r}
 twostage <- function(sframe, psu, n, m) {
   units <- sample(nrow(sframe), size = n, replace = TRUE)
-  mypsusample <- sframe[units, psu]
+  mypsusample <- sframe$psu[units]
   ssunits <- NULL
-  for (psunit in mypsusample) {
+  for (i in seq_len(length(mypsusample))) { 
     ssunit <- sample(
-      x = which(sframe[, psu] == psunit), size = m, replace = TRUE)
+      x = which(sframe$psu == mypsusample[i]), size = m, replace = TRUE)
     ssunits <- c(ssunits, ssunit)
   }
   psudraw <- rep(c(1:n), each = m)
@@ -49,7 +50,6 @@ twostage <- function(sframe, psu, n, m) {
   mysample
 }
 ```
-
 Note that both the PSUs and the SSUs are selected with replacement. If a grid cell centre is selected, one point is selected fully randomly from that grid cell. This is done by shifting the centre of the grid cell to a random point within the selected grid cell with function `jitter`, see code chunk hereafter. In every grid cell, there is an infinite number of points, so we must select the grid cell centres with replacement. If a grid cell is selected more than once, more than one point is selected from the associated grid cell. Column `psudraw` in the output data frame of function `twostage` is needed in estimation because PSUs are selected with replacement. In case a PSU is selected more than once, multiple estimates of the mean of that PSU are used in estimation, see next section.
 
 In the next code chunk, function `twostage` is used to select four times a PSU ($n=4$), with probabilities proportional to size and with replacement (ppswr). The second stage sample size equals 10 for all PSUs ($m_j=10,\; j = 1, \dots, N$). These SSUs are selected by simple random sampling. 

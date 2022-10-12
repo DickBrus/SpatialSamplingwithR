@@ -2660,7 +2660,7 @@ rm(list = ls())
 
 # Cluster random sampling {#Cl}
 
-With stratified random sampling using geographical strata and systematic random sampling, the sampling units are well spread throughout the study area. In general, this leads to an increase of the precision of the estimated mean (total). This is because many spatial populations show spatial structure, so that the values of the study variable at two close units are more similar than those at two distant units. With large study areas the price to be paid for this is long travel times, so that fewer sampling units can be observed in a given survey time. In this situation, it can be more efficient to select *spatial clusters*\index{Spatial cluster} of population units. In cluster random sampling\index{Cluster random sampling}, once a cluster is selected, *all* units in this cluster are observed. Therefore, this design is also referred to as *single-stage* cluster random sampling. The clusters are not subsampled as in two-stage cluster random sampling (see Chapter \@ref(Twostage)).
+With stratified random sampling using geographical strata and systematic random sampling, the sampling units are well spread throughout the study area. In general, this leads to an increase of the precision of the estimated mean (total). This is because many spatial populations show spatial structure, so that the values of the study variable at two close units are more similar than those at two distant units. With large study areas the price to be paid for this is long travel times, so that fewer sampling units can be observed in a given survey time. In this situation, it can be more efficient to select *spatial clusters*\index{Spatial cluster} of population units. In cluster random sampling\index{Cluster random sampling}, once a cluster is selected, *all* units in this cluster are observed. Therefore, this design is also referred to as *one-stage* cluster random sampling. The clusters are not subsampled as in two-stage cluster random sampling (see Chapter \@ref(Twostage)).
 
 In spatial sampling, a popular cluster shape is a transect\index{Transect}. This is because the individual sampling units of a transect can easily be located in the field, which was in particular an advantage in the pre-GPS era.
 
@@ -3214,7 +3214,7 @@ rm(list = ls())
 
 # Two-stage cluster random sampling {#Twostage}
 
-As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter \@ref(Cl)), in two-stage cluster random sampling\index{Two-stage cluster random sampling} not all units of the selected clusters are observed, but only some. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in single-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling, the clusters are commonly referred to as primary sampling units\index{Primary sampling unit} (PSUs) and the units selected in the second stage as the secondary sampling units\index{Secondary sampling unit} (SSUs).
+As opposed to cluster random sampling in which all population units of a cluster are observed (Chapter \@ref(Cl)), in two-stage cluster random sampling\index{Two-stage cluster random sampling} not all units of the selected clusters are observed, but only some. In two-stage cluster random sampling the clusters will generally be contiguous groups of units, for instance all points in a map polygon (the polygons on the map are the clusters), whereas in one-stage cluster random sampling the clusters generally are non-contiguous. The units to be observed are selected by random subsampling of the randomly selected clusters. In two-stage cluster sampling, the clusters are commonly referred to as primary sampling units\index{Primary sampling unit} (PSUs) and the units selected in the second stage as the secondary sampling units\index{Secondary sampling unit} (SSUs).
 
 As with cluster random sampling, two-stage cluster random sampling may lead to a strong spatial clustering of the selected population units in the study area. This may save considerable time for fieldwork, and more population units can be observed for the same budget. However, due to the spatial clustering the estimates will generally be less precise compared to samples of the same size selected by a design that leads to a much better spreading of the sampling units throughout the study area, such as systematic random sampling.
 
@@ -3248,14 +3248,15 @@ grdVoorst <- grdVoorst %>%
 
 In the next code chunk, a function is defined to select a two-stage cluster random sample from an infinite population, discretised by a finite number of points, being the centres of grid cells.
 
+
 ```{r}
 twostage <- function(sframe, psu, n, m) {
   units <- sample(nrow(sframe), size = n, replace = TRUE)
-  mypsusample <- sframe[units, psu]
+  mypsusample <- sframe$psu[units]
   ssunits <- NULL
-  for (psunit in mypsusample) {
+  for (i in seq_len(length(mypsusample))) { 
     ssunit <- sample(
-      x = which(sframe[, psu] == psunit), size = m, replace = TRUE)
+      x = which(sframe$psu == mypsusample[i]), size = m, replace = TRUE)
     ssunits <- c(ssunits, ssunit)
   }
   psudraw <- rep(c(1:n), each = m)
@@ -3263,7 +3264,6 @@ twostage <- function(sframe, psu, n, m) {
   mysample
 }
 ```
-
 Note that both the PSUs and the SSUs are selected with replacement. If a grid cell centre is selected, one point is selected fully randomly from that grid cell. This is done by shifting the centre of the grid cell to a random point within the selected grid cell with function `jitter`, see code chunk hereafter. In every grid cell, there is an infinite number of points, so we must select the grid cell centres with replacement. If a grid cell is selected more than once, more than one point is selected from the associated grid cell. Column `psudraw` in the output data frame of function `twostage` is needed in estimation because PSUs are selected with replacement. In case a PSU is selected more than once, multiple estimates of the mean of that PSU are used in estimation, see next section.
 
 In the next code chunk, function `twostage` is used to select four times a PSU ($n=4$), with probabilities proportional to size and with replacement (ppswr). The second stage sample size equals 10 for all PSUs ($m_j=10,\; j = 1, \dots, N$). These SSUs are selected by simple random sampling. 
@@ -4548,7 +4548,7 @@ The advantage of selecting a stratified random sample by balancing the sample on
 
 ### Multiway stratification {#Multiwaystratification}
 
-@Falorsi2008 describe how a multiway stratified sample\index{Multiway stratification} can be selected as a balanced sample. Multiway stratification is of interest when one has multiple stratification variables, each stratification variable leading to several strata, so that the total number of cross-classification strata\index{Cross-classification stratum} becomes so large that the stratum sample sizes are strongly disproportional to their size or even exceed the total sample size. For instance, suppose we have three maps with 4, 3, and 5 map units. Further, suppose that all combinations of map units are non-empty, so that we have 4 $\times$ 3 $\times$ 5 = 60 combinations. We may not like to use all combinations (cross-classifications) as strata. The alternative is then to use the $4+3+5=12$ map units as strata.
+@Falorsi2008 describe how a multiway stratified sample\index{Multiway stratification} can be selected as a balanced sample. Multiway stratification is of interest when one has multiple stratification variables, each stratification variable leading to several strata, so that the total number of cross-classification strata\index{Cross-classification stratum} becomes so large that the stratum sample sizes are strongly disproportional to their size or even exceed the total sample size. For instance, suppose we have three maps with 4, 3, and 5 map units. Further, suppose that all combinations of map units are non-empty, so that we have 4 $\times$ 3 $\times$ 5 = 60 combinations. We may not like to use all combinations (cross-classifications) as strata. The alternative is then to use the $4+3+5=12$ map units as "strata". This is not a stratification in the usual sense since the strata are overlapping. 
 
 The sample sizes of the marginal strata can be controlled using a design matrix with as many columns as there are strata. The units of an individual map used for stratification are referred to as marginal strata\index{Marginal stratum}. Each row $k = 1, \dots, N$ in the design matrix  $\mathbf{X}$ has as many non-zero values as we have maps, in entries corresponding to the cross-classification map unit of population unit $k$, and zeroes in the remaining entries. The non-zero value is the inclusion probability of that unit. Each column of the design matrix has non-zero values in entries corresponding to the population units in that marginal stratum and zeroes in all other entries.
 
@@ -15997,7 +15997,7 @@ rm(list = ls())
 3. See [`STSI2.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSI2.R). The true sampling variance of the $\pi$ estimator of the mean SOM obtained by collapsing strata EA and PA equals 42.89, whereas the sampling variance with the original stratification equals 42.53. So, the new stratification with four strata is only slightly worse.       
 4. The proof is as follows: $\sum_N \pi_k=\sum_H \sum_{N_h}\pi_{hk}=\sum_H \sum_{N_h}n_h/N_h=\sum_H n_h=n$.  
 5. See [`STSIcumrootf.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIcumrootf.R). The default allocation is Neyman allocation, see help of function `strata.cumrootf`. The true sampling variance of the estimator of the mean equals 20.0. The stratification effect equals 4.26.  
-6. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum. However, despite the absence of bias, the variance estimator can be quite inaccurate (large mean squared error). For that reason one may prefer to select one point per geostratum. The variance can then be estimated by Equation\@ref(eq:VartotalLPM)   
+6. With at least two points per geostratum, the variance of the estimator of the stratum mean can be estimated without bias by the estimated stratum variance divided by the number of points in that stratum. However, despite the absence of bias, the variance estimator can be quite inaccurate (large mean squared error). For that reason one may prefer to select one point per geostratum. The variance can then be estimated by  Equation\@ref(eq:VartotalLPM).   
 7. On average, the sampling variance of the estimator of the mean with 100 $\times$ 1 point is smaller than with $50 \times 2$ points, because the geographical spreading will be somewhat better (less spatial clustering).  
 8. With geostrata of equal size and equal number of sampling points per geostratum, the sampling intensity is equal for all strata, so that the sample mean is an unbiased estimator of the population mean. In formula: $\hat{\bar{z}}= \sum\limits_{h=1}^{H} w_{h}\,\bar{z}_{\mathcal{S}h} = \frac{1}{H} \sum\limits_{h=1}^{H} \bar{z}_{\mathcal{S}h} = \bar{z}_{\mathcal{S}}$, with $\bar{z}_{\mathcal{S}h}$ the average of the sample from stratum $h$ and $\bar{z}_{\mathcal{S}}$ the average of all sampling points.  
 9. See [`STSIgeostrata.R`](https://github.com/DickBrus/SpatialSamplingwithR/tree/master/Exercises/STSIgeostrata.R).
