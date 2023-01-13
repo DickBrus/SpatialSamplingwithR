@@ -152,8 +152,7 @@ n <- 100
 mysample <- grdAmazonia %>%
   dplyr::select(AGB,lnSWIR2) %>%
   slice_sample(n = n)
-X <- matrix(nrow = n, ncol = 2, data = 1)
-X[, 2] <- mysample$lnSWIR2
+X <- cbind(rep(1, n), mysample$lnSWIR2)
 XXinv <- solve(t(X) %*% X)
 Xz <- t(X) %*% mysample$AGB
 print(ab <- t(XXinv %*% Xz))
@@ -180,7 +179,7 @@ ggplot(data = mysample) +
         scale_y_continuous(name = "AGB")
 ```
 
-The simple random sample is used to estimate the population mean of the study variable AGB by the simple regression estimator and to approximate the sampling variance of the regression estimator. The residuals of the fitted model can be extracted with function `residuals` because in this case the OLS estimates of the regression coefficients are equal to the design-based estimates. With unequal inclusion probabilities, the residuals must be computed by predicting the study variable for the selected units, using the design-based estimates of the regression coefficients, and subtracting the observations of the study variable.
+The simple random sample is used to estimate the population mean of the study variable AGB by the simple regression estimator and to approximate the sampling variance of the regression estimator. The residuals of the fitted model can be extracted with function `residuals` because in this case the OLS estimates of the regression coefficients are equal to the design-based estimates. With unequal inclusion probabilities, the residuals must be computed by predicting the study variable for the selected units, using the design-based estimates of the regression coefficients, and subtracting the predictions from the observations of the study variable.
 
 ```{r}
 mx_pop <- mean(grdAmazonia$lnSWIR2)
@@ -416,7 +415,7 @@ With stratified simple random sampling there are two regression estimators: *sep
 (\#eq:SeparateRegressionEstimator)
 \end{equation}
 
-with, for the simple linear estimator
+with, for the simple regression estimator and simple random sampling within the strata
 
 \begin{equation}
 \hat{\bar{z}}_{\text{regr,}h} = \bar{z}_{\mathcal{S}h}+\hat{b}_h\left( \bar{x}_h-\bar{x}_{\mathcal{S}h}\right) \;,
@@ -455,7 +454,7 @@ As a first step in estimation, for each stratum the mean of the covariate over a
 
 ```{r}
 mx_h_pop <- tapply(grdAmazonia$lnSWIR2, INDEX = grdAmazonia$Biome, FUN = mean)
-mzh_sam <- tapply(mysample$AGB, INDEX = mysample$Biome, FUN = mean)
+mz_h_sam <- tapply(mysample$AGB, INDEX = mysample$Biome, FUN = mean)
 mx_h_sam <- tapply(mysample$lnSWIR2, INDEX = mysample$Biome, FUN = mean)
 ```
 
@@ -467,7 +466,7 @@ for (i in 1:4) {
   subsam <- subset(mysample, mysample$Biome == levels(grdAmazonia$Biome)[i])
   lm_sample <- lm(AGB ~ lnSWIR2, data = subsam)
   b_h[i] <- coef(lm_sample)[2]
-  mz_h_regr[i] <- mzh_sam[i] + b_h[i] * (mx_h_pop[i] - mx_h_sam[i])
+  mz_h_regr[i] <- mz_h_sam[i] + b_h[i] * (mx_h_pop[i] - mx_h_sam[i])
   e <- residuals(lm_sample)
   S2e_h <- var(e)
   v_mz_h_regr[i] <- (1 - n_h[i] / N_h[i]) * S2e_h / n_h[i]
@@ -532,7 +531,7 @@ Alternatively, we may use the following formula in function `lm`.
 
 ```{r}
 ancova2 <- lm(AGB ~ 0 + Biome / lnSWIR2, data = mysample)
-designmat <- model.matrix(ancova, mysample)
+designmat <- model.matrix(ancova2, mysample)
 ```
 
 ```{r, echo = FALSE}
@@ -595,8 +594,7 @@ The next step is to estimate the population regression coefficients, using Equat
 
 ```{r}
 W <- diag(x = 1 / mysample$Prob, nrow = n, ncol = n)
-X <- matrix(nrow = n, ncol = 2, data = 1)
-X[, 2] <- mysample$lnSWIR2
+X <- cbind(rep(1, n), mysample$lnSWIR2)
 XWX <- t(X) %*% W %*% X
 XWz <- t(X) %*% W %*% mysample$AGB
 print(ab <- t(solve(XWX, XWz)))
@@ -723,11 +721,9 @@ print(se_tz_ratio <- sqrt(N^2 * (1 - (n / N)) * var(e) / n))
 An improved variance approximation is obtained with Equation \@ref(eq:AlternativeVarianceRegressionEstimator). For the ratio model and simple random sampling, the calibrated weights are equal to (@sar92, p. 248)
 
 \begin{equation}
-g = \frac{t(x)}{\hat{t}_{\pi}(x)} \;,
+g = \frac{t(x)}{\hat{t}_{\pi}(x)} \;.
 (\#eq:weightsratiomodel)
 \end{equation}
-
-with $t(x)$ the population total of the covariate and $\hat{t}_{\pi}(x)$ the $\pi$ estimate of the population total of the covariate.
 
 ```{r}
 pi <- n / N
@@ -849,7 +845,7 @@ tx_h_pop <- tapply(grdKandahar$agri, INDEX = grdKandahar$stratum, FUN = sum)
 predict(separate, total = tx_h_pop)
 ```
 
-### Poststratified estimator {#PoststratifiedEstimator}
+## Poststratified estimator {#PoststratifiedEstimator}
 
 In stratified random sampling (Chapter \@ref(STSI)), the population is divided into several disjoint subpopulations and from each subpopulation a probability sample is selected. The subpopulations then serve as strata. The larger the difference in the stratum means and the smaller the variance within the strata, the larger the gain in precision compared to simple random sampling, see Subsection \@ref(WhyStratify).
 
@@ -865,7 +861,7 @@ For any probability sampling design, the population mean can be estimated by
 (\#eq:PostStratifiedEstimator)
 \end{equation}
 
-where $\mathcal{S}_g$ is the sample from group $g$, $w_{g}=N_g/N$ is the relative size of group $g$, $\hat{t}_g(z)$ is the estimated total of the study variable for group $g$, $\widehat{N}_{g}$ is the estimator of the size of group $g$, and $\pi_{k}$ is the inclusion probability of unit $k$. The estimated group means are weighted by their relative sizes $w_{g}$, which are assumed to be known. In spite of this, the group means are estimated by dividing the estimated group totals by their \emph{estimated} size, $\widehat{N}_{g}$, because this ratio estimator is more precise than the $\pi$ estimator of the group mean.
+where $\mathcal{S}_g$ is the sample from group $g$, $w_g=N_g/N$ is the relative size of group $g$, $\hat{t}_g(z)$ is the estimated total of the study variable for group $g$, $\widehat{N}_g$ is the estimator of the size of group $g$, and $\pi_k$ is the inclusion probability of unit $k$. The estimated group means are weighted by their relative sizes $w_g$, which are assumed to be known. In spite of this, the group means are estimated by dividing the estimated group totals by their \emph{estimated} size, $\widehat{N}_g$, because this ratio estimator is more precise than the $\pi$ estimator of the group mean.
 
 The poststratified estimator is the natural estimator for the one-way ANOVA model\index{ANOVA model!one-way ANOVA model},
 
@@ -998,7 +994,7 @@ The alternative is to plug the fitted values $\hat{m}(\mathbf{x}_k)$ into the ge
 
 Comparison with the generalised difference estimator, Equation \@ref(eq:GeneralizedDifferenceEstimator), shows that these two estimators are equivalent when $\hat{b}=1$. For non-linear working models, generally $\hat{b} \neq 1$, so that these two estimators are not the same. @Wu2003 shows that the calibration estimator has a general optimality property.
 
-In case you are confused by all these model-assisted estimators, let me clarify. The most general estimator is the model-calibration estimator. If we take for $\hat{b}$ the value 1, this estimator is equivalent to the generalised difference estimator (Equation \@ref(eq:GeneralizedDifferenceEstimator)). The predictions $\hat{m}(\mathbf{x}_k)$ in these estimators can be computed either by a linear model or a non-linear model. If a linear model is used in the generalised difference estimator, this estimator is equal to the generalised regression estimator (Equation \@ref(eq:GREG)). With linear models, $\hat{b}$ in Equation \@ref(eq:ModelCalibrationEstimator) equals 1, so that all three estimators are equal. 
+In case you are confused by all these model-assisted estimators, let me clarify. The most general estimator is the model-calibration estimator. If we take for $\hat{b}$ the value 1, this estimator is equivalent to the generalised difference estimator (Equation \@ref(eq:GeneralizedDifferenceEstimator)). The predictions $\hat{m}(\mathbf{x}_k)$ in these estimators can be computed either by a linear model or a non-linear model. If a linear model is used in the generalised difference estimator, this estimator is equal to the generalised regression estimator (Equation \@ref(eq:GREG)). With linear models, $\hat{b}$ in Equation \@ref(eq:ModelCalibrationEstimator2) equals 1, so that all three estimators are equal. 
 
 For simple random sampling, the inclusion probabilities of the units are the same for all units: $\pi_k = n/N$, reducing Equations \@ref(eq:ModelCalibrationEstimator) and \@ref(eq:SlopeCalibrationEstimator) to 
 

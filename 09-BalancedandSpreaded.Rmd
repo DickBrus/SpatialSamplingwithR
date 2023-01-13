@@ -342,6 +342,7 @@ Much in the same way as we controlled in the previous subsection the sample size
 \vdots &\vdots &\vdots &\vdots\\
 0 & 0 & 0 & 1 \\
 \end{bmatrix}  \;.
+(\#eq:DesignMatrixBalanced)
 \end{equation}
 
 The first four rows refer to the four leftmost bottom row population units in Figure \@ref(fig:BalancedSampleCategorical). These units belong to class A, which explains that the first column for these units contain ones. The other three columns for these rows contain all zeroes. The fifth and sixth unit belong to stratum B, so that the second column for these rows contain ones, and so on. The final row is the upperright sampling unit in stratum D, so the first three columns contain zeroes, and the fourth column is filled with a one. The sum of the indicators in the columns is the total number of population units in the strata.
@@ -353,17 +354,18 @@ names(mypop) <- c("s1", "s2")
 mypop$stratum <- as.factor(findInterval(mypop$s1, c(4, 6, 14)))
 levels(mypop$stratum) <- LETTERS[1:4]
 
-N_h <- tapply(mypop$s1, INDEX = mypop$stratum, FUN = length)
-n_h <- rep(5, times = 4)
-labels <- sort(unique(mypop$stratum))
-lut <- data.frame(stratum = labels, pi = n_h / N_h)
-mypop <- merge(x = mypop, y = lut)
+mypop <- mypop %>%
+    group_by(stratum) %>%
+    summarise(N_h = n(), .groups = "drop") %>%
+    mutate(pi_h = rep(5, 4) / N_h) %>%
+    right_join(mypop, by = "stratum")
 
 X <- model.matrix(~ stratum - 1, mypop)
 
 set.seed(314)
-sample_ind <- samplecube(X = X, pik = mypop$pi, comment = FALSE, method = 1)
-mysample <- mypop[sample_ind == 1, ]
+sample_ind <- samplecube(X = X, pik = mypop$pi_h, comment = FALSE, method = 1)
+eps <- 1e-6
+mysample <- mypop[sample_ind > (1 - eps), ]
 
 ggplot(data = mypop) +
   geom_tile(mapping = aes(x = s1, y = s2, fill = factor(stratum)), width = 1, height = 1, size = 0.5, colour = "white") +
@@ -374,33 +376,23 @@ ggplot(data = mypop) +
   coord_fixed()
 ```
 
-In the next code chunk, the inclusion probabilities are computed by $\pi_{hk}=n_h/N_h,\; k=1, \dots , N_h$, with $n_h=5$ for all four strata. The stratum sample sizes are equal, but the number of population units of a stratum differ among the strata, so the inclusion probabilities also differ among the strata.
-
-```{r, echo=FALSE}
-mypop <- mypop[, -4]
+```{r}
+s1 <- s2 <- 1:20 - 0.5
+mypop <- expand.grid(s1, s2)
+names(mypop) <- c("s1", "s2")
+mypop$stratum <- as.factor(findInterval(mypop$s1, c(4, 6, 14)))
+levels(mypop$stratum) <- LETTERS[1:4]
 ```
+
+In the next code chunk, the inclusion probabilities are computed by $\pi_{hk}=n_h/N_h,\; k=1, \dots , N_h$, with $n_h=5$ for all four strata. The stratum sample sizes are equal, but the number of population units of a stratum differ among the strata, so the inclusion probabilities also differ among the strata. The ten leftmost units on the bottom row of Figure \@ref(fig:BalancedSampleCategorical) are shown below.
 
 ```{r}
-N_h <- tapply(mypop$s1, INDEX = mypop$stratum, FUN = length)
-n_h <- rep(5, times = 4)
-n <- sum(n_h)
-print(pi_h <- n_h / N_h)
-```
-
-The inclusion probabilities are added to tibble `mypop` with the 400 population units, using a look-up table `lut` and function `left_join`. The ten leftmost units on the bottom row of Figure \@ref(fig:BalancedSampleCategorical) are shown below. Variables s1 and s2 are the spatial coordinates of the centres of the units. 
-
-```{r, echo = FALSE, eval = FALSE}
-lut <- data.frame(stratum = sort(unique(mypop$stratum)), pi = n_h / N_h)
-mypop <- merge(x = mypop, y = lut, by = "stratum")
-ord <- order(mypop$s2, mypop$s1)
-head(mypop[ord, ], 7)
-```
-```{r}
-lut <- data.frame(stratum = sort(unique(mypop$stratum)), pi = n_h / N_h)
 mypop <- mypop %>%
-  as.tibble(mypop) %>%
-  left_join(lut, by = "stratum") %>%
-  arrange(s2, s1)
+    group_by(stratum) %>%
+    summarise(N_h = n(), .groups = "drop") %>%
+    mutate(pi_h = rep(5, 4) / N_h) %>%
+    right_join(mypop, by = "stratum") %>%
+    arrange(s2, s1)
 mypop
 ```
 
@@ -421,6 +413,7 @@ The columns in the design matrix with dummy variables are multiplied by the vect
 \vdots &\vdots &\vdots &\vdots\\
 0 & 0 & 0 &0.04167 \\
 \end{bmatrix}  \;.
+(\#eq:DesignMatrixBalanced2)
 \end{equation}
 
 The multiplication by the inclusion probabilities is not strictly needed. Using the design matrix with dummy variables implies that we balance the sample on the known total number of population units in the strata, $N_h$. For samples with stratum sample sizes equal to $n_h$, the sample sums of the dummy variables used in balancing, divided by the inclusion probability, are equal to $N_h$.
@@ -429,9 +422,10 @@ Multiplication of the dummy variables by the vector with inclusion probabilities
 
 ```{r }
 X <- model.matrix(~ stratum - 1, data = mypop)
-X <- sweep(X, MARGIN = 1, mypop$pi, `*`)
+X <- sweep(X, MARGIN = 1, mypop$pi_h, `*`)
 set.seed(314)
-sample_ind <- samplecube(X = X, pik = mypop$pi, comment = FALSE, method = 1)
+sample_ind <- samplecube(X = X, pik = mypop$pi_h, comment = FALSE, method = 1)
+eps <- 1e-6
 mysample <- mypop[sample_ind > (1 - eps), ]
 ```
 
@@ -484,7 +478,7 @@ As a first step, the inclusion probabilities are added to `data.frame` `mypop` w
 mypop <- mypop %>%
     group_by(A, B) %>%
     summarise(N_h = n(), .groups = "drop") %>%
-    mutate(pih = rep(2, 12) / N_h) %>%
+    mutate(pi_h = rep(2, 12) / N_h) %>%
     right_join(mypop, by = c("A", "B"))
 ```
 
@@ -494,7 +488,7 @@ The next step is to create the design matrix. Two submatrices are computed, one 
 XA <- model.matrix(~ A - 1, mypop)
 XB <- model.matrix(~ B - 1, mypop)
 X <- cbind(XA, XB)
-X <- sweep(X, MARGIN = 1, mypop$pih, `*`)
+X <- sweep(X, MARGIN = 1, mypop$pi_h, `*`)
 ```
 
 Matrix $\mathbf{X}$ can be reduced by one column if in the first column the inclusion probabilities of *all* population units are inserted. This first column contains no zeroes. Balancing on this variable implies that the total sample size is controlled. Now there is no need anymore to control the sample sizes of all marginal strata. It is sufficient to control the sample sizes of three marginal strata of map A (A2, A3, and A4) and two marginal strata of map B (B2 and B3). Given the total sample size, the sample sizes of map units A1 and B1 then cannot be chosen freely anymore.
@@ -502,7 +496,7 @@ Matrix $\mathbf{X}$ can be reduced by one column if in the first column the incl
 ```{r}
 X <- model.matrix(~ A + B, mypop)
 colnames(X)
-X <- sweep(X, MARGIN = 1, mypop$pih, `*`)
+X <- sweep(X, MARGIN = 1, mypop$pi_h, `*`)
 ```
 
 This reduced design matrix is not strictly needed for selecting a multiway stratified sample, but it must be used in estimation. If in estimation, as many balancing variables are used as we have marginal strata, the matrix with the sum of squares of the balancing variables (first sum in Equation \@ref(eq:betasbalanced)) cannot be inverted (the matrix is singular), and as a consequence the population regression coefficients cannot be estimated.
@@ -510,7 +504,7 @@ This reduced design matrix is not strictly needed for selecting a multiway strat
 Finally, the two-way stratified random sample is selected with function `samplecube` of package **sampling**. 
 
 ```{r}
-sample_ind <- samplecube(X = X, pik = mypop$pih, method = 1, comment = FALSE)
+sample_ind <- samplecube(X = X, pik = mypop$pi_h, method = 1, comment = FALSE)
 units <- which(sample_ind > (1 - eps))
 mysample <- mypop[units, ]
 ```
@@ -547,19 +541,19 @@ The population mean can be estimated by the $\pi$ estimator.
 
 ```{r}
 N <- nrow(mypop)
-print(mean <- sum(mysample$z / mysample$pih) / N)
+print(mean <- sum(mysample$z / mysample$pi_h) / N)
 ```
 
 The variance is estimated as before (Equation \@ref(eq:approxvarianceBalanced)).
 
 ```{r}
-c <- (1 - mysample$pih)
+c <- (1 - mysample$pi_h)
 b <- estimate_b(
-  z = mysample$z / mysample$pih, X = X[units, ] / mysample$pih, c = c)
+  z = mysample$z / mysample$pi_h, X = X[units, ] / mysample$pi_h, c = c)
 zpred <- X %*% b
 e <- mysample$z - zpred[units]
 n <- nrow(mysample)
-v_tz <- n / (n - ncol(X)) * sum(c * (e / mysample$pih)^2)
+v_tz <- n / (n - ncol(X)) * sum(c * (e / mysample$pi_h)^2)
 print(v_mz <- v_tz / N^2)
 ```
 
