@@ -23,7 +23,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2023-01-13" />
+<meta name="date" content="2023-02-06" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -694,7 +694,7 @@ $$
 \end{equation}\]</span></p>
 <p>The variance of the estimator of the temporal trend can be estimated by</p>
 <p><span class="math display" id="eq:VarEstimatorTrendofMean">\[\begin{equation}
-\widehat{V}(\hat{b}) = \mathbf{w}^{\prime}\widehat{\mathbf{C}}(\hat{\mathbf{z}}_{\mathrm{GLS}}) \mathbf{w}\;.
+\widehat{V}(\hat{b}) = \mathbf{w}^{\mathrm{T}}\widehat{\mathbf{C}}(\hat{\mathbf{z}}_{\mathrm{GLS}}) \mathbf{w}\;.
 \tag{15.18}
 \end{equation}\]</span></p>
 <p><span class="citation">Brus and de Gruijter (<a href="#ref-Brus2011" role="doc-biblioref">2011</a>)</span> compared the space-time designs for estimating the temporal trend of the spatial means, under a first order autoregressive time-series model of the spatial means. The SS design performed best when the correlation is strong, say <span class="math inline">\(&gt;0.8\)</span>. What is the best design depends amongst others on the strength of the correlation and the number of sampling times. A safe choice is an SA design. With strong positive correlation, say <span class="math inline">\(&gt;0.9\)</span>, the SS design can be a good choice, but remarkably for weak positive correlation this design performed relatively poorly.</p>
@@ -829,22 +829,21 @@ Figure 15.5: Serially alternating space-time sample from Iberia. Locations are s
 <span id="cb409-2"><a href="RepeatedSurveys.html#cb409-2" aria-hidden="true" tabindex="-1"></a>odd <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>)</span>
 <span id="cb409-3"><a href="RepeatedSurveys.html#cb409-3" aria-hidden="true" tabindex="-1"></a>C[<span class="fu">row</span>(C) <span class="sc">%in%</span> odd <span class="sc">&amp;</span> <span class="sc">!</span>(<span class="fu">col</span>(C) <span class="sc">%in%</span> odd)] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb409-4"><a href="RepeatedSurveys.html#cb409-4" aria-hidden="true" tabindex="-1"></a>C[<span class="sc">!</span>(<span class="fu">row</span>(C) <span class="sc">%in%</span> odd) <span class="sc">&amp;</span> <span class="fu">col</span>(C) <span class="sc">%in%</span> odd] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb409-5"><a href="RepeatedSurveys.html#cb409-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb409-6"><a href="RepeatedSurveys.html#cb409-6" aria-hidden="true" tabindex="-1"></a><span class="co">#current mean</span></span>
-<span id="cb409-7"><a href="RepeatedSurveys.html#cb409-7" aria-hidden="true" tabindex="-1"></a>mz_cur_SA <span class="ot">&lt;-</span> mz[<span class="dv">4</span>]</span>
-<span id="cb409-8"><a href="RepeatedSurveys.html#cb409-8" aria-hidden="true" tabindex="-1"></a>se_mz_cur_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(C[<span class="dv">4</span>, <span class="dv">4</span>] <span class="sc">/</span> n)</span>
-<span id="cb409-9"><a href="RepeatedSurveys.html#cb409-9" aria-hidden="true" tabindex="-1"></a><span class="co">#change of mean from time 1 to time 4</span></span>
-<span id="cb409-10"><a href="RepeatedSurveys.html#cb409-10" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb409-11"><a href="RepeatedSurveys.html#cb409-11" aria-hidden="true" tabindex="-1"></a>d_mz_SA <span class="ot">&lt;-</span> <span class="fu">t</span>(w) <span class="sc">%*%</span> mz</span>
-<span id="cb409-12"><a href="RepeatedSurveys.html#cb409-12" aria-hidden="true" tabindex="-1"></a>se_d_mz_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(w) <span class="sc">%*%</span> C <span class="sc">%*%</span> w)</span>
-<span id="cb409-13"><a href="RepeatedSurveys.html#cb409-13" aria-hidden="true" tabindex="-1"></a><span class="co">#trend of mean</span></span>
-<span id="cb409-14"><a href="RepeatedSurveys.html#cb409-14" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> (t <span class="sc">-</span> <span class="fu">mean</span>(t)) <span class="sc">/</span> <span class="fu">sum</span>((t <span class="sc">-</span> <span class="fu">mean</span>(t))<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb409-15"><a href="RepeatedSurveys.html#cb409-15" aria-hidden="true" tabindex="-1"></a>mz_trend_SA <span class="ot">&lt;-</span> <span class="fu">t</span>(w) <span class="sc">%*%</span> mz</span>
-<span id="cb409-16"><a href="RepeatedSurveys.html#cb409-16" aria-hidden="true" tabindex="-1"></a>se_mz_trend_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(w) <span class="sc">%*%</span> C <span class="sc">%*%</span> w)</span>
-<span id="cb409-17"><a href="RepeatedSurveys.html#cb409-17" aria-hidden="true" tabindex="-1"></a><span class="co">#space-time mean</span></span>
-<span id="cb409-18"><a href="RepeatedSurveys.html#cb409-18" aria-hidden="true" tabindex="-1"></a>mz_st_SA <span class="ot">&lt;-</span> <span class="fu">mean</span>(mz)</span>
-<span id="cb409-19"><a href="RepeatedSurveys.html#cb409-19" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="dv">4</span>, <span class="dv">4</span>)</span>
-<span id="cb409-20"><a href="RepeatedSurveys.html#cb409-20" aria-hidden="true" tabindex="-1"></a>se_mz_st_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(w) <span class="sc">%*%</span> C <span class="sc">%*%</span> w)</span></code></pre></div>
+<span id="cb409-5"><a href="RepeatedSurveys.html#cb409-5" aria-hidden="true" tabindex="-1"></a><span class="co">#current mean</span></span>
+<span id="cb409-6"><a href="RepeatedSurveys.html#cb409-6" aria-hidden="true" tabindex="-1"></a>mz_cur_SA <span class="ot">&lt;-</span> mz[<span class="dv">4</span>]</span>
+<span id="cb409-7"><a href="RepeatedSurveys.html#cb409-7" aria-hidden="true" tabindex="-1"></a>se_mz_cur_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(C[<span class="dv">4</span>, <span class="dv">4</span>] <span class="sc">/</span> n)</span>
+<span id="cb409-8"><a href="RepeatedSurveys.html#cb409-8" aria-hidden="true" tabindex="-1"></a><span class="co">#change of mean from time 1 to time 4</span></span>
+<span id="cb409-9"><a href="RepeatedSurveys.html#cb409-9" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb409-10"><a href="RepeatedSurveys.html#cb409-10" aria-hidden="true" tabindex="-1"></a>d_mz_SA <span class="ot">&lt;-</span> <span class="fu">t</span>(w) <span class="sc">%*%</span> mz</span>
+<span id="cb409-11"><a href="RepeatedSurveys.html#cb409-11" aria-hidden="true" tabindex="-1"></a>se_d_mz_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(w) <span class="sc">%*%</span> C <span class="sc">%*%</span> w)</span>
+<span id="cb409-12"><a href="RepeatedSurveys.html#cb409-12" aria-hidden="true" tabindex="-1"></a><span class="co">#trend of mean</span></span>
+<span id="cb409-13"><a href="RepeatedSurveys.html#cb409-13" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> (t <span class="sc">-</span> <span class="fu">mean</span>(t)) <span class="sc">/</span> <span class="fu">sum</span>((t <span class="sc">-</span> <span class="fu">mean</span>(t))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb409-14"><a href="RepeatedSurveys.html#cb409-14" aria-hidden="true" tabindex="-1"></a>mz_trend_SA <span class="ot">&lt;-</span> <span class="fu">t</span>(w) <span class="sc">%*%</span> mz</span>
+<span id="cb409-15"><a href="RepeatedSurveys.html#cb409-15" aria-hidden="true" tabindex="-1"></a>se_mz_trend_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(w) <span class="sc">%*%</span> C <span class="sc">%*%</span> w)</span>
+<span id="cb409-16"><a href="RepeatedSurveys.html#cb409-16" aria-hidden="true" tabindex="-1"></a><span class="co">#space-time mean</span></span>
+<span id="cb409-17"><a href="RepeatedSurveys.html#cb409-17" aria-hidden="true" tabindex="-1"></a>mz_st_SA <span class="ot">&lt;-</span> <span class="fu">mean</span>(mz)</span>
+<span id="cb409-18"><a href="RepeatedSurveys.html#cb409-18" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="dv">4</span>, <span class="dv">4</span>)</span>
+<span id="cb409-19"><a href="RepeatedSurveys.html#cb409-19" aria-hidden="true" tabindex="-1"></a>se_mz_st_SA <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(w) <span class="sc">%*%</span> C <span class="sc">%*%</span> w)</span></code></pre></div>
 </div>
 <div id="supplemented-panel-design" class="section level3 hasAnchor" number="15.4.4">
 <h3><span class="header-section-number">15.4.4</span> Supplemented panel design<a href="RepeatedSurveys.html#supplemented-panel-design" class="anchor-section" aria-label="Anchor link to header"></a></h3>

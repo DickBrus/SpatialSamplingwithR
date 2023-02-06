@@ -242,23 +242,26 @@ In following chapters, I also use a correlogram\index{Correlogram}, which is a s
 To illustrate that the OK variance\index{Ordinary kriging variance} is independent of the values of the study variable at the sampling locations, I simulated a spatial population of 50 $\times$ 50 units. For each unit a value of the study variable is simulated, using the semivariogram of Figure \@ref(fig:CovFunctionVariogram). This is repeated ten times, resulting in ten maps of 2,500 units. Figure \@ref(fig:Twokrigingsimulations) shows two of the ten simulated maps. Note that the two maps clearly show spatial structure, i.e., there are patches of similar values.
 
 ```{r, echo=FALSE}
-s1 <- s2 <- seq(from = 20, to = 1000, by = 20) - 10
+s1 <- s2 <- seq(from = 10, to = 990, by = 20)
 mypop <- expand.grid(s1, s2)
 names(mypop) <- c("s1", "s2")
-
-#Compute matrix with distances between grid nodes
+#compute matrix with distances between grid nodes
 H <- as.matrix(dist(mypop[, c(1, 2)]))
-
-vgmdl <- vgm(model = "Sph", psill = psill, range = range, nugget = nugget)
+#specify semivariogram and compute covariance matrix
+vgmdl <- vgm(model = "Sph", nugget = 25, psill = 75, range = 250)
 C <- variogramLine(vgmdl, dist_vector = H, covariance = TRUE)
-Upper <- chol(C) #Cholesky decomposition of covariance matrix
-
-set.seed(314)
+#compute the Cholesky factorization of the covariance matrix
+Upper <- chol(C) 
 mu <- 50
 Z <- matrix(nrow = nrow(mypop), ncol = 10)
+set.seed(314)
 for (i in 1:10) {
-  N <- rnorm(n = nrow(mypop), 0, 1) #simulate numbers from standard normal distribution
-  Z[, i] <- crossprod(Upper, N) + mu
+  #simulate numbers from standard normal distribution
+  N <- rnorm(n = nrow(mypop), 0, 1)
+  #compute residual
+  e <- crossprod(Upper, N)
+  #compute study variable z
+  Z[, i] <- mu + e
 }
 mypop <- cbind(mypop, Z)
 ```
@@ -312,7 +315,7 @@ mysample <- spsample(x = mypop, type = "regular", cellsize = c(100, 100),
 zsim_sample <- over(mysample, mypop)
 coordinates(s_0) <- ~ s1 + s2
 zpred_OK <- v_zpred_OK <- NULL
-for (i in seq_len(ncol(Z))) {
+for (i in seq_len(ncol(zsim_sample))) {
   mysample$z <- zsim_sample[, i]
   predictions <- krige(
     formula = z ~ 1,
@@ -390,7 +393,7 @@ The optimal kriging weights $\lambda_i,\; i = 1, \dots ,n$ are obtained in a sim
 \left[
 \begin{array}{c}
 \pmb{\lambda}\\
-\nu\\
+\pmb{\nu}\\
 \end{array}
 \right]
 =
@@ -418,12 +421,12 @@ with
 (\#eq:MatrixXinKEDsystem)
 \end{eqnarray}
 
-The submatrix $\mathbf{0}$ is a $((p+1) \times (p+1))$ matrix with zeroes, $\nu$ a ($p+1$) vector with Lagrange multipliers, and $\mathbf{x}_0$ a $(p+1)$ vector with covariate values at the prediction location (including a 1 as the first entry).
+The submatrix $\mathbf{0}$ is a $((p+1) \times (p+1))$ matrix with zeroes, $\pmb{\nu}$ a ($p+1$) vector with Lagrange multipliers, and $\mathbf{x}_0$ a $(p+1)$ vector with covariate values at the prediction location (including a 1 as the first entry).
 
 The kriging variance with KED equals
 
 \begin{equation}
-V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \lambda^{\mathrm{T}}\mathbf{c}_0 - \nu^{\mathrm{T}} \mathbf{x}_0 \;.
+V_{\mathrm{KED}}(\widehat{Z}(\mathbf{s}_0))= \sigma^2 - \pmb{\lambda}^{\mathrm{T}}\mathbf{c}_0 - \pmb{\nu}^{\mathrm{T}} \mathbf{x}_0 \;.
 (\#eq:KEDvariance)
 \end{equation}
 
