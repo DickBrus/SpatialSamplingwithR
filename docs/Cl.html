@@ -23,7 +23,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2023-02-06" />
+<meta name="date" content="2023-03-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -676,6 +676,7 @@ The problem is the computation of the inclusion probabilities of the clusters. A
 <span id="cb104-7"><a href="Cl.html#cb104-7" aria-hidden="true" tabindex="-1"></a>clusters <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(grdVoorst<span class="sc">$</span>cluster))</span>
 <span id="cb104-8"><a href="Cl.html#cb104-8" aria-hidden="true" tabindex="-1"></a>clusters_sampled <span class="ot">&lt;-</span> clusters[sampleind <span class="sc">==</span> <span class="dv">1</span>]</span>
 <span id="cb104-9"><a href="Cl.html#cb104-9" aria-hidden="true" tabindex="-1"></a>mysample <span class="ot">&lt;-</span> grdVoorst[grdVoorst<span class="sc">$</span>cluster <span class="sc">%in%</span> clusters_sampled, ]</span></code></pre></div>
+<p>All inclusion probabilities <code>pi</code> are smaller than 1. However, this is not guaranteed when computed as in the code chunk above. In case there are units whose size is an extreme positive outlier, the inclusion probabilities of these units can become larger than 1. These units then are always selected. The inclusion probabilities of the remaining units must be recomputed, using a reduced sample size and the sizes of the remaining units. This is what is done with function <code>inclusionprobabilities</code> of package <strong>sampling</strong>.</p>
 <p>The population mean can be estimated by the <span class="math inline">\(\pi\)</span> estimator by writing a few lines of <strong>R</strong> code yourself or by using function <code>svymean</code> of package <strong>survey</strong> as shown hereafter. Estimation of the sampling variance in pps sampling of clusters without replacement is difficult<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>. A simple solution is to treat the cluster sample as a ppswr sample and to estimate the variance with Equation <a href="Cl.html#eq:VarEstMeanCl">(6.7)</a>. With small sampling fractions, this variance approximation is fine: the overestimation of the variance is negligible. For larger sampling fractions, various alternative variance approximations are developed, see <span class="citation">Berger (<a href="#ref-Berger2004" role="doc-biblioref">2004</a>)</span> for details. One of the methods is Brewer’s method, which is implemented in function <code>svydesign</code>.</p>
 <div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="Cl.html#cb105-1" aria-hidden="true" tabindex="-1"></a>mysample<span class="sc">$</span>pi <span class="ot">&lt;-</span> n <span class="sc">*</span> M_cl[mysample<span class="sc">$</span>cluster] <span class="sc">/</span> M</span>
 <span id="cb105-2"><a href="Cl.html#cb105-2" aria-hidden="true" tabindex="-1"></a>design_clppswor <span class="ot">&lt;-</span> <span class="fu">svydesign</span>(</span>
