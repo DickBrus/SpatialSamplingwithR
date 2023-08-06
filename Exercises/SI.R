@@ -5,6 +5,9 @@ N <- nrow(grdVoorst)
 set.seed(314)
 units <- sample(N, size = n, replace = TRUE)
 mysample <- grdVoorst[units, ]
+cellsize <- 25
+mysample$s1 <- jitter(mysample$s1, amount = cellsize / 2)
+mysample$s2 <- jitter(mysample$s2, amount = cellsize / 2)
 print(mz <- mean(mysample$z))
 
 v_mz <- var(mysample$z) / n

@@ -528,11 +528,10 @@ ggplot(data = grdXuancheng) +
   coord_fixed()
 ```
 
-The strata can be constructed with the package **stratification** [@Baillargeon2011]. Care should be taken that the data are sorted in ascending order by the variable used for stratification, see help of function `strata.cumrootf`. Argument `n` of this function is the total sample size, but this value has no effect on the stratification. Argument `Ls` is the number of strata. I arbitrarily chose to construct five strata.  Argument `nclass` is the number of bins of the histogram. The output object of function `strata.cumrootf` is a list containing amongst others a numeric vector with the stratum bounds (`bh`) and a factor with the stratum levels of the grid cells (`stratumID`). Finally, note that the values of the stratification variable must be positive. The minimum elevation is -5 m, so I added the absolute value of this minimum to elevation.
+The strata can be constructed with the package **stratification** [@Baillargeon2011]. Argument `n` of this function is the total sample size, but this value has no effect on the stratification. Argument `Ls` is the number of strata. I arbitrarily chose to construct five strata.  Argument `nclass` is the number of bins of the histogram. The output object of function `strata.cumrootf` is a list containing amongst others a numeric vector with the stratum bounds (`bh`) and a factor with the stratum levels of the grid cells (`stratumID`). Finally, note that the values of the stratification variable must be positive. The minimum elevation is -5 m, so I added the absolute value of this minimum to elevation.
 
 ```{r, echo = FALSE, eval = FALSE}
 library(stratification)
-grdXuancheng <- grdXuancheng[order(grdXuancheng$dem), ]
 dem_new <- grdXuancheng$dem + abs(min(grdXuancheng$dem))
 crfstrata <- strata.cumrootf(x = dem_new, n = 100, Ls = 5, nclass = 500)
 bh <- crfstrata$bh
@@ -542,7 +541,6 @@ grdXuancheng$crfstrata <- crfstrata$stratumID
 ```{r}
 library(stratification)
 grdXuancheng <- grdXuancheng %>%
-  arrange(dem) %>%
   mutate(dem_new = dem + abs(min(dem)))
 crfstrata <- strata.cumrootf(
   x = grdXuancheng$dem_new, n = 100, Ls = 5, nclass = 500)
@@ -574,7 +572,7 @@ ggplot(data = grdXuancheng) +
 #### Exercises {-}
 
 5. Write an **R** script to compute five *cum-root-f* strata for Eastern Amazonia (`grdAmazonia` in package **sswr**) to estimate the population mean of aboveground biomass (AGB), using log-transformed short-wave infrared radiation (SWIR2)  as a stratification variable.   
-    +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**. Sort the units first in ascending order on lnSWIR2. Use the stratum sample sizes as computed by function `strata.cumrootf`.  What allocation is used for computing the stratum sample sizes?
+    +  Compute ten *cum-root-f* strata, using function `strata` of package **sampling**.
     + Select a stratified simple random sample of 100 units. First, compute the stratum sample sizes for proportional allocation.
     + Estimate the population mean of AGB and its sampling variance.
     + Compute the true sampling variance of the estimator of the mean for this sampling design (see Exercise 1 for a hint).

@@ -24,7 +24,7 @@ units <- sampling::strata(
 mysample <- getdata(grdVoorst, units)
 head(mysample)
 
-#estimate population means and standard error of estimator
+#estimate population mean and standard error of estimator, see Eqns 4.1 and 4.4
 mz_h <- tapply(mysample$z, INDEX = mysample$stratum, FUN = mean)
 print(mz <- sum(w_h * mz_h))
 S2z_h <- tapply(mysample$z, INDEX = mysample$stratum, FUN = var)
@@ -41,7 +41,7 @@ print(se_mz_true <- sqrt(sum(w_h^2 * v_mz_h_true)))
 #compute 95% confidence interval estimate of population mean with function confint of package survey
 library(survey)
 
-#first add stratum weights to the selected sample
+#first add sampling weights to the selected sample
 labels <- sort(unique(mysample$stratum))
 lut <- data.frame(stratum = labels, weight = N_h / n_h)
 mysample <- merge(x = mysample, y = lut)

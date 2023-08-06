@@ -11,8 +11,7 @@ nclass <- H * 100 #number of classes used in computing the histogram
 
 #compute lnSWIR2, and sort tibble on lnSWIR2
 grdAmazonia <- grdAmazonia %>%
-  mutate(lnSWIR = log(SWIR2)) %>%
-  arrange(lnSWIR2)
+  mutate(lnSWIR = log(SWIR2))
 
 #NB n does not influence the optimal stratification
 n <- 100
