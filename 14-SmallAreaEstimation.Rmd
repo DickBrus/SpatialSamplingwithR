@@ -254,6 +254,7 @@ library(forestinventory)
 n <- 200
 set.seed(314)
 units <- sample(nrow(grdAmazonia), size = n, replace = FALSE)
+mysample <- grdAmazonia[units, c("AGB", "SWIR2", "Ecoregion")]
 grdAmazonia <- grdAmazonia %>%
   mutate(lnSWIR2 = log(SWIR2),
          id = row_number(),
@@ -263,12 +264,11 @@ mx_eco_pop <- tapply(
   grdAmazonia$lnSWIR2, INDEX = grdAmazonia$Ecoregion, FUN = mean)
 mX_eco_pop <- data.frame(
   Intercept = rep(1, length(mx_eco_pop)), lnSWIR2 = mx_eco_pop)
-ecos_in_sam <- unique(mysample$Ecoregion)
 res <- forestinventory::twophase(AGB ~ lnSWIR2,
   data = as.data.frame(grdAmazonia),
   phase_id = list(phase.col = "ind", terrgrid.id = 1),
   small_area = list(sa.col = "Ecoregion",
-                    areas = sort(ecos_in_sam),
+                    areas = sort(unique(mysample$Ecoregion)),
                     unbiased = TRUE),
   psmall = TRUE, exhaustive = mX_eco_pop)
 regr <- res$estimation
@@ -659,6 +659,7 @@ It makes more sense to compare the two model-based predictions, the random inter
 (ref:MBvsMBlabel) Scatter plot of model-based predictions of the mean AGB (10^9^ kg ha^-1^) of ecoregions in Eastern Amazonia, obtained with the random intercept model and the geostatistical model. The solid line is the 1:1 line.
 
 ```{r MBvsMB, echo = FALSE, fig.width = 5, fig.cap = "(ref:MBvsMBlabel)"}
+ecos_in_sam <- sort(unique(mysample$Ecoregion))
 res <- eblup.mse.f.wrap(domain.data = df_eco, lme.obj = lmm_AGB)
 TF <- (ecoregions %in% ecos_in_sam)
 n_eco <- tapply(mysample$AGB, INDEX = mysample$Ecoregion, FUN = length)

@@ -419,6 +419,7 @@ ggplot(df_lf) +
   scale_y_continuous(name = "Northing (km)") +
   facet_wrap(~ name, ncol = 2, nrow = 2) +
   coord_fixed()
+rm(df_lf)
 ```
 
 The spatial means at the four times can be estimated by the sample means (Equation \@ref(eq:HTMeanSI)), the variances of the mean estimators by Equation \@ref(eq:EstVarMeanSIR). The covariances of the estimators of the means at two different times can be estimated by Equation \@ref(eq:covartwoelementaryestimates) with $m$ equal to the sample size $n$. The estimated current mean (the spatial mean at the fourth survey) and the estimated standard error of the estimator of the current mean can be simply extracted from the vector with estimated means and from the matrix with estimated variances and covariances.
@@ -493,53 +494,54 @@ The units of the finite population are selected by simple random sampling *with 
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_IS[mysample_IS$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+  #  geom_text(data = NULL, x = 3600, y = 2400, label = "2004") +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
   theme(legend.position = "none")
 
-
 plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_IS[mysample_IS$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2009") +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
   theme(legend.position = "none")
 
-
 plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_IS[mysample_IS$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2014") +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
   theme(legend.position = "none")
 
-
 plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_IS[mysample_IS$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2019") +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
   theme(legend.position = "none")
 
-
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2, ncol = 2)
+rm(plt1, plt2, ply3, plt4)
 ```
 
 The spatial means are estimated with the $\pi$ estimator as there is no partial overlap of the spatial samples. All covariances of the mean estimators are zero. Estimation of the space-time parameters is done as before with the SS space-time sample. Four data frames of $n$ rows are first made with the data observed in a specific panel. The variables of these four data frames are joined into a single data frame. The spatial means at the four times are then estimated by the sample means, computed with function `apply`.
 
 ```{r}
-panel_a <- filter(mysample_IS, panel == "a")[, c("TAS2004")]
-panel_b <- filter(mysample_IS, panel == "b")[, c("TAS2009")]
-panel_c <- filter(mysample_IS, panel == "c")[, c("TAS2014")]
-panel_d <- filter(mysample_IS, panel == "d")[, c("TAS2019")]
+panel_a <- filter(mysample_IS, panel == "a") %>% dplyr::select(TAS2004)
+panel_b <- filter(mysample_IS, panel == "b") %>% dplyr::select(TAS2009)
+panel_c <- filter(mysample_IS, panel == "c") %>% dplyr::select(TAS2014)
+panel_d <- filter(mysample_IS, panel == "d") %>% dplyr::select(TAS2019)
 panel_abcd <- cbind(panel_a, panel_b, panel_c, panel_d)
 mz <- apply(panel_abcd, MARGIN = 2, FUN = mean)
 C <- var(panel_abcd) / n
@@ -576,6 +578,7 @@ mysample_SA$panel <- rep(c("a", "b"), each = n)
 plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_SA[mysample_SA$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2004") +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -586,6 +589,7 @@ plt1 <- ggplot(grd) +
 plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_SA[mysample_SA$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2009") +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -596,6 +600,7 @@ plt2 <- ggplot(grd) +
 plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_SA[mysample_SA$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2014") +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -606,21 +611,22 @@ plt3 <- ggplot(grd) +
 plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_SA[mysample_SA$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2019") +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
   coord_fixed() +
   theme(legend.position = "none")
 
-
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
+rm(plt1, plt2, ply3, plt4)
 ```
 
 In SA sampling there is no partial overlap of the spatial samples at different times: there is either no coordinated overlap or full overlap. Spatial means therefore can be estimated by the usual $\pi$ estimator. Two data frames of $n$ rows are first made with the data observed in a specific panel. The variables of these two data frames are joined into a single data frame. The spatial means at the four times are then estimated by the sample means, computed with function `apply`.
 
 ```{r}
-panel_a <- filter(mysample_SA, panel == "a")[, c("TAS2004", "TAS2014")]
-panel_b <- filter(mysample_SA, panel == "b")[, c("TAS2009", "TAS2019")]
+panel_a <- filter(mysample_SA, panel == "a") %>% dplyr::select(TAS2004, TAS2014)
+panel_b <- filter(mysample_SA, panel == "b") %>% dplyr::select(TAS2009, TAS2019)
 panel_ab <- cbind(panel_a[1], panel_b[1], panel_a[2], panel_b[2])
 mz <- apply(panel_ab, MARGIN = 2, FUN = mean)
 ```
@@ -664,6 +670,7 @@ plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2004") +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -675,6 +682,7 @@ plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2009") +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -686,6 +694,7 @@ plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2014") +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -697,6 +706,7 @@ plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_SP[mysample_SP$panel == "a", ], mapping = aes(x = x, y = y)) +
   geom_point(mysample_SP[mysample_SP$panel == "e", ], mapping = aes(x = x, y = y), shape = 5) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2019") +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -705,6 +715,7 @@ plt4 <- ggplot(grd) +
 
 
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
+rm(plt1, plt2, ply3, plt4)
 ```
 
 With SP sampling, the spatial means are estimated by the design-based GLS estimator (Equation \@ref(eq:DBGLS)). As a first step, the eight elementary estimates (two per sampling time) are computed and collected in a vector. Note the order of the elementary estimates: first the estimated spatial means of 2004, 2009, 2014, and 2019, estimated from the panel with fixed sampling locations, then the spatial means estimated from the panels with swarming locations. The design matrix $\mathbf{X}$ corresponding to this order of elementary estimates is constructed.
@@ -730,14 +741,14 @@ X <- rbind(diag(4), diag(4))
 The variances and covariances of the elementary estimates of the panel with fixed locations (SS subsample) are estimated, as well as the variances of the elementary estimates of the panels with swarming locations (IS subsample). The two variance-covariance matrices and a 4 $\times$ 4 submatrix with all zeroes are combined into a single matrix, see matrix \@ref(eq:CmatrixSP).
 
 ```{r}
-mysubsample_SS <- mysample_SP[mysample_SP$panel == "a", ]
-C_SS <- var(
-  mysubsample_SS[, c("TAS2004", "TAS2009", "TAS2014", "TAS2019")]) / (n / 2)
-mysubsample_IS <- cbind(mysample_SP$TAS2004[mysample_SP$panel == "b"],
-                        mysample_SP$TAS2009[mysample_SP$panel == "c"],
-                        mysample_SP$TAS2014[mysample_SP$panel == "d"],
-                        mysample_SP$TAS2019[mysample_SP$panel == "e"])
-C_IS <- var(mysubsample_IS) / (n / 2)
+C_SS <- filter(mysample_SP, panel == "a") %>%
+  dplyr::select(TAS2004, TAS2009, TAS2014, TAS2019) %>%
+  var() / (n / 2)
+C_IS <- cbind(mysample_SP$TAS2004[mysample_SP$panel == "b"],
+              mysample_SP$TAS2009[mysample_SP$panel == "c"],
+              mysample_SP$TAS2014[mysample_SP$panel == "d"],
+              mysample_SP$TAS2019[mysample_SP$panel == "e"]) %>%
+  var() / (n / 2)
 C_IS[row(C_IS) != col(C_IS)] <- 0
 zeroes <- matrix(0, nrow = 4, ncol = 4)
 C <- rbind(cbind(C_SS, zeroes), cbind(zeroes, C_IS))
@@ -787,6 +798,7 @@ plt1 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2004)) +
   geom_point(mysample_RP[mysample_RP$panel == "a", ], mapping = aes(x = x, y = y), shape = 1) +
   geom_point(mysample_RP[mysample_RP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2004") +
   scale_fill_viridis_c(name = "T2004", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -798,6 +810,7 @@ plt2 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2009)) +
   geom_point(mysample_RP[mysample_RP$panel == "b", ], mapping = aes(x = x, y = y), shape = 2) +
   geom_point(mysample_RP[mysample_RP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2009") +
   scale_fill_viridis_c(name = "T2009", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -808,6 +821,7 @@ plt3 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2014)) +
   geom_point(mysample_RP[mysample_RP$panel == "c", ], mapping = aes(x = x, y = y), shape = 3) +
   geom_point(mysample_RP[mysample_RP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2014") +
   scale_fill_viridis_c(name = "T2014", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -819,6 +833,7 @@ plt4 <- ggplot(grd) +
   geom_raster(mapping = aes(x = x, y = y, fill = TAS2019)) +
   geom_point(mysample_RP[mysample_RP$panel == "d", ], mapping = aes(x = x, y = y), shape = 4) +
   geom_point(mysample_RP[mysample_RP$panel == "e", ], mapping = aes(x = x, y = y), shape = 5) +
+#  geom_text(data = NULL, x = 3600, y = 2400, label = "2019") +
   scale_fill_viridis_c(name = "T2019", limits = c(-2, 20)) +
   scale_x_continuous(name = "Easting (km)") +
   scale_y_continuous(name = "Northing (km)") +
@@ -827,6 +842,8 @@ plt4 <- ggplot(grd) +
 
 
 grid.arrange(plt1, plt2, plt3, plt4, nrow = 2)
+rm(plt1, plt2, ply3, plt4)
+
 ```
 
 Two elementary estimates per sampling time are computed and collected in a vector. Note that now the elementary estimates are ordered by sampling time. The design matrix corresponding to this order is constructed.
@@ -847,15 +864,15 @@ X <- matrix(c(rep(c(1, 0, 0, 0), 2),
               rep(c(0, 0, 0, 1), 2)), nrow = 8, ncol = 4, byrow = TRUE)
 ```
 
-To construct the variance-covariance matrix of the eight elementary estimates, first the 2 $\times$ 2 matrices with estimated variances and covariances are computed for panels b, c, and d. These three panels are used to estimate the spatial means of two consecutive years: the locations of panel b are used to estimate the spatial means for 2004 and 2009, panel c for 2009 and 2014, and panel d for 2014 and 2019 (Figure \@ref(fig:SpaceTimeDesigns)). These three matrices are copied into the 8 $\times$ 8 matrix, see matrix \@ref(eq:CmatrixRP). Finally, the estimated variances of the estimators of the spatial means in 2004 and 2019 are computed and copied to the upper left and lower right entry of the variance-covariance matrix, respectively.
+To construct the variance-covariance matrix of the eight elementary estimates, first the 2 $\times$ 2 matrices with estimated variances and covariances are computed for panels b, c, and d. These three panels are used to estimate the spatial means of two consecutive years: the locations of panel b are used to estimate the spatial means for 2004 and 2009, panel c for 2009 and 2014, and panel d for 2014 and 2019 (Figure \@ref(fig:SpaceTimeDesigns)). These three matrices are copied into the 8 $\times$ 8 matrix, see matrix \@ref(eq:CmatrixRP). Finally, the data of panel a and e are used to compute the estimated variances of the estimators of the spatial means in 2004 and 2019, respectively, and copied to the upper left and lower right entry of the variance-covariance matrix, respectively.
 
 ```{r}
-mysubsample <- mysample_RP[mysample_RP$panel == "b", c("TAS2004", "TAS2009")]
-C_b <- var(mysubsample) / (n / 2)
-mysubsample <- mysample_RP[mysample_RP$panel == "c", c("TAS2009", "TAS2014")]
-C_c <- var(mysubsample) / (n / 2)
-mysubsample <- mysample_RP[mysample_RP$panel == "d", c("TAS2014", "TAS2019")]
-C_d <- var(mysubsample) / (n / 2)
+C_b <- filter(mysample_RP, panel == "b") %>% dplyr::select(TAS2004, TAS2009) %>%
+  var() / (n / 2)
+C_c <- filter(mysample_RP, panel == "c") %>% dplyr::select(TAS2009, TAS2014) %>%
+  var() / (n / 2)
+C_d <- filter(mysample_RP, panel == "d") %>% dplyr::select(TAS2014, TAS2019) %>%
+  var() / (n / 2)
 C <- matrix(data = 0, ncol = 8, nrow = 8)
 C[2:3, 2:3] <- C_b
 C[4:5, 4:5] <- C_c
