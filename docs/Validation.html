@@ -23,7 +23,7 @@
 <meta name="author" content="Dick J. Brus" />
 
 
-<meta name="date" content="2023-08-13" />
+<meta name="date" content="2023-09-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -620,41 +620,41 @@ Figure 25.2: Stratified simple random sample for validation of the two maps of t
 <div id="estimation-of-the-population-mean-error-and-mean-squared-error" class="section level3 hasAnchor" number="25.2.1">
 <h3><span class="header-section-number">25.2.1</span> Estimation of the population mean error and mean squared error<a href="Validation.html#estimation-of-the-population-mean-error-and-mean-squared-error" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>To estimate the population MSE of the two maps, first the squared prediction errors are computed. The name of the measured study variable at the validation sample in <code>data.frame</code> <code>sample_test</code> is <code>SOM_A_hori</code>. Four new variables are added to <code>sample_test</code> using function <code>mutate</code>, by computing the prediction errors for KED and RF and squaring these errors.</p>
-<div class="sourceCode" id="cb534"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb534-1"><a href="Validation.html#cb534-1" tabindex="-1"></a>sample_test <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;results/STSI_Xuancheng_SOMpred.csv&quot;</span>)</span>
-<span id="cb534-2"><a href="Validation.html#cb534-2" tabindex="-1"></a>sample_test <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb534-3"><a href="Validation.html#cb534-3" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb534-4"><a href="Validation.html#cb534-4" tabindex="-1"></a>      <span class="at">eKED =</span> SOM_A_hori <span class="sc">-</span> SOM_KED,</span>
-<span id="cb534-5"><a href="Validation.html#cb534-5" tabindex="-1"></a>      <span class="at">eRF =</span> SOM_A_hori <span class="sc">-</span> SOM_RF,</span>
-<span id="cb534-6"><a href="Validation.html#cb534-6" tabindex="-1"></a>      <span class="at">e2KED =</span> (SOM_A_hori <span class="sc">-</span> SOM_KED)<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb534-7"><a href="Validation.html#cb534-7" tabindex="-1"></a>      <span class="at">e2RF =</span> (SOM_A_hori <span class="sc">-</span> SOM_RF)<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb533"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb533-1"><a href="Validation.html#cb533-1" tabindex="-1"></a>sample_test <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;results/STSI_Xuancheng_SOMpred.csv&quot;</span>)</span>
+<span id="cb533-2"><a href="Validation.html#cb533-2" tabindex="-1"></a>sample_test <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb533-3"><a href="Validation.html#cb533-3" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb533-4"><a href="Validation.html#cb533-4" tabindex="-1"></a>      <span class="at">eKED =</span> SOM_A_hori <span class="sc">-</span> SOM_KED,</span>
+<span id="cb533-5"><a href="Validation.html#cb533-5" tabindex="-1"></a>      <span class="at">eRF =</span> SOM_A_hori <span class="sc">-</span> SOM_RF,</span>
+<span id="cb533-6"><a href="Validation.html#cb533-6" tabindex="-1"></a>      <span class="at">e2KED =</span> (SOM_A_hori <span class="sc">-</span> SOM_KED)<span class="sc">^</span><span class="dv">2</span>,</span>
+<span id="cb533-7"><a href="Validation.html#cb533-7" tabindex="-1"></a>      <span class="at">e2RF =</span> (SOM_A_hori <span class="sc">-</span> SOM_RF)<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
 <p>These four new variables now are our study variables of which we would like to estimate the population means. The population means can be estimated as explained in Chapter <a href="STSI.html#STSI">4</a>. First, the stratum sizes and stratum weights are computed, i.e., the number and relative number of raster cells per stratum (Figure <a href="Validation.html#fig:validationsample">25.2</a>).</p>
-<div class="sourceCode" id="cb535"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb535-1"><a href="Validation.html#cb535-1" tabindex="-1"></a>rmap <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="at">x =</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata/Geo_Xuancheng.tif&quot;</span>, <span class="at">package =</span> <span class="st">&quot;sswr&quot;</span>))</span>
-<span id="cb535-2"><a href="Validation.html#cb535-2" tabindex="-1"></a>strata_Xuancheng <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(rmap, <span class="at">xy =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb535-3"><a href="Validation.html#cb535-3" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">stratum =</span> Geo_Xuancheng) <span class="sc">%&gt;%</span></span>
-<span id="cb535-4"><a href="Validation.html#cb535-4" tabindex="-1"></a>  <span class="fu">filter</span>(stratum <span class="sc">!=</span> <span class="dv">99</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb535-5"><a href="Validation.html#cb535-5" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
-<span id="cb535-6"><a href="Validation.html#cb535-6" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">N_h =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb535-7"><a href="Validation.html#cb535-7" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">w_h =</span> N_h <span class="sc">/</span> <span class="fu">sum</span>(N_h))</span></code></pre></div>
+<div class="sourceCode" id="cb534"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb534-1"><a href="Validation.html#cb534-1" tabindex="-1"></a>rmap <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="at">x =</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata/Geo_Xuancheng.tif&quot;</span>, <span class="at">package =</span> <span class="st">&quot;sswr&quot;</span>))</span>
+<span id="cb534-2"><a href="Validation.html#cb534-2" tabindex="-1"></a>strata_Xuancheng <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(rmap, <span class="at">xy =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb534-3"><a href="Validation.html#cb534-3" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">stratum =</span> Geo_Xuancheng) <span class="sc">%&gt;%</span></span>
+<span id="cb534-4"><a href="Validation.html#cb534-4" tabindex="-1"></a>  <span class="fu">filter</span>(stratum <span class="sc">!=</span> <span class="dv">99</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb534-5"><a href="Validation.html#cb534-5" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
+<span id="cb534-6"><a href="Validation.html#cb534-6" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">N_h =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb534-7"><a href="Validation.html#cb534-7" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">w_h =</span> N_h <span class="sc">/</span> <span class="fu">sum</span>(N_h))</span></code></pre></div>
 <p>Next, the stratum means of the prediction errors, obtained with KED and RF, are estimated by the sample means, and the population mean of the errors are estimated by the weighted mean of the estimated stratum means.</p>
-<div class="sourceCode" id="cb536"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb536-1"><a href="Validation.html#cb536-1" tabindex="-1"></a>me <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<div class="sourceCode" id="cb535"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb535-1"><a href="Validation.html#cb535-1" tabindex="-1"></a>me <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb535-2"><a href="Validation.html#cb535-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
+<span id="cb535-3"><a href="Validation.html#cb535-3" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb535-4"><a href="Validation.html#cb535-4" tabindex="-1"></a>      <span class="at">meKED_h =</span> <span class="fu">mean</span>(eKED),</span>
+<span id="cb535-5"><a href="Validation.html#cb535-5" tabindex="-1"></a>      <span class="at">meRF_h =</span> <span class="fu">mean</span>(eRF)) <span class="sc">%&gt;%</span></span>
+<span id="cb535-6"><a href="Validation.html#cb535-6" tabindex="-1"></a>    <span class="fu">left_join</span>(strata_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb535-7"><a href="Validation.html#cb535-7" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb535-8"><a href="Validation.html#cb535-8" tabindex="-1"></a>      <span class="at">meKED =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> meKED_h),</span>
+<span id="cb535-9"><a href="Validation.html#cb535-9" tabindex="-1"></a>      <span class="at">meRF =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> meRF_h))</span></code></pre></div>
+<p>This is repeated for the squared prediction errors.</p>
+<div class="sourceCode" id="cb536"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb536-1"><a href="Validation.html#cb536-1" tabindex="-1"></a>mse <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
 <span id="cb536-2"><a href="Validation.html#cb536-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
 <span id="cb536-3"><a href="Validation.html#cb536-3" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb536-4"><a href="Validation.html#cb536-4" tabindex="-1"></a>      <span class="at">meKED_h =</span> <span class="fu">mean</span>(eKED),</span>
-<span id="cb536-5"><a href="Validation.html#cb536-5" tabindex="-1"></a>      <span class="at">meRF_h =</span> <span class="fu">mean</span>(eRF)) <span class="sc">%&gt;%</span></span>
+<span id="cb536-4"><a href="Validation.html#cb536-4" tabindex="-1"></a>      <span class="at">mseKED_h =</span> <span class="fu">mean</span>(e2KED),</span>
+<span id="cb536-5"><a href="Validation.html#cb536-5" tabindex="-1"></a>      <span class="at">mseRF_h =</span> <span class="fu">mean</span>(e2RF)) <span class="sc">%&gt;%</span></span>
 <span id="cb536-6"><a href="Validation.html#cb536-6" tabindex="-1"></a>    <span class="fu">left_join</span>(strata_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb536-7"><a href="Validation.html#cb536-7" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb536-8"><a href="Validation.html#cb536-8" tabindex="-1"></a>      <span class="at">meKED =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> meKED_h),</span>
-<span id="cb536-9"><a href="Validation.html#cb536-9" tabindex="-1"></a>      <span class="at">meRF =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> meRF_h))</span></code></pre></div>
-<p>This is repeated for the squared prediction errors.</p>
-<div class="sourceCode" id="cb537"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb537-1"><a href="Validation.html#cb537-1" tabindex="-1"></a>mse <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb537-2"><a href="Validation.html#cb537-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
-<span id="cb537-3"><a href="Validation.html#cb537-3" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb537-4"><a href="Validation.html#cb537-4" tabindex="-1"></a>      <span class="at">mseKED_h =</span> <span class="fu">mean</span>(e2KED),</span>
-<span id="cb537-5"><a href="Validation.html#cb537-5" tabindex="-1"></a>      <span class="at">mseRF_h =</span> <span class="fu">mean</span>(e2RF)) <span class="sc">%&gt;%</span></span>
-<span id="cb537-6"><a href="Validation.html#cb537-6" tabindex="-1"></a>    <span class="fu">left_join</span>(strata_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb537-7"><a href="Validation.html#cb537-7" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb537-8"><a href="Validation.html#cb537-8" tabindex="-1"></a>      <span class="at">mseKED =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> mseKED_h),</span>
-<span id="cb537-9"><a href="Validation.html#cb537-9" tabindex="-1"></a>      <span class="at">mseRF =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> mseRF_h))</span></code></pre></div>
+<span id="cb536-8"><a href="Validation.html#cb536-8" tabindex="-1"></a>      <span class="at">mseKED =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> mseKED_h),</span>
+<span id="cb536-9"><a href="Validation.html#cb536-9" tabindex="-1"></a>      <span class="at">mseRF =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> mseRF_h))</span></code></pre></div>
 <p>The estimated MSE of the KED map equals 89.3 (g kg<sup>-1</sup>)<sup>2</sup>, that of the RF map 93.8 (g kg<sup>-1</sup>)<sup>2</sup>.</p>
 <div id="exercises-35" class="section level4 unnumbered hasAnchor">
 <h4>Exercises<a href="Validation.html#exercises-35" class="anchor-section" aria-label="Anchor link to header"></a></h4>
@@ -666,10 +666,10 @@ Figure 25.2: Stratified simple random sample for validation of the two maps of t
 <div id="estimation-of-the-standard-error-of-the-estimator-of-the-population-mean-error-and-mean-squared-error" class="section level3 hasAnchor" number="25.2.2">
 <h3><span class="header-section-number">25.2.2</span> Estimation of the standard error of the estimator of the population mean error and mean squared error<a href="Validation.html#estimation-of-the-standard-error-of-the-estimator-of-the-population-mean-error-and-mean-squared-error" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We are uncertain about both population MSEs, as we measured the squared errors at 62 sampling points only. So, we would like to know how uncertain we are. This uncertainty is quantified by the standard error of the estimator of the population MSE. A problem is that in the second stratum we have only one sampling point. So, for this stratum we cannot compute the variance of the squared errors. To compute the variance, we need at least two sampling points.</p>
-<div class="sourceCode" id="cb538"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb538-1"><a href="Validation.html#cb538-1" tabindex="-1"></a>n_strata <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb538-2"><a href="Validation.html#cb538-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
-<span id="cb538-3"><a href="Validation.html#cb538-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>())</span>
-<span id="cb538-4"><a href="Validation.html#cb538-4" tabindex="-1"></a>n_strata</span></code></pre></div>
+<div class="sourceCode" id="cb537"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb537-1"><a href="Validation.html#cb537-1" tabindex="-1"></a>n_strata <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb537-2"><a href="Validation.html#cb537-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
+<span id="cb537-3"><a href="Validation.html#cb537-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>())</span>
+<span id="cb537-4"><a href="Validation.html#cb537-4" tabindex="-1"></a>n_strata</span></code></pre></div>
 <pre><code># A tibble: 8 x 2
   stratum     n
     &lt;int&gt; &lt;int&gt;
@@ -682,36 +682,36 @@ Figure 25.2: Stratified simple random sample for validation of the two maps of t
 7       7     9
 8       8     4</code></pre>
 <p>A solution is to merge stratum 2 with stratum 1, which is a similar geological map unit (we know this from the domain expert). This is referred to as collapsing the strata. An identifier for the collapsed strata is added to <code>n_strata</code>. This table is subsequently used to add the collapsed stratum identifiers to <code>sample_test</code> and <code>strata_Xuancheng</code>.</p>
-<div class="sourceCode" id="cb540"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb540-1"><a href="Validation.html#cb540-1" tabindex="-1"></a>n_strata <span class="ot">&lt;-</span> n_strata <span class="sc">%&gt;%</span></span>
-<span id="cb540-2"><a href="Validation.html#cb540-2" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">stratum_clp =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>))</span>
-<span id="cb540-3"><a href="Validation.html#cb540-3" tabindex="-1"></a>sample_test <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb540-4"><a href="Validation.html#cb540-4" tabindex="-1"></a>    <span class="fu">left_join</span>(n_strata, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>)</span>
-<span id="cb540-5"><a href="Validation.html#cb540-5" tabindex="-1"></a>strata_Xuancheng <span class="ot">&lt;-</span> strata_Xuancheng <span class="sc">%&gt;%</span></span>
-<span id="cb540-6"><a href="Validation.html#cb540-6" tabindex="-1"></a>    <span class="fu">left_join</span>(n_strata, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb539"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb539-1"><a href="Validation.html#cb539-1" tabindex="-1"></a>n_strata <span class="ot">&lt;-</span> n_strata <span class="sc">%&gt;%</span></span>
+<span id="cb539-2"><a href="Validation.html#cb539-2" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">stratum_clp =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>))</span>
+<span id="cb539-3"><a href="Validation.html#cb539-3" tabindex="-1"></a>sample_test <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb539-4"><a href="Validation.html#cb539-4" tabindex="-1"></a>    <span class="fu">left_join</span>(n_strata, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>)</span>
+<span id="cb539-5"><a href="Validation.html#cb539-5" tabindex="-1"></a>strata_Xuancheng <span class="ot">&lt;-</span> strata_Xuancheng <span class="sc">%&gt;%</span></span>
+<span id="cb539-6"><a href="Validation.html#cb539-6" tabindex="-1"></a>    <span class="fu">left_join</span>(n_strata, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>)</span></code></pre></div>
 <p>The collapsed strata can be used to estimate the standard errors of the estimators of the population MSEs. As a first step, the weights and the sample sizes of the collapsed strata are computed.</p>
-<div class="sourceCode" id="cb541"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb541-1"><a href="Validation.html#cb541-1" tabindex="-1"></a>strata_clp_Xuancheng <span class="ot">&lt;-</span> strata_Xuancheng <span class="sc">%&gt;%</span></span>
-<span id="cb541-2"><a href="Validation.html#cb541-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
-<span id="cb541-3"><a href="Validation.html#cb541-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">N_hc =</span> <span class="fu">sum</span>(N_h)) <span class="sc">%&gt;%</span></span>
-<span id="cb541-4"><a href="Validation.html#cb541-4" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">w_hc =</span> N_hc <span class="sc">/</span> <span class="fu">sum</span>(N_hc)) <span class="sc">%&gt;%</span></span>
-<span id="cb541-5"><a href="Validation.html#cb541-5" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
-<span id="cb541-6"><a href="Validation.html#cb541-6" tabindex="-1"></a>      sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb541-7"><a href="Validation.html#cb541-7" tabindex="-1"></a>        <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
-<span id="cb541-8"><a href="Validation.html#cb541-8" tabindex="-1"></a>        <span class="fu">summarise</span>(<span class="at">n_hc =</span> <span class="fu">n</span>()),</span>
-<span id="cb541-9"><a href="Validation.html#cb541-9" tabindex="-1"></a>      <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb540"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb540-1"><a href="Validation.html#cb540-1" tabindex="-1"></a>strata_clp_Xuancheng <span class="ot">&lt;-</span> strata_Xuancheng <span class="sc">%&gt;%</span></span>
+<span id="cb540-2"><a href="Validation.html#cb540-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
+<span id="cb540-3"><a href="Validation.html#cb540-3" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">N_hc =</span> <span class="fu">sum</span>(N_h)) <span class="sc">%&gt;%</span></span>
+<span id="cb540-4"><a href="Validation.html#cb540-4" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">w_hc =</span> N_hc <span class="sc">/</span> <span class="fu">sum</span>(N_hc)) <span class="sc">%&gt;%</span></span>
+<span id="cb540-5"><a href="Validation.html#cb540-5" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
+<span id="cb540-6"><a href="Validation.html#cb540-6" tabindex="-1"></a>      sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb540-7"><a href="Validation.html#cb540-7" tabindex="-1"></a>        <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
+<span id="cb540-8"><a href="Validation.html#cb540-8" tabindex="-1"></a>        <span class="fu">summarise</span>(<span class="at">n_hc =</span> <span class="fu">n</span>()),</span>
+<span id="cb540-9"><a href="Validation.html#cb540-9" tabindex="-1"></a>      <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>)</span></code></pre></div>
 <p>The sampling variance of the estimator of the mean of the (squared) prediction error can be estimated by Equation <a href="STSI.html#eq:EstVarMeanSTSI">(4.4)</a>. The estimated ME and MSE and their estimated standard errors are shown in Table <a href="Validation.html#tab:validationresults">25.1</a>.</p>
-<div class="sourceCode" id="cb542"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb542-1"><a href="Validation.html#cb542-1" tabindex="-1"></a>se <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb542-2"><a href="Validation.html#cb542-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
-<span id="cb542-3"><a href="Validation.html#cb542-3" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb542-4"><a href="Validation.html#cb542-4" tabindex="-1"></a>      <span class="at">s2e_KED_hc =</span> <span class="fu">var</span>(eKED),</span>
-<span id="cb542-5"><a href="Validation.html#cb542-5" tabindex="-1"></a>      <span class="at">s2e2_KED_hc =</span> <span class="fu">var</span>(e2KED),</span>
-<span id="cb542-6"><a href="Validation.html#cb542-6" tabindex="-1"></a>      <span class="at">s2e_RF_hc =</span> <span class="fu">var</span>(eRF),</span>
-<span id="cb542-7"><a href="Validation.html#cb542-7" tabindex="-1"></a>      <span class="at">s2e2_RF_hc =</span> <span class="fu">var</span>(e2RF)) <span class="sc">%&gt;%</span></span>
-<span id="cb542-8"><a href="Validation.html#cb542-8" tabindex="-1"></a>    <span class="fu">left_join</span>(strata_clp_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb542-9"><a href="Validation.html#cb542-9" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb542-10"><a href="Validation.html#cb542-10" tabindex="-1"></a>      <span class="at">se_me_KED =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e_KED_hc <span class="sc">/</span> n_hc)),</span>
-<span id="cb542-11"><a href="Validation.html#cb542-11" tabindex="-1"></a>      <span class="at">se_mse_KED =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e2_KED_hc <span class="sc">/</span> n_hc)),</span>
-<span id="cb542-12"><a href="Validation.html#cb542-12" tabindex="-1"></a>      <span class="at">se_me_RF =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e_RF_hc <span class="sc">/</span> n_hc)),      </span>
-<span id="cb542-13"><a href="Validation.html#cb542-13" tabindex="-1"></a>      <span class="at">se_mse_RF =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e2_RF_hc <span class="sc">/</span> n_hc)))</span></code></pre></div>
+<div class="sourceCode" id="cb541"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb541-1"><a href="Validation.html#cb541-1" tabindex="-1"></a>se <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb541-2"><a href="Validation.html#cb541-2" tabindex="-1"></a>    <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
+<span id="cb541-3"><a href="Validation.html#cb541-3" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb541-4"><a href="Validation.html#cb541-4" tabindex="-1"></a>      <span class="at">s2e_KED_hc =</span> <span class="fu">var</span>(eKED),</span>
+<span id="cb541-5"><a href="Validation.html#cb541-5" tabindex="-1"></a>      <span class="at">s2e2_KED_hc =</span> <span class="fu">var</span>(e2KED),</span>
+<span id="cb541-6"><a href="Validation.html#cb541-6" tabindex="-1"></a>      <span class="at">s2e_RF_hc =</span> <span class="fu">var</span>(eRF),</span>
+<span id="cb541-7"><a href="Validation.html#cb541-7" tabindex="-1"></a>      <span class="at">s2e2_RF_hc =</span> <span class="fu">var</span>(e2RF)) <span class="sc">%&gt;%</span></span>
+<span id="cb541-8"><a href="Validation.html#cb541-8" tabindex="-1"></a>    <span class="fu">left_join</span>(strata_clp_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb541-9"><a href="Validation.html#cb541-9" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb541-10"><a href="Validation.html#cb541-10" tabindex="-1"></a>      <span class="at">se_me_KED =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e_KED_hc <span class="sc">/</span> n_hc)),</span>
+<span id="cb541-11"><a href="Validation.html#cb541-11" tabindex="-1"></a>      <span class="at">se_mse_KED =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e2_KED_hc <span class="sc">/</span> n_hc)),</span>
+<span id="cb541-12"><a href="Validation.html#cb541-12" tabindex="-1"></a>      <span class="at">se_me_RF =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e_RF_hc <span class="sc">/</span> n_hc)),      </span>
+<span id="cb541-13"><a href="Validation.html#cb541-13" tabindex="-1"></a>      <span class="at">se_mse_RF =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2e2_RF_hc <span class="sc">/</span> n_hc)))</span></code></pre></div>
 <table class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:validationresults">Table 25.1: </span>Estimated population mean error (ME) and population mean squared error (MSE) of KED and RF map, and their standard errors.
@@ -783,41 +783,41 @@ MSE
 <div id="estimation-of-model-efficiency-coefficient" class="section level3 hasAnchor" number="25.2.3">
 <h3><span class="header-section-number">25.2.3</span> Estimation of model efficiency coefficient<a href="Validation.html#estimation-of-model-efficiency-coefficient" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>To estimate the MEC, we must first estimate the population variance of the study variable from the stratified simple random sample (the denominator in Equation <a href="Validation.html#eq:HTMEC">(25.7)</a>). First, the sizes and the sample sizes of the collapsed strata must be added to <code>sample_test</code>. Then the population variance is estimated with function <code>s2</code> of package <strong>surveyplanning</strong> (Subsection <a href="STSI.html#WhyStratify">4.1.2</a>).</p>
-<div class="sourceCode" id="cb543"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb543-1"><a href="Validation.html#cb543-1" tabindex="-1"></a><span class="fu">library</span>(surveyplanning)</span>
-<span id="cb543-2"><a href="Validation.html#cb543-2" tabindex="-1"></a>s2z <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb543-3"><a href="Validation.html#cb543-3" tabindex="-1"></a>  <span class="fu">left_join</span>(strata_clp_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb543-4"><a href="Validation.html#cb543-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">s2z =</span> <span class="fu">s2</span>(SOM_A_hori, <span class="at">w =</span> N_hc <span class="sc">/</span> n_hc)) <span class="sc">%&gt;%</span></span>
-<span id="cb543-5"><a href="Validation.html#cb543-5" tabindex="-1"></a>  flatten_dbl</span></code></pre></div>
+<div class="sourceCode" id="cb542"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb542-1"><a href="Validation.html#cb542-1" tabindex="-1"></a><span class="fu">library</span>(surveyplanning)</span>
+<span id="cb542-2"><a href="Validation.html#cb542-2" tabindex="-1"></a>s2z <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb542-3"><a href="Validation.html#cb542-3" tabindex="-1"></a>  <span class="fu">left_join</span>(strata_clp_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb542-4"><a href="Validation.html#cb542-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">s2z =</span> <span class="fu">s2</span>(SOM_A_hori, <span class="at">w =</span> N_hc <span class="sc">/</span> n_hc)) <span class="sc">%&gt;%</span></span>
+<span id="cb542-5"><a href="Validation.html#cb542-5" tabindex="-1"></a>  flatten_dbl</span></code></pre></div>
 <p>Now the MECs for KED and RF can be estimated.</p>
-<div class="sourceCode" id="cb544"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb544-1"><a href="Validation.html#cb544-1" tabindex="-1"></a>mec <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> mse <span class="sc">/</span> s2z</span></code></pre></div>
+<div class="sourceCode" id="cb543"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb543-1"><a href="Validation.html#cb543-1" tabindex="-1"></a>mec <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> mse <span class="sc">/</span> s2z</span></code></pre></div>
 <p>The estimated MEC for KED equals 0.016 and for RF -0.034, showing that the two models used in mapping are no better than the estimated mean SOM concentration used as a predictor. This is quite a disappointing result.</p>
 </div>
 <div id="statistical-testing-of-hypothesis-about-population-me-and-mse" class="section level3 hasAnchor" number="25.2.4">
 <h3><span class="header-section-number">25.2.4</span> Statistical testing of hypothesis about population ME and MSE<a href="Validation.html#statistical-testing-of-hypothesis-about-population-me-and-mse" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The hypothesis that the population ME equals 0 can be tested by a one-sample <em>t</em>-test. The alternative hypothesis is that ME is unequal to 0 (two-sided alternative). The number of degrees of freedom of the <em>t</em> distribution is approximated by the total sample size minus the number of strata (Section <a href="STSI.html#CISTSI">4.2</a>). Note that we have a two-sided alternative hypothesis, so we must compute a two-sided <em>p</em>-value.</p>
-<div class="sourceCode" id="cb545"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb545-1"><a href="Validation.html#cb545-1" tabindex="-1"></a>t_KED <span class="ot">&lt;-</span> me<span class="sc">$</span>meKED <span class="sc">/</span> se<span class="sc">$</span>se_me_KED</span>
-<span id="cb545-2"><a href="Validation.html#cb545-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sample_test) <span class="sc">-</span> <span class="fu">length</span>(<span class="fu">unique</span>(sample_test<span class="sc">$</span>stratum_clp))</span>
-<span id="cb545-3"><a href="Validation.html#cb545-3" tabindex="-1"></a>p_KED <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pt</span>(t_KED, <span class="at">df =</span> df, <span class="at">lower.tail =</span> t_KED <span class="sc">&lt;</span> <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb544"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb544-1"><a href="Validation.html#cb544-1" tabindex="-1"></a>t_KED <span class="ot">&lt;-</span> me<span class="sc">$</span>meKED <span class="sc">/</span> se<span class="sc">$</span>se_me_KED</span>
+<span id="cb544-2"><a href="Validation.html#cb544-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sample_test) <span class="sc">-</span> <span class="fu">length</span>(<span class="fu">unique</span>(sample_test<span class="sc">$</span>stratum_clp))</span>
+<span id="cb544-3"><a href="Validation.html#cb544-3" tabindex="-1"></a>p_KED <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pt</span>(t_KED, <span class="at">df =</span> df, <span class="at">lower.tail =</span> t_KED <span class="sc">&lt;</span> <span class="dv">0</span>)</span></code></pre></div>
 <p>The outcomes of the test statistics are 0.690 and 0.309 for KED and RF, respectively, with <em>p</em>-values 0.493 and 0.759. So, we clearly have not enough evidence for systematic errors, neither with KED nor with RF mapping.</p>
 <p>Now we test whether the two population MSEs differ significantly. This can be done by a paired <em>t</em>-test. The first step in a paired <em>t</em>-test is to compute pairwise differences of squared prediction errors, and then we can proceed as in a one-sample <em>t</em>-test.</p>
-<div class="sourceCode" id="cb546"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb546-1"><a href="Validation.html#cb546-1" tabindex="-1"></a>m_de2 <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb546-2"><a href="Validation.html#cb546-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">de2 =</span> e2KED <span class="sc">-</span> e2RF) <span class="sc">%&gt;%</span></span>
-<span id="cb546-3"><a href="Validation.html#cb546-3" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
-<span id="cb546-4"><a href="Validation.html#cb546-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">m_de2_h =</span> <span class="fu">mean</span>(de2)) <span class="sc">%&gt;%</span></span>
-<span id="cb546-5"><a href="Validation.html#cb546-5" tabindex="-1"></a>  <span class="fu">left_join</span>(strata_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb546-6"><a href="Validation.html#cb546-6" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">m_de2 =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> m_de2_h)) <span class="sc">%&gt;%</span></span>
-<span id="cb546-7"><a href="Validation.html#cb546-7" tabindex="-1"></a>  flatten_dbl</span>
-<span id="cb546-8"><a href="Validation.html#cb546-8" tabindex="-1"></a></span>
-<span id="cb546-9"><a href="Validation.html#cb546-9" tabindex="-1"></a>se_m_de2 <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
-<span id="cb546-10"><a href="Validation.html#cb546-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">de2 =</span> e2KED <span class="sc">-</span> e2RF) <span class="sc">%&gt;%</span></span>
-<span id="cb546-11"><a href="Validation.html#cb546-11" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
-<span id="cb546-12"><a href="Validation.html#cb546-12" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">s2_de2_hc =</span> <span class="fu">var</span>(de2)) <span class="sc">%&gt;%</span></span>
-<span id="cb546-13"><a href="Validation.html#cb546-13" tabindex="-1"></a>  <span class="fu">left_join</span>(strata_clp_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb546-14"><a href="Validation.html#cb546-14" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">se_m_de2 =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2_de2_hc <span class="sc">/</span> n_hc))) <span class="sc">%&gt;%</span></span>
-<span id="cb546-15"><a href="Validation.html#cb546-15" tabindex="-1"></a>  flatten_dbl</span>
-<span id="cb546-16"><a href="Validation.html#cb546-16" tabindex="-1"></a></span>
-<span id="cb546-17"><a href="Validation.html#cb546-17" tabindex="-1"></a>t <span class="ot">&lt;-</span> m_de2 <span class="sc">/</span> se_m_de2</span>
-<span id="cb546-18"><a href="Validation.html#cb546-18" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pt</span>(t, <span class="at">df =</span> df, <span class="at">lower.tail =</span> t <span class="sc">&lt;</span> <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb545"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb545-1"><a href="Validation.html#cb545-1" tabindex="-1"></a>m_de2 <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb545-2"><a href="Validation.html#cb545-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">de2 =</span> e2KED <span class="sc">-</span> e2RF) <span class="sc">%&gt;%</span></span>
+<span id="cb545-3"><a href="Validation.html#cb545-3" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
+<span id="cb545-4"><a href="Validation.html#cb545-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">m_de2_h =</span> <span class="fu">mean</span>(de2)) <span class="sc">%&gt;%</span></span>
+<span id="cb545-5"><a href="Validation.html#cb545-5" tabindex="-1"></a>  <span class="fu">left_join</span>(strata_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb545-6"><a href="Validation.html#cb545-6" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">m_de2 =</span> <span class="fu">sum</span>(w_h <span class="sc">*</span> m_de2_h)) <span class="sc">%&gt;%</span></span>
+<span id="cb545-7"><a href="Validation.html#cb545-7" tabindex="-1"></a>  flatten_dbl</span>
+<span id="cb545-8"><a href="Validation.html#cb545-8" tabindex="-1"></a></span>
+<span id="cb545-9"><a href="Validation.html#cb545-9" tabindex="-1"></a>se_m_de2 <span class="ot">&lt;-</span> sample_test <span class="sc">%&gt;%</span></span>
+<span id="cb545-10"><a href="Validation.html#cb545-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">de2 =</span> e2KED <span class="sc">-</span> e2RF) <span class="sc">%&gt;%</span></span>
+<span id="cb545-11"><a href="Validation.html#cb545-11" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum_clp) <span class="sc">%&gt;%</span></span>
+<span id="cb545-12"><a href="Validation.html#cb545-12" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">s2_de2_hc =</span> <span class="fu">var</span>(de2)) <span class="sc">%&gt;%</span></span>
+<span id="cb545-13"><a href="Validation.html#cb545-13" tabindex="-1"></a>  <span class="fu">left_join</span>(strata_clp_Xuancheng, <span class="at">by =</span> <span class="st">&quot;stratum_clp&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb545-14"><a href="Validation.html#cb545-14" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">se_m_de2 =</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(w_hc<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> s2_de2_hc <span class="sc">/</span> n_hc))) <span class="sc">%&gt;%</span></span>
+<span id="cb545-15"><a href="Validation.html#cb545-15" tabindex="-1"></a>  flatten_dbl</span>
+<span id="cb545-16"><a href="Validation.html#cb545-16" tabindex="-1"></a></span>
+<span id="cb545-17"><a href="Validation.html#cb545-17" tabindex="-1"></a>t <span class="ot">&lt;-</span> m_de2 <span class="sc">/</span> se_m_de2</span>
+<span id="cb545-18"><a href="Validation.html#cb545-18" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pt</span>(t, <span class="at">df =</span> df, <span class="at">lower.tail =</span> t <span class="sc">&lt;</span> <span class="dv">0</span>)</span></code></pre></div>
 <p>The outcome of the test statistic is -0.438, with a <em>p</em>-value of 0.663, so we clearly do not have enough evidence that the population MSEs obtained with the two mapping methods are different.</p>
 
 </div>
